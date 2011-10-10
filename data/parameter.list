@@ -1,0 +1,205 @@
+# xparameters.parameters
+#
+#  test file for parameters
+#
+  
+#------------------------------------------------------------------
+#
+#  fundamental constants
+#
+  
+  hbarc          = 197.327053;
+  hbarc.error    = 59.0e-6;
+  hbarc.units    = "MeV.fm";
+  hbarc.reference= "Particle Data Book 1996";
+
+  weinberg_angle = 0.2319;
+  weinberg_angle.error = 0.0005;
+  weinberg_angle.units = "unitless";
+  weinberg_angle.reference = "Particle Data Book 1994";   
+
+  alpha_offset   = 250.0;
+  alpha_offset.error = 150.0;
+  alpha_offset.units  = "KeV";
+  alpha_offset.reference="Bahcall and Lisi";
+ 
+#------------------------------------------------------------------
+# 
+#  particle masses
+  
+  m_electron       = 0.51099906;         # the mass of the electron
+  m_electron.error = 15.0e-8;
+  m_electron.units = "MeV/c^2"; 
+  
+  m_proton            = 938.27231;
+  m_proton.error      = 0.00028;
+  m_proton.error_type = one_sigma;
+  m_proton.units      = "MeV/c^2";
+
+#-----------------------------------------------------------------
+#
+#  atomic masses
+
+  m_8boron         = 7474.92;
+  m_8boron.error   = 0.00;
+  m_8boron.units   = "MeV/c^2";
+ 
+  m_8lithium       = 7472.95;
+  m_8lithium.error = 0.00;
+  m_8lithium.units = "MeV/c^2";
+
+  m_8beryllium       = 7456.94;
+  m_8beryllium.error = 0.00;
+  m_8beryllium.units = "MeV/c^2"; 
+
+#-----------------------------------------------------------------
+#
+#  Cross Sections
+
+  sigma_nu_e_scat  = 88.083;
+  sigma_nu_e_scat.error  = 0.0;
+  sigma_nu_e_scat.units = "cm";
+  sigma_nu_e_scat.reference = "Neutrino Astrophysics, page 217";
+
+
+
+
+
+#-----------------------------------------------------------------
+#
+#  MSW paramters
+
+  msw2_dmsq     = 0.0;
+  msw2_dmsq.error = 0.0;
+  msw2_dmsq.units = "eV^2";
+
+  msw2_sin_sq_th     = 0.0;
+  msw2_sin_sq_th.error = 0.0;
+  msw2_sin_sq_th.units = "unitless";
+
+  
+#-----------------------------------------------------------------
+#
+# Detector parameters
+
+  sigma_10  = 0.12;
+  sigma_10.error = 0.01;
+  sigma_10.units = "unitless";
+  sigma_10.reference = "Chris' hallucination. Picked as place holder";
+
+
+
+#-----------------------------------------------------------------
+#
+#  Angular Resolution parameters. needed by ES class. CJJ, Mar. 98
+#  The uncertainties have not been fully explored
+#  They are here as initial guesses.
+
+  ar_slope1_p0   = 6.47;
+  ar_slope1_p0.error = 0.47;
+  ar_slope1_p0.error_type = one_sigma;
+  ar_slope1_p0.units = "unitless";
+  ar_slope1_p0.reference = "C. Jillings notebook 4, page 34";
+
+  ar_slope1_p1   = 0.484;
+  ar_slope1_p1.error = 0.043;
+  ar_slope1_p1.error_type = one_sigma;
+  ar_slope1_p1.units = "MeV^-1";
+  ar_slope1_p1.reference = "C. Jillings notebook 4, page 34";
+
+  ar_amp2_constant   = 1.09
+  ar_amp2_constant.error = 0.22;
+  ar_amp2_constant.error_type = one_sigma;
+  ar_amp2_constant.units = "unitless";
+  ar_amp2_constant.reference  = "C. Jillings notebook 4, page 34";
+
+  ar_amp2_slope   = -0.210;
+  ar_amp2_slope.error = 0.023;
+  ar_amp2_slope.error_type = one_sigma;
+  ar_amp2_slope.units = "MeV^-1";
+  ar_amp2_slope.reference  = "C. Jillings notebook 4, page 34";
+
+  ar_slope2_p0   = 2.52;
+  ar_slope2_p0.error = 0.76;
+  ar_slope2_p0.error_type = one_sigma;
+  ar_slope2_p0.units = "unitless";
+  ar_slope2_p0.reference =  "C. Jillings notebook 4, page 34";
+
+  ar_slope2_p1   = 0.55;
+  ar_slope2_p1.error = 0.19;
+  ar_slope2_p1.error_type = one_sigma;
+  ar_slope2_p1.units = "MeV^-1";
+  ar_slope2_p1.reference = "C. Jillings notebook 4, page 34";
+
+  ar_slope2_p2   = -0.019;
+  ar_slope2_p2.error = 0.010;
+  ar_slope2_p2.error_type = one_sigma;
+  ar_slope2_p2.units = "MeV^-2";
+  ar_slope2_p2.reference = "C. Jillings notebook 4, page 34";
+
+#---------------------------------------------------------------------------
+#Some parameters for MSW analysis          M. Boulay
+
+Ree = 1.5e8;
+Ree.units="km";
+Ree.reference = "Earth-Sun distance";
+
+Rsun = 6.96e5;
+Rsun.units = "km";
+Rsun.reference = "Solar radius";
+
+MixingAngle_emu = 0.65e-2;
+MixingAngle_emu.units = "sin^2(2 theta)";
+MixingAngle_emu.reference = "MSW electron-muon nu mixing angle";
+
+MassDiff_emu = 0.685e-5;
+MassDiff_emu.units = "eV^2";
+MassDiff_emu.reference = "MSW electron-muon nu mass difference";
+
+Boron8Flux = 5.8e6;
+Boron8Flux.units = "cm^-2 sec^-1";
+Boron8Flux.reference = "Neutrino Astrophysics, Bahcall, p 157";
+
+DatomsInSNO = 6.02e31;
+DatomsInSNO.units = "Number of D atoms in SNO";
+DatomsInSNO.reference = "Neutrino Astrophysics, Bahcall, p 403";
+
+#----------------------------------------------------------------------------
+#Some cut parameters, used by the QCut classes
+#M. Boulay
+
+LowIHLrail = 300;
+LowIHLrail.units="uncorrected ADC counts";
+LowIHLrail.reference = "Your guess is as good as mine. (mgb)";
+
+HighIHLrail = 4000;
+HighIHLrail.units="uncorrected ADC counts";
+HighIHLrail.reference = "Your guess is as good as mine. (mgb)";
+
+LowIHSrail = 100;
+LowIHSrail.units="uncorrected ADC counts";
+LowIHSrail.reference = "...";
+
+HighIHSrail = 4000;
+HighIHSrail.units="uncorrected ADC counts";
+HighIHSrail.reference = "...";
+
+LowILXrail = 0;
+LowILXrail.units="uncorrected ADC counts";
+LowILXrail.reference = "...";
+
+HighILXrail = 4000;
+HighILXrail.units="uncorrected ADC counts";
+HighILXrail.reference = "...";
+
+
+MaxPMTsInCrate = 200;
+MaxPMTsInCrate.units="PMTs";
+MaxPMTsInCrate.reference="educated guess";
+
+MaxPMTsInPC = 6;
+MaxPMTsInPC.units="PMTs";
+MaxPMTsInPC.reference="M Boulay";
+
+
+

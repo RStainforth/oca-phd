@@ -1,0 +1,208 @@
+###################################################
+#                                                 #
+# Olivier Simard : 05.10.2003                     #
+# Option file for                                 #
+#                                                 #
+#     qocaextract_runner                          #
+#     qocaplots_runner                            #
+#     qocatitles_runner                           #
+#                                                 #
+###################################################
+#                                                 #
+# -- This configuration file is an example. --    #
+#
+# ------
+# Notes:
+# ------
+# The user must copy it to the current directory 
+# (where executables are run) and modify the entries 
+# at its convenience.
+# Entries that must not be edited are identified
+# below.
+# --
+# Use either # on the first column or #. after
+# the last element of a line to comment.
+# --
+# Keywords are words in the first column.
+# They are mandatory for executables to retrieve
+# specific data or user options.
+# They are specified in the code and cannot be changed
+# unless the code is changed and recompiled.
+# 
+# -- DO NOT modify any of the keywords. --
+#
+###################################################
+#
+# -- "version" : Cardfile version printed in the code.
+#
+version 2.1
+# -------------------------------------------------
+# 
+# -- "io" : Input/output directories and file locations.
+#           User must have writing permission
+#
+io /home/user/qocafit/ #.	qocafit files repository
+io /home/user/text/ #.		extracted text files repository
+io /home/user/ #.		plots and titles banks repository
+# -------------------------------------------------	
+#
+# -- "syst" : Systematics control.
+#             Columns (3) : Usage - Factor - Treename
+#             Usage:
+#               2 : main (full error calculation)
+#               1 : include as systematic error
+#               0 : don't use
+#             Factor: applied to each systematics used 
+#               Do not edit (determined by B. Moffat)
+#             Treename:
+#               As found in qocafit files.
+#               Do not edit.
+#
+#syst 2 1 qocafit_nominal #. uncomment for full systematic output
+syst 2 0    qocafit_nominal #. standard extraction 
+syst 1 0.20 qocafit_mr 
+syst 1 0.40 qocafit_sz
+syst 1 0.40 qocafit_sx
+syst 1 0.20 qocafit_sr
+syst 1 0.20 qocafit_gr
+syst 1 0.50 qocafit_sd
+syst 1 0.05 qocafit_lbsq
+syst 1 0.05 qocafit_lbflat
+syst 1 0.20 qocafit_nopmtvar
+syst 1 1.00 qocafit_chisqcut16
+syst 1 1.00 qocafit_chisqcut9
+# -------------------------------------------------
+#
+# -- "wlen" : SNO wavelengths (approximated) (max 6 entries).
+#             User can modify the number of wavelengths.
+#             Do not edit values. Used to read/write filenames.
+#             
+wlen 337 365 386 420 500 620 #. all wavelengths (nm)
+# -------------------------------------------------
+#
+# -- "scan" : Scan control. User must edit to convenience.
+#             Columns (3) : Start/End flag - Scan acronym - Julian date
+#             Start/End flag : for time dependency studies.
+#               first  1 : start time
+#               second 1 : end time
+#               others 0 : any time between or avoid if outside range
+#             Scans acronyms : MMMYYXX
+#               M = month, Y = year, X = other.
+#             Julian date : SNO Julian date of scans (QSNO::GetJulianDate()).
+#             
+#scan 0 sep00 09379 #. pure d2o-1
+#scan 0 sep01 09750 #. salt
+#scan 0 may02 10004 #. salt 
+#scan 0 oct02 10164 #. salt
+#scan 0 jan03 10242 #. salt 
+#scan 0 apr03 10332 #. salt
+#scan 0 aug03 10461 #. salt
+#scan 0 oct03 10515 #. pure d2o-2
+#scan 0 jul04 10783 #. ncd
+#scan 0 oct04 10874 #. ncd
+#scan 0 feb05 11014 #. ncd 
+#scan 0 may05 12000 #. ncd
+# -------------------------------------------------
+#
+# -- "data" : Flags for position fit type.
+#             Entries (3) : fits - fruns - eff
+#               1: do
+#               0: don't
+#
+data 0 1 0 #. fits fruns eff
+# -------------------------------------------------
+# -------------------------------------------------
+# -------------------------------------------------
+#   QOCAPlots fitting options
+#   -------------------------
+#
+# -- "fit" : Time dependencies fitting options.
+#            Do not edit.
+#            First line : correlation measurements (Bryce Moffat's thesis).
+#            Second line : first value : scaling factor.
+#            Third line : first value : polynomial type.
+#
+fit 8.1945e-5 5.9370e-5 4.7380e-5 3.3721e-5 1.6724e-5 7.0499e-6
+fit 0.82 0 0 0 0 0 #. only use the first value
+fit pol1 0 0 0 0 0 #. only use the first value
+# -------------------------------------------------
+# -------------------------------------------------
+# -------------------------------------------------
+#   QOCATitles fitting options
+#   --------------------------
+#
+# -- "f337" : Problematic Umbilical flag for sep00 scan at 337 nm. 
+#             0: disable, 1: enable.
+#
+#f337 1 #. uncomment if sep00 at 337 nm
+f337 0 #. default
+# -------------------------------------------------
+#
+# -- "options" : Non-standard options for title files.
+#                Entries (3) : syst - extrapo_num - usefit.
+#                  syst : specify a systematic entry (unused)
+#                  extrapo_num : number of wavelengths to use 
+#                                in extrapolation methods.
+#                  usefit : produce titles directly from 
+#                           qocafit files (does not work yet).
+#
+options 0 6 0
+# -------------------------------------------------
+#
+# -- "frac" : Fraction of rayleigh scattering removed 
+#             from qocafit total extinction.
+#             Entries (3) : fRayFraction (d2o - acr - h2o)
+#             Do not edit.
+#
+#frac 0.82 1.00 1.03 #. Bryce's numbers (all wavelengths)
+frac 0.71 1.00 1.03 #. Kevin's d2o number (all wavelength)
+# -------------------------------------------------
+#
+# -- "scale" : Scale factor applied to rayleigh scattering 
+#              in SNOMAN.
+#              Entries (3) : fRayScale (d2o - acr - h2o)
+#              Do not edit.
+#
+#scale 1.212 0.95 0.87 #. Bryce's numbers (all wavelengths)
+scale 1.289 0.95 0.87 #. Jeanne's d2o number (all wavelengths)
+# -------------------------------------------
+#
+# -- "ray" : Various measurements and calculations of 
+#            rayleigh scattering for SNO wavelengths.
+#            Do not edit.
+#            Columns (7) :
+#              1     : Wavelength (nm)
+#              2,3   : MeasRayleighD2O - MeasRayleighH2O
+#              4     : Acrylic ex-situ attenuations
+#              5,6,7 : QOptics::GetRayleighD2O() 
+#                      QOptics::GetRayleighAcrylic()
+#                      QOptics::GetRayleighH2O()
+#
+ray 337 1.36225e-04 1.75594e-04 0.05640 8.19450e-05 2.96955e-04 8.04839e-05
+ray 365 9.55891e-05 1.23214e-04 0.02300 5.93698e-05 2.08544e-04 5.83747e-05
+ray 386 7.48047e-05 9.64233e-05 0.01220 4.73799e-05 1.63286e-04 4.66271e-05
+ray 420 5.13529e-05 6.61939e-05 0.00770 3.37214e-05 1.13332e-04 3.32363e-05
+ray 500 2.46663e-05 3.17948e-05 0.00709 1.67239e-05 5.39509e-05 1.65476e-05
+ray 620 1.00171e-05 1.29120e-05 0.00709 7.04985e-06 2.19365e-05 7.01905e-06
+# -------------------------------------------------
+#
+# -- "angpar" : PMT Response parameter limits.
+#               Entries (2) : min - max incident angles
+#                             (degrees).
+angpar 0 89
+# -------------------------------------------------
+#
+# -- "lampar" : PMT Response parameter limits.
+#               Entries (2) : min - max wavelength values
+#                             (nm)
+#
+lampar 220 710 #. snoman limitations
+# -------------------------------------------------
+#
+# -- "media" : Media codes for snoman
+#
+media hist -1
+media pure -1
+media salt 200
+# -------------------------------------------------
+# -------------------------------------------------

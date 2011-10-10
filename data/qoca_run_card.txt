@@ -1,0 +1,317 @@
+###################################################
+#                                                 #
+# Olivier Simard : 05.10.2003                     #
+# Option file for                                 #
+#                                                 #
+#     qpath_runner                                #
+#     qocafit_runner                              #
+#                                                 #
+###################################################
+#                                                 #
+# -- This configuration file is an example. --    #
+#
+# ------
+# Notes:
+# ------
+# The user must copy it to the current directory 
+# (where executables are run) and modify the entries 
+# at its convenience.
+# Entries that must not be edited are identified
+# below.
+# --
+# Use either # on the first column or #. after
+# the last element of a line to comment.
+# --
+# Keywords are words in the first column.
+# They are mandatory for executables to retrieve
+# specific data or user options.
+# They are specified in the code and cannot be changed
+# unless the code is changed and recompiled.
+#   p_ means used only by qpath
+#   f_ means used only by qocafit
+# otherwise it is used by both. 
+# -- DO NOT modify any of the keywords. --
+#
+###################################################
+#
+# -- "version" : Cardfile version printed in the code.
+#
+version 4.1
+# -------------------------------------------------
+#
+# -- "dir" : Input/output directories and file locations.
+#            User must have writing permission.
+#
+dir /home/user/qrunlists/ #. 		runlists repository
+dir /home/user/qpath/ #. 		qpath files repository
+dir /home/user/qocafit/	#. 		qocafit files repository
+dir /home/user/geometry.dat #.		user ncd position bank file (supports "default")	
+dir /data/hepdb/titles/ #.		dqxx banks repository (supports "default")
+dir /data/rdt/ #.			rdt files repository (supports "default")
+dir /home/user/opt_variations_salt.dat #. pmt efficiency bank (supports "default")
+dir /home/user/textfiles #.		textfiles repository
+# -------------------------------------------------
+#
+# -- "fast" : Flag for fast processing.
+#             Skip systematic calculations: 
+#               1: yes
+#               0: no
+fast 0
+# -------------------------------------------------
+#
+# -- "p_rdtopt" : Rdt file : see QRdt.cxx.
+#                 First entry : style. 
+#                   0 : sno_XXXXX.rdt
+#                   1 : sno_0XXXXX_pX.rdt
+#                   2 : sno_0XXXXX_X.rdt
+#                   9 : snomc_XXXXX.rdt for MC without runnumber<0
+#                 Second entry : pass number.
+#                   -1 : highest pass available
+#
+p_rdtopt 1 -1 #. standard for data (autosno module OCA)
+# -------------------------------------------------
+#
+# -- "p_posfit" : Position fit flag for QPath.
+#                 First entry : flag integer.
+#                   0 : gentle mode :
+#                       check the rdt file and fit only if nothing is found.
+#                   1 : force direct line fit
+#                   2 : force full path fit
+#                   3 : brutal mode :
+#                       force both direct + full path fits
+#
+#p_posfit 2 #. uncomment to get individual pmt chisquare in qocatree
+p_posfit 0 #. for current autosno
+#
+# -------------------------------------------------
+#
+# -- "p_forcedqxx" : Force-DQXX flag for QPath.
+#                    First and only entry : flag integer.
+#                      0 : do not force check :
+#                          will run even though dqxx banks are not found.
+#                      1 : force check :
+#                          will abort if dqxx banks are not found (default).
+#
+#p_forcedqxx 0 #. uncomment for MC runs or testing
+p_forcedqxx 1 #. for data
+#
+# -------------------------------------------------
+# -- "p_treenames" : QOCATree names used in qpath.
+#                    There must be at least 4 entries.
+#
+p_treenames optics poptics poptix optix
+# -------------------------------------------------
+#
+# -- "p_ncd" : Ncd shadowing mask in QPath. 
+#              First entry : (include in fBad = 1, don't = 0)
+#              Second entry : ncd distance tolerance (in cm)
+#
+#p_ncd 0 5.0 #. uncomment for non-ncd scans 
+p_ncd 1 5.0 #. ncd scans (tolerance based on NCD position fits) 
+# -------------------------------------------------
+#
+# -- "p_pavr" : Prompt AV Reflections.
+#               First entry : unused
+#               Second entry : pavr time window parameter (in ns)
+#
+#p_pavr 0 8.0 #. uncomment for old constant cut
+p_pavr 1 8.0 #. source radius dependent (should be default)
+# -------------------------------------------------
+# 
+# -- "p_systematics" : LB Position Systematic error options used in qpath.
+#
+p_systematics 1.01 5.0 5.0 5.0 5.0 3.0 #. QPath::SetRsyst()
+p_systematics 2 1 1 1 -1 1 #. QPath::SetPositionsyst()
+p_systematics _mr _sz _sx _sr _gr _sd #. tree name extensions
+p_systematics R'=1.01R Z'=Z+5cm X'=X+5cm R'=R+5cm R'=R+Gaus(5cm) Dpmt'=Dpmt-3cm #. tree titles
+# -------------------------------------------------
+#
+# -- "f_options" : Basic options used in qocafit
+#                    Set*Vary() : 1: vary, 0: fixed.
+#                    SetAngrespFuncType() : 
+#                      0: interpolation 
+#                      1, 2: bins (low edge, center)
+#                    SetModelErr() :
+#                      0 : no Model errors = 0.0
+#                      1 : turns ON PMT variability
+#                      2 : constant fractional error
+#                      3 : same as (1) but set by the user at run time 
+#
+f_options 1 #. SetChicuttype()
+f_options 1 #. SetD2OVary()
+f_options 1 #. SetH2OVary()
+f_options 1 #. SetAngRespVary()
+f_options 1 #. SetNormsVary()
+f_options 1 #. SetOccType(1:occratio, 0:occupancy)
+f_options 0 #. SetLBdistType(0:histogram, 1:sinusoidal)
+f_options 0 #. doApplyTree (0: no, 1: yes)
+f_options 0 #. SetAngrespFuncType(0: interpolation ; 1 or 2: bins)
+f_options 1 #. SetModelErr(0:none, 1:theta_pmt, 2:constant, 3:input_theta_pmt)
+f_options 1 #. SetLBDistVary()
+f_options 0 #. SetAcrylicVary()
+#
+# -------------------------------------------------
+#
+# -- "f_pmtgroup" : Pmt Grouping Options for QOCAFit
+#
+f_pmtgroup 0 #. SetAngResp2Vary()
+f_pmtgroup 3 #. SetPmtCoordinateCode(0:none, 1:x, 2:y, 3:z, 4:batch3)
+f_pmtgroup 0 #. SetPmtCoordinateLo()
+f_pmtgroup 1000 #. SetPmtCoordinateHi()
+#
+# -------------------------------------------------
+#
+# -- "f_minbin" : Minimum PMT per bin to be used by QOCAFit
+#                   First Entry : SetMinPMTperangle()
+#                   Second Entry: SetMinPMTperLBbin()
+#
+#f_minbin 100 25 #. uncomment for non-ncd scans
+f_minbin 25 10 #. low statistics occratio for ncd scans
+#f_minbin 50 15 #. low statistics occupancy for ncd scans
+# -------------------------------------------------
+#
+# -- "f_occcut" : PMT Occupancy cut used by QOCAFit
+#                   First Entry : SetDynamicOccupancyCut()
+#                   Second Entry: SetDynamicSigma()
+#                 These options do not depend on the choice of
+#                 the occupancy variable made earlier: works
+#                 the same way for both OccRatio and Occupancy.
+#
+f_occcut 0 0 #. current hardcoded occupancy cut
+#f_occcut 1 3 #. user cut in sigma units
+# -------------------------------------------------
+# 
+# -- "f_acrylic" : Acrylic ex-situ attenuation measurements.
+#                  Columns: wavelength - alpha_acrylic - alpha_a_scale
+#                  Edit last column only:
+#                    alpha_a_scale : scales the attenuation used in qocafit.
+#
+f_acrylic 337 56.4e-3 1.00
+f_acrylic 365 23.0e-3 1.00
+f_acrylic 386 12.2e-3 1.00
+f_acrylic 420 7.70e-3 1.00
+f_acrylic 500 7.09e-3 1.00
+f_acrylic 620 7.09e-3 1.00
+#
+#
+# -- "f_d2o" : D2O attenuations initial values.
+#              Columns: wavelength - alpha_d2o - alpha_d_scale
+#              Edit last three columns only:
+#                    alpha_d2o : starting value used in qocafit.
+#                    alpha_d_scale : scales the attenuation used in qocafit.
+#
+f_d2o 337 1.0e-4 1.00
+f_d2o 365 1.0e-4 1.00
+f_d2o 386 1.0e-4 1.00
+f_d2o 420 1.0e-4 1.00
+f_d2o 500 1.0e-4 1.00
+f_d2o 620 1.0e-4 1.00
+#
+#
+# -- "f_h2o" : H2O attenuations initial values.
+#              Columns: wavelength - alpha_h2o - alpha_h_scale
+#              Edit last three columns only:
+#                    alpha_h2o : starting value used in qocafit.
+#                    alpha_h_scale : scales the attenuation used in qocafit.
+#
+f_h2o 337 1.0e-4 1.00
+f_h2o 365 1.0e-4 1.00
+f_h2o 386 1.0e-4 1.00
+f_h2o 420 1.0e-4 1.00
+f_h2o 500 1.0e-4 1.00
+f_h2o 620 1.0e-4 1.00
+# -------------------------------------------------
+# 
+# -- "f_chi: : Chisquare cut values (5 entries).
+#
+f_chi 1000 100 25 25 25 #. last entry is nominal
+# -------------------------------------------------
+#
+# -- "f_h2oacr" : Let the acrylic attenuations vary 
+#                 for systematics (1 entry).
+#
+f_h2oacr 1 #. acrylic attenuation can vary
+# -------------------------------------------------
+#
+# -- "f_timew" : Half-width time window values 
+#                for systematics (7 entries).
+#
+#f_timew 0 1 2 3 4 5 6 7 8 9 #. old qpath 
+f_timew 1 2 3 4 7 10 20 #. new qpath
+# -------------------------------------------------
+#
+# -- "f_reschi" : Residual chisquare cut values 
+#                 for systematics (2 entries).
+#
+f_reschi 16 9 #. smaller chisquare cuts than nominal
+# -------------------------------------------------
+#
+# -- "f_lbdist" : SetLBDistVary() values
+#                 for systematics (2 entries).
+#
+f_lbdist 0 0 #. laserball distribution is user-fixed
+# -------------------------------------------------
+#
+# -- "f_pmtvar" : Chisquare cut values for fits
+#                 that turns off pmt local variations
+#                 for systematics (5 entries).                 
+#
+f_pmtvar 1000 100 25 25 25
+# -------------------------------------------------
+# 
+# -- "f_systval" : Chisquare cut values for 
+#                  systematics trees (5 entries).
+#
+f_systval 1000 100 25 25 25
+# -------------------------------------------------
+#
+#
+# ------------------------
+# Titles for qocafit
+# ------------------------
+#
+# Please do not edit; original titles as given by B. Moffat.
+# Each title must be one word : use underscores if needed.
+#
+# usually found (except for tchi)
+# keyword - SetTitle()
+# keyword - Write()
+# keyword - Write() applied tree
+#
+# kw : generates a list of keywords.
+#      All the following will be loaded automatically 
+#      into the qocafit.
+#
+kw tchi th2oacr ttimew treschi tlbdist tpmtvar tsyst
+# ---------
+tchi QOCAFit:First_fit QOCAFit:Second_fit QOCAFit:Third_fit QOCAFit:Fourth_fit QOCAFit:Nominal_(5th)_fit
+tchi qocafit_first qocafit_second qocafit_third qocafit_fourth qocafit_nominal
+# ---------
+th2oacr QOCAFit:h2oacr_variable
+th2oacr qocafit_h2oacr
+th2oacr optica_qocafit_h2oacr
+# ---------
+ttimew QOCAFit:Window_0 QOCAFit:Window_1 QOCAFit:Window_2 QOCAFit:Window_3 QOCAFit:Window_4 QOCAFit:Window_5 QOCAFit:Window_6
+ttimew qocafit_tw0 qocafit_tw1 qocafit_tw2 qocafit_tw3 qocafit_tw4 qocafit_tw5 qocafit_tw6
+ttimew optica_qocafit_tw0 optica_qocafit_tw1 optica_qocafit_tw2 optica_qocafit_tw3 optica_qocafit_tw4 optica_qocafit_tw5 optica_qocafit_tw6
+# ---------
+treschi QOCAFit:chi2_cut_at_16 QOCAFit:chi2_cut_at_9
+treschi qocafit_chisqcut16 qocafit_chisqcut9
+treschi optica_qocafit_chisqcut16 optica_qocafit_chisqcut9
+# ---------
+tlbdist QOCAFit:lbdist_squared QOCAFit:lbdist_flat
+tlbdist qocafit_lbsq qocafit_lbflat
+tlbdist optica_qocafit_lbsq optica_qocafit_lbflat
+# ---------
+tpmtvar QOCAFit:No_PMT-PMT_Variations
+tpmtvar qocafit_nopmtvar
+tpmtvar optica_qocafit_nopmtvar
+# ---------
+tsyst R'=1.01R Z'=Z+5cm X'=X+5cm R'=R+5cm R'=R+Gaus(5cm) Dpmt'=Dpmt-3cm FlatEff HalfTol NcdRefl00 NcdRefl10
+tsyst optix_mr optix_sz optix_sx optix_sr optix_gr optix_sd optix_flateff optix_sha optix_ncdref00 optix_ncdref10
+tsyst QOCAFit:Systematic_R'=1.01R QOCAFit:Systematic_Z'=Z+5cm QOCAFit:Systematic_X'=X+5cm QOCAFit:Systematic_R'=R+5cm QOCAFit:Systematic_R'=R+Gaus(5cm) QOCAFit:Systematic_Dpmt'=Dpmt-3cm QOCAFit:Systematic_FlatEff QOCAFit:Systematic_HalfTol QOCAFit:Systematic_NcdRefl00 QOCAFit:Systematic_NcdRef10
+tsyst qocafit_mr qocafit_sz qocafit_sx qocafit_sr qocafit_gr qocafit_sd qocafit_flateff qocafit_sha qocafit_ncdref00 qocafit_ncdref10
+tsyst optica_qocafit_mr optica_qocafit_sz optica_qocafit_sx optica_qocafit_sr optica_qocafit_gr optica_qocafit_sd optica_qocafit_flateff optica_qocafit_sha optica_qocafit_ncdref00 optica_qocafit_ncdref10
+#
+# -------------------------------------------------
+# -------------------------------------------------

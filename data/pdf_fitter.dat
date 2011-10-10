@@ -1,0 +1,38 @@
+*LOG
+*---  Non-Standard Titles File: pdf_fitter.dat             31 May 2000        
+*---                 Banks: TFTU
+*---                   PDF fitter control bank
+*---                   Contact:  M. Boulay, Queen's
+*---
+*LOG OFF
+*DO  TFTU   1   -i(30I 1F 1I 2F 1I 2F -I)  #.  Bank for PDF fitter control
+#.
+#.    Contact:  M. Boulay, Queen's
+#.
+#.       Standard Database Header
+#.
+19750101        0 20380517 03331900  #.  1..4   Intrinsic validity
+       0        0        0           #.  5..7   Data type, Task type, Format no.
+       0        0        0           #.  8..10  Creation Date, Time, Source Id.
+19750101        0 20380517 03331900  #. 11..14  Effective validity
+       0        0                    #. 15..16  Entry Date Time
+4*0                                  #. 17..20  Spare
+10*0                                 #. 21..30  Temporary data (not in database)
+#.
+#.    End of Standard Database Header
+#.
+#.User Data
+5.0   #. Min QHS
+6     #. Number of times target must be hit for convergence
+10.   #. Likelihood tolerance
+80.   #. Distance tolerance (cm)
+1     #. Direction fit flag.  0->avg direction, 1->PDF fitted direction
+1.371 #. Cerenkov average group refractive index
+1000. #. Outer radius of volume in which to choose random seed 
+#x0308006D     #. ANxx mask 1: PCA Mask
+#x40092001     #. ANxx mask 2: Neutrino Mask
+10*0           #. Spare
+
+
+
+
