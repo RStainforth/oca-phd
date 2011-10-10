@@ -134,6 +134,13 @@ clean:
 	@rm -f qu_sno.log
 	@echo "Done."
 
+reallyclean: clean
+	@echo " == Doing additional cleaning tasks ( $@ ) =="
+	@rm -f $(QOCA_ROOT)/bin/*
+	@rm -f $(QOCA_ROOT)/include/*
+	@rm -f $(QOCA_ROOT)/lib/*
+	@echo "Done."
+
 $(QOCAL):	$(QOCAOBJS) $(DICT_O)
 	@echo " == Executing $@ =="
 	@echo "linking $(QOCAL)"
