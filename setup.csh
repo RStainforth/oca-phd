@@ -5,6 +5,7 @@
 #
 #
 #
+#
 # This dependency must be removed soon, but there are just too many dependencies over getenv()
 # to solve everything right away.
 # The best option would be to integrate into RAT and use RATDB to load the necessary files from the database.
