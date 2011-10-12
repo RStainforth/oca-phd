@@ -2,7 +2,8 @@
 
 ## This is really the only requirement (besides having ROOT previously set up)
 ## Edit to point to the base location of the package.
-#
+
+##
 # This dependency must be removed soon, but there are just too many dependencies over getenv()
 # to solve everything right away.
 # The best option would be to integrate into RAT and use RATDB to load the necessary files from the database.
