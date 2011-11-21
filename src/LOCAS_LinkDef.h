@@ -55,6 +55,8 @@
 
 // Classes
 
+#pragma link C++ class LOCASPMT;
+
 #pragma link C++ class QOCATree-;
 #pragma link C++ class QOCARun-;
 #pragma link C++ class QOCAPmt-;

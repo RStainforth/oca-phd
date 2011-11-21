@@ -1,5 +1,5 @@
-# Makefile for  $(QOCAL)
-# Quick and dirty implementation to build the QOCA module in a standalone way.
+# Makefile for  $(LOCASL)
+# Quick and dirty implementation to build the LOCAS module in a standalone way.
 #
 # There are some issues with the Makefile. The original QSNO code depended on ROOT source tree
 # which is not necessary. Therefore the Makefile was refactored to not have these dependencies.
@@ -37,31 +37,32 @@ ifeq ($(strip $(LDOPTS)),)
 endif
 
 ### Some options for this package
-QOCA_ROOT 	:= $(QOCA_ROOT)
-QOCA_LIB	:= ../lib
-QOCA_SRC	:= ./
-QOCA_INC	:= ../include
-QOCA_BIN	:= ../bin
-
+LOCAS_ROOT 	:= $(LOCAS_ROOT)
+LOCAS_LIB	:= ../lib 
+LOCAS_SRC	:= ./
+LOCAS_INC	:= ../include 
+LOCAS_BIN	:= ../bin
+RAT_INC		:= -I$(RATROOT)/include -I$(RATROOT)/include/RAT 
+RAT_LIB		:= -L$(RATROOT)/lib -l RATEvent_$(LOCAS_SYSTEM)-$(CXX)
 
 # Dictionary
-DICT_H	:= QOCA_LinkDef.h
-DICT_C	:= QOCA_Dict.C
+DICT_H	:= LOCAS_LinkDef.h
+DICT_C	:= LOCAS_Dict.C
 DICT_O	:= $(patsubst %.C,%.o,$(DICT_C))
 
 
-QOCA_EXE	:= 	qoca_positionfit reflecttime qpath_runner \
-				qocafit_runner qocaextract_runner qocaplots_runner \
-				qocatitles_runner tdiff
+LOCAS_EXE	:= 	locas_positionfit reflecttime qpath_runner \
+				locasfit_runner locasextract_runner locasplots_runner \
+				locastitles_runner tdiff sjmptest
 
-QOCAH		:= $(filter-out $(DICT_H) $(patsubst %.C,%.h,$(DICT_C)),$(notdir $(shell find $(QOCA_SRC) -name "*.h")))
-QOCAC		:= $(filter-out $(addsuffix .cxx,$(QOCA_EXE)),$(notdir $(shell find $(QOCA_SRC) -name "*.cxx")))
+LOCASH		:= $(filter-out $(DICT_H) $(patsubst %.C,%.h,$(DICT_C)),$(notdir $(shell find $(LOCAS_SRC) -name "*.h")))
+LOCASC		:= $(filter-out $(addsuffix .cxx,$(LOCAS_EXE)),$(notdir $(shell find $(LOCAS_SRC) -name "*.cxx")))
 
-QOCAOBJS	:= $(patsubst %.cxx,%.o,$(QOCAC))
-QOCAL		:= libqoca.so
+LOCASOBJS	:= $(patsubst %.cxx,%.o,$(LOCASC))
+LOCASL		:= libLOCAS.so
 
 
-QOCACFLAGS	:= -I./
+LOCASCFLAGS	:= -I./
 
 
 PICFLAG	:= -fPIC
@@ -73,7 +74,7 @@ PICFLAG	:= -fPIC
 
 
 all: show headers libraries executables
-#qoca_positionfit tdiff reflecttime qpath_runner qocafit_runner qocaextract_runner qocaplots_runner qocatitles_runner
+#LOCAS_positionfit tdiff reflecttime qpath_runner LOCASfit_runner LOCASextract_runner LOCASplots_runner LOCAStitles_runner
 
 install: install_libraries install_executables install_headers
 
@@ -82,43 +83,43 @@ show:
 	@echo " * ARCH  	: $(ARCH)"
 	@echo " * LDOPT 	: $(LDOPTS)"
 	@echo " * CXX 		: $(CXX)"
-#	@echo " * HEADERS	: $(QOCAH)"
-#	@echo " * SOURCES	: $(QOCAC)"
-#	@echo " * OBJS		: $(QOCAOBJS)"	
+#	@echo " * HEADERS	: $(LOCASH)"
+#	@echo " * SOURCES	: $(LOCASC)"
+#	@echo " * OBJS		: $(LOCASOBJS)"	
 
 dirs: 
-	@mkdir -p $(QOCA_LIB)
-	@mkdir -p $(QOCA_BIN)
-	@mkdir -p $(QOCA_INC)
+	@mkdir -p $(LOCAS_LIB)
+	@mkdir -p $(LOCAS_BIN)
+	@mkdir -p $(LOCAS_INC)
 
 
-headers: $(QOCAH)
+headers: $(LOCASH)
 	@echo " == Executing $@ =="
 
 install_headers: headers
 		@echo " == Executing $@ =="
-		@echo "copying QOCA headers to $(QOCA_INC)"
-		@cp $(QOCAH) $(QOCA_INC)
+		@echo "copying LOCAS headers to $(LOCAS_INC)"
+		@cp $(LOCASH) $(LOCAS_INC)
 		@echo "Done."
 
-libraries: $(QOCAL)
+libraries: $(LOCASL)
 		@echo " == Executing $@ =="
 
 install_libraries:	libraries dirs
 		@echo " == Executing $@ =="
-		@echo "copying $(QOCAL) to $(QOCA_LIB)"
-		@cp $(QOCAL) $(QOCA_LIB)
+		@echo "copying $(LOCASL) to $(LOCAS_LIB)"
+		@cp $(LOCASL) $(LOCAS_LIB)
 		@echo "Done."
 
-executables: $(QOCA_EXE)
+executables: $(LOCAS_EXE)
 		@echo " == Executing $@ =="
 
 install_executables:	executables dirs
 		@echo " == Executing $@ =="
-		@echo "copying QOCA executables to $(QOCA_BIN)"
-		@cd $(QOCA_SRC)
-		@cp $(QOCA_EXE) $(QOCA_ROOT)/bin
-		@cd $(QOCA_ROOT)
+		@echo "copying LOCAS executables to $(LOCAS_BIN)"
+		@cd $(LOCAS_SRC)
+		@cp $(LOCAS_EXE) $(LOCAS_ROOT)/bin
+		@cd $(LOCAS_ROOT)
 		@echo "Done"
 
 
@@ -130,82 +131,89 @@ clean:
 	@rm -f *Dict.h
 	@rm -f *.o
 	@rm -f *.so
-	@rm -f $(QOCA_EXE)
+	@rm -f $(LOCAS_EXE)
 	@rm -f qu_sno.log
 	@echo "Done."
 
 reallyclean: clean
 	@echo " == Doing additional cleaning tasks ( $@ ) =="
-	@rm -f $(QOCA_ROOT)/bin/*
-	@rm -f $(QOCA_ROOT)/include/*
-	@rm -f $(QOCA_ROOT)/lib/*
+	@rm -f $(LOCAS_ROOT)/bin/*
+	@rm -f $(LOCAS_ROOT)/include/*
+	@rm -f $(LOCAS_ROOT)/lib/*
 	@echo "Done."
 
-$(QOCAL):	$(QOCAOBJS) $(DICT_O)
+$(LOCASL):	$(LOCASOBJS) $(DICT_O)
 	@echo " == Executing $@ =="
-	@echo "linking $(QOCAL)"
+	@echo "linking $(LOCASL)"
 	$(CXX) $(LDFLAGS) $(PICFLAG) $(LDOPTS) \
-	-o $@ $(QOCAOBJS) $(ROOTLIBS) $(DICT_O)
+	-o $@ $(LOCASOBJS) $(ROOTLIBS) $(DICT_O)
 
-qoca_positionfit: qoca_positionfit.o $(QOCAL) 
+locas_positionfit: locas_positionfit.o $(LOCASL) 
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-		$<  $(ROOTLIBS) -L./ -lqoca 
+		$<  $(ROOTLIBS) -L. -lLOCAS 
 
-tdiff:	tdiff.o  $(QOCAL)
+tdiff:	tdiff.o  $(LOCASL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-		$< $(ROOTLIBS) -L. -lqoca 
+		$< $(ROOTLIBS) -L. -lLOCAS 
 
-reflecttime:	reflecttime.o  $(QOCAL)
+
+sjmptest:	sjmptest.o  $(LOCASL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-		$<  $(ROOTLIBS) -L. -lqoca 
+		$< $(ROOTLIBS) $(RAT_LIB) -L. -lLOCAS 
 
-qpath_runner: qpath_runner.o $(QOCAL)
+
+reflecttime:	reflecttime.o  $(LOCASL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-		$<  $(ROOTLIBS) -L. -lqoca
+		$<  $(ROOTLIBS) -L. -lLOCAS 
 
-qocafit_runner: qocafit_runner.o $(QOCAL)
+qpath_runner: qpath_runner.o $(LOCASL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-		$< $(ROOTLIBS) -L. -lqoca 
+		$<  $(ROOTLIBS) -L. -lLOCAS
 
-qocaextract_runner: qocaextract_runner.o $(QOCAL)
+locasfit_runner: locasfit_runner.o $(LOCASL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-		$<  $(ROOTLIBS) -L. -lqoca
+		$< $(ROOTLIBS) -L. -lLOCAS 
 
-qocaplots_runner: qocaplots_runner.o $(QOCAL)
+locasextract_runner: locasextract_runner.o $(LOCASL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-		$<  $(ROOTLIBS) -L. -lqoca
+		$<  $(ROOTLIBS) -L. -lLOCAS
 
-qocatitles_runner: qocatitles_runner.o $(QOCAL)
+locasplots_runner: locasplots_runner.o $(LOCASL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-		$<  $(ROOTLIBS) -L. -lqoca
+		$<  $(ROOTLIBS) -L. -lLOCAS
 
-$(DICT_C): $(DICT_H) $(QOCAO) 
+locastitles_runner: locastitles_runner.o $(LOCASL)
+	@echo " == Executing $@ =="
+	$(CXX) $(CXXFLAGS) -o $@ \
+		$<  $(ROOTLIBS) -L. -lLOCAS
+
+$(DICT_C): $(DICT_H) $(LOCASO) $(LOCASH)
 	@echo " == Executing $@ =="
 	@rm -f $@
 	@echo "Generating $@ dictionary"
-	rootcint -f $@ $(ROOTCINTFLAGS) -c $(QOCAH) $<
+	rootcint -f $@ $(ROOTCINTFLAGS) -c $(LOCASH) $<
 	@echo "Done with $@ ..."
 
 %.o:	%.cxx %.h
 #	@echo Special rule for .cxx files with headers
-	$(CXX) $(CXXFLAGS) $(ROOTCFLAGS) $(QOCACFLAGS) $(PICFLAG) $(INCLUDE) -DCOMPILED_ROOT -c $<
+	$(CXX) $(CXXFLAGS) $(ROOTCFLAGS) $(LOCASCFLAGS) $(PICFLAG) $(RAT_INC) $(INCLUDE) -DCOMPILED_ROOT -c $<
 
 %.o:	%.C %.h
 #	@echo Special rule for .C files with headers
-	$(CXX) $(CXXFLAGS) $(ROOTCFLAGS) $(QOCACFLAGS) $(PICFLAG) $(INCLUDE) -DCOMPILED_ROOT -c $<
+	$(CXX) $(CXXFLAGS) $(ROOTCFLAGS) $(LOCASCFLAGS) $(PICFLAG) $(RAT_INC) $(INCLUDE) -DCOMPILED_ROOT -c $<
 
 %.o:	%.cxx
 #	@echo Rule for .cxx files
-	$(CXX) $(CXXFLAGS) $(ROOTCFLAGS) $(QOCACFLAGS) $(PICFLAG) $(INCLUDE) -DCOMPILED_ROOT -c $<
+	$(CXX) $(CXXFLAGS) $(ROOTCFLAGS) $(LOCASCFLAGS) $(PICFLAG) $(RAT_INC) $(INCLUDE) -DCOMPILED_ROOT -c $<
 %.o:	%.C
 
 #	@echo Rule for .C files
-	$(CXX) $(CXXFLAGS) $(ROOTCFLAGS) $(QOCACFLAGS) $(PICFLAG) $(INCLUDE) -DCOMPILED_ROOT -c $<
+	$(CXX) $(CXXFLAGS) $(ROOTCFLAGS) $(CFLAGS) $(PICFLAG)  $(RAT_INC) $(INCLUDE) -DCOMPILED_ROOT -c $<
