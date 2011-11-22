@@ -436,7 +436,7 @@ Bool_t QRdt::InputLog()
   }
 
   // Get the directory of the log files.
-  TString fdir = getenv("QOCA_ROOT");
+  TString fdir = getenv("LOCAS_ROOT");
   fdir += "/autosno/log/";
   TString fnam;
 

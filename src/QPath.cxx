@@ -3053,7 +3053,7 @@ void QPath::SetNcdPositionfile(TString aString)
 {
   // Set the file name (with full path) with the ncd position file
   if (aString=="") {
-	fNcdPosfile = getenv("QOCA_ROOT");
+	fNcdPosfile = getenv("LOCAS_ROOT");
 	fNcdPosfile += "/data/";
 //	fNcdPosfile += getenv("SNO_SNOMAN_VER");
 	fNcdPosfile += "/geometry.dat";
@@ -3070,7 +3070,7 @@ void QPath::SetPmtvarfile(TString aString)
   // Set the file name (with full path) with the pmt efficiency titles banks.
 
   if (aString=="") {
-	fPmtvarfile = getenv("QOCA_ROOT");
+	fPmtvarfile = getenv("LOCAS_ROOT");
 	fPmtvarfile += "/data/opt_variations_salt.dat";
   } else fPmtvarfile = aString;
 

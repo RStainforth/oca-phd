@@ -251,7 +251,7 @@ Int_t QSnoCal::ReadConstants( const char *file )
     if ( ! fconst->IsOpen() )
     {
         delete fconst; 
-        char *qsno = getenv("QOCA_ROOT");
+        char *qsno = getenv("LOCAS_ROOT");
         sprintf(fname,"%s/data/%s",qsno,file);
         fconst = f1.Open(fname,"READ");
         if (fconst->IsOpen() )Warning("ReadConstants","Used input file %s",fname);

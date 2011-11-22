@@ -270,13 +270,13 @@ QOptics::QOptics(Double_t sx, Double_t sy, Double_t sz)
     // Later this may be changed to a proper title file.
     // make sure the current directory is not changed
     Char_t* filenameString2 = new Char_t[1024];
-    char* qsnoroot = getenv("QOCA_ROOT");
+    char* qsnoroot = getenv("LOCAS_ROOT");
 
     if( qsnoroot!=NULL ) {
       filenameString2 = 
 	new char[strlen(qsnoroot)+1+strlen("/data/ncd_anchors.dat")+1];
     } else {
-      printf("QOptics requires that you have the QSNO_ROOT environment variable set.\n");
+      printf("QOptics requires that you have the LOCAS_ROOT environment variable set.\n");
       qsnoroot = "/usr/home/qsno/qsno_prod";
       printf("Trying a default: %s\n",qsnoroot);
       printf("...but think twice about what you are doing!\n");

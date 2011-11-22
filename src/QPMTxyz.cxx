@@ -170,7 +170,7 @@ Int_t QPMTxyz::ReadConstants( const char * filename, const int idate, const int 
     {
       //Open pmt_database_ver2.root and retrieve banks.
 
-      char *pmtf = getenv("QOCA_ROOT");
+      char *pmtf = getenv("LOCAS_ROOT");
       char pmtfile[100];
       if ( !strcmp(filename, "read") ) sprintf(pmtfile,"%s/data/pmt_database_ver2.root",pmtf);
       else sprintf(pmtfile,"%s/data/%s",pmtf,filename);
@@ -192,7 +192,7 @@ Int_t QPMTxyz::ReadConstants( const char * filename, const int idate, const int 
   // Open batch 3 concentrator file and fill fBatch3Concentrator
   // It is conjectured that this batch of concentrators might be poorer quality
 
-  char *pmtf = getenv("QOCA_ROOT");
+  char *pmtf = getenv("LOCAS_ROOT");
   char panelfile[100];
   sprintf(panelfile,"%s/data/%s",pmtf,"batch3concentrator.dat");
   FILE *fdata = fopen(panelfile,"r");

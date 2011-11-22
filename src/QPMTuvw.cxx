@@ -54,7 +54,7 @@ QPMTuvw::QPMTuvw() {
 
   Char_t prodDirectory[1024];
   Char_t filename[1024];
-  Char_t* snoRoot = getenv("QOCA_ROOT");
+  Char_t* snoRoot = getenv("LOCAS_ROOT");
   //Char_t* snoVer = getenv("SNO_SNOMAN_VER");
   //sprintf(prodDirectory,"%s/data/",snoRoot,snoVer);
     sprintf(prodDirectory,"%s/data/",snoRoot);
@@ -166,7 +166,7 @@ QPMTuvw::QPMTuvw() {
   // Now, load up the PMT nearest neighbours tables form the QSNO_ROOT/qoca/
   // pmtneighbours.dat file
 
-  Char_t *qsnoroot = getenv("QOCA_ROOT");
+  Char_t *qsnoroot = getenv("LOCAS_ROOT");
   // the two +1 bellow are to emphasize that strlen does not take null 
   // terminator into account
   if( qsnoroot==NULL ) {

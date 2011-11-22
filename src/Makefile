@@ -1,4 +1,4 @@
-# Makefile for  $(LOCASL)
+# Makefile for  $(LOCAS)
 # Quick and dirty implementation to build the LOCAS module in a standalone way.
 #
 # There are some issues with the Makefile. The original QSNO code depended on ROOT source tree
@@ -43,7 +43,8 @@ LOCAS_SRC	:= ./
 LOCAS_INC	:= ../include 
 LOCAS_BIN	:= ../bin
 RAT_INC		:= -I$(RATROOT)/include -I$(RATROOT)/include/RAT 
-RAT_LIB		:= -L$(RATROOT)/lib -l RATEvent_$(LOCAS_SYSTEM)-$(CXX)
+# The name of the library depends on the value of G4SYSTEM, which must be setup to link agains rat anyway.
+RAT_LIB		:= -L$(RATROOT)/lib -lRATEvent_$(G4SYSTEM)
 
 # Dictionary
 DICT_H	:= LOCAS_LinkDef.h
@@ -53,7 +54,9 @@ DICT_O	:= $(patsubst %.C,%.o,$(DICT_C))
 
 LOCAS_EXE	:= 	locas_positionfit reflecttime qpath_runner \
 				locasfit_runner locasextract_runner locasplots_runner \
-				locastitles_runner tdiff sjmptest
+				locastitles_runner tdiff 
+# N. Barros - 22-11-2011 : Removed from the targets as the source file seems to be missing. Maybe a missing commit?
+# sjmptest
 
 LOCASH		:= $(filter-out $(DICT_H) $(patsubst %.C,%.h,$(DICT_C)),$(notdir $(shell find $(LOCAS_SRC) -name "*.h")))
 LOCASC		:= $(filter-out $(addsuffix .cxx,$(LOCAS_EXE)),$(notdir $(shell find $(LOCAS_SRC) -name "*.cxx")))
@@ -146,7 +149,7 @@ $(LOCASL):	$(LOCASOBJS) $(DICT_O)
 	@echo " == Executing $@ =="
 	@echo "linking $(LOCASL)"
 	$(CXX) $(LDFLAGS) $(PICFLAG) $(LDOPTS) \
-	-o $@ $(LOCASOBJS) $(ROOTLIBS) $(DICT_O)
+	-o $@ $(LOCASOBJS) $(ROOTLIBS) $(RAT_LIB) $(DICT_O)
 
 locas_positionfit: locas_positionfit.o $(LOCASL) 
 	@echo " == Executing $@ =="
@@ -216,4 +219,4 @@ $(DICT_C): $(DICT_H) $(LOCASO) $(LOCASH)
 %.o:	%.C
 
 #	@echo Rule for .C files
-	$(CXX) $(CXXFLAGS) $(ROOTCFLAGS) $(CFLAGS) $(PICFLAG)  $(RAT_INC) $(INCLUDE) -DCOMPILED_ROOT -c $<
+	$(CXX) $(CXXFLAGS) $(ROOTCFLAGS) $(LOCASCFLAGS) $(CFLAGS) $(PICFLAG)  $(RAT_INC) $(INCLUDE) -DCOMPILED_ROOT -c $<

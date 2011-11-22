@@ -36,6 +36,9 @@ public:
 	double  dirX(UInt_t lcn) {if(lcn<fdirX.size()){return fdirX[lcn];}else{return 0.;}}
 	double  dirY(UInt_t lcn) {if(lcn<fdirY.size()){return fdirY[lcn];}else{return 0.;}}
 	double  dirZ(UInt_t lcn) {if(lcn<fdirZ.size()){return fdirZ[lcn];}else{return 0.;}}
+
+public:
+  ClassDef(LOCASPMT,1);//PMT singleton class for accessing PMT information
 	
 
 protected:

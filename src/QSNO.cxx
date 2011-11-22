@@ -410,7 +410,7 @@ Int_t QSNO::GetSnomanTitles( const char *aFilename, char *aFullPath )
     if ( !aFileExists )
     {
         //Try QSNO_ROOT/parameters
-        char *qsno_root = getenv("QOCA_ROOT");
+        char *qsno_root = getenv("LOCAS_ROOT");
         if ( qsno_root )
         {
             sprintf(aFullPath,"%s/data/%s",qsno_root,aFilename);

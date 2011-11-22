@@ -17,7 +17,7 @@ QParameterList::QParameterList ()
   init ("SNO parameters", 0, 100, 0);
   //read("{$QSNOROOT}/parameters/parameter.list");
   
-  char *pardat = getenv("QOCA_ROOT");
+  char *pardat = getenv("LOCAS_ROOT");
   
   char pardatf[256];
   strcpy(pardatf,pardat);
