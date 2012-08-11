@@ -13,9 +13,9 @@
 
 # Compilationa and link flags imported from ROOT 
 ROOTCFLAGS  := $(shell root-config --cflags)
-ROOTLIBS    := $(shell root-config --libs) -lMinuit
+ROOTLIBS    :=  $(shell root-config --libs) -lMinuit
 # Shouldn't need to following. For some strange reason libMinuit isn't part of the linking libraries
-ROOTGLIBS   := $(shell root-config --glibs) -lMinuit
+ROOTGLIBS   :=  $(shell root-config --glibs) -lMinuit
 
 # Defines the arch. Is used to decide the linking command
 ARCH	    := $(shell root-config --arch)
@@ -23,10 +23,11 @@ ARCH	    := $(shell root-config --arch)
 # This flag in ROOT only specified the architecture. Use it to make sure that consistenty is kept
 BUILD		:=  $(shell root-config --ldflags)
 LDOPTS		:= 
-
+LINKCMD		:=
 
 ifneq ($(findstring macosx, $(ARCH)),)
 	LDOPTS := -dynamiclib -single_module -undefined dynamic_lookup
+	LINKCMD := install_name_tool -change lib/libRATEvent_$(G4SYSTEM).so @rpath/libRATEvent_$(G4SYSTEM).so libLOCAS.so
 endif
 ifneq ($(findstring $(ARCH), $(strip linux debian redhat)),)
 	LDOPTS := -shared
@@ -37,6 +38,8 @@ ifeq ($(strip $(LDOPTS)),)
 endif
 
 ### Some options for this package
+LOCAS_VERSION:= "1.0.0"
+LOCAS_COMPATIBILITY:= "1.0.0"
 LOCAS_ROOT 	:= $(LOCAS_ROOT)
 LOCAS_LIB	:= ../lib 
 LOCAS_SRC	:= ./
@@ -150,6 +153,8 @@ $(LOCASL):	$(LOCASOBJS) $(DICT_O)
 	@echo "linking $(LOCASL)"
 	$(CXX) $(LDFLAGS) $(PICFLAG) $(LDOPTS) \
 	-o $@ $(LOCASOBJS) $(ROOTLIBS) $(RAT_LIB) $(DICT_O)
+	$(LINKCMD)
+	
 
 locas_positionfit: locas_positionfit.o $(LOCASL) 
 	@echo " == Executing $@ =="
