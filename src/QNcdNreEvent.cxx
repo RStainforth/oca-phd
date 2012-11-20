@@ -7,7 +7,7 @@
  *
  */
 
-#include <iostream.h>
+#include "Riostream.h"
 #include "QNcdNreEvent.h"
 #include "QMuxScope.h"
 

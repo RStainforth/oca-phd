@@ -15,7 +15,7 @@
 #include "NCDConstants.h"
 #include "QScopeAnalysis.h"
 #include "TF1.h"
-#include "iostream.h"
+#include "Riostream.h"
 
 ClassImp(QScopeAnalysis);
 
