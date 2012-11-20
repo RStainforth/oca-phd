@@ -27,7 +27,7 @@ LINKCMD		:=
 
 ifneq ($(findstring macosx, $(ARCH)),)
 	LDOPTS := -dynamiclib -single_module -undefined dynamic_lookup
-	LINKCMD := install_name_tool -change lib/libRATEvent_$(G4SYSTEM).so @rpath/libRATEvent_$(G4SYSTEM).so libLOCAS.so
+	LINKCMD := install_name_tool -change lib/libRATEvent_$(RATSYSTEM).so @rpath/libRATEvent_$(RATSYSTEM).so libLOCAS.so
 endif
 ifneq ($(findstring $(ARCH), $(strip linux debian redhat)),)
 	LDOPTS := -shared
@@ -46,8 +46,8 @@ LOCAS_SRC	:= ./
 LOCAS_INC	:= ../include 
 LOCAS_BIN	:= ../bin
 RAT_INC		:= -I$(RATROOT)/include -I$(RATROOT)/include/RAT 
-# The name of the library depends on the value of G4SYSTEM, which must be setup to link agains rat anyway.
-RAT_LIB		:= -L$(RATROOT)/lib -lRATEvent_$(G4SYSTEM)
+# The name of the library depends on the value of RATSYSTEM, which must be setup to link agains rat anyway.
+RAT_LIB		:= -L$(RATROOT)/lib -lRATEvent_$(RATSYSTEM)
 
 # Dictionary
 DICT_H	:= LOCAS_LinkDef.h
