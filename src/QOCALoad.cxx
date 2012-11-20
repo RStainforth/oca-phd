@@ -13,6 +13,7 @@
  *************************************************************************/
 
 #include "QOCALoad.h"
+#include <stdlib.h>
 
 ClassImp(QOCALoad);
 //
