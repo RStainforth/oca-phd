@@ -1,0 +1,42 @@
+# In this file the source (laserball - photonbomb) is at 0 0 0
+
+# Parameters
+/glg4debug/glg4param omit_muon_processes 1.0
+/glg4debug/glg4param omit_hadronic_processes 1.0
+/glg4debug/glg4param omit_neutron_hp 1.0
+
+# Use the standard RAT SNO+ geometry
+/rat/db/set DETECTOR geo_file "geo/snoplus.geo"
+
+# The geometry switched on and off depending (AV Hold Down Ropes)
+/rat/db/set GEO[avHD] enable 1
+
+/run/initialize
+
+# BEGIN EVENT LOOP
+/rat/proc frontend
+/rat/proc trigger
+/rat/proc eventbuilder
+/rat/proc count
+/rat/procset update 1000
+/rat/proc calibratePMT
+/rat/proc outroot
+/rat/procset file "${ROOTFileName}"
+# END EVENT LOOP
+
+# Switch off attenuation (and scattering for the run)
+/process/inactivate Attenuation 
+
+# Choose the photonbomb generator from fixed point, uniformly random in time
+/generator/add combo pbomb:point:uniform
+# Choose 4000 photons, each of ${Lambda} nm per pulse
+/generator/vtx/set 4000 ${Lambda} 0
+
+# Position the photonbomb at (${XPos},${YPos},${ZPos}) mm
+/generator/pos/set ${XPos} ${YPos} ${ZPos}
+/generator/rate/set 50
+
+# Run ${EventsPerCycle} events
+/rat/run/start ${EventsPerCycle}
+
+exit
