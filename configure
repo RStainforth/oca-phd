@@ -1,0 +1,81 @@
+#!/bin/bash
+# Configure script for fresh LOCAS code release
+# authored by Robert Stainforth at University of Liverpool
+# rpfs@liv.ac.uk
+
+# Obtain the path to the user's RAT envrionment file
+# If you are using a Snoing installation, this is
+# likely to be env_rat-dev.sh NOT rat-dev/env.sh
+
+printf "\nEnter the FULL system path to your RAT envrionment file\n(no use of '~' to shortcut to home directory!).\nIf you use a 'snoing' installation of RAT, this is likely\nto be located somewhere such as\n\${SOME-PATH}/snoing/install/env_rat-dev.sh. \n\n"
+RATFILE=""
+printf "Enter Path: " 
+read -e ratenvpath
+
+if [ -e "$ratenvpath" ]
+then
+ RATFILE="$ratenvpath"
+ printf "\n"
+ printf "RAT envrionment file path to be used:\n"
+ printf ${RATFILE}
+else
+ printf "RAT envrionment file (or path) does not exist!\nCheck and try again. \n\n"
+ exit 1
+fi 
+
+printf "\n\n"
+
+# Obtain the path to the directory the user wants to
+# store temporary data used when similating data
+# for PMT shadowing
+
+printf "Enter the full path to the directory you would like LOCAS\nutilities to temporarily store data. Directory path should\nnot end with a '/'.\ni.e. '/store/my/data/here is valid\nwhereas '/store/my/data/here/' is NOT. \n\n"
+TMPDIR=""
+printf "Enter Path: "
+read -e locastmpdir
+
+if [ -d $locastmpdir ]
+then
+ TMPDIR=$locastmpdir
+ printf "\n"
+ printf "Temporary data directory used by LOCAS:\n"
+ printf ${TMPDIR}
+else
+ printf "Directory path does not exist! Check and try again.\n\n"
+ exit 1
+fi 
+
+printf "\n\n"
+
+# Obtain the current directory which will be used as
+# the installation directory and the data directory where
+# files generalted by locas will be stored
+LOCASROOT=`pwd`
+LOCASDATA=${LOCASROOT}/data
+
+# Now create the env_locas.sh and env_locas.csh files
+printf "%-25s" "Generating locas_env.sh..."
+cat > env_locas.sh << EOF
+#!/bin/bash
+
+export LOCAS_ROOT=$LOCASROOT
+export LOCAS_DATA=$LOCASDATA
+
+export LOCAS_DATA_TMP=$TMPDIR
+export RATENVFILE=$RATFILE
+source $RATFILE
+
+# These are just to avoid having to move to the bin directory.
+export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$LOCAS_ROOT/lib
+system=\`uname -s\`
+if [ "\$system" == "Darwin" ]; then
+    export DYLD_LIBRARY_PATH=\$DYLD_LIBRARY_PATH:\$LOCAS_ROOT/lib
+fi
+
+export PATH=\$PATH:\$LOCAS_ROOT/bin 
+EOF
+
+printf "\n"
+[[ -e env_locas.sh ]] && chmod +x env_locas.sh && printf "env_locas.sh has been created, please type 'source env_locas.sh'\nat the command line here.\n\nHenceforth, each time yousource env_locas.sh\nthe RAT envrionment file you provided here\nwill be sourced automatically.\n\nYou may now install LOCAS by typing\n'make clean', 'make' and 'make install' respectively at the\ncommand line in the '"
+printf `pwd`
+printf "/src' directory.\n\n"
