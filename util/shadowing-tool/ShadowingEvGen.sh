@@ -82,7 +82,7 @@ cd ${USERDIR}/${LBRUNID}
 ##################################
 # CREATE THE BASE RAT/ROOT MACROS FOR EACH OF THE FOUR RUN CONFIGURATIONS (wAVGD, woAVHD, wGEO, woGEO)
 
-python ProduceJobScripts.py ${XPOS} ${YPOS} ${ZPOS} ${LAMBDA} ${NJOBS} ${NEVENTS} ${LBRUNID} ${RATENVDIR} ${LOCAS_ROOT} ${LOCAS_DATA_TMP}
+python ProduceJobScripts.py ${XPOS} ${YPOS} ${ZPOS} ${LAMBDA} ${NJOBS} ${NEVENTS} ${LBRUNID} ${RATENVFILE} ${LOCAS_ROOT} ${LOCAS_DATA_TMP}
 
 ##################################
 ##################################
