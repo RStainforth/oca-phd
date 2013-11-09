@@ -2,7 +2,7 @@
 ///
 /// FILENAME: LOCASPMT.cc
 ///
-/// CLASS: LOCASPMT
+/// CLASS: LOCAS::LOCASPMT
 ///
 /// BRIEF: Run level data structure for LOCAS optics analysis
 ///        (Full description in LOCASPMT.hh)
@@ -10,7 +10,7 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     0X/2014 : RPFS - First Revision, new file. \n
+///     0X/2014 : RPFS - First Revision, new file.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -23,7 +23,7 @@
 using namespace LOCAS;
 using namespace std;
 
-ClassImp( LOCASPMT )
+ClassImp( LOCASPMT );
 
 //////////////////////////////////////
 //////////////////////////////////////
@@ -35,10 +35,10 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
   fID = rhs.fID;
   fType = rhs.fType;
 
+  fHasEntries = rhs.fHasEntries;
+
   fPos = rhs.fPos;
   fNorm = rhs.fNorm;
-
-  fHasEntries = rhs.fHasEntries;
 
   fPromptPeakTime = rhs.fPromptPeakTime;
   fPromptPeakWidth = rhs.fPromptPeakWidth;
@@ -52,6 +52,7 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
   fDistInScint = rhs.fDistInScint;
   fDistInAV = rhs.fDistInAV;
   fDistInWater = rhs.fDistInWater;
+  fDistInNeck = rhs.fDistInNeck;
   fTotalDist = rhs.fTotalDist;
 
   fSolidAngle = rhs.fSolidAngle;
@@ -81,6 +82,7 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
   fOccRatioErr = rhs.fOccRatioErr; 
 
   fCorrSolidAngle = rhs.fCorrSolidAngle;
+  fCorrFresnelTCoeff = rhs.fCorrFresnelTCoeff;
 
 }
 
@@ -94,10 +96,10 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
   fID = rhs.fID;
   fType = rhs.fType;
 
+  fHasEntries = rhs.fHasEntries;
+
   fPos = rhs.fPos;
   fNorm = rhs.fNorm;
-
-  fHasEntries = rhs.fHasEntries;
 
   fPromptPeakTime = rhs.fPromptPeakTime;
   fPromptPeakWidth = rhs.fPromptPeakWidth;
@@ -111,6 +113,7 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
   fDistInScint = rhs.fDistInScint;
   fDistInAV = rhs.fDistInAV;
   fDistInWater = rhs.fDistInWater;
+  fDistInNeck = rhs.fDistInNeck;
   fTotalDist = rhs.fTotalDist;
 
   fSolidAngle = rhs.fSolidAngle;
@@ -140,6 +143,7 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
   fOccRatioErr = rhs.fOccRatioErr; 
 
   fCorrSolidAngle = rhs.fCorrSolidAngle;
+  fCorrFresnelTCoeff = rhs.fCorrFresnelTCoeff;
  
   return *this;
 
@@ -167,6 +171,7 @@ void LOCASPMT::Initalise()
   SetDistInScint( 0.0 );
   SetDistInAV( 0.0 );
   SetDistInWater( 0.0 );
+  SetDistInNeck( 0.0 );
   SetTotalDist( 0.0 );
 
   SetSolidAngle( 0.0 );
@@ -196,6 +201,7 @@ void LOCASPMT::Initalise()
   SetOccRatioErr( 0.0 );
 
   SetCorrSolidAngle( 0.0 );
+  SetCorrFresnelTCoeff( 0.0 );
 
 }
 
@@ -227,6 +233,7 @@ void LOCASPMT::Clear( Option_t* option )
   SetDistInScint( 0.0 );
   SetDistInAV( 0.0 );
   SetDistInWater( 0.0 );
+  SetDistInNeck( 0.0 );
   SetTotalDist( 0.0 );
 
   SetSolidAngle( 0.0 );
@@ -256,6 +263,8 @@ void LOCASPMT::Clear( Option_t* option )
   SetOccRatioErr( 0.0 );
 
   SetCorrSolidAngle( 0.0 );
+  SetCorrFresnelTCoeff( 0.0 );
+
 }
 
 //////////////////////////////////////
@@ -290,6 +299,7 @@ void LOCASPMT::AddSOCPMTData( RAT::DS::SOCPMT& socPMT )
   SetDistInScint( 0.0 );
   SetDistInAV( 0.0 );
   SetDistInWater( 0.0 );
+  SetDistInNeck( 0.0 );
   SetTotalDist( 0.0 );
 
   SetSolidAngle( 0.0 );
@@ -325,6 +335,7 @@ void LOCASPMT::ProcessLightPath( LOCASLightPath& lPath )
 {
 
   if ( fType == 1 ){
+
     if ( lPath.GetTIR() || lPath.GetResvHit() ){ fBadPath = true; }
     if ( lPath.GetXAVNeck() ){ 
       fNeckFlag = true;
@@ -355,7 +366,6 @@ void LOCASPMT::ProcessLightPath( LOCASLightPath& lPath )
       fSolidAngle = lPath.GetSolidAngle();
       fCosTheta = lPath.GetCosThetaAvg();
     }
-
   }
 
   fHasEntries = true;

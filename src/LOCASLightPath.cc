@@ -2,7 +2,7 @@
 ///
 /// FILENAME: LOCASLightPath.hh
 ///
-/// CLASS: LOCASLightPath
+/// CLASS: LOCAS::LOCASLightPath
 ///
 /// BRIEF: LOCAS implementation of RAT's 
 ///        LightPath Class
@@ -11,7 +11,7 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     0X/2014 : RPFS - First Revision, new file. \n
+///     0X/2014 : RPFS - First Revision, new file.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -28,7 +28,7 @@ using namespace LOCAS;
 using namespace std;
 
 
-ClassImp( LOCASLightPath )
+ClassImp( LOCASLightPath );
 
 LOCASLightPath& LOCASLightPath::operator=( const LOCASLightPath& rhs )
 {
@@ -53,14 +53,17 @@ LOCASLightPath& LOCASLightPath::operator=( const LOCASLightPath& rhs )
 
   fSolidAngle = rhs.fSolidAngle;
   fCosThetaAvg = rhs.fCosThetaAvg;
+
   fFresnelTCoeff = rhs.fFresnelTCoeff;
   fFresnelRCoeff = rhs.fFresnelRCoeff;
 
   fStartPos = rhs.fStartPos;
   fEndPos = rhs.fEndPos;
   fLightPathEndPos = rhs.fLightPathEndPos;
+
   fIncidentVecOnPMT = rhs.fIncidentVecOnPMT;
   fInitialLightVec = rhs.fInitialLightVec;
+
   fPointOnAV1st = rhs.fPointOnAV1st;
   fPointOnAV2nd = rhs.fPointOnAV2nd;
   fPointOnAV3rd = rhs.fPointOnAV3rd;
@@ -201,6 +204,7 @@ void LOCASLightPath::Clear()
 
   fSolidAngle = 0.0;
   fCosThetaAvg = 0.0;
+
   fFresnelTCoeff = 0.0;
   fFresnelRCoeff = 0.0;
 
@@ -241,6 +245,7 @@ void LOCASLightPath::Clear()
   fPointOnAV4th.SetZ( 0.0 );
 
   fLightPathType = -1;
+
 }
 
 //////////////////////////////////////
@@ -1388,8 +1393,6 @@ void LOCASLightPath::CalculateSolidAngle( const TVector3& pmtNorm,
   TVector3 pmtVec3 = fEndPos + fPMTRadius * yPrime;
   TVector3 pmtVec4 = fEndPos - fPMTRadius * yPrime;
 
-  //cout << "TIR is: " << fTIR << " and ResvHit is: " << fResvHit << endl;
-
   if( !fTIR && !fResvHit ){
 
     CalculatePath( fStartPos, pmtVec1, fPathPrecision, fLambda );
@@ -1434,7 +1437,7 @@ void LOCASLightPath::CalculateSolidAngle( const TVector3& pmtNorm,
 
   if ( fSolidAngle < 0 || fSolidAngle > 4 * constPi ){
 
-    std::cout << "Solid Angle is out of range!" << std::endl;
+    std::cout << "LOCAS::LOCASLightPath: Solid Angle is out of range!" << std::endl;
     fSolidAngle = -1.0;
 
   }
@@ -1573,7 +1576,6 @@ void LOCASLightPath::CalculateFresnelTRCoeff()
   if ( fLightPathType == 0 ){
     fFresnelTCoeff = -1.0;
     fFresnelRCoeff = -1.0;
-    //cout << "fFresnelTCoeff0 is: "<< fFresnelTCoeff << endl;
   }
 
   // Type 1 - Scint -> AV -> Water -> PMT
@@ -1598,8 +1600,6 @@ void LOCASLightPath::CalculateFresnelTRCoeff()
 
     fFresnelTCoeff = T1 * T2;
     fFresnelRCoeff = R1 * R2;
-
-    //cout << "fFresnelTCoeff1 is: "<< fFresnelTCoeff << endl;
   }
 
   // Type 2 - AV -> Water -> PMT
@@ -1615,8 +1615,6 @@ void LOCASLightPath::CalculateFresnelTRCoeff()
 
     fFresnelTCoeff = T1;
     fFresnelRCoeff = R1;
-
-    //cout << "fFresnelTCoeff2 is: "<< fFresnelTCoeff << endl;
   }
 
   // Type 3 - AV -> Scint -> AV -> Water -> PMT
@@ -1650,8 +1648,6 @@ void LOCASLightPath::CalculateFresnelTRCoeff()
 
     fFresnelTCoeff = T1 * T2 * T3;
     fFresnelRCoeff = R1 * R2 * R3;
-
-    //cout << "fFresnelTCoeff3 is: "<< fFresnelTCoeff << endl;
   }
 
   // Type 3 - Water -> AV -> Scint -> AV -> Water -> PMT
@@ -1694,8 +1690,6 @@ void LOCASLightPath::CalculateFresnelTRCoeff()
 
     fFresnelTCoeff = T1 * T2 * T3 * T4;
     fFresnelRCoeff = R1 * R2 * R3 * R4;
-
-   cout << "fFresnelTCoeff4 is: "<< fFresnelTCoeff << endl;
   }
 
   // Type 5 - Water -> AV -> Water -> PMT
@@ -1720,16 +1714,12 @@ void LOCASLightPath::CalculateFresnelTRCoeff()
 
     fFresnelTCoeff = T1 * T2;
     fFresnelRCoeff = R1 * R2;
-
-    //cout << "fFresnelTCoeff5 is: "<< fFresnelTCoeff << endl;
   }
 
   // Type 6 - Water -> PMT
   if ( fLightPathType == 6 ){
     fFresnelTCoeff = 1.0;
     fFresnelRCoeff = 0.0;
-
-    //cout << "fFresnelTCoeff6 is: "<< fFresnelTCoeff << endl;
   }			     
 
 }

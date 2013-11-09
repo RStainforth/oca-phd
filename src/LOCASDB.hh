@@ -2,18 +2,24 @@
 ///
 /// FILENAME: LOCASDB.hh
 ///
-/// CLASS: LOCASDB
+/// CLASS: LOCAS::LOCASDB
 ///
-/// BRIEF: Class used to load SOC data and 
-///        information from the RAT database
+/// BRIEF: Class used to load data from the RAT or LOCAS database
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     0X/2014 : RPFS - First Revision, new file. \n
+///     0X/2014 : RPFS - First Revision, new file.
 ///
-/// DETAIL: This class loads information from the RAT DB
-///         and also SOC files.
+/// DETAIL: This class loads information from the RAT
+///         or LOCAS database. For instance, for all LOCASRun
+///         objects, the PMT positions, types and normals are all
+///         loaded using this class from the RAT database.
+///
+///         In addition, this class can also load specific geometry
+///         parameters (e.g. the AV Inner/Outer Radius) or
+///         refractive indices. These in particualr are used by 
+///         the LOCASLightPath class.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -33,6 +39,7 @@
 
 
 namespace LOCAS{
+
   class LOCASDB : public TObject
   {
   public:
@@ -111,8 +118,7 @@ namespace LOCAS{
     std::string fLOCASRunDir;
     
     ClassDef( LOCASDB, 1 );
-    
-    
+        
   };
 }
 

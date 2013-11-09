@@ -2,7 +2,7 @@
 ///
 /// FILENAME: LOCASLightPath.hh
 ///
-/// CLASS: LOCASLightPath
+/// CLASS: LOCAS::LOCASLightPath
 ///
 /// BRIEF: LOCAS implementation of RAT's 
 ///        LightPath Class
@@ -13,9 +13,8 @@
 ///     0X/2014 : RPFS - First Revision, new file. \n
 ///
 /// DETAIL: This is a slightly modified version of RAT's
-///         LightPath class which allows for access and
-///         modifications to the refractive indices of the
-///         detector media using LOCASDB
+///         LightPath class. The LightPath is treated as
+///         an object which is initalised
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -286,7 +285,7 @@ namespace LOCAS{
     
     
     Bool_t fTIR;                          // TRUE: Total Internal Reflection Occured ( straight line path calculated instead )
-    // FALSE: Reflection did not occur and refracted path distances were calculated
+                                          // FALSE: Reflection did not occur and refracted path distances were calculated
     
     Bool_t fResvHit;                      // TRUE: Calculated Path finished over 1000 mm away from required PMT position [fEndPos]
     // FALSE: It didn't
@@ -302,7 +301,7 @@ namespace LOCAS{
     Double_t fLambda;                     // The wavelength of the light path
     
     Double_t fDistInNeck;                 // Distance of the light path through the neck region [Scintillator + Acrylic distance]
-    // Only if the light path entered the neck though ( i.e. fXAVNeck = TRUE )
+                                          // Only if the light path entered the neck though ( i.e. fXAVNeck = TRUE )
     
     Double_t fDistInUpperTarget;          // Distance of the light path in the upper targer [Used for Partial Fill]
     Double_t fDistInLowerTarget;          // Distance of the light path in the lower target [Used for Partial Fill]
@@ -312,7 +311,7 @@ namespace LOCAS{
     
     Double_t fSolidAngle;                 // The solid angle subtended by the PMT for this light path
     Double_t fCosThetaAvg;                // Average incident angle on the PMT for this path.
-    // This is only calculated after a call to CalculateSolidAngle
+                                          // This is only calculated after a call to CalculateSolidAngle
     
     Double_t fFresnelTCoeff;              // The combined Fresnel TRANSMISSION coefficent for this path
     Double_t fFresnelRCoeff;              // The combined Fresnel REFLECTIVITY coefficient for this path
@@ -355,7 +354,8 @@ namespace LOCAS{
     TGraph fUpperTargetRI;                // Upper Target Refractive Indices [Used for Partial Fill][Function of Energy [MeV]]
     TGraph fLowerTargetRI;                // Lower Target Refractive Indices [Used for Partial Fill][Function of Energy [MeV]]
     
-    ClassDef( LOCASLightPath, 1 )
+    ClassDef( LOCASLightPath, 1 );
+
   };
 }
 

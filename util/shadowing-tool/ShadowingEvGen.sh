@@ -1,8 +1,6 @@
 #!/bin/bash
 
 # Temporary top directory to store simulated data
-# export USERDIR=/scratch/stainforth/GS
-#export FINALDIR=/hepstore/rpfs/cluster_jobs/GS
 
 export USERDIR=${LOCAS_DATA_TMP}
 export FINALDIR=${LOCAS_DATA}/shadowing/simdata

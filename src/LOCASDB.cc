@@ -2,7 +2,7 @@
 ///
 /// FILENAME: LOCASDB.cc
 ///
-/// CLASS: LOCASDB
+/// CLASS: LOCAS::LOCASDB
 ///
 /// BRIEF: Class used to load SOC data and 
 ///        information from the RAT database
@@ -11,7 +11,7 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     0X/2014 : RPFS - First Revision, new file. \n
+///     0X/2014 : RPFS - First Revision, new file.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -27,13 +27,14 @@
 
 using namespace LOCAS;
 
-ClassImp( LOCASDB )
+ClassImp( LOCASDB );
 
 LOCASDB::LOCASDB()
 {
 
   fPMTPositions.clear();
   fPMTNormals.clear();
+  fPMTTypes.clear();
 
   fScintRI.Set( 0 );
   fAVRI.Set( 0 );
@@ -46,6 +47,12 @@ LOCASDB::LOCASDB()
   fPMTRadius = 0.0;
 
   fNPMTs = 0;
+
+  fGeoPMTShadowingVals.clear();
+  fAVHDRopePMTShadowingVals.clear();
+
+  fSOCRunDir = "";
+  fLOCASRunDir = "";
 
   Initialise();
 
@@ -63,6 +70,7 @@ void LOCASDB::Initialise()
   assert( fRATDB );
 
   LoadPMTPositions();
+
   fNPMTs = fPMTPositions.size();
 
   fSOCRunDir = getenv( "LOCAS_DATA" ) + (std::string)"/runs/soc/";
@@ -78,6 +86,7 @@ void LOCASDB::Clear()
 
   fPMTPositions.clear();
   fPMTNormals.clear();
+  fPMTTypes.clear();
 
   fScintRI.Set( 0 );
   fAVRI.Set( 0 );
@@ -90,6 +99,12 @@ void LOCASDB::Clear()
   fPMTRadius = 0.0;
 
   fNPMTs = 0;
+
+  fGeoPMTShadowingVals.clear();
+  fAVHDRopePMTShadowingVals.clear();
+
+  fSOCRunDir = "";
+  fLOCASRunDir = "";
 
   fRATDB->Clear();
 
@@ -104,10 +119,9 @@ void LOCASDB::LoadPMTPositions()
   fRATDB->Clear();
   
   std::string data = getenv( "GLG4DATA" );
-  assert (data != "" );
-  //db->LoadDefaults();
+  assert ( data != "" );
 
-  fRATDB->Load( data + "/pmt/airfill2.ratdb" ); // Choose this file carefully.
+  fRATDB->Load( data + "/pmt/airfill2.ratdb" );
   
   fRATDBPtr = fRATDB->GetLink( "PMTINFO" );
   assert( fRATDBPtr );
@@ -132,10 +146,9 @@ void LOCASDB::LoadPMTNormals()
   fRATDB->Clear();
 
   std::string data = getenv( "GLG4DATA" );
-  assert (data != "" );
-  //db->LoadDefaults();
+  assert ( data != "" );
 
-  fRATDB->Load( data + "/pmt/airfill2.ratdb" ); // Choose this file carefully.
+  fRATDB->Load( data + "/pmt/airfill2.ratdb" );
   
   fRATDBPtr = fRATDB->GetLink( "PMTINFO" );
   assert( fRATDBPtr );
@@ -145,6 +158,8 @@ void LOCASDB::LoadPMTNormals()
   std::vector<Double_t> vOri = fRATDBPtr->GetDArray( "v" );
   std::vector<Double_t> wOri = fRATDBPtr->GetDArray( "w" );
 
+  // The PMT Normals Point INWARDS, towards the origin of the AV coordinate system
+  // (i.e. the centre of the AV)
   for ( int iPMT = 0; iPMT < pmtIDs.size(); iPMT++ ){
     fPMTNormals[ iPMT ] = TVector3( -1.0 * uOri[ iPMT ], -1.0 * vOri[ iPMT ], -1.0 * wOri[ iPMT ] );
   }
@@ -160,10 +175,9 @@ void LOCASDB::LoadPMTTypes()
   fRATDB->Clear();
 
   std::string data = getenv( "GLG4DATA" );
-  assert (data != "" );
-  //db->LoadDefaults();
+  assert ( data != "" );
 
-  fRATDB->Load( data + "/pmt/airfill2.ratdb" ); // Choose this file carefully.
+  fRATDB->Load( data + "/pmt/airfill2.ratdb" );
   
   fRATDBPtr = fRATDB->GetLink( "PMTINFO" );
   assert( fRATDBPtr );
@@ -186,12 +200,11 @@ void LOCASDB::LoadRefractiveIndices()
   fRATDB->Clear();
 
   std::string data = getenv( "GLG4DATA" );
-  assert (data != "" );
-  //db->LoadDefaults();
+  assert ( data != "" );
 
-  fRATDB->Load( data + "/OPTICS.ratdb" ); // Choose this file carefully.
+  fRATDB->Load( data + "/OPTICS.ratdb" );
 
-  //////// LOAD THE SCINTILLATOR VOLUME INDICES ///////
+  //////// LOAD THE SCINTILLATOR VOLUME REFRACTIVE INDICES ///////
 
   fRATDBPtr = fRATDB->GetLink( "OPTICS", "lightwater_sno" );
   assert( fRATDBPtr );
@@ -204,7 +217,7 @@ void LOCASDB::LoadRefractiveIndices()
     fScintRI.SetPoint( point++, indices[ pVal ], wavelengths[ pVal ] );
   }
 
- //////// LOAD THE AV VOLUME INDICES ///////
+ //////// LOAD THE AV VOLUME REFRACTIVE INDICES ///////
 
   fRATDBPtr = fRATDB->GetLink( "OPTICS", "acrylic_sno" );
   assert( fRATDBPtr );
@@ -217,7 +230,7 @@ void LOCASDB::LoadRefractiveIndices()
     fAVRI.SetPoint( point++, indices[ pVal ], wavelengths[ pVal ] );
   }
 
- //////// LOAD THE AV VOLUME INDICES ///////
+ //////// LOAD THE AV VOLUME REFRACTIVE INDICES ///////
 
   fRATDBPtr = fRATDB->GetLink( "OPTICS", "lightwater_sno" );
   assert( fRATDBPtr );
@@ -241,10 +254,9 @@ void LOCASDB::LoadDetectorGeoParameters()
   fRATDB->Clear();
 
   std::string data = getenv( "GLG4DATA" );
-  assert (data != "" );
-  //db->LoadDefaults();
+  assert ( data != "" );
 
-  fRATDB->Load( data + "/geo/snoplus.geo" ); // Choose this file carefully.
+  fRATDB->Load( data + "/geo/snoplus.geo" );
 
   fRATDBPtr = fRATDB->GetLink( "GEO", "scint" );
   assert( fRATDBPtr );
@@ -270,10 +282,9 @@ void LOCASDB::LoadPMTGeoParameters()
   fRATDB->Clear();
 
   std::string data = getenv( "GLG4DATA" );
-  assert (data != "" );
-  //db->LoadDefaults();
+  assert ( data != "" );
 
-  fRATDB->Load( data + "/GREY_DISC_PARAMETERS_3.ratdb" ); // Choose this file carefully.
+  fRATDB->Load( data + "/GREY_DISC_PARAMETERS_3.ratdb" );
   
   fRATDBPtr = fRATDB->GetLink( "GREY_DISC_PARAMETERS", "DiscOptics0_black" );
   assert( fRATDBPtr );
@@ -322,7 +333,7 @@ void LOCASDB::LoadAVHDRopePMTShadowingVals( Int_t runID )
   std::stringstream myStream;
   myStream << runID;
 
-  fRATDB->Load( data + "/shadowing/avhd/avhd_" + myStream.str() + ".ratdb" ); // Choose this file carefully.
+  fRATDB->Load( data + "/shadowing/avhd/avhd_" + myStream.str() + ".ratdb" );
   
   fRATDBPtr = fRATDB->GetLink( "AVHD-SHADOWING" );
   assert( fRATDBPtr );

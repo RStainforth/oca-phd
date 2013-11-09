@@ -1,11 +1,13 @@
-///////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 ///
 /// FILENAME: db2soc.cc
 ///
 /// EXECUTABLE: db2soc
 ///
-/// BRIEF: This executable loads information from the RAT/LOCAS DB
-///        data base and inserts it into the SOC (.root) file.
+/// BRIEF: This executable loads information from the RAT or LOCAS DB
+///        (data base) or command line and inserts it into 
+///        the SOC (.root) file.
+///        
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
@@ -13,8 +15,9 @@
 ///     0X/2014 : RPFS - First Revision, new file.
 ///
 /// DETAIL: Executable to insert values from the RAT or LOCAS 
-///         database into the SOC Run files. Updates the following
-///         entries on the SOC file:
+///         data base or command line into the SOC Run files. 
+///         
+///         DATA BASE: Updates the following entries on the SOC file:
 ///
 ///              1, SOCPMT::relOccSim_fillShadow
 ///              2, SOCPMT::relOccSim_hdRopeShadow
@@ -32,8 +35,29 @@
 ///              1, ${LOCAS_DATA}/shadowing/geo/geo_[run-id].ratdb
 ///              2, ${LOCAS_DATA}/shadowing/avhd/avhd_[run-id].ratdb
 ///
+///         COMMAND LINE: For testing purposes and due to a non finalised
+///         data structure on the SOC file, the following entries may
+///         be specifed at the command line:
 ///
-////////////////////////////////////////////////////////////////////////
+///              1, SOC::sourceID (-i)
+///              2, SOC::runID (-s)
+///              3, SOC::laserWavelength (-w)
+///              4, SOC::sourcePosManip (-x, -y, -z for coordinates)
+///              5, SOC::globalTimeOffset (-g)
+///
+///         Example usage (at command line):
+///
+///              db2soc -i [run-id] -s [source-run-id] -w [source-wavelength]
+///                     -x [source-pos-x] -y [source-pos-y]
+///                     -z [source-pos-z] -g [source-global-time-offset]
+///
+///              e.g. db2soc -i 12121953 -s 420 -w 420 -x 4000 -y 0 -z 0 -g 0
+///
+///         The above would be specified for a 420 nm laser with run ID 
+///         12121953 at a position (4000,0,0) mm with a global time offset
+///         of 0 and a source ID (matching that of the laser) of 420.
+///
+//////////////////////////////////////////////////////////////////////////////
 
 #include "RAT/getopt.h"
 #include "RAT/DS/SOC.hh"
@@ -58,7 +82,6 @@ using namespace RAT;
 using namespace LOCAS;
 
 // Utility class to parse the command line arguments for this executable
-// Current options: -r (Run-ID), -h (Help)
 class LOCASCmdOptions 
 {
 public:
@@ -135,8 +158,7 @@ int main( int argc, char** argv ){
   oldSocTree->SetBranchAddress( "soc", &socBr ); 
   oldSocTree->GetEntry( 0 ); 
 
-  // Set SOC Run Information if it's been specified
-  cout << srcID << " | " << srcRunID << " | " << srcPos.Mag() << " | " << srcWL << " | " << srcGTO << " | " << endl;
+  // Set SOC Run Information if it has been specified at the command line
   if ( srcID > 0 ){ socBr->SetSourceID( srcID ); }
   if ( srcRunID > 0 ){ socBr->SetRunID( srcRunID ); }
   if ( srcPos.Mag() > 0.0 ){ socBr->SetSourcePosManip( srcPos ); }
@@ -155,7 +177,7 @@ int main( int argc, char** argv ){
     Double_t avhdRelOcc = lDB.GetAVHDRopePMTShadowingVal( pmtID );
     Double_t geoRelOcc = lDB.GetGeoPMTShadowingVal( pmtID );
 
-    // Set them in the SOC object
+    // Set them in the SOCPMT objects contained in the SOC object
     ( socBr->GetSOCPMT( iPMT->first ) ).SetRelOccSim_fullShadow( geoRelOcc );
     ( socBr->GetSOCPMT( iPMT->first ) ).SetRelOccSim_hdRopeShadow( avhdRelOcc );
   }
@@ -228,7 +250,7 @@ void help(){
   cout << "\n";
   cout << "SNO+ LOCAS - db2soc" << "\n";
   cout << "Description: Executable to update values from the RAT or LOCAS database to the SOC files. \n";
-  cout << "Usage: db2soc [-h] [-r run-id] \n";
+  cout << "Usage: db2soc [-h] [-r run-id] [-s source-run-id] [-i source-id] \n [-x source-pos-x] [-y source-pos-y] [-z source-pos-z] \n [-w source-wavelength] [-g source-global-time-offset] \n";
   cout << " -h, --help                            Display this help message and exit \n";
   cout << " -r, --run-id                          Set the run ID for the corresponding SOC run file to be updated \n";
   cout << " -s, --source-run-d                    Set the run ID in the SOC file specified by the '-r' option above \n";

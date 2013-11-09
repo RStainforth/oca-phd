@@ -2,7 +2,7 @@
 ///
 /// FILENAME: LOCASRun.cc
 ///
-/// CLASS: LOCASRun
+/// CLASS: LOCAS::LOCASRun
 ///
 /// BRIEF: Run level data structure for LOCAS optics analysis
 ///        (Full description in LOCASRun.hh)

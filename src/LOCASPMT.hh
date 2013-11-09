@@ -2,7 +2,7 @@
 ///
 /// FILENAME: LOCASPMT.hh
 ///
-/// CLASS: LOCASPMT
+/// CLASS: LOCAS::LOCASPMT
 ///
 /// BRIEF: PMT level data structure for LOCAS optics analysis
 ///        Used as part of the LOCASRun class
@@ -76,6 +76,7 @@ namespace LOCAS{
     void SetDistInScint( Float_t distInScint ){ fDistInScint = distInScint; }
     void SetDistInAV( Float_t distInAV ){ fDistInAV = distInAV; }
     void SetDistInWater( Float_t distInWater ){ fDistInWater = distInWater; }
+    void SetDistInNeck( Float_t distInNeck ){ fDistInNeck = distInNeck; }
     void SetTotalDist( Float_t distTotal ){ fTotalDist = distTotal; }
     
     void SetSolidAngle( Float_t solidA ){ fSolidAngle = solidA; }
@@ -132,6 +133,7 @@ namespace LOCAS{
     Float_t GetDistInScint(){ return fDistInScint; }
     Float_t GetDistInAV(){ return fDistInAV; }
     Float_t GetDistInWater(){ return fDistInWater; }
+    Float_t GetDistInNeck(){ return fDistInNeck; }
     Float_t GetTotalDist(){ return fTotalDist; }
     
     Float_t GetSolidAngle(){ return fSolidAngle; }
@@ -177,9 +179,12 @@ namespace LOCAS{
     Float_t fPromptPeakTime;            // Time of Prompt Peak [ns] 
     Float_t fPromptPeakWidth;           // Width of Prompt Peak [ns]
     Float_t fTimeOfFlight;              // Time of Flight from source to PMT [ns]
-    Float_t fOccupancy;                 // MPE Corrected Occupancy of this PMT 
-    Float_t fOccupancyErr;              // Error on MPE Corrected Occupancy of this PMT
+    Float_t fOccupancy;                 // Prompt Peak Counts 
+    Float_t fOccupancyErr;              // Error on Occupancy of this PMT
     Float_t fOccupancyCorr;             // Ratio of Corrected Occupancy to Input Occupancy
+
+                                        // NOTE: DO THE MPE CORRECTED VALUES NEED TO BE
+                                        // STORED ALSO?
     
     Float_t fFresnelTCoeff;             // Acrylic Fresnel transmission coefficient
     
@@ -218,7 +223,7 @@ namespace LOCAS{
     Float_t fCorrSolidAngle;            // SolidAngle Correction;
     Float_t fCorrFresnelTCoeff;         // Fresnel Transmission Coefficient Correction;
     
-    ClassDef( LOCASPMT, 1 )
+    ClassDef( LOCASPMT, 1 );
     
   };
 
