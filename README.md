@@ -9,7 +9,12 @@ Currently LOCAS is able to interface both with RAT and the SOC file format to be
 
 Installation
 ==========
-To install this version of LOCAS, first type: 
+
+LOCAS is designed to interface with RAT meaning a RAT installation is required. Currently LOCAS only works by cloning into the following branch of RAT - type the following at the command line and compile this branch of RAT as normal:
+
+    git clone -b locas-plus git@github.com:RStainforth/rat.git
+
+To install LOCAS, fir, in the top directory of LOCAS type: 
 
     ./configure 
 
