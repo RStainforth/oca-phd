@@ -14,7 +14,7 @@ LOCAS is designed to interface with RAT meaning a RAT installation is required. 
 
     git clone -b locas-plus git@github.com:RStainforth/rat.git
 
-To install LOCAS, fir, in the top directory of LOCAS type: 
+To install LOCAS, first, in the top directory of LOCAS type: 
 
     ./configure 
 
