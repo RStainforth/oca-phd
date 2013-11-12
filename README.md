@@ -3,19 +3,19 @@ LOCAS (SNO+ Edition)
 
 About
 ==========
-This is an in-development version of LOCAS for SNO+. LOCAS is designed to process SOC data files and perform a statistical fit to obtain parameters which characterise a model of the SNO+ detector's optical response. 
+This is an in-development version of LOCAS for SNO+. LOCAS is designed to process SOC data files and perform a statistical fit which characterises the optical response of the SNO+ detector.
 
 SOC files are ROOT files with a specific data structure designed for use by the SNO+ optics group. Optical calibration is sought through laserball runs; periods of time for which pulses of laser light is emitted (near) isotropically throughout the detector. A single SOC file will represent a single laserball run and will contain information pertaining to the run itself; e.g. the run ID, the laser wavelength used, the position of the laserball in the detector as well as the relevant PMT information for that run. 
 
 LOCAS is intended to perform the following tasks:
 
-    1) Process data from laserball runs i.e. the SOC files
-    2) Output LOCASRun files (a repackaged SOC file with additional information)
+    1) Process data from laserball runs i.e. the SOC files.
+    2) Output LOCASRun files (a repackaged SOC file with additional information used by the fit).
     3) Using various LOCASRun files as input - perform the optical fit of the detector response.
 
 Current Capability
 ==========
-LOCAS is currently able to perform tasks 1) and 2) in the list above. LOCAS interfaces both with RAT and the SOC file format and outputs this information to LOCASRun files. These LOCASRun files are intended to hold the relevant run specific information held by the original SOC file (run ID, laserball position, PMT information etc.) as well addition information for the individual PMTs such as the corrected occupancy, time of flight, solid angle and Fresnel transmission coefficient. It is these LOCASRun files which are used as input to the optics fit (task 3 in the above list).
+LOCAS is currently able to perform tasks 1) and 2) in the list above. LOCAS interfaces both with RAT and the SOC file format and outputs this information to LOCASRun files. These LOCASRun files are intended to hold the relevant run specific information held by the original SOC file (run ID, laserball position, PMT information etc.) as well additional information for the individual PMTs; such as the corrected occupancy, time of flight, solid angle and Fresnel transmission coefficient. It is these LOCASRun files which are used as input to the optics fit (task 3 in the above list).
 
 Prerequisites
 ==========
@@ -43,7 +43,7 @@ To install LOCAS, first, in the top directory of locas-plus ('locas-plus/') type
 
     ./configure 
 
-at the command line. The script will ask you for the full system path to your newly created RAT envrionment file (see last section) as well as the full system path to a directory you would like LOCAS utilities to temporarily store data (this is used for AV hold-down rope shadowing calculations). Ideally this temporary directory should be a 'scratch' disk with plenty of space.  to The configure script will create a new LOCAS environment file 'env_locas.sh' in the top directory. When you source this new file, i.e.:
+at the command line. The script will ask you for the full system path to your newly created RAT envrionment file (see last section) as well as the full system path to a directory you would like LOCAS utilities to temporarily store data (this is used for AV hold-down rope shadowing calculations). This temporary directory should be a 'scratch' disk with plenty of space. The configure script will create a new LOCAS environment file 'env_locas.sh' in the top directory. When you source this new file, i.e.:
 
     source env_locas.sh
 
