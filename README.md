@@ -111,3 +111,9 @@ NOTES
 ==========
 
 1) Currently, by default LOCAS will search for SOC files in the 'locas-plus/data/runs/soc' directory. The SOC files should be named by run ID, i.e. for the laserball run with run id '123456', the associated SOC file should be named '123456_Run.root' and located in the 'locas-plus/data/runs/soc' directory. Once processed, LOCAS will output the LOCASRun files to 'locas-plus/data/runs/locasrun' and will write filenames of the form '123456_LOCASRun.root'.
+
+2) In the 'locas-plus/data/shadowing/avhd' and 'locas-plus/data/shadowing/geo' directories - there are 3 example shadowing value files; *_25121642.ratdb, *_18081902.ratdb and *_28071635.ratdb ( where * ='avhd' or 'geo' ) these are values obtained from the following three types fo example runs:
+
+        25121642: 40,000 Photon Bomb Events (4000 photons per pulse) at 420nm at (4000, 0, 0) mm
+        28071635: 40,000 Photon Bomb Events (4000 photons per pulse) at 420nm at (0, 0, 0) mm
+        18081902: 40,000 Photon Bomb Events (4000 photons per pulse) at 500nm at (4000, 0, 0) mm
