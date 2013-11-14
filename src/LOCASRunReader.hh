@@ -31,6 +31,7 @@ namespace LOCAS{
   class LOCASRunReader  : public TObject
   {
   public:
+    LOCASRunReader( Int_t runID );
     LOCASRunReader( const char* filename );
     virtual ~LOCASRunReader();
 
@@ -38,6 +39,7 @@ namespace LOCAS{
     ////////     METHODS     ////////
     /////////////////////////////////
 
+    void Add( Int_t runID );
     void Add( const char* filename );
 
     Bool_t CheckForLOCASRun( Int_t runID );

@@ -17,12 +17,44 @@
 #include <TObject.h>
 
 #include <iostream>
+#include <sstream>
+#include <string>
 
 #include "LOCASRun.hh"
+#include "LOCASDB.hh"
 #include "LOCASRunReader.hh"
 
 using namespace LOCAS;
 using namespace std;
+
+LOCASRunReader::LOCASRunReader( Int_t runID )
+{
+  stringstream myStream;
+  myStream << runID;
+
+  string runIDStr = "";
+  myStream >> runIDStr;
+
+  LOCASDB lDB;
+  string locasRunDir = lDB.GetLOCASRunDir();
+  string fExt = "_LOCASRun.root";
+  
+  string filename = ( locasRunDir + runIDStr + fExt );  
+
+  fLOCASRunT = new TChain( "LOCASRunT" );
+
+  fLOCASRun = new LOCASRun();
+  fLOCASRunT->SetBranchAddress( "LOCASRun", &fLOCASRun );
+
+  fNext = 0;
+  fNLOCASRuns = fLOCASRunT->GetEntries();
+
+  Add( filename.c_str() );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
 
 LOCASRunReader::LOCASRunReader( const char* filename )
 {
@@ -47,6 +79,34 @@ LOCASRunReader::~LOCASRunReader()
 
   delete fLOCASRunT;
   delete fLOCASRun;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASRunReader::Add( Int_t runID )
+{
+
+  stringstream myStream;
+  myStream << runID;
+
+  string runIDStr = "";
+  myStream >> runIDStr;
+
+  LOCASDB lDB;
+  string locasRunDir = lDB.GetLOCASRunDir();
+  string fExt = "_LOCASRun.root";
+  
+  string filename = ( locasRunDir + runIDStr + fExt );
+
+  Long64_t total = fNLOCASRuns;
+
+  fLOCASRunT->Add( filename.c_str() );
+  fLOCASRunT->GetEntry( total );
+  fListOfRunIDs.push_back( fLOCASRun->GetRunID() );
+
+  fNLOCASRuns = fLOCASRunT->GetEntries();
 
 }
 
@@ -101,11 +161,5 @@ LOCASRun* LOCASRunReader::GetLOCASRun( Int_t runID )
 
   return fLOCASRun;
 }
-
-
-    
-    
-
-
 
 
