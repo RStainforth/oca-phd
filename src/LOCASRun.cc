@@ -285,6 +285,9 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
   CopySOCRunInfo( socPtr );
   CopySOCPMTInfo( socPtr );
 
+  CalculateLBIntensityNorm();
+  Float_t intsNorm = fMainLBIntensityNorm;
+
   // Create the LOCAS Data base Object (LOCASDB) and
   // load PMT information and detector parameters;
   LOCASDB lDB;
@@ -319,6 +322,8 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
 
     ( iLP->second ).SetLBTheta( ( lDB.GetPMTPosition( pmtID ) - GetLBPos() ).Theta() );
     ( iLP->second ).SetLBPhi( ( lDB.GetPMTPosition( pmtID ) - GetLBPos() ).Phi() );
+
+    ( iLP->second ).SetLBIntensityNorm( intsNorm );
     
     // Calculate the light path for this source position and PMT
     lLP.CalculatePath( GetLBPos(), GetPMT( iLP->first ).GetPos(), 10.0, GetLambda() );
@@ -423,6 +428,7 @@ void LOCASRun::AddSOCPMT( RAT::DS::SOCPMT& socPMT )
 
   if( fLOCASPMTs.find( pmtID ) == fLOCASPMTs.end() ){
     fLOCASPMTs[ pmtID ] = LOCASPMT( pmtID );
+    ( fLOCASPMTs[ pmtID ] ).AddSOCPMTData( socPMT );
   }
 
   else{
@@ -542,8 +548,18 @@ void LOCASRun::CrossRunFill( LOCASRun& cRun, LOCASRun& wRun )
     LOCASPMT crPMT = cRun.GetPMT( pmtID );
 
     if ( crPMT.GetHasEntries() ){
+
+      ( fLOCASPMTs[ pmtID ] ).SetOccRatio( rPMT.GetOccupancy() / crPMT.GetOccupancy() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetCorrLBIntensityNorm( rPMT.GetLBIntensityNorm() / crPMT.GetLBIntensityNorm() );
+
       ( fLOCASPMTs[ pmtID ] ).SetCorrSolidAngle( rPMT.GetSolidAngle() / crPMT.GetSolidAngle() );
       ( fLOCASPMTs[ pmtID ] ).SetCorrFresnelTCoeff( rPMT.GetFresnelTCoeff() / crPMT.GetFresnelTCoeff() );
+
+      ( fLOCASPMTs[ pmtID ] ).SetCorrDistInScint( rPMT.GetDistInScint() - crPMT.GetDistInScint() );
+      ( fLOCASPMTs[ pmtID ] ).SetCorrDistInScint( rPMT.GetDistInAV() - crPMT.GetDistInAV() );
+      ( fLOCASPMTs[ pmtID ] ).SetCorrDistInScint( rPMT.GetDistInWater() - crPMT.GetDistInWater() );
+
     }
     
   }  

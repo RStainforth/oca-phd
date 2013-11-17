@@ -201,6 +201,9 @@ int main( int argc, char** argv ){
   if ( crBool ){ lCRun.Fill( soc, crID ); }
   if ( wrBool ){ lWRun.Fill( soc, wrID ); }
 
+  lRun.SetCentralLBIntensityNorm( lCRun.GetMainLBIntensityNorm() );
+  lRun.SetWavelengthLBIntensityNorm( lWRun.GetMainLBIntensityNorm() );
+
 
   // Now that all the SOC files have been loaded, and the LOCASRun objects
   // created, the corrections to the main-run entries can be calculated
@@ -235,6 +238,8 @@ int main( int argc, char** argv ){
   // Close the file
   file->Close();
   delete file;
+
+  cout << "LOCASRun file: " << ( locasRunDir + rIDStr + (string)"_LOCASRun.root" ).c_str() << " has been created." << endl;
 
 }
 

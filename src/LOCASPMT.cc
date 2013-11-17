@@ -84,6 +84,10 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
   fCorrSolidAngle = rhs.fCorrSolidAngle;
   fCorrFresnelTCoeff = rhs.fCorrFresnelTCoeff;
 
+  fCorrDistInScint = rhs.fCorrDistInScint;
+  fCorrDistInAV = rhs.fCorrDistInAV;
+  fCorrDistInWater = rhs.fCorrDistInWater;
+
 }
 
 //////////////////////////////////////
@@ -144,6 +148,10 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
 
   fCorrSolidAngle = rhs.fCorrSolidAngle;
   fCorrFresnelTCoeff = rhs.fCorrFresnelTCoeff;
+
+  fCorrDistInScint = rhs.fCorrDistInScint;
+  fCorrDistInAV = rhs.fCorrDistInAV;
+  fCorrDistInWater = rhs.fCorrDistInWater;
  
   return *this;
 
@@ -202,6 +210,10 @@ void LOCASPMT::Initalise()
 
   SetCorrSolidAngle( 0.0 );
   SetCorrFresnelTCoeff( 0.0 );
+
+  SetCorrDistInScint( 0.0 );
+  SetCorrDistInAV( 0.0 ); 
+  SetCorrDistInWater( 0.0 );
 
 }
 
@@ -265,6 +277,11 @@ void LOCASPMT::Clear( Option_t* option )
   SetCorrSolidAngle( 0.0 );
   SetCorrFresnelTCoeff( 0.0 );
 
+  SetCorrDistInScint( 0.0 );
+  SetCorrDistInAV( 0.0 ); 
+  SetCorrDistInWater( 0.0 );
+  
+
 }
 
 //////////////////////////////////////
@@ -326,6 +343,14 @@ void LOCASPMT::AddSOCPMTData( RAT::DS::SOCPMT& socPMT )
   SetOccRatioErr( 0.0 );
 
   SetCorrSolidAngle( 0.0 );
+  SetCorrFresnelTCoeff( 0.0 );
+
+  SetCorrDistInScint( 0.0 );
+  SetCorrDistInAV( 0.0 ); 
+  SetCorrDistInWater( 0.0 );
+
+
+
 }
 
 //////////////////////////////////////

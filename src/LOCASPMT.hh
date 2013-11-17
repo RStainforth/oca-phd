@@ -70,6 +70,7 @@ namespace LOCAS{
     void SetOccupancy( Float_t occ ){ fOccupancy = occ; }
     void SetOccupancyErr( Float_t occErr ){ fOccupancyErr = occErr; }
     void SetOccupancyCorr( Float_t occCorr ){ fOccupancyCorr = occCorr; }
+    void SetLBIntensityNorm( Float_t intensityNorm ){ fLBIntensityNorm = intensityNorm; }
     
     void SetFresnelTCoeff( Float_t fresnelCoeff ){ fFresnelTCoeff = fresnelCoeff; }
     
@@ -105,8 +106,14 @@ namespace LOCAS{
     void SetOccRatio( Float_t occRatio ){ fOccRatio = occRatio; }
     void SetOccRatioErr( Float_t occErr ){ fOccRatioErr = occErr; }
 
+    void SetCorrLBIntensityNorm( Float_t corrLBNorm ){ fCorrLBIntensityNorm = corrLBNorm; }
+
     void SetCorrSolidAngle( Float_t corrSolidAngle ){ fCorrSolidAngle = corrSolidAngle; }
     void SetCorrFresnelTCoeff( Float_t corrFresnelTCoeff ){ fCorrFresnelTCoeff = corrFresnelTCoeff; }
+
+    void SetCorrDistInScint( Float_t corrDistInScint ){ fCorrDistInScint = corrDistInScint; }
+    void SetCorrDistInAV( Float_t corrDistInAV ){ fCorrDistInAV = corrDistInAV; }
+    void SetCorrDistInWater( Float_t corrDistInWater ){ fCorrDistInWater = corrDistInWater; }
     
     
     /////////////////////////////////
@@ -127,6 +134,7 @@ namespace LOCAS{
     Float_t GetOccupancy(){ return fOccupancy; }
     Float_t GetOccupancyErr(){ return fOccupancyErr; }
     Float_t GetOccupancyCorr(){ return fOccupancyCorr; }
+    Float_t GetLBIntensityNorm(){ return fLBIntensityNorm; }
     
     Float_t GetFresnelTCoeff(){ return fFresnelTCoeff; }
     
@@ -162,8 +170,14 @@ namespace LOCAS{
     Float_t GetOccRatio(){ return fOccRatio; }
     Float_t GetOccRatioErr(){ return fOccRatioErr; }
 
+    Float_t GetCorrLBIntensityNorm(){ return fCorrLBIntensityNorm; }
+
     Float_t GetCorrSolidAngle(){ return fCorrSolidAngle; }
     Float_t GetCorrFresnelTCoeff(){ return fCorrFresnelTCoeff; }
+
+    Float_t GetCorrDistInScint(){ return fCorrDistInScint; }
+    Float_t GetCorrDistInAV(){ return fCorrDistInAV; }
+    Float_t GetCorrDistInWater(){ return fCorrDistInWater; }
     
   private:
     
@@ -182,6 +196,7 @@ namespace LOCAS{
     Float_t fOccupancy;                 // Prompt Peak Counts 
     Float_t fOccupancyErr;              // Error on Occupancy of this PMT
     Float_t fOccupancyCorr;             // Ratio of Corrected Occupancy to Input Occupancy
+    Float_t fLBIntensityNorm;           // The prompt peak normalisation for the entire run
 
                                         // NOTE: DO THE MPE CORRECTED VALUES NEED TO BE
                                         // STORED ALSO?
@@ -220,8 +235,16 @@ namespace LOCAS{
     Float_t fOccRatio;                  // Occupancy Ratio (usually between a central run at this wavelength)
     Float_t fOccRatioErr;               // Error on this Occupancy Ratio
 
+    Float_t fCorrLBIntensityNorm;       // The LB intensity norm (Main / Central) Run
+
     Float_t fCorrSolidAngle;            // SolidAngle Correction;
     Float_t fCorrFresnelTCoeff;         // Fresnel Transmission Coefficient Correction;
+
+    Float_t fCorrDistInScint;           // (Main Run - Central Run) Distances through scintillator
+    Float_t fCorrDistInAV;              // (Main Run - Central Run) Distances through acrylic
+    Float_t fCorrDistInWater;           // (Main Run - Central Run) Distances through water
+
+
     
     ClassDef( LOCASPMT, 1 );
     
