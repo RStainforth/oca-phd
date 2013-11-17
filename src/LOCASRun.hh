@@ -57,6 +57,7 @@ namespace LOCAS{
     void Initialise();
     void Clear( Option_t* option="" );
     void Fill( RAT::SOCReader& socR, Int_t runID );
+    void CalculateLBIntensityNorm();
     
     void CopySOCRunInfo( RAT::DS::SOC* socRun );
     void CopySOCPMTInfo( RAT::DS::SOC* socRun );
@@ -83,9 +84,12 @@ namespace LOCAS{
     void SetIsCentralRun( Bool_t isCentral ){ fIsCentralRun = isCentral; }
     void SetIsWavelengthRun( Bool_t isWavelength ){ fIsWavelengthRun = isWavelength; }
     
-    void SetLambda( Float_t lambda ){ fLambda = lambda; }
-    void SetLBIntensityNorm( Float_t runLI ){ fLBIntensityNorm = runLI; }  
+    void SetLambda( Float_t lambda ){ fLambda = lambda; } 
     void SetNLBPulses( Int_t nPulses ){ fNLBPulses = nPulses; }
+
+    void SetMainLBIntensityNorm( Float_t mRunLI ){ fMainLBIntensityNorm = mRunLI; }
+    void SetCentralLBIntensityNorm( Float_t cRunLI ){ fCentralLBIntensityNorm = cRunLI; }
+    void SetWavelengthLBIntensityNorm( Float_t wRunLI ){ fWavelengthLBIntensityNorm = wRunLI; }
     
     void SetTimeSigmaMean( Float_t sigmean ){ fTimeSigmaMean = sigmean; }
     void SetTimeSigmaSigma( Float_t sigsigma ){ fTimeSigmaSigma = sigsigma; }
@@ -188,9 +192,12 @@ namespace LOCAS{
     
     Int_t GetNPMTs(){ return fLOCASPMTs.size(); }
     
-    Float_t GetLambda(){ return fLambda; }
-    Float_t GetLBIntensityNorm(){ return fLBIntensityNorm; }  
+    Float_t GetLambda(){ return fLambda; } 
     Int_t GetNLBPulses(){ return fNLBPulses; }
+
+    Float_t GetMainLBIntensityNorm(){ return fMainLBIntensityNorm; }  
+    Float_t GetCentralLBIntensityNorm(){ return fCentralLBIntensityNorm; }  
+    Float_t GetWavelengthLBIntensityNorm(){ return fWavelengthLBIntensityNorm; }  
     
     Float_t GetTimeSigmaMean(){ return fTimeSigmaMean; }
     Float_t GetTimeSigmaSigma(){ return fTimeSigmaSigma; }
@@ -254,8 +261,11 @@ namespace LOCAS{
     Bool_t fIsWavelengthRun;               // TRUE: Wavelength Run FALSE: Other Run
     
     Float_t fLambda;                       // The wavelength of the laser in this run
-    Float_t fLBIntensityNorm;              // Intensity Normalisation Factor (i.e. Intensity of laser for this run)
     Float_t fNLBPulses;                    // Number of laserball pulses in this run
+
+    Float_t fMainLBIntensityNorm;          // Number of total hits in prompt timing window (for main run)
+    Float_t fCentralLBIntensityNorm;      // Number of total hits in prompt timing window (for central run)
+    Float_t fWavelengthLBIntensityNorm;    // Number of total hits in prompt timing window (for wavelength run)
     
     Float_t fTimeSigmaMean;                // Average PMT time spread for this run
     Float_t fTimeSigmaSigma;               // Spread of PMT time spreads for this run (i.e. standard deviation)

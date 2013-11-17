@@ -335,7 +335,6 @@ void LOCASPMT::ProcessLightPath( LOCASLightPath& lPath )
 {
 
   if ( fType == 1 ){
-
     if ( lPath.GetTIR() || lPath.GetResvHit() ){ fBadPath = true; }
     if ( lPath.GetXAVNeck() ){ 
       fNeckFlag = true;
@@ -356,7 +355,7 @@ void LOCASPMT::ProcessLightPath( LOCASLightPath& lPath )
     lPath.CalculateFresnelTRCoeff();
     fFresnelTCoeff = lPath.GetFresnelTCoeff();
 
-    if ( ( lPath.GetStartPos() ).Mag() < 4000.0 ){
+    if ( ( lPath.GetStartPos() ).Mag() < 4500.0 ){
       lPath.CalculateSolidAngle( fNorm, 0 );
       fSolidAngle = lPath.GetSolidAngle();
       fCosTheta = lPath.GetCosThetaAvg();

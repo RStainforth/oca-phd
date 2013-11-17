@@ -67,8 +67,11 @@ LOCASRun::LOCASRun( const LOCASRun& locasRHS )
   fIsWavelengthRun = locasRHS.fIsWavelengthRun;
 
   fLambda = locasRHS.fLambda;
-  fLBIntensityNorm = locasRHS.fLBIntensityNorm;
   fNLBPulses = locasRHS.fNLBPulses;
+
+  fMainLBIntensityNorm = locasRHS.fMainLBIntensityNorm;
+  fCentralLBIntensityNorm = locasRHS.fCentralLBIntensityNorm;
+  fWavelengthLBIntensityNorm = locasRHS.fWavelengthLBIntensityNorm;
 
   fTimeSigmaMean = locasRHS.fTimeSigmaMean;
   fTimeSigmaSigma = locasRHS.fTimeSigmaSigma;
@@ -130,8 +133,11 @@ LOCASRun& LOCASRun::operator=( const LOCASRun& locasRHS )
   fIsWavelengthRun = locasRHS.fIsWavelengthRun;
 
   fLambda = locasRHS.fLambda;
-  fLBIntensityNorm = locasRHS.fLBIntensityNorm;
   fNLBPulses = locasRHS.fNLBPulses;
+
+  fMainLBIntensityNorm = locasRHS.fMainLBIntensityNorm;
+  fCentralLBIntensityNorm = locasRHS.fCentralLBIntensityNorm;
+  fWavelengthLBIntensityNorm = locasRHS.fWavelengthLBIntensityNorm;
 
   fTimeSigmaMean = locasRHS.fTimeSigmaMean;
   fTimeSigmaSigma = locasRHS.fTimeSigmaSigma;
@@ -198,8 +204,11 @@ void LOCASRun::Clear( Option_t* option )
   SetIsWavelengthRun( false );
 
   SetLambda( 0.0 );
-  SetLBIntensityNorm( 0.0 );
   SetNLBPulses( 0.0 );
+
+  SetMainLBIntensityNorm( 0.0 );
+  SetCentralLBIntensityNorm( 0.0 );
+  SetWavelengthLBIntensityNorm( 0.0 );
 
   SetTimeSigmaMean( 0.0 );
   SetTimeSigmaSigma( 0.0 );
@@ -324,6 +333,21 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
 
   // Clear the LOCASDB object to free up memory
   lDB.Clear();
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASRun::CalculateLBIntensityNorm()
+{
+
+  fMainLBIntensityNorm = 0.0;
+  std::map< Int_t, LOCASPMT>::iterator iPMT;
+  
+  for ( iPMT = GetLOCASPMTIterBegin(); iPMT != GetLOCASPMTIterEnd(); iPMT++ ){   
+    fMainLBIntensityNorm += ( iPMT->second ).GetOccupancy();
+  }
 
 }
 
@@ -520,9 +544,6 @@ void LOCASRun::CrossRunFill( LOCASRun& cRun, LOCASRun& wRun )
     if ( crPMT.GetHasEntries() ){
       ( fLOCASPMTs[ pmtID ] ).SetCorrSolidAngle( rPMT.GetSolidAngle() / crPMT.GetSolidAngle() );
       ( fLOCASPMTs[ pmtID ] ).SetCorrFresnelTCoeff( rPMT.GetFresnelTCoeff() / crPMT.GetFresnelTCoeff() );
-      cout << "Solid Angle Correction is: " << (fLOCASPMTs[ pmtID ]).GetCorrSolidAngle() << endl;
-      cout << "Fresnel Transmission Coefficient Correction is: " << (fLOCASPMTs[ pmtID ]).GetCorrFresnelTCoeff() << endl;
-      cout << "#################" << endl;
     }
     
   }  
