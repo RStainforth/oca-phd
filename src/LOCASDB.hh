@@ -31,6 +31,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "RAT/SOCReader.hh"
 #include "RAT/DS/SOC.hh"
@@ -64,6 +65,8 @@ namespace LOCAS{
     
     void LoadGeoPMTShadowingVals( Int_t runID );
     void LoadAVHDRopePMTShadowingVals( Int_t runID );
+
+    void LoadRunList( const char* runList );
     
     /////////////////////////////////
     ////////     GETTERS     ////////
@@ -89,6 +92,8 @@ namespace LOCAS{
     
     std::string GetSOCRunDir(){ return fSOCRunDir; }
     std::string GetLOCASRunDir(){ return fLOCASRunDir; }
+
+    std::vector< Int_t > GetRunList(){ return fRunList; }
     
   private:
     
@@ -116,6 +121,8 @@ namespace LOCAS{
     
     std::string fSOCRunDir;
     std::string fLOCASRunDir;
+
+    std::vector< Int_t > fRunList;
     
     ClassDef( LOCASDB, 1 );
         

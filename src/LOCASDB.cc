@@ -54,6 +54,8 @@ LOCASDB::LOCASDB()
   fSOCRunDir = "";
   fLOCASRunDir = "";
 
+  fRunList.clear();
+
   Initialise();
 
 }
@@ -348,5 +350,22 @@ void LOCASDB::LoadAVHDRopePMTShadowingVals( Int_t runID )
 
 //////////////////////////////////////
 //////////////////////////////////////
+
+void LOCASDB::LoadRunList( const char* runList )
+{
+
+  fRATDB->Clear();
+  fRATDB->Load( runList );
+
+  fRATDBPtr = fRATDB->GetLink( "RUNLIST" );
+  assert( fRATDBPtr );
+
+  std::vector< Int_t > runIDs = fRATDBPtr->GetIArray( "run_ids" );
+
+  for ( int iRun = 0; iRun < runIDs.size(); iRun++ ){
+    fRunList.push_back( runIDs[ iRun ] );
+  }
+
+}
 
 
