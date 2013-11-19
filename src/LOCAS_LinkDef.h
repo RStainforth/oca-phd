@@ -8,7 +8,6 @@
 #pragma link C++ class LOCAS::LOCASDB+;
 #pragma link C++ class LOCAS::LOCASLightPath+;
 #pragma link C++ class LOCAS::LOCASRunReader+;
-#pragma link C++ class LOCAS::LOCASModel+;
 
 #pragma link C++ global gROOT;
 
