@@ -24,6 +24,8 @@
 #include "LOCASDB.hh"
 #include "LOCASRunReader.hh"
 
+#include "TMath.h"
+
 using namespace LOCAS;
 using namespace std;
 
@@ -59,8 +61,10 @@ LOCASRunReader::LOCASRunReader( std::vector< Int_t >& runIDs )
 
   }
 
+  
   fNext = 0;
   fNLOCASRuns = fLOCASRunT->GetEntries();
+  
 
 }
 
@@ -200,6 +204,120 @@ LOCASRun* LOCASRunReader::GetLOCASRun( Int_t runID )
   }
 
   return fLOCASRun;
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASRunReader::EvaluateChiSquare( Double_t* params )
+{
+
+  Float_t chiSquare = 0.0;
+  Float_t dataROcc = GetDataROcc();
+  Float_t modelROcc = CalcModelROcc( params );
+  Float_t roccError = GetROccError();
+
+  chiSquare = ( ( dataROcc - modelROcc ) * ( dataROcc - modelROcc ) ) / ( ( roccError ) * ( roccError ) );
+
+  return chiSquare;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASRunReader::EvaluateRunChiSquare( Double_t* params, Int_t runID )
+{
+
+  fLOCASRun = GetLOCASRun( runID );
+  std::map< Int_t, LOCASPMT >::iterator iPMT;
+  Float_t chiSquare = 0.0;
+  for ( iPMT = fLOCASRun->GetLOCASPMTIterBegin();
+	iPMT != fLOCASRun->GetLOCASPMTIterEnd();
+	iPMT++ )
+    {
+      fCurrentPMT = &( iPMT->second );
+      cout << "PMT ID is: " << fCurrentPMT->GetID() << endl;
+      Float_t dataROcc = GetDataROcc();
+      Float_t modelROcc = CalcModelROcc( params );
+      Float_t roccError = GetROccError();
+
+      chiSquare += ( ( dataROcc - modelROcc ) * ( dataROcc - modelROcc ) ) / ( ( roccError ) * ( roccError ) );
+    }
+
+  return chiSquare;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASRunReader::EvaluateGlobalChiSquare( Double_t* params )
+{
+
+  Float_t globalChiSquare = 0.0;
+
+  for ( Int_t iRun = 0; iRun < fListOfRunIDs.size(); iRun++ ){
+    fLOCASRun = GetLOCASRun( fListOfRunIDs[ iRun ] );
+    
+    std::map< Int_t, LOCASPMT >::iterator iPMT;
+    for ( iPMT = fLOCASRun->GetLOCASPMTIterBegin();
+          iPMT != fLOCASRun->GetLOCASPMTIterEnd();
+          iPMT++ ){
+      
+      fCurrentPMT = &( iPMT->second );
+      globalChiSquare += EvaluateChiSquare( params );
+      
+    }
+
+  }
+    
+  return globalChiSquare;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASRunReader::CalcModelROcc( Double_t* params )
+{
+
+  Float_t ratioLBNorm = fCurrentPMT->GetCorrLBIntensityNorm();
+  Float_t ratioSolidA = fCurrentPMT->GetCorrSolidAngle();
+  Float_t ratioFresnel = fCurrentPMT->GetCorrFresnelTCoeff();
+
+  Float_t ratioScint = fCurrentPMT->GetCorrDistInScint();
+  Float_t ratioAV = fCurrentPMT->GetCorrDistInAV();
+  Float_t ratioWater = fCurrentPMT->GetCorrDistInWater();
+  
+  return ratioLBNorm * ratioSolidA * ratioFresnel
+    * params[0] * params[1] * TMath::Exp( - ( ratioScint * params[2]
+                                              + ratioAV * params[3]
+                                              + ratioWater * params[4] ) );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASRunReader::GetDataROcc()
+{
+
+  Float_t occRatio = fCurrentPMT->GetOccRatio();
+  cout << "occRatio is: " << occRatio << endl;
+  return occRatio;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASRunReader::GetROccError()
+{
+
+  Float_t occRatioErr = fCurrentPMT->GetOccRatioErr();;
+  return occRatioErr;
+
 }
 
 

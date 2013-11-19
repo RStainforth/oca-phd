@@ -24,7 +24,6 @@
 #include "LOCASPMT.hh"
 #include "LOCASDB.hh"
 #include "LOCASLightPath.hh"
-#include "LOCASModel.hh"
 #include "LOCASRunReader.hh"
 
 #include "TFile.h"
@@ -54,11 +53,18 @@ int main( int argc, char** argv ){
 
   // Initialise the LOCASRunReader object with the run ID
   // of the first LOCASRun file in the list
-  LOCASModel lModel( runList );
+  LOCASRunReader lReader( runList );
 
-  for ( Int_t tK = 0; tK < lModel.GetNLOCASRuns(); tK++ ){
-    LOCASRun* runPtr = lModel.GetLOCASRun( runList[ tK ] );
+  for ( Int_t tK = 0; tK < lReader.GetNLOCASRuns(); tK++ ){
+    LOCASRun* runPtr = lReader.GetLOCASRun( runList[ tK ] );
     cout << "The run ID is: " << runPtr->GetRunID() << endl;
   }
+
+  Double_t x[5] = {1.0, 1.0, 1.0, 1.0, 1.0};
+
+  
+  Float_t chiSquareRun = lReader.EvaluateRunChiSquare( x, runList[ 0 ] );
+  
+  cout << "The Chi-Square for run: " << runList[ 0 ] << " was: " << chiSquareRun << endl; 
 
 }

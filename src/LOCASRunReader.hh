@@ -46,6 +46,12 @@ namespace LOCAS{
 
     Bool_t CheckForLOCASRun( Int_t runID );
 
+    Float_t EvaluateChiSquare( Double_t* params );
+    Float_t EvaluateRunChiSquare( Double_t* params, Int_t runID );
+    Float_t EvaluateGlobalChiSquare( Double_t* params );
+
+    Float_t CalcModelROcc( Double_t* params );
+
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
@@ -57,6 +63,9 @@ namespace LOCAS{
 
     std::vector< Int_t > GetListOfRunIDs(){ return fListOfRunIDs; }
 
+    Float_t GetDataROcc();
+    Float_t GetROccError();
+
   protected:
 
     TChain* fLOCASRunT;
@@ -66,6 +75,8 @@ namespace LOCAS{
     Long64_t fNLOCASRuns;
 
     std::vector< Int_t > fListOfRunIDs;
+
+    LOCASPMT* fCurrentPMT;
 
     ClassDef( LOCASRunReader, 0 ) 
     
