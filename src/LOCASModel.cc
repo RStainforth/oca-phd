@@ -23,6 +23,8 @@
 
 #include <map>
 
+#include "TMath.h"
+
 using namespace LOCAS;
 using namespace std;
 
@@ -76,8 +78,18 @@ Float_t LOCASModel::EvaluateGlobalChiSquare( Double_t* params )
 Float_t LOCASModel::CalcModelROcc( Double_t* params )
 {
 
-  Float_t normRatio = 1.0;
-  return normRatio;
+  Float_t ratioLBNorm = fCurrentPMT->GetCorrLBIntensityNorm();
+  Float_t ratioSolidA = fCurrentPMT->GetCorrSolidAngle();
+  Float_t ratioFresnel = fCurrentPMT->GetCorrFresnelTCoeff();
+
+  Float_t ratioScint = fCurrentPMT->GetCorrDistInScint();
+  Float_t ratioAV = fCurrentPMT->GetCorrDistInAV();
+  Float_t ratioWater = fCurrentPMT->GetCorrDistInWater();
+  
+  return ratioLBNorm * ratioSolidA * ratioFresnel
+    * params[0] * params[1] * TMath::Exp( - ( ratioScint * params[2]
+                                              + ratioAV * params[3]
+                                              + ratioWater * params[4] ) );
 
 }
 
@@ -87,8 +99,8 @@ Float_t LOCASModel::CalcModelROcc( Double_t* params )
 Float_t LOCASModel::GetDataROcc()
 {
 
-  Float_t normRatio = 1.0;
-  return normRatio;
+  Float_t occRatio = fCurrentPMT->GetOccRatio();
+  return occRatio;
 
 }
 
@@ -98,7 +110,7 @@ Float_t LOCASModel::GetDataROcc()
 Float_t LOCASModel::GetROccError()
 {
 
-  Float_t normRatio = 1.0;
-  return normRatio;
+  Float_t occRatioErr = fCurrentPMT->GetOccRatioErr();;
+  return occRatioErr;
 
 }

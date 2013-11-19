@@ -24,6 +24,7 @@
 #include "LOCASPMT.hh"
 #include "LOCASDB.hh"
 #include "LOCASLightPath.hh"
+#include "LOCASModel.hh"
 #include "LOCASRunReader.hh"
 
 #include "TFile.h"
@@ -53,10 +54,11 @@ int main( int argc, char** argv ){
 
   // Initialise the LOCASRunReader object with the run ID
   // of the first LOCASRun file in the list
-  LOCASRunReader lReader( runList[0] );
+  LOCASModel lModel( runList );
 
-  // Add the subsequent LOCASRun files to the LOCASRunReader
-  for ( Int_t iR = 1; iR < runList.size(); iR++ ){ lReader.Add( runList[ iR ] ); }
-
+  for ( Int_t tK = 0; tK < lModel.GetNLOCASRuns(); tK++ ){
+    LOCASRun* runPtr = lModel.GetLOCASRun( runList[ tK ] );
+    cout << "The run ID is: " << runPtr->GetRunID() << endl;
+  }
 
 }
