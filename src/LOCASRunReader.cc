@@ -27,6 +27,46 @@
 using namespace LOCAS;
 using namespace std;
 
+//////////////////////////////////////
+//////////////////////////////////////
+
+LOCASRunReader::LOCASRunReader( std::vector< Int_t >& runIDs )
+{
+
+  stringstream myStream;
+  string runIDStr = "";
+
+  LOCASDB lDB;
+  string locasRunDir = lDB.GetLOCASRunDir();
+  string fExt = "_LOCASRun.root";
+  
+  string filename = "";
+
+  fLOCASRunT = new TChain( "LOCASRunT" );
+
+  fLOCASRun = new LOCASRun();
+  fLOCASRunT->SetBranchAddress( "LOCASRun", &fLOCASRun );
+
+  for ( Int_t iRun = 0; iRun < runIDs.size(); iRun++ ){
+
+    myStream << runIDs[ iRun ];
+    myStream >> runIDStr;
+    filename = ( locasRunDir + runIDStr + fExt );
+    Add( filename.c_str() );
+
+    myStream.clear();
+    runIDStr = "";
+
+  }
+
+  fNext = 0;
+  fNLOCASRuns = fLOCASRunT->GetEntries();
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 LOCASRunReader::LOCASRunReader( Int_t runID )
 {
   stringstream myStream;
@@ -46,10 +86,10 @@ LOCASRunReader::LOCASRunReader( Int_t runID )
   fLOCASRun = new LOCASRun();
   fLOCASRunT->SetBranchAddress( "LOCASRun", &fLOCASRun );
 
+  Add( filename.c_str() );
+
   fNext = 0;
   fNLOCASRuns = fLOCASRunT->GetEntries();
-
-  Add( filename.c_str() );
 
 }
 
