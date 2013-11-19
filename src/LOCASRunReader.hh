@@ -28,9 +28,11 @@
 
 namespace LOCAS{
 
-  class LOCASRunReader  : public TObject
+  class LOCASRunReader : public TObject
   {
   public:
+    
+    LOCASRunReader( std::vector< Int_t >& runIDs );
     LOCASRunReader( Int_t runID );
     LOCASRunReader( const char* filename );
     virtual ~LOCASRunReader();
@@ -55,7 +57,7 @@ namespace LOCAS{
 
     std::vector< Int_t > GetListOfRunIDs(){ return fListOfRunIDs; }
 
-  private:
+  protected:
 
     TChain* fLOCASRunT;
     LOCASRun* fLOCASRun;
