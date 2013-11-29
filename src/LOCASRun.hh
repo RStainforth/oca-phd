@@ -85,7 +85,7 @@ namespace LOCAS{
     void SetIsWavelengthRun( Bool_t isWavelength ){ fIsWavelengthRun = isWavelength; }
     
     void SetLambda( Float_t lambda ){ fLambda = lambda; } 
-    void SetNLBPulses( Int_t nPulses ){ fNLBPulses = nPulses; }
+    void SetNLBPulses( Float_t nPulses ){ fNLBPulses = nPulses; }
 
     void SetMainLBIntensityNorm( Float_t mRunLI ){ fMainLBIntensityNorm = mRunLI; }
     void SetCentralLBIntensityNorm( Float_t cRunLI ){ fCentralLBIntensityNorm = cRunLI; }
@@ -193,7 +193,7 @@ namespace LOCAS{
     Int_t GetNPMTs(){ return fLOCASPMTs.size(); }
     
     Float_t GetLambda(){ return fLambda; } 
-    Int_t GetNLBPulses(){ return fNLBPulses; }
+    Float_t GetNLBPulses(){ return fNLBPulses; }
 
     Float_t GetMainLBIntensityNorm(){ return fMainLBIntensityNorm; }  
     Float_t GetCentralLBIntensityNorm(){ return fCentralLBIntensityNorm; }  

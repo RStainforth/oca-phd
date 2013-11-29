@@ -168,12 +168,15 @@ int main( int argc, char** argv ){
   // Set Default run-IDs and Run-Types
   lRun.SetRunID( rID );
   lRun.SetIsMainRun( mrBool );
+  lRun.SetNLBPulses( 5000.0 );
 
   lCRun.SetRunID( crID );
   lCRun.SetIsCentralRun( crBool );
+  lCRun.SetNLBPulses( 5000.0 );
 
   lWRun.SetRunID( wrID );
   lWRun.SetIsWavelengthRun( wrBool );
+  lWRun.SetNLBPulses( 5000.0 );
   
   // Create the SOCReader object <-- This allows for multiple SOC files
   // to be loaded

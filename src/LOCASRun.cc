@@ -16,10 +16,13 @@
 
 #include <iostream>
 
+#include "TMath.h"
+
 #include "LOCASRun.hh"
 #include "LOCASDB.hh"
 #include "LOCASPMT.hh"
 #include "LOCASLightPath.hh"
+#include "LOCASMath.hh"
 
 #include <map>
 
@@ -187,7 +190,65 @@ LOCASRun& LOCASRun::operator=( const LOCASRun& locasRHS )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASRun::Initialise(){ }
+void LOCASRun::Initialise()
+{ 
+
+  SetRunID( 0 );
+  SetSourceID( 0 );
+
+  SetIsMainRun( false );
+  SetIsCentralRun( false );
+  SetIsWavelengthRun( false );
+
+  SetLambda( 0.0 );
+  SetNLBPulses( 0.0 );
+
+  SetMainLBIntensityNorm( 0.0 );
+  SetCentralLBIntensityNorm( 0.0 );
+  SetWavelengthLBIntensityNorm( 0.0 );
+
+  SetTimeSigmaMean( 0.0 );
+  SetTimeSigmaSigma( 0.0 );
+
+  SetLBPosType( 0 );
+
+  SetLBPos( -9999.9, -9999.9, -9999.9 );
+
+  SetLBXPosErr( 0.0 );
+  SetLBYPosErr( 0.0 );
+  SetLBZPosErr( 0.0 );
+
+  SetLBPosChi2( 0.0 );
+  SetLBTheta( 0.0 );
+  SetLBPhi( 0.0 );
+
+  SetDirFitLBPos( -9999.9, -9999.9, -9999.9 );
+
+  SetDirFitLBXPosErr( 0.0 );
+  SetDirFitLBYPosErr( 0.0 );
+  SetDirFitLBZPosErr( 0.0 );
+
+  SetDirFitLBPosChi2( 0.0 );
+
+  SetLPFitLBPos( -9999.9, -9999.9, -9999.9 );
+
+  SetLPFitLBXPosErr( 0.0 );
+  SetLPFitLBYPosErr( 0.0 );
+  SetLPFitLBZPosErr( 0.0 );
+
+  SetLPFitLBPosChi2( 0.0 );
+
+  SetManipLBPos( -9999.9, -9999.9, -9999.9 );
+
+  SetManipLBXPosErr( 0.0 );
+  SetManipLBYPosErr( 0.0 );
+  SetManipLBZPosErr( 0.0 );
+
+  SetManipLBPosChi2( 0.0 );
+
+  if ( !fLOCASPMTs.empty() ){ fLOCASPMTs.clear(); }
+
+}
 
 //////////////////////////////////////
 //////////////////////////////////////
@@ -202,6 +263,7 @@ void LOCASRun::Clear( Option_t* option )
   SetIsMainRun( false );
   SetIsCentralRun( false );
   SetIsWavelengthRun( false );
+  cout << GetIsMainRun() << ":" << GetIsCentralRun() << ":" << GetIsWavelengthRun() << endl;
 
   SetLambda( 0.0 );
   SetNLBPulses( 0.0 );
@@ -286,7 +348,6 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
   CopySOCPMTInfo( socPtr );
 
   CalculateLBIntensityNorm();
-  Float_t intsNorm = fMainLBIntensityNorm;
 
   // Create the LOCAS Data base Object (LOCASDB) and
   // load PMT information and detector parameters;
@@ -323,7 +384,13 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
     ( iLP->second ).SetLBTheta( ( lDB.GetPMTPosition( pmtID ) - GetLBPos() ).Theta() );
     ( iLP->second ).SetLBPhi( ( lDB.GetPMTPosition( pmtID ) - GetLBPos() ).Phi() );
 
-    ( iLP->second ).SetLBIntensityNorm( intsNorm );
+    ( iLP->second ).SetNLBPulses( GetNLBPulses() );
+    ( iLP->second ).SetLBIntensityNorm( GetMainLBIntensityNorm() );
+
+    LOCASMath lMath;
+    ( iLP->second ).SetMPECorrOccupancy( lMath.MPECorrectedNPrompt( ( iLP->second ).GetOccupancy(), GetNLBPulses() ) );
+    ( iLP->second ).SetMPECorrOccupancyErr( lMath.MPECorrectedNPromptErr( ( iLP->second ).GetOccupancy(), GetNLBPulses() ) );
+    ( iLP->second ).SetMPECorrOccupancyCorr( ( iLP->second ).GetMPECorrOccupancy() / ( iLP->second ).GetOccupancy() );
     
     // Calculate the light path for this source position and PMT
     lLP.CalculatePath( GetLBPos(), GetPMT( iLP->first ).GetPos(), 10.0, GetLambda() );
@@ -333,6 +400,8 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
     
     // Reset the light path object
     lLP.Clear();
+
+    ( iLP->second ).VerifyPMT();
     
   }
 
@@ -368,7 +437,7 @@ void LOCASRun::CopySOCRunInfo( RAT::DS::SOC* socRun )
   SetRunID( socRun->GetRunID() );
   SetSourceID( socRun->GetSourceID() );
   SetLambda( socRun->GetLaserWavelength() );
-  SetLBPos( socRun->GetSourcePosManip() );
+  SetLBPos( socRun->GetSourcePosManip() ); 
 
 }
 
@@ -547,9 +616,12 @@ void LOCASRun::CrossRunFill( LOCASRun& cRun, LOCASRun& wRun )
     Int_t pmtID = rPMT.GetID();
     LOCASPMT crPMT = cRun.GetPMT( pmtID );
 
-    if ( crPMT.GetHasEntries() ){
+    if ( crPMT.GetIsVerified() && rPMT.GetIsVerified() ){
 
-      ( fLOCASPMTs[ pmtID ] ).SetOccRatio( rPMT.GetOccupancy() / crPMT.GetOccupancy() );
+      ( fLOCASPMTs[ pmtID ] ).SetOccRatio( rPMT.GetMPECorrOccupancy() / crPMT.GetMPECorrOccupancy() );
+      ( fLOCASPMTs[ pmtID ] ).SetOccRatioErr( ( fLOCASPMTs[ pmtID ] ).GetOccRatio() 
+					      * ( TMath::Sqrt( TMath::Power( ( rPMT.GetMPECorrOccupancyErr() / rPMT.GetMPECorrOccupancy() ), 2 ) +
+							       TMath::Power( ( crPMT.GetMPECorrOccupancyErr() / crPMT.GetMPECorrOccupancy() ), 2 ) ) ) );
       
       ( fLOCASPMTs[ pmtID ] ).SetCorrLBIntensityNorm( rPMT.GetLBIntensityNorm() / crPMT.GetLBIntensityNorm() );
 
@@ -557,8 +629,8 @@ void LOCASRun::CrossRunFill( LOCASRun& cRun, LOCASRun& wRun )
       ( fLOCASPMTs[ pmtID ] ).SetCorrFresnelTCoeff( rPMT.GetFresnelTCoeff() / crPMT.GetFresnelTCoeff() );
 
       ( fLOCASPMTs[ pmtID ] ).SetCorrDistInScint( rPMT.GetDistInScint() - crPMT.GetDistInScint() );
-      ( fLOCASPMTs[ pmtID ] ).SetCorrDistInScint( rPMT.GetDistInAV() - crPMT.GetDistInAV() );
-      ( fLOCASPMTs[ pmtID ] ).SetCorrDistInScint( rPMT.GetDistInWater() - crPMT.GetDistInWater() );
+      ( fLOCASPMTs[ pmtID ] ).SetCorrDistInAV( rPMT.GetDistInAV() - crPMT.GetDistInAV() );
+      ( fLOCASPMTs[ pmtID ] ).SetCorrDistInWater( rPMT.GetDistInWater() - crPMT.GetDistInWater() );
 
     }
     

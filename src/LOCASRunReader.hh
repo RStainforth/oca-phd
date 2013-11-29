@@ -20,6 +20,7 @@
 
 #include <TObject.h>
 #include <TChain.h>
+#include <TMinuit.h>
 
 #include <string>
 #include <vector>
@@ -31,7 +32,7 @@ namespace LOCAS{
   class LOCASRunReader : public TObject
   {
   public:
-    
+    LOCASRunReader();
     LOCASRunReader( std::vector< Int_t >& runIDs );
     LOCASRunReader( Int_t runID );
     LOCASRunReader( const char* filename );
@@ -46,25 +47,29 @@ namespace LOCAS{
 
     Bool_t CheckForLOCASRun( Int_t runID );
 
-    Float_t EvaluateChiSquare( Double_t* params );
-    Float_t EvaluateRunChiSquare( Double_t* params, Int_t runID );
-    Float_t EvaluateGlobalChiSquare( Double_t* params );
-
-    Float_t CalcModelROcc( Double_t* params );
-
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
 
-    LOCASRun* GetLOCASRun(){ return fLOCASRun; };
+    LOCASRun* GetCurrentLOCASRun(){ return fLOCASRun; }
+    void GetCurrentLOCASRun( LOCASRun* lRun ){ lRun = fLOCASRun; }
+    
+    LOCASPMT* GetCurrentLOCASPMT(){ return fCurrentPMT; }
+    void GetCurrentLOCASPMT( LOCASPMT* lPMT ){ lPMT = fCurrentPMT; }
+
     LOCASRun* GetLOCASRun( Int_t runID );
 
     Long64_t GetNLOCASRuns(){ return fNLOCASRuns; }
 
     std::vector< Int_t > GetListOfRunIDs(){ return fListOfRunIDs; }
 
-    Float_t GetDataROcc();
-    Float_t GetROccError();
+    /////////////////////////////////
+    ////////     SETTERS     ////////
+    /////////////////////////////////
+
+    void SetCurrentLOCASRun( Int_t runID ){ fLOCASRun = GetLOCASRun( runID ); }
+
+    
 
   protected:
 

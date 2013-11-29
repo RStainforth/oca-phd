@@ -36,8 +36,8 @@ namespace LOCAS{
   class LOCASPMT : public TObject
   {
   public:
-    LOCASPMT(){ }
-    LOCASPMT( Int_t pmtID ){ fID = pmtID; Initalise(); }
+    LOCASPMT(){ Initialise(); }
+    LOCASPMT( Int_t pmtID ){ fID = pmtID; Initialise(); }
     ~LOCASPMT(){ }
     
     LOCASPMT( const LOCASPMT& rhs );
@@ -47,10 +47,11 @@ namespace LOCAS{
     ////////     METHODS     ////////
     /////////////////////////////////
     
-    void Initalise();
+    void Initialise();
     void Clear( Option_t* option="");
     void AddSOCPMTData( RAT::DS::SOCPMT& socPMT );
     void ProcessLightPath( LOCASLightPath& lPath );
+    void VerifyPMT();
     
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -59,7 +60,7 @@ namespace LOCAS{
     void SetID( Int_t pmtID ){ fID = pmtID; }
     void SetType( Int_t pmtType ){ fType = pmtType; }
 
-    void SetHasEntries( Bool_t entries ){ fHasEntries = entries; }
+    void SetIsVerified( Bool_t verified ){ fIsVerified = verified; }
     
     void SetPos( TVector3 xyzPos ){ fPos = xyzPos; }
     void SetNorm( TVector3 uvwOri ){ fNorm = uvwOri; }
@@ -71,6 +72,12 @@ namespace LOCAS{
     void SetOccupancyErr( Float_t occErr ){ fOccupancyErr = occErr; }
     void SetOccupancyCorr( Float_t occCorr ){ fOccupancyCorr = occCorr; }
     void SetLBIntensityNorm( Float_t intensityNorm ){ fLBIntensityNorm = intensityNorm; }
+
+    void SetNLBPulses( Float_t nPulses ){ fNLBPulses = nPulses; }
+
+    void SetMPECorrOccupancy( Float_t mpeCorr ){ fMPECorrOccupancy = mpeCorr; }
+    void SetMPECorrOccupancyErr( Float_t mpeCorrErr ){ fMPECorrOccupancyErr = mpeCorrErr; }
+    void SetMPECorrOccupancyCorr( Float_t mpeCorrCorr ){ fMPECorrOccupancyCorr = mpeCorrCorr; }
     
     void SetFresnelTCoeff( Float_t fresnelCoeff ){ fFresnelTCoeff = fresnelCoeff; }
     
@@ -91,12 +98,6 @@ namespace LOCAS{
     
     void SetAVHDShadowFlag( Bool_t avhdFlag ){ fAVHDShadowFlag = avhdFlag; }
     void SetGeometricShadowFlag( Bool_t geomFlag ){ fGeometricShadowFlag = geomFlag; }
-    
-    void SetAVHDShadowRatio( Float_t avhdRatio ){ fAVHDShadowRatio = avhdRatio; }
-    void SetAVHDShadowRatioErr( Float_t avhdErr ){ fAVHDShadowRatioErr = avhdErr; }
-    
-    void SetGeometricShadowRatio( Float_t geomRatio ){ fGeometricShadowRatio = geomRatio; }
-    void SetGeometricShadowRatioErr( Float_t geomErr ){ fGeometricShadowRatioErr = geomErr; }
     
     void SetCHSFlag( Bool_t chsFlag ){ fCHSFlag = chsFlag; }
     void SetCSSFlag( Bool_t cssFlag ){ fCSSFlag = cssFlag; }
@@ -123,7 +124,7 @@ namespace LOCAS{
     Int_t GetID(){ return fID; }
     Int_t GetType(){ return fType; }
 
-    Bool_t GetHasEntries(){ return fHasEntries; }
+    Bool_t GetIsVerified(){ return fIsVerified; }
     
     TVector3 GetPos(){ return fPos; }
     TVector3 GetNorm(){ return fNorm; }
@@ -135,6 +136,12 @@ namespace LOCAS{
     Float_t GetOccupancyErr(){ return fOccupancyErr; }
     Float_t GetOccupancyCorr(){ return fOccupancyCorr; }
     Float_t GetLBIntensityNorm(){ return fLBIntensityNorm; }
+
+    Float_t GetNLBPulses(){ return fNLBPulses; }
+
+    Float_t GetMPECorrOccupancy(){ return fMPECorrOccupancy; }
+    Float_t GetMPECorrOccupancyErr(){ return fMPECorrOccupancyErr; }
+    Float_t GetMPECorrOccupancyCorr(){ return fMPECorrOccupancyCorr; }
     
     Float_t GetFresnelTCoeff(){ return fFresnelTCoeff; }
     
@@ -155,12 +162,6 @@ namespace LOCAS{
     
     Bool_t GetAVHDShadowFlag(){ return fAVHDShadowFlag; }
     Bool_t GetGeometricShadowFlag(){ return fGeometricShadowFlag; }
-    
-    Float_t GetAVHDShadowRatio(){ return fAVHDShadowRatio; }
-    Float_t GetAVHDRatioErr(){ return fAVHDShadowRatioErr; }  
-    
-    Float_t GetGeometricShadowRatio(){ return fGeometricShadowRatio; }
-    Float_t GetGeometricShadowRatioErr(){ return fGeometricShadowRatioErr; }
     
     Bool_t GetCHSFlag(){ return fCHSFlag; }
     Bool_t GetCSSFlag(){ return fCSSFlag; }
@@ -184,8 +185,8 @@ namespace LOCAS{
     Int_t fID;                          // PMT ID/LCN
     Int_t fType;                        // The PMT type as defined in airfill2.ratdb (RAT)
 
-    Bool_t fHasEntries;                 // TRUE: Entries are Filled FALSE: Entries not filled
-                                        // ( i.e. solidangle, fresnel coefficient etc. )
+    Bool_t fIsVerified;                 // TRUE: PMT has sensible values FALSE: Some bad values
+                                        // See LOCASPMT::VerifyPMT for details
     
     TVector3 fPos;                      // PMT Position
     TVector3 fNorm;                     // PMT Orientation
@@ -198,8 +199,12 @@ namespace LOCAS{
     Float_t fOccupancyCorr;             // Ratio of Corrected Occupancy to Input Occupancy
     Float_t fLBIntensityNorm;           // The prompt peak normalisation for the entire run
 
-                                        // NOTE: DO THE MPE CORRECTED VALUES NEED TO BE
-                                        // STORED ALSO?
+    Float_t fNLBPulses;                 // Number of LaserBall pulses for this run.
+
+    Float_t fMPECorrOccupancy;          // MPE corrected occupancy
+    Float_t fMPECorrOccupancyErr;       // Error on the MPE corrected occupancy
+    Float_t fMPECorrOccupancyCorr;      // Ratio of MPE corrected occupancy to input occupancy
+
     
     Float_t fFresnelTCoeff;             // Acrylic Fresnel transmission coefficient
     
@@ -220,12 +225,6 @@ namespace LOCAS{
     
     Bool_t fAVHDShadowFlag;             // TRUE: Shadowed due to AV HD FALSE: Unshadowed (i.e. unaffected by the AV HD)
     Bool_t fGeometricShadowFlag;        // TRUE: Shadowed due to Geometry FALSE: Unshadowed (i.e. unaffected by the Geoemtry)
-    
-    Float_t fAVHDShadowRatio;           // Ratio of AV HD Shadowing values (usually between a central run at this wavelength)
-    Float_t fAVHDShadowRatioErr;        // Error on this Shadowing Ratio
-    
-    Float_t fGeometricShadowRatio;      // Ratio of Enveloping Geometry value (usually between a central run at this wavelength)
-    Float_t fGeometricShadowRatioErr;   // Error on this Shadowing Ratio
     
     Bool_t fCHSFlag;                    // (DQXX Flag) TRUE: Bad Channel FALSE: Good Channel
     Bool_t fCSSFlag;                    // (ANXX Flag) TRUE: Bad Channel FALSE: Good Channel

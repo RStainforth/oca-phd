@@ -161,7 +161,7 @@ int main( int argc, char** argv ){
   // Set SOC Run Information if it has been specified at the command line
   if ( srcID > 0 ){ socBr->SetSourceID( srcID ); }
   if ( srcRunID > 0 ){ socBr->SetRunID( srcRunID ); }
-  if ( srcPos.Mag() > 0.0 ){ socBr->SetSourcePosManip( srcPos ); }
+  if ( srcPos.Mag() >= 0.0 ){ socBr->SetSourcePosManip( srcPos ); }
   if ( srcWL > 0 ){ socBr->SetLaserWavelength( srcWL ); }
   if ( srcGTO > 0.0 ){ socBr->SetGlobalTimeOffset( srcGTO ); }
 
@@ -180,6 +180,7 @@ int main( int argc, char** argv ){
     // Set them in the SOCPMT objects contained in the SOC object
     ( socBr->GetSOCPMT( iPMT->first ) ).SetRelOccSim_fullShadow( geoRelOcc );
     ( socBr->GetSOCPMT( iPMT->first ) ).SetRelOccSim_hdRopeShadow( avhdRelOcc );
+
   }
 
   // Create the new branch on the new tree
