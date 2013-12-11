@@ -27,7 +27,7 @@ DEPLIBS     := ${ROOTLIB} ${GEANT4LIB} ${CLHEPLIB} ${CURLLIB}
 # The name of the library depends on the value of RATSYSTEM, which must be setup to link against rat anyway.
 # Compile and link flags imported from RAT
 RATCFLAGS   := -I$(RATROOT)/include -I$(RATROOT)/include/RAT -I$(RATROOT)/include/RAT/DS
-RATLIB		:= -L$(RATROOT)/lib -lRATEvent_$(RATSYSTEM) -lrat_Linux
+RATLIB		:= -L$(RATROOT)/lib -lRATEvent_$(RATSYSTEM) -lrat_$(RATSYSTEM)
 
 # Compile and link flags for LOCAS
 
@@ -46,7 +46,9 @@ LINKCMD		:=
 
 ifneq ($(findstring macosx, $(ARCH)),)
 	LDOPTS  := -dynamiclib -single_module -undefined dynamic_lookup
-	LINKCMD := install_name_tool -change lib/libRATEvent_$(RATSYSTEM).so @rpath/libRATEvent_$(RATSYSTEM).so libLOCAS.so
+
+# Shouldn't need the below statement anymore - will keep it here for legacy control.
+# LINKCMD := install_name_tool -change lib/libRATEvent_$(RATSYSTEM).so @rpath/libRATEvent_$(RATSYSTEM).so libLOCAS.so
 endif
 ifneq ($(findstring $(ARCH), $(strip linux debian redhat)),)
 	LDOPTS := -shared
