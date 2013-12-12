@@ -7,8 +7,7 @@
 /// BRIEF: This executable loads information from the RAT or LOCAS DB
 ///        (data base) or command line and inserts it into 
 ///        the SOC (.root) file.
-///        
-///          
+///                 
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:
@@ -24,8 +23,8 @@
 ///
 ///         Example Usage (at command line):
 ///
-///              db2soc -r [run-id]
-///              e.g. db2soc -r 12121953
+///              db2soc -r [run-id] -f [run-id]
+///              e.g. db2soc -r 12121953 -f 12121953
 ///
 ///         where '12121953' is the Run-ID of the run SOC file
 ///         located in ${LOCAS_DATA}/runs/soc whose name is
@@ -39,8 +38,8 @@
 ///         data structure on the SOC file, the following entries may
 ///         be specifed at the command line:
 ///
-///              1, SOC::sourceID (-i)
-///              2, SOC::runID (-s)
+///              1, SOC::sourceID (-s)
+///              2, SOC::runID (-i)
 ///              3, SOC::laserWavelength (-w)
 ///              4, SOC::sourcePosManip (-x, -y, -z for coordinates)
 ///              5, SOC::globalTimeOffset (-g)
@@ -56,6 +55,11 @@
 ///         The above would be specified for a 420 nm laser with run ID 
 ///         12121953 at a position (4000,0,0) mm with a global time offset
 ///         of 0 and a source ID (matching that of the laser) of 420.
+///
+///         NOTE: If you specify a negative numerical value you must end the
+///         command line command with the argument termination token '--'
+///
+///          e.g. db2soc -i 12121953 -s 420 -w 420 -x -4000 -y -1000 -z 500 --
 ///
 //////////////////////////////////////////////////////////////////////////////
 
@@ -89,9 +93,9 @@ public:
 		       fSrcID( -1 ), fSrcRunID( -1 ),
 		       fSrcPosX( -1 ), fSrcPosY( -1 ),
 		       fSrcPosZ( -1 ), fSrcWL( -1 ),
-                       fSrcGTO( -1 ) { }
+                       fSrcGTO( -1 ), fSrcFill( -1 ) { }
   Long64_t fRID;
-  Int_t fSrcID, fSrcRunID, fSrcWL;
+  Int_t fSrcID, fSrcRunID, fSrcWL, fSrcFill;
   Double_t fSrcPosX, fSrcPosY, fSrcPosZ;
   Float_t fSrcGTO;
   std::string fRIDStr;
@@ -118,6 +122,7 @@ int main( int argc, char** argv ){
   Int_t srcID = Opts.fSrcID;
   Int_t srcRunID = Opts.fSrcRunID;
   Int_t srcWL = Opts.fSrcWL;
+  Int_t srcFill = Opts.fSrcFill;
   Float_t srcGTO = Opts.fSrcGTO;
   TVector3 srcPos( Opts.fSrcPosX, Opts.fSrcPosY, Opts.fSrcPosZ );
 
@@ -135,10 +140,6 @@ int main( int argc, char** argv ){
     cout << "The SOC Run file: " << filename << " does not exist. Aborting." << endl;
     return 1;
   }
-
-  // Load the shadowing values
-  lDB.LoadAVHDRopePMTShadowingVals( rID );
-  lDB.LoadGeoPMTShadowingVals( rID );
 
   // Create a pointer to the SOC file to open and update
   TFile* file = TFile::Open( filename.c_str(), "UPDATE" );
@@ -159,6 +160,11 @@ int main( int argc, char** argv ){
   oldSocTree->GetEntry( 0 ); 
 
   // Set SOC Run Information if it has been specified at the command line
+  if ( srcFill > 0 ){
+    lDB.LoadAVHDRopePMTShadowingVals( rID );
+    lDB.LoadGeoPMTShadowingVals( rID );
+  }
+
   if ( srcID > 0 ){ socBr->SetSourceID( srcID ); }
   if ( srcRunID > 0 ){ socBr->SetRunID( srcRunID ); }
   if ( srcPos.Mag() >= 0.0 ){ socBr->SetSourcePosManip( srcPos ); }
@@ -169,18 +175,21 @@ int main( int argc, char** argv ){
   // in the SOC object.
   std::map<Int_t, DS::SOCPMT>::iterator iPMT;
 
-
-  for ( iPMT = socBr->GetSOCPMTIterBegin(); iPMT != socBr->GetSOCPMTIterEnd(); ++iPMT ){
-
-    // Obtain the shadowing values for the specified PMT ID
-    Int_t pmtID = iPMT->first;
-    Double_t avhdRelOcc = lDB.GetAVHDRopePMTShadowingVal( pmtID );
-    Double_t geoRelOcc = lDB.GetGeoPMTShadowingVal( pmtID );
-
-    // Set them in the SOCPMT objects contained in the SOC object
-    ( socBr->GetSOCPMT( iPMT->first ) ).SetRelOccSim_fullShadow( geoRelOcc );
-    ( socBr->GetSOCPMT( iPMT->first ) ).SetRelOccSim_hdRopeShadow( avhdRelOcc );
-
+  if ( srcFill > 0 ){
+    for ( iPMT = socBr->GetSOCPMTIterBegin(); iPMT != socBr->GetSOCPMTIterEnd(); ++iPMT ){
+      
+      // Obtain the PMT ID
+      Int_t pmtID = iPMT->first;
+      
+      // Obtain the shadowing values for the specified PMT ID
+      Double_t avhdRelOcc = lDB.GetAVHDRopePMTShadowingVal( pmtID );
+      Double_t geoRelOcc = lDB.GetGeoPMTShadowingVal( pmtID );
+      
+      // Set them in the SOCPMT objects contained in the SOC object
+      ( socBr->GetSOCPMT( iPMT->first ) ).SetRelOccSim_fullShadow( geoRelOcc );
+      ( socBr->GetSOCPMT( iPMT->first ) ).SetRelOccSim_hdRopeShadow( avhdRelOcc );
+      
+    }
   }
 
   // Create the new branch on the new tree
@@ -208,15 +217,17 @@ LOCASCmdOptions ParseArguments( int argc, char** argv)
                                        {"source-run-id", 1, NULL, 's'},
                                        {"source-id", 1, NULL, 'i'},
                                        {"source-pos-x", 1, NULL, 'x'},
-                                       {"source-pos-y", 1, NULL, 'y'},
-                                       {"source-pos-z", 1, NULL, 'z'},
+				       {"source-pos-y", 1, NULL, 'y'},
+				       {"source-pos-z", 1, NULL, 'Z'},
                                        {"source-wavelength", 1, NULL, 'w'},
                                        {"source-global-time-offset", 1, NULL, 'g'},
+                                       {"fill-shadowing-values", 1, NULL, 'f'},
                                        {0,0,0,0} };
+
   
   LOCASCmdOptions options;
   int option_index = 0;
-  int c = getopt_long(argc, argv, "h:r:s:i:x:y:z:w:g:", opts, &option_index);
+  int c = getopt_long(argc, argv, "h:r:s:i:x:y:z:w:g:sh:", opts, &option_index);
   while (c != -1) {
     switch (c) {
     case 'h': help(); exit( 0 ); break;
@@ -224,14 +235,15 @@ LOCASCmdOptions ParseArguments( int argc, char** argv)
     case 's': options.fSrcID = atoi( RAT::optarg ); break;
     case 'i': options.fSrcRunID = atoi( RAT::optarg ); break;
     case 'x': options.fSrcPosX = atof( RAT::optarg ); break;
-    case 'y': options.fSrcPosY = atof( RAT::optarg ); break;
+    case 'y': options.fSrcPosY = atof( RAT::optarg );
     case 'z': options.fSrcPosZ = atof( RAT::optarg ); break;
     case 'w': options.fSrcWL = atoi( RAT::optarg ); break;
     case 'g': options.fSrcGTO = atof( RAT::optarg ); break;
+    case 'f': options.fSrcFill = atof( RAT::optarg ); break;
 
     }
     
-    c = getopt_long(argc, argv, "h:r:s:i:x:y:z:w:g:", opts, &option_index);
+    c = getopt_long(argc, argv, "h:r:s:i:x:y:z:w:g:f:", opts, &option_index);
   }
   
   stringstream idStream;
@@ -256,10 +268,11 @@ void help(){
   cout << " -r, --run-id                          Set the run ID for the corresponding SOC run file to be updated \n";
   cout << " -s, --source-run-d                    Set the run ID in the SOC file specified by the '-r' option above \n";
   cout << " -i, --source-id                       Set the source ID in the SOC file \n";
-  cout << " -x, --source-pos-x                    Set the x- source manip position \n";
-  cout << " -y, --source-pos-y                    Set the y- source manip position \n";
-  cout << " -z, --source-pos-z                    Set the z- source manip position \n";
+  cout << " -x, --source-pos-x                    Set the source manip position [x-coordinate] \n";
+  cout << " -x, --source-pos-y                    Set the source manip position [y-coordinate] \n";
+  cout << " -x, --source-pos-z                    Set the source manip position [z-coordinate] \n";
   cout << " -w, --source-wavelength               Set the source wavelength \n";
   cout << " -g, --source-global-time-offset       Set the source global time offset \n";
+  cout << " -f, --fill-shadowing-values          Set whether to fill the shadowing values \n";
   
 }
