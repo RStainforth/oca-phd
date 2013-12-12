@@ -263,7 +263,7 @@ void help(){
   cout << "\n";
   cout << "SNO+ LOCAS - db2soc" << "\n";
   cout << "Description: Executable to update values from the RAT or LOCAS database to the SOC files. \n";
-  cout << "Usage: db2soc [-h] [-r run-id] [-s source-run-id] [-i source-id] \n [-x source-pos-x] [-y source-pos-y] [-z source-pos-z] \n [-w source-wavelength] [-g source-global-time-offset] \n";
+  cout << "Usage: db2soc [-h] [-r run-id] [-s source-run-id] [-i source-id] \n [-x source-pos-x] [-y source-pos-y] [-z source-pos-z] \n [-w source-wavelength] [-g source-global-time-offset] [-f fille-shadowing-values] \n";
   cout << " -h, --help                            Display this help message and exit \n";
   cout << " -r, --run-id                          Set the run ID for the corresponding SOC run file to be updated \n";
   cout << " -s, --source-run-id                   Set the run ID in the SOC file specified by the '-r' option above \n";
