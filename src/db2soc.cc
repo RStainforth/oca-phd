@@ -266,7 +266,7 @@ void help(){
   cout << "Usage: db2soc [-h] [-r run-id] [-s source-run-id] [-i source-id] \n [-x source-pos-x] [-y source-pos-y] [-z source-pos-z] \n [-w source-wavelength] [-g source-global-time-offset] \n";
   cout << " -h, --help                            Display this help message and exit \n";
   cout << " -r, --run-id                          Set the run ID for the corresponding SOC run file to be updated \n";
-  cout << " -s, --source-run-id                    Set the run ID in the SOC file specified by the '-r' option above \n";
+  cout << " -s, --source-run-id                   Set the run ID in the SOC file specified by the '-r' option above \n";
   cout << " -i, --source-id                       Set the source ID in the SOC file \n";
   cout << " -x, --source-pos-x                    Set the source manip position [x-coordinate] \n";
   cout << " -x, --source-pos-y                    Set the source manip position [y-coordinate] \n";
