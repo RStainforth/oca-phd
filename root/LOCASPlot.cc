@@ -12,8 +12,10 @@
 #include "TVector3.h"
 #include "TCanvas.h"
 #include "TLegend.h"
+#include "TStyle.h"
 
 #include "LOCASLightPath.hh"
+#include "LOCASDB.hh"
 
 
 // Function which loads the ROOT file
@@ -35,7 +37,7 @@ LoadRootFile( const char* lpFile,
 // TR: Time Residuals
 
 
-void
+TCanvas*
 LOCASDavVDsc( const char* root_file, 
 	      const char* plot_file_name,
 	      const Double_t innerR,
@@ -133,11 +135,11 @@ LOCASDavVDsc( const char* root_file,
   myLeg->Draw( "same" );
   c1->Print(plot_file_name);
 
-  return;
+  return c1;
 
 }
 
-void
+TCanvas*
 DavVDsc( const char* root_file, 
 	 const char* plot_file_name,
 	 const Double_t innerR,
@@ -237,11 +239,11 @@ DavVDsc( const char* root_file,
 
   c1->Print(plot_file_name);
 
-  return;
+  return c1;
 
 }
 
-void
+TCanvas*
 LOCASDh2oVDsc( const char* root_file, 
 	      const char* plot_file_name,
 	      const Double_t innerR,
@@ -339,11 +341,11 @@ LOCASDh2oVDsc( const char* root_file,
   myLeg->Draw( "same" );
   c1->Print(plot_file_name);
 
-  return;
+  return c1;
 
 }
 
-void
+TCanvas*
 Dh2oVDsc( const char* root_file, 
 	 const char* plot_file_name,
 	 const Double_t innerR,
@@ -443,11 +445,11 @@ Dh2oVDsc( const char* root_file,
 
   c1->Print(plot_file_name);
 
-  return;
+  return c1;
 
 }
 
-void
+TCanvas*
 LOCASDavVDh2o( const char* root_file, 
 	       const char* plot_file_name,
 	       const Double_t innerR,
@@ -545,11 +547,11 @@ LOCASDavVDh2o( const char* root_file,
   myLeg->Draw( "same" );
   c1->Print(plot_file_name);
 
-  return;
+  return c1;
 
 }
 
-void
+TCanvas*
 DavVDh2o( const char* root_file, 
 	 const char* plot_file_name,
 	 const Double_t innerR,
@@ -647,9 +649,237 @@ DavVDh2o( const char* root_file,
 
   myLeg->Draw( "same" );
 
-  c1->Print(plot_file_name);
+  //c1->Print(plot_file_name);
 
-  return;
+  return c1;
+
+}
+
+TCanvas*
+LOCASRIndices( const char* plot_file_name )
+{
+  
+  TGraph* scGraph = new TGraph();
+  TGraph* avGraph = new TGraph();
+  TGraph* h2oGraph = new TGraph();
+  
+  Int_t scPoint = 0;
+  Int_t avPoint = 0;
+  Int_t h2oPoint = 0;
+  
+  
+  LOCAS::LOCASDB lDB;
+  lDB.LoadRefractiveIndices();
+  
+  TGraph scRI = lDB.GetScintRI();
+  TGraph avRI = lDB.GetAVRI();
+  TGraph h2oRI = lDB.GetWaterRI();
+  
+  for( Int_t k = 20; k < 71; k++ ){
+    scGraph->SetPoint( scPoint++, k * 10.0, scRI.Eval(k * 10.0) );
+    avGraph->SetPoint( avPoint++, k * 10.0, avRI.Eval(k * 10.0) );
+    h2oGraph->SetPoint( h2oPoint++, k * 10.0, h2oRI.Eval(k * 10.0) );
+  }
+  
+  TCanvas* c1 = new TCanvas( "c-LOCASRIndices", "LOCAS: Refractive Indices", 600, 400 );
+  
+  scGraph->GetXaxis()->SetTitle( "Wavelength [nm]" );
+  scGraph->GetYaxis()->SetTitle( "Refractive Index" );
+
+  scGraph->GetXaxis()->SetLimits( 175.0, 725.0 );
+  scGraph->GetHistogram()->SetMaximum( 1.80 );
+  scGraph->GetHistogram()->SetMinimum( 1.30 );
+  
+  scGraph->SetMarkerColor( 1 );
+  avGraph->SetMarkerColor( 2 );
+  h2oGraph->SetMarkerColor( 3 );
+  
+  scGraph->SetLineColor( 1 );
+  avGraph->SetLineColor( 2 );
+  h2oGraph->SetLineColor( 3 );
+  
+  scGraph->SetLineWidth( 2 );
+  avGraph->SetLineWidth( 2 );
+  h2oGraph->SetLineWidth( 2 );
+  
+  scGraph->SetMarkerStyle( 1 );
+  avGraph->SetMarkerStyle( 1 );
+  h2oGraph->SetMarkerStyle( 1 );
+  
+  scGraph->Draw( "ALP" );
+  avGraph->Draw( "LP, same" );
+  h2oGraph->Draw( "LP, same" );
+  
+  TLegend* myLeg = new TLegend( 0.65, 0.65, 0.83, 0.83 );
+  
+  myLeg->AddEntry( scGraph, "Scintillator", "l" );
+  myLeg->AddEntry( avGraph, "Acrylic", "l" );
+  myLeg->AddEntry( h2oGraph, "Water", "l" );
+  
+  myLeg->Draw( "same" );
+  
+  //c1->Print(plot_file_name);
+  
+  return c1;
+  
+}
+
+TCanvas*
+RIndices( const char* root_file, const char* plot_file_name  )
+{
+
+  // Load the ROOT File first
+  RAT::DS::Root* rDS;
+  RAT::DS::Run* rRun;
+  TTree* tree;
+  LoadRootFile( root_file, &tree, &rDS, &rRun );
+  
+  TGraph* scGraph = new TGraph();
+  TGraph* avGraph = new TGraph();
+  TGraph* h2oGraph = new TGraph();
+  
+  Int_t scPoint = 0;
+  Int_t avPoint = 0;
+  Int_t h2oPoint = 0;
+
+  RAT::DS::LightPath* lLPath = rRun->GetLightPath();
+  
+  for( Int_t k = 20; k < 71; k++ ){
+    scGraph->SetPoint( scPoint++, k * 10.0, lLPath->GetScintRI( k * 10.0 ) );
+    avGraph->SetPoint( avPoint++, k * 10.0, lLPath->GetAVRI( k * 10.0 ) );
+    h2oGraph->SetPoint( h2oPoint++, k * 10.0, lLPath->GetWaterRI( k * 10.0 ) );
+  }
+  
+  TCanvas* c1 = new TCanvas( "c-RIndices", "RAT: Refractive Indices", 600, 400 );
+  
+  scGraph->GetXaxis()->SetTitle( "Wavelength [nm]" );
+  scGraph->GetYaxis()->SetTitle( "Refractive Index" );
+
+  scGraph->GetXaxis()->SetLimits( 175.0, 725.0 );
+  scGraph->GetHistogram()->SetMaximum( 1.80 );
+  scGraph->GetHistogram()->SetMinimum( 1.30 );
+  
+  scGraph->SetMarkerColor( 1 );
+  avGraph->SetMarkerColor( 2 );
+  h2oGraph->SetMarkerColor( 3 );
+  
+  scGraph->SetLineColor( 1 );
+  avGraph->SetLineColor( 2 );
+  h2oGraph->SetLineColor( 3 );
+  
+  scGraph->SetLineWidth( 2 );
+  avGraph->SetLineWidth( 2 );
+  h2oGraph->SetLineWidth( 2 );
+  
+  scGraph->SetMarkerStyle( 1 );
+  avGraph->SetMarkerStyle( 1 );
+  h2oGraph->SetMarkerStyle( 1 );
+  
+  scGraph->Draw( "ALP" );
+  avGraph->Draw( "LP, same" );
+  h2oGraph->Draw( "LP, same" );
+  
+  TLegend* myLeg = new TLegend( 0.65, 0.65, 0.83, 0.83 );
+  
+  myLeg->AddEntry( scGraph, "Scintillator", "l" );
+  myLeg->AddEntry( avGraph, "Acrylic", "l" );
+  myLeg->AddEntry( h2oGraph, "Water", "l" );
+  
+  myLeg->Draw( "same" );
+  
+  c1->Print(plot_file_name);
+  
+  return c1;
+  
+}
+
+TCanvas*
+TResiduals( const char* root_file, const char* plot_file_name )
+{
+
+  // Load the ROOT File first
+  RAT::DS::Root* rDS;
+  RAT::DS::Run* rRun;
+  TTree* tree;
+  LoadRootFile( root_file, &tree, &rDS, &rRun );
+
+  TGraph* scGraph = rRun->GetGroupVelocityTime()->GetScintGraph();
+  TGraph* avGraph = rRun->GetGroupVelocityTime()->GetAVGraph();
+  TGraph* waterGraph = rRun->GetGroupVelocityTime()->GetWaterGraph();
+
+  Double_t lambdaE = 3.103125 * 0.000001;
+
+  TH1D* timeResiduals = new TH1D( "Time Residuals", "Time Residuals", 600, 200.0, 500.0 );
+  TH1D* timeRaw = new TH1D( "Time Raw", "Time Raw", 600, 200.0, 500.0 );
+
+  LOCAS::LOCASLightPath lLP;
+
+  for( Int_t iEvent = 0; iEvent < tree->GetEntries(); iEvent++ ){
+
+    tree->GetEntry( iEvent );
+
+    RAT::DS::MC* rMC = rDS->GetMC();
+    RAT::DS::MCParticle* rMCParticle = rMC->GetMCParticle( 0 );
+
+    // "startPos" is the true event position as determined by the MC
+    TVector3 startPos = rMCParticle->GetPos();
+
+    // Loop over the triggered events
+    for( Int_t iEV = 0; iEV < rDS->GetEVCount(); iEV++ ){
+
+      RAT::DS::EV* rEV = rDS->GetEV( iEV );
+      RAT::DS::PMTProperties* rPMTProp = rRun->GetPMTProp();
+
+      // Loop over the PMTCals i.e. the PMTs registering a hit
+      for( Int_t iPMT = 0; iPMT < rEV->GetPMTCalCount(); iPMT++ ){
+
+	// Get the PMT ID
+	Int_t pmtID = rEV->GetPMTCal( iPMT )->GetID();
+	
+	// Get the PMT Position
+	TVector3 pmtPos = rPMTProp->GetPos( pmtID );
+
+	Double_t hitTime = rEV->GetPMTCal( iPMT )->GetTime();
+
+	timeRaw->Fill( hitTime );
+	
+	lLP.CalculatePath( startPos, pmtPos, 10.0, 400.0 );
+
+	Double_t timeResidual = hitTime - lLP.GetDistInScint() / scGraph->Eval( lambdaE )
+	  - lLP.GetDistInAV() / avGraph->Eval( lambdaE )
+	  - lLP.GetDistInWater() / waterGraph->Eval( lambdaE );
+
+	timeResiduals->Fill( timeResidual );
+
+      }
+    }
+  }
+
+  TCanvas* c1 = new TCanvas( "c-TimeResiduals", "Time Residuals", 600, 400 );
+  
+  timeResiduals->GetXaxis()->SetTitle( "Time [ns]" );
+  timeResiduals->GetYaxis()->SetTitle( "Frequency [ns^{-1}]" );
+  
+  timeResiduals->SetLineColor( 1 );
+  timeRaw->SetLineColor( 2 );
+  
+  timeResiduals->SetLineWidth( 1 );
+  timeRaw->SetLineWidth( 1 );
+  
+  timeResiduals->Draw();
+  timeRaw->Draw( "same" );
+  gStyle->SetOptStat(0);
+  
+  TLegend* myLeg = new TLegend( 0.65, 0.65, 0.85, 0.85 );
+  
+  myLeg->AddEntry( timeResiduals, "Time Residuals", "l" );
+  myLeg->AddEntry( timeRaw, "Hit Times", "l" );
+  
+  myLeg->Draw( "same" );
+  
+  c1->Print(plot_file_name);
+  
+  return c1;
 
 }
 
@@ -657,15 +887,32 @@ void
 PlotAll( const char* root_file )
 {
 
-  LOCASDavVDh2o( root_file, "locas_h2o_vs_av.eps", 0.0, 6005.3 );
-  LOCASDavVDsc( root_file, "locas_av_vs_sc.eps", 0.0, 6005.3 );
-  LOCASDh2oVDsc( root_file, "locas_h2o_vs_sc.eps", 0.0, 6005.3 );
-  DavVDh2o( root_file, "rat_h2o_vs_av.eps", 0.0, 6005.3 );
-  DavVDsc( root_file, "rat_av_vs_sc.eps", 0.0, 6005.3 );
-  Dh2oVDsc( root_file, "rat_h2o_vs_sc.eps", 0.0, 6005.3 );
+  TCanvas* plotLOCASDavVDh2o = LOCASDavVDh2o( root_file, "locas_h2o_vs_av.eps", 0.0, 6005.3 );
+  TCanvas* plotLOCASDavVDsc = LOCASDavVDsc( root_file, "locas_av_vs_sc.eps", 0.0, 6005.3 );
+  TCanvas* plotLOCASDh2oVDsc = LOCASDh2oVDsc( root_file, "locas_h2o_vs_sc.eps", 0.0, 6005.3 );
+  TCanvas* plotLOCASRIndices = LOCASRIndices( "locas_rindices.eps" );
+  TCanvas* plotDavVDh2o = DavVDh2o( root_file, "rat_h2o_vs_av.eps", 0.0, 6005.3 );
+  TCanvas* plotDavVDsc = DavVDsc( root_file, "rat_av_vs_sc.eps", 0.0, 6005.3 );
+  TCanvas* plotDh2oVDsc = Dh2oVDsc( root_file, "rat_h2o_vs_sc.eps", 0.0, 6005.3 );
+  TCanvas* plotRIndices = RIndices( root_file, "rat_rindices.eps" );
 
-} 
+  TCanvas* plotTimeResiduals = TResiduals( root_file, "time_residuals.eps" );
 
+  TFile* f = new TFile("graphs.root", "RECREATE");
+
+  f->WriteTObject(plotLOCASDavVDh2o);
+  f->WriteTObject(plotLOCASDavVDsc);
+  f->WriteTObject(plotLOCASDh2oVDsc);
+  f->WriteTObject(plotLOCASRIndices);
+  f->WriteTObject(plotDavVDh2o);
+  f->WriteTObject(plotDavVDsc);
+  f->WriteTObject(plotDh2oVDsc);
+  f->WriteTObject(plotRIndices);
+
+  f->WriteTObject(plotTimeResiduals);
+  f->Close();
+
+}
 
 
 
