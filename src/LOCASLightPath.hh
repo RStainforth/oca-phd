@@ -160,11 +160,11 @@ namespace LOCAS{
     
     // Return the refractive indices, argument 'lambda*' refers to the wavelength [nm]
     // The number '0.001243125' is to convert the wavelengths into energies [MeV] (?)
-    Double_t GetScintRI( const Double_t lambdaSc ){ return fScintRI.Eval( 0.001243125/lambdaSc ); }
-    Double_t GetAVRI( const Double_t lambdaAV ){ return fAVRI.Eval( 0.001243125/lambdaAV ); }
-    Double_t GetWaterRI( const Double_t lambdaH20 ){ return fWaterRI.Eval( 0.001243125/lambdaH20 ); }
-    Double_t GetUpperTargetRI( const Double_t lambdaSc ){ return fUpperTargetRI.Eval( 0.001243125/lambdaSc ); }
-    Double_t GetLowerTargetRI( const Double_t lambdaSc ){ return fLowerTargetRI.Eval( 0.001243125/lambdaSc ); }
+    Double_t GetScintRI( const Double_t lambdaSc ){ return fScintRI.Eval( lambdaSc ); }
+    Double_t GetAVRI( const Double_t lambdaAV ){ return fAVRI.Eval( lambdaAV ); }
+    Double_t GetWaterRI( const Double_t lambdaH20 ){ return fWaterRI.Eval( lambdaH20 ); }
+    Double_t GetUpperTargetRI( const Double_t lambdaSc ){ return fUpperTargetRI.Eval( lambdaSc ); }
+    Double_t GetLowerTargetRI( const Double_t lambdaSc ){ return fLowerTargetRI.Eval( lambdaSc ); }
     
     
   private:

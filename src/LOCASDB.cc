@@ -208,7 +208,7 @@ void LOCASDB::LoadRefractiveIndices()
 
   //////// LOAD THE SCINTILLATOR VOLUME REFRACTIVE INDICES ///////
 
-  fRATDBPtr = fRATDB->GetLink( "OPTICS", "lightwater_sno" );
+  fRATDBPtr = fRATDB->GetLink( "OPTICS", "labppo_scintillator" );
   assert( fRATDBPtr );
 
   std::vector<Double_t> wavelengths = fRATDBPtr->GetDArray( "RINDEX_value1" );
@@ -216,7 +216,7 @@ void LOCASDB::LoadRefractiveIndices()
 
   int point = 0;
   for ( int pVal = 0; pVal < indices.size(); pVal++ ){
-    fScintRI.SetPoint( point++, indices[ pVal ], wavelengths[ pVal ] );
+    fScintRI.SetPoint( point++, wavelengths[ pVal ], indices[ pVal ] );
   }
 
  //////// LOAD THE AV VOLUME REFRACTIVE INDICES ///////
@@ -229,7 +229,7 @@ void LOCASDB::LoadRefractiveIndices()
 
   point = 0;
   for ( int pVal = 0; pVal < indices.size(); pVal++ ){
-    fAVRI.SetPoint( point++, indices[ pVal ], wavelengths[ pVal ] );
+    fAVRI.SetPoint( point++, wavelengths[ pVal ], indices[ pVal ] );
   }
 
  //////// LOAD THE AV VOLUME REFRACTIVE INDICES ///////
@@ -242,7 +242,7 @@ void LOCASDB::LoadRefractiveIndices()
 
   point = 0;
   for ( int pVal = 0; pVal < indices.size(); pVal++ ){
-    fWaterRI.SetPoint( point++, indices[ pVal ], wavelengths[ pVal ] );
+    fWaterRI.SetPoint( point++, wavelengths[ pVal ], indices[ pVal ] );
   }
 
 }

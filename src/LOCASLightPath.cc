@@ -361,7 +361,7 @@ void LOCASLightPath::CalculatePath( const TVector3& eventPos,
                      distWater, distWaterXDet, incidentVecOnPMT, lambda );
     
     // Check for locality or total internal reflection (TIR)
-    if( ( LocalityCheck( pmtPos, distWater, i ) ) || GetTIR() ){
+    if( ( LocalityCheck( pmtPos, distWater, i ) ) || fTIR ){
       DefineDistances( eventPos, pmtPos, distScint, 
                        distAV, distAVXDet, distWater, 
                        distWaterXDet, incidentVecOnPMT, i );
