@@ -17,6 +17,9 @@
 #include "LOCASLightPath.hh"
 #include "LOCASDB.hh"
 
+#include <sstream>
+#include <string>
+
 
 // Function which loads the ROOT file
 void
@@ -888,8 +891,89 @@ TResiduals( const char* root_file, const char* plot_file_name )
   
 }
 
+
+TCanvas*
+AVHDRopeShadowing( const Int_t runID, const char* plot_file_name,
+                       const Double_t minROcc, const Double_t maxROcc )
+{
+  
+  TGraph* pmtShadowing = new TGraph();
+  Int_t pmtVal = 0;
+
+  LOCAS::LOCASDB lDB;
+  lDB.LoadPMTPositions();
+  lDB.LoadAVHDRopePMTShadowingVals( runID );
+
+  for ( Int_t iPMT = 0; iPMT < lDB.GetNPMTs(); iPMT++ ){
+
+    Int_t pmtType = lDB.GetPMTType( iPMT );
+    Double_t pmtShadowVal = lDB.GetAVHDRopePMTShadowingVal( iPMT );
+
+    if ( pmtShadowVal > minROcc && pmtShadowVal < maxROcc ){
+      TVector3 pmtPos = lDB.GetPMTPosition( iPMT );
+      pmtShadowing->SetPoint( pmtVal++, pmtPos.Phi(), pmtPos.CosTheta() );
+    } 
+  }
+
+  TCanvas* c1 = new TCanvas( "c-AVHDRopePMTShadowing", "AVHD Rope PMT Shadowing", 600, 400 );
+  
+  pmtShadowing->GetXaxis()->SetTitle( "#phi_{PMT}" );
+  pmtShadowing->GetYaxis()->SetTitle( "Cos(#theta_{PMT})" );
+
+  pmtShadowing->SetMarkerColor( 2 );
+  pmtShadowing->SetMarkerStyle( 6 );
+  pmtShadowing->SetMarkerSize( 1 );
+  
+  pmtShadowing->Draw( "AP" );
+  
+  c1->Print(plot_file_name);
+  
+  return c1;
+  
+}
+
+TCanvas*
+GeoShadowing( const Int_t runID, const char* plot_file_name,
+                  const Double_t minROcc, const Double_t maxROcc )
+{
+  
+  TGraph* pmtShadowing = new TGraph();
+  Int_t pmtVal = 0;
+
+  LOCAS::LOCASDB lDB;
+  lDB.LoadPMTPositions();
+  lDB.LoadGeoPMTShadowingVals( runID );
+
+  for ( Int_t iPMT = 0; iPMT < lDB.GetNPMTs(); iPMT++ ){
+
+    Int_t pmtType = lDB.GetPMTType( iPMT );
+    Double_t pmtShadowVal = lDB.GetGeoPMTShadowingVal( iPMT );
+
+    if ( pmtShadowVal > minROcc && pmtShadowVal < maxROcc ){
+      TVector3 pmtPos = lDB.GetPMTPosition( iPMT );
+      pmtShadowing->SetPoint( pmtVal++, pmtPos.Phi(), pmtPos.CosTheta() );
+    } 
+  }
+
+  TCanvas* c1 = new TCanvas( "c-GeoPMTShadowing", "Geo PMT Shadowing", 600, 400 );
+  
+  pmtShadowing->GetXaxis()->SetTitle( "#phi_{PMT}" );
+  pmtShadowing->GetYaxis()->SetTitle( "Cos(#theta_{PMT})" );
+
+  pmtShadowing->SetMarkerColor( 2 );
+  pmtShadowing->SetMarkerStyle( 6 );
+  pmtShadowing->SetMarkerSize( 1 );
+  
+  pmtShadowing->Draw( "AP" );
+  
+  c1->Print(plot_file_name);
+  
+  return c1;
+  
+}
+
 void
-PlotAll( const char* root_file )
+PlotAll( const char* root_file, const Int_t runID )
 {
 
   TCanvas* plotLOCASDavVDh2o = LOCASDavVDh2o( root_file, "locas_h2o_vs_av.eps", 0.0, 6005.3 );
@@ -903,6 +987,18 @@ PlotAll( const char* root_file )
 
   TCanvas* plotTimeResiduals = TResiduals( root_file, "time_residuals.eps" );
 
+  stringstream theStream;
+  string theString;
+
+  theStream << runID;
+  theStream >> theString;
+
+  string avhdPlotFile = (theString + "_avhd_shadowing.eps");
+  string geoPlotFile = (theString + "_geo_shadowing.eps");
+
+  TCanvas* plotAVHDRopeShadowing = AVHDRopeShadowing( runID, avhdPlotFile.c_str(), 0.0, 0.9 );
+  TCanvas* plotGeoPMTShadowing = GeoShadowing( runID, geoPlotFile.c_str(), 0.0, 0.9 );
+
   TFile* f = new TFile("graphs.root", "RECREATE");
 
   f->WriteTObject(plotLOCASDavVDh2o);
@@ -915,6 +1011,9 @@ PlotAll( const char* root_file )
   f->WriteTObject(plotRIndices);
 
   f->WriteTObject(plotTimeResiduals);
+
+  f->WriteTObject(plotAVHDRopeShadowing);
+  f->WriteTObject(plotGeoPMTShadowing);
   f->Close();
 
 }
