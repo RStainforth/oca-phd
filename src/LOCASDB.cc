@@ -50,7 +50,7 @@ LOCASDB::LOCASDB()
 
   fNTotalPMTs = 0;
   fNNormalPMTs = 0;
-  fNOWLPMTS = 0;
+  fNOWLPMTs = 0;
   fNLowGainPMTs = 0;
   fNBUTTPMTs = 0;
   fNNeckPMTs = 0;
@@ -108,7 +108,7 @@ void LOCASDB::Clear()
 
   fNTotalPMTs = 0;
   fNNormalPMTs = 0;
-  fNOWLPMTS = 0;
+  fNOWLPMTs = 0;
   fNLowGainPMTs = 0;
   fNBUTTPMTs = 0;
   fNNeckPMTs = 0;
