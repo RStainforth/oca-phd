@@ -72,7 +72,7 @@ for ((i=0;i<$CYCLE;i++))
 done
 
 # Wait 5 mins
-export WAIT=30 #seconds
+export WAIT=300 #seconds
 # Check whether the job finished
 qstat | grep ${JOBID}
 status=$?
@@ -102,6 +102,8 @@ rm *.log
 rm ProduceJobScripts.py
 rm RATBashScript.sh
 
+
+# Now process the SOC files, using 'soc2soc' to create one large SOC file.
 cd ${USERDIR}/${JOBDESC}/root_files
 mkdir copy
 cp *.root copy
@@ -123,6 +125,7 @@ cp ${JOBID}_Run.root ${FINALDIR}
 sleep 30
 cd ${FINALDIR}
 
+# Log the information in 'soc_file.log'
 date >> soc_file.log
 export STRING="Job ID ${JOBID}, from macro file: ${TMPVAR1}, with $(($CYCLE*$EVPERCYCLE)) events"
 echo ${STRING} >> soc_file.log

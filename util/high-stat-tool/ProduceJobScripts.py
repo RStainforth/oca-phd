@@ -25,23 +25,6 @@ def ProduceRATMacro( macro_name, cycle_val, events_per_cycle ):
 
     return
 
-# def ProduceROOTMerge( root_name, macro_name, cycles, job_ID ):
-#
-# in_file = open( root_name, "r" )
-#  raw_text = PercentTemplate( in_file.read() )
-#   in_file.close()
-#
-#   loopVal = int(cycles)
-#
-#  out_text = raw_text.substitute( LVal = loopVal,
-#                                   JobDesc = str(macro_name) )
-#
-# script_for_cycle = open( "ROOTMerge" + "_" + macro_name + "_" + str(job_ID) + ".sh", "w" )
-#  script_for_cycle.write( out_text )
-#   script_for_cycle.close()
-#
-#    return
-
 def ProduceBashScript( bash_name, macro_name, cycle_val, job_ID, ratROOT, locasROOT, locasTmpData ):
 
     in_file = open( bash_name, "r" )
@@ -70,8 +53,6 @@ if __name__ == '__main__':
     rat_root = str(sys.argv[5])
     locas_root = str(sys.argv[6])
     locas_tmp_data = str(sys.argv[7])
-
-    #ProduceROOTMerge( "ROOTMerge.sh", base_macro_name, no_of_cycles, job_id )
 
     for h in range( 0,no_of_cycles ):
         ProduceRATMacro( base_macro_name, h, no_of_events_per_cycle )
