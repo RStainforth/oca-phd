@@ -151,6 +151,7 @@ if __name__ == '__main__':
     WvL = str(sys.argv[4])
     nJobs = int(sys.argv[5])
     nEvents = str(sys.argv[6])
+    nTotalEvents = (int(sys.argv[5]))*(int(sys.argv[6]))
 
     jobID = str(sys.argv[7])
 
@@ -170,7 +171,7 @@ if __name__ == '__main__':
     ProduceROOTWHMMacro( "woGEO", str(nJobs), jobID )
     ProduceROOTWHMBash( "woGEO", jobID, rat_root, locas_root, locas_data_tmp )
 
-    ProduceROOTRHMMacro( "AVHD", jobID, x_pos, y_pos, z_pos, WvL, nJobs * nEvents )
+    ProduceROOTRHMMacro( "AVHD", jobID, x_pos, y_pos, z_pos, WvL, str(nTotalEvents) )
     ProduceROOTRHMBash( "AVHD", jobID, rat_root, locas_root, locas_data_tmp )
 
     ProduceROOTRHMMacro( "GEO", jobID, x_pos, y_pos, z_pos, WvL, nJobs * nEvents )
