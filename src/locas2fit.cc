@@ -155,7 +155,16 @@ void EvaluateGlobalChiSquare( Int_t &nPar, Double_t* gIn, Double_t &f, Double_t*
     for ( iPMT = currentRun->GetLOCASPMTIterBegin(); iPMT != currentRun->GetLOCASPMTIterEnd(); iPMT++ ){
 
       currentPMT = &( iPMT->second );
-      if ( currentPMT->GetCosTheta() >= 0.9990 && currentPMT->GetIsVerified() && currentPMT->GetAVHDShadowVal() > 0.95 && currentPMT->GetGeometricShadowVal() > 0.98 && currentPMT->GetAVHDShadowVal() < 1.02 && currentPMT->GetGeometricShadowVal() < 1.05 ){
+      if ( currentPMT->GetCosTheta() >= 0.99
+	   && currentPMT->GetIsVerified() 
+	   && currentPMT->GetAVHDShadowVal() > 0.95 
+	   && currentPMT->GetGeometricShadowVal() > 0.95 
+	   && currentPMT->GetAVHDShadowVal() < 1.05 
+	   && currentPMT->GetGeometricShadowVal() < 1.05
+	   && (currentPMT->GetPos()).Mag() > 8000.0
+	   && (currentPMT->GetPos()).Mag() < 9000.0
+	   && currentPMT->GetType() == 1
+	   && currentPMT->GetOccupancy() > 100.0 ){
 	nPMTs++;
 	Float_t dataROcc = currentPMT->GetOccRatio();
 	Float_t dataFactor =  1.0;// ( (currentPMT->GetCorrSolidAngle())*(currentPMT->GetCorrFresnelTCoeff()));
