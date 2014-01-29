@@ -68,6 +68,9 @@ namespace LOCAS{
     void LoadAVHDRopePMTShadowingVals( Int_t runID );        // Load the PMT avhd-shadowing values into memory
 
     void LoadRunList( const char* runList );                 // Load a list of run IDs from a run list file into memory
+
+    void SetFile( const char* file );                        // Set an arbitrary file in .ratdb format to be loaded when
+                                                             // using LOCASDB::Get*Field Functions
     
     /////////////////////////////////
     ////////     GETTERS     ////////
@@ -108,6 +111,11 @@ namespace LOCAS{
     std::string GetLOCASRunDir(){ return fLOCASRunDir; }
 
     std::vector< Int_t > GetRunList(){ return fRunList; }
+
+    std::string GetStringField( const std::string &tableName, const std::string &fieldName  );
+    Double_t GetDoubleField( const std::string &tableName, const std::string &fieldName );
+    Int_t GetIntField( const std::string &tableName, const std::string &fieldName );
+    Bool_t GetBoolField( const std::string &tableName, const std::string &fieldName );
     
   private:
     
@@ -164,6 +172,8 @@ namespace LOCAS{
     std::string fLOCASRunDir;                                // The full system path of the directory where the LOCASRun files are held
 
     std::vector< Int_t > fRunList;                           // The list of RunIDs loaded from a runlist file
+
+    std::string fCurrentFile;                                // The Full Path of the current file loaded into memory
     
     ClassDef( LOCASDB, 1 );
         

@@ -89,6 +89,12 @@ namespace LOCAS{
     Float_t GetChiSquareMaxLimit(){ return fChiSquareMaxLimit; }
     Float_t GetChiSquareMinLimit(){ return fChiSquareMinLimit; }
 
+    Int_t GetScintParIndex(){ return 1; }
+    Int_t GetAVParIndex(){ return 2; }
+    Int_t GetWaterParIndex(){ return 3; }
+    Int_t GetAngularResponseParIndex();
+    Int_t GetLBDistributionParIndex();
+
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
@@ -105,8 +111,8 @@ namespace LOCAS{
 
   private:
 
-    const char* fFitName;
-    const char* fFitTitle;
+    std::string fFitName;
+    std::string fFitTitle;
 
     Bool_t fValidPars;             // The LOCASFit structure has allocated, valid parameters
     Bool_t fDataScreen;            // The Data has been screened and filtered for reasonable tubes
@@ -126,6 +132,12 @@ namespace LOCAS{
     Bool_t fAngularResponseVary;
     Bool_t fLBDistributionVary;
 
+    Double_t fScintAttInit;
+    Double_t fAVAttInit;
+    Double_t fWaterAttInit;
+    Double_t fAngularResponseInit;
+    Double_t fLBDistributionInit;
+
     TH2F* fLBDistribution;
     Int_t fNLBDistributionThetaBins;
     Int_t fNLBDistributionPhiBins;
@@ -143,6 +155,18 @@ namespace LOCAS{
     Float_t fChiSquare;
     Float_t fChiSquareMaxLimit;
     Float_t fChiSquareMinLimit;
+
+
+    // The arrays used by the Levenburg-Marquadt (Mrq) algorithm to find the parameters
+    Float_t* fMrqX;
+    Float_t* fMrqY;
+    Float_t* fMrqSigma;
+
+    Float_t* fMrqParameters;
+    Int_t* fMrqVary;
+    Float_t** fMrqCovariance;
+    Float_t** fMrqAlpha; 
+    
 
     
     

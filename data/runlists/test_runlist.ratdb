@@ -1,6 +1,72 @@
 {
-name : "RUNLIST",
+name : "FITFILE",
 valid_begin : [0, 0],
 valid_end : [0, 0],
+
+################
+###  TITLES  ###
+################
+#-------------------------------------#
+# The LOCASFit object name and titles #
+#-------------------------------------#
+
+fit_name : [ test fit name ]
+fit_title : [ test fit title ]
+
+
+##################
+####  RUN-IDs  ###
+##################
+#----------------------------------------------#
+# The list of run IDs whose corresponding data #
+# is to be included in the fit                 #
+#----------------------------------------------#
+
 run_ids : [ 25121642, 28071635, 18081902, ]
+
+# Set the number of bins for the
+# Laserball Distribution Histogram (TH2F - 2D Hisotgram)
+lb_dist_n_theta_bins : [ 12 ]
+lb_dist_n_phi_bins : [ 36 ]
+
+# Set the number of bins for the
+# PMT Angular Response Histogram (TH1F - 1D Hisotgram) ( 0 - 90 degrees )
+ang_resp_n_bins : [ 90 ]
+
+# Set the minimum number of PMTs per bin in the
+# Laserball Distribution Histogram
+lb_dist_min_n_pmts : [ 25 ]
+
+# Set the minimum number of PMTs per bin in the
+# Angular Response Histogram
+ang_resp_min_n_pmts : [ 25 ]
+
+# Set the maximum ChiSquared value for PMTs to be cut on
+chisq_max_limit : [ 100.0 ]
+
+# Set the number of PMTs to skip in the data set
+# Higher = Faster Overall Fitting Calculation
+# Lower = Higher Statistics but slow Fitting Calculation
+n_pmts_skip : [ 1 ]
+
+# Set whether parameters in the model vary or not (1: Vary, 0: Do Not Vary)
+# and the respective initial parameters
+
+# The attenuation lengths and their initial values in
+# the scintillator, acrylic (AV) and water regions
+scint_att_vary : [ 1 ]
+scint_att_init : [ 0.0 ]
+
+av_att_vary : [ 1 ]
+av_att_init : [ 0.0 ]
+
+water_att_vary : [ 1 ]
+water_att_init : [ 0.0 ]
+
+# For the histograms, the initial value is the minimum pedestal value in the zero-th bin
+lb_dist_vary : [ 1 ]
+lb_dist_init : [ 1.0 ]
+
+ang_resp_vary : [ 1 ]
+ang_resp_init : [ 1.0 ]
 } 

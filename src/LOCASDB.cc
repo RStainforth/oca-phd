@@ -66,6 +66,8 @@ LOCASDB::LOCASDB()
 
   fRunList.clear();
 
+  fCurrentFile = NULL;
+
   Initialise();
 
 }
@@ -119,14 +121,17 @@ void LOCASDB::Clear()
   fNSparePMTs = 0;
   fNInvalidPMTs = 0;
   
-
   fGeoPMTShadowingVals.clear();
   fAVHDRopePMTShadowingVals.clear();
 
   fSOCRunDir = "";
   fLOCASRunDir = "";
 
+  fRunList.clear();
+
   fRATDB->Clear();
+
+  fCurrentFile = NULL;
 
 }
 
@@ -403,7 +408,7 @@ void LOCASDB::LoadRunList( const char* runList )
   fRATDB->Clear();
   fRATDB->Load( runList );
 
-  fRATDBPtr = fRATDB->GetLink( "RUNLIST" );
+  fRATDBPtr = fRATDB->GetLink( "FITFILE" );
   assert( fRATDBPtr );
 
   std::vector< Int_t > runIDs = fRATDBPtr->GetIArray( "run_ids" );
@@ -412,6 +417,126 @@ void LOCASDB::LoadRunList( const char* runList )
     fRunList.push_back( runIDs[ iRun ] );
   }
 
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASDB::SetFile( const char* file )
+{
+
+  stringstream myStream;
+  myStream << file;
+  myStream >> fCurrentFile;
+
+  fRATDB->Clear();
+
+}
+
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+std::string LOCASDB::GetStringField( const std::string &tableName, const std::string &fieldName );
+{
+
+  std::string resultStr = ""; 
+
+  if (fCurrentFile == NULL){
+    cout << "LOCASDB::GetStringField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
+    cout << "LOCASDB::GetStringField: Returning empty string." << endl;
+
+    return resultStr;
+  }
+
+  fRATDB->Load( fCurrentFile );
+
+  fRATDBPtr = fRATDB->GetLink( tableName  );
+  assert( fRATDBPtr );
+
+  resultStr = fRATDBPtr->GetS( fieldName );
+  return resultStr;
+  
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Double_t LOCASDB::GetDoubleField( const std::string &tableName, const std::string &fieldName );
+{
+
+  Double_t resultD = 0.0; 
+
+  if (fCurrentFile == NULL){
+    cout << "LOCASDB::GetDoubleField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
+    cout << "LOCASDB::GetDoubleField: Returning type Double_t = 0.0." << endl;
+
+    return resultD;
+  }
+
+  fRATDB->Load( fCurrentFile );
+
+  fRATDBPtr = fRATDB->GetLink( tableName  );
+  assert( fRATDBPtr );
+
+  resultD = fRATDBPtr->GetD( fieldName );
+  return resultD;
+  
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Int_t LOCASDB::GetIntField( const std::string &tableName, const std::string &fieldName );
+{
+
+  Int_t resultI = 0; 
+
+  if (fCurrentFile == NULL){
+    cout << "LOCASDB::GetIntField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
+    cout << "LOCASDB::GetIntField: Returning type Int_t = 0." << endl;
+
+    return resultI;
+  }
+
+  fRATDB->Load( fCurrentFile );
+
+  fRATDBPtr = fRATDB->GetLink( tableName  );
+  assert( fRATDBPtr );
+
+  resultI = fRATDBPtr->GetI( fieldName );
+  return resultI;
+  
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Bool_t LOCASDB::GetBoolField( const std::string &tableName, const std::string &fieldName );
+{
+
+  Bool_t resultBool = false;
+
+  if (fCurrentFile == NULL){
+    cout << "LOCASDB::GetIntField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
+    cout << "LOCASDB::GetIntField: Returning type Bool_t = false" << endl;
+
+    return resultBool;
+  }
+
+  fRATDB->Load( fCurrentFile );
+
+  fRATDBPtr = fRATDB->GetLink( tableName  );
+  assert( fRATDBPtr );
+
+  resultI = fRATDBPtr->GetI( fieldName );
+  
+  Bool_t resultBool = false;
+  if ( resultI == 0 ){ resultBool = false; }
+  else if ( resultI > 0 ){ resultBool = true; }
+
+  return resultBool;
+  
 }
 
 
