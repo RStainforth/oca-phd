@@ -22,6 +22,12 @@
 #include <TMath.h>
 #include <TObject.h>
 
+#include <iostream>
+
+#include <stdio.h>
+#include <stddef.h>
+#include <stdlib.h>
+
 #include "LOCASMath.hh"
 
 #define NR_END 1
@@ -58,12 +64,12 @@ Float_t LOCASMath::MPECorrectedNPromptErr( Float_t nPrompt, Float_t nPulses )
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t* LOCASMath::LOCASVector( Float_t nStart, Float_t nEnd )
+Float_t* LOCASMath::LOCASVector( Long_t nStart, Long_t nEnd )
 {
 
-	float *v;
+	Float_t *v;
 
-	v=(float *)malloc((size_t) ((nEnd-nStart+1+NR_END)*sizeof(float)));
+	v=(Float_t *)malloc((size_t) ((nEnd-nStart+1+NR_END)*sizeof(Float_t)));
 	if (!v) cout << "LOCAS::LOCASMath: Allocation failure in LOCASVector()" << endl;
 	return v-nStart+NR_END;
 
@@ -72,20 +78,34 @@ Float_t* LOCASMath::LOCASVector( Float_t nStart, Float_t nEnd )
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t** LOCASMath::LOCASMatrix( Float_t nStarti, Float_t nEndi, Float_t nStartj, Float_t nEndj )
+Int_t* LOCASMath::LOCASIntVector( Long_t nStart, Long_t nEnd )
+{
+
+	Int_t *v;
+
+	v=(Int_t *)malloc((size_t) ((nEnd-nStart+1+NR_END)*sizeof(Int_t)));
+	if (!v) cout << "LOCAS::LOCASMath: Allocation failure in LOCASVector()" << endl;
+	return v-nStart+NR_END;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t** LOCASMath::LOCASMatrix( Long_t nStarti, Long_t nEndi, Long_t nStartj, Long_t nEndj )
 {
 
 	long i, nrow=nEndi-nStarti+1,ncol=nEndj-nStartj+1;
-	float **m;
+	Float_t **m;
 
 	/* allocate pointers to rows */
-	m=(float **) malloc((size_t)((nrow+NR_END)*sizeof(float*)));
+	m=(Float_t **) malloc((size_t)((nrow+NR_END)*sizeof(Float_t*)));
 	if (!m) cout << "LOCAS::LOCASMath: Allocation failure 1 in LOCASMatrix()" << endl;
 	m += NR_END;
 	m -= nStarti;
 
 	/* allocate rows and set pointers to them */
-	m[nStarti]=(float *) malloc((size_t)((nrow*ncol+NR_END)*sizeof(float)));
+	m[nStarti]=(Float_t *) malloc((size_t)((nrow*ncol+NR_END)*sizeof(Float_t)));
 	if (!m[nStarti]) cout << "LOCAS::LOCASMath: Allocation failure 2 in LOCASMatrix()" << endl;
 	m[nStarti] += NR_END;
 	m[nStarti] -= nStartj;

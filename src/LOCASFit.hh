@@ -24,38 +24,41 @@
 #include "LOCASPMT.hh"
 #include "LOCASRunReader.hh"
 
+#include "TH1F.h"
+#include "TH2F.h"
+
 namespace LOCAS{
 
   class LOCASFit : public TObject
   {
   public:
-    LOCASFit( const char* fitName = "locasfit", const char* fitTitle = "LOCASFit" );
-    virtual ~LOCASFit();
+    LOCASFit( const char* fitFile );
+    virtual ~LOCASFit(){}
 
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
 
-    void Initialise();
-    void Clear( Option_t* option = "" );
-    void DoFit();
+    //void Initialise();
+    //void Clear( Option_t* option = "" );
+    //void DoFit();
 
-    void DataScreen();                             // Perform final checks on data before performing the fit
-    void CalculateChiSquare();                     // Calculate the chiSquare
+    //void DataScreen();                             // Perform final checks on data before performing the fit
+    //void CalculateChiSquare();                     // Calculate the chiSquare
 
-    void CopyParamterValues( LOCASFit* seedFit );    // Copy the parameter values from seedFit to THIS fit
-    void GiveParameterValues( LOCASFit* targetFit ); // Give the parameter values from THIS fit to targetFit
+    //void CopyParamterValues( LOCASFit* seedFit );    // Copy the parameter values from seedFit to THIS fit
+    //void GiveParameterValues( LOCASFit* targetFit ); // Give the parameter values from THIS fit to targetFit
 
-    Float_t ModelAngularResponse( LOCASPMT* locasPMT );
-    Float_t ModelLaserballDistribution( LOCASPMT* locasPMT );
+    //Float_t ModelAngularResponse( LOCASPMT* locasPMT );
+    //Float_t ModelLaserballDistribution( LOCASPMT* locasPMT );
 
 
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
 
-    const char* GetFitName(){ return fFitName; }
-    const char* GetFitTitle(){ return fFitTitle; }
+    std::string GetFitName(){ return fFitName; }
+    std::string GetFitTitle(){ return fFitTitle; }
 
     Bool_t GetValidPars(){ return fValidPars; }
     Bool_t GetDataScreen(){ return fDataScreen; }
@@ -68,7 +71,7 @@ namespace LOCAS{
     Int_t GetNumberOfRuns(){ return fNumberOfRuns; }
     std::vector< Int_t > GetListOfRunIDs(){ return fListOfRunIDs; }
     
-    Bool_t GetVaryAll(){ return fVaryAll };
+    Bool_t GetVaryAll(){ return fVaryAll; }
     Bool_t GetScintAttVary(){ return fScintAttVary; }
     Bool_t GetAVAttVary(){ return fAVAttVary; }
     Bool_t GetWaterAttVary(){ return fWaterAttVary; }
@@ -76,7 +79,7 @@ namespace LOCAS{
     Bool_t GetLBDistributionVary(){ return fLBDistributionVary; }
 
     TH2F* GetLBDistribution(){ return fLBDistribution; }
-    Int_t GetNLBDistributionThetaBins(){ return fLBDistributionThetaBins; }
+    Int_t GetNLBDistributionThetaBins(){ return fNLBDistributionThetaBins; }
     Int_t GetNLBDistributionPhiBins(){ return fNLBDistributionPhiBins; }
     Int_t GetNPMTsPerLBDistributionBinMin(){ return fNPMTsPerAngularResponseBinMin; }
 
@@ -99,7 +102,7 @@ namespace LOCAS{
     ////////     SETTERS     ////////
     /////////////////////////////////
 
-    void SetVaryAll();
+    //void SetVaryAll();
     void SetScintAttVary( Bool_t varyBool ){ fScintAttVary = true; }
     void SetAVAttVary( Bool_t varyBool = true ){ fAVAttVary = true; }
     void SetWaterAttVary( Bool_t varyBool = true ){ fWaterAttVary = true; }
@@ -143,7 +146,7 @@ namespace LOCAS{
     Int_t fNLBDistributionPhiBins;
     Int_t fNPMTsPerLBDistributionBinMin;
 
-    THF1* fAngularResponse;
+    TH1F* fAngularResponse;
     Int_t fNAngularResponseBins;
     Int_t fNPMTsPerAngularResponseBinMin;
 
@@ -166,12 +169,6 @@ namespace LOCAS{
     Int_t* fMrqVary;
     Float_t** fMrqCovariance;
     Float_t** fMrqAlpha; 
-    
-
-    
-    
-
-
 
     ClassDef( LOCASFit, 1 )
 

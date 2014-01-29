@@ -66,7 +66,7 @@ LOCASDB::LOCASDB()
 
   fRunList.clear();
 
-  fCurrentFile = NULL;
+  fCurrentFile = "";
 
   Initialise();
 
@@ -131,7 +131,7 @@ void LOCASDB::Clear()
 
   fRATDB->Clear();
 
-  fCurrentFile = NULL;
+  fCurrentFile = "";
 
 }
 
@@ -425,9 +425,11 @@ void LOCASDB::LoadRunList( const char* runList )
 void LOCASDB::SetFile( const char* file )
 {
 
-  stringstream myStream;
+  std::stringstream myStream;
   myStream << file;
-  myStream >> fCurrentFile;
+  std::string tmpString;
+  myStream >> tmpString;
+  fCurrentFile = tmpString;
 
   fRATDB->Clear();
 
@@ -437,14 +439,14 @@ void LOCASDB::SetFile( const char* file )
 //////////////////////////////////////
 //////////////////////////////////////
 
-std::string LOCASDB::GetStringField( const std::string &tableName, const std::string &fieldName );
+std::string LOCASDB::GetStringField( const std::string &tableName, const std::string &fieldName )
 {
 
   std::string resultStr = ""; 
 
   if (fCurrentFile == NULL){
-    cout << "LOCASDB::GetStringField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
-    cout << "LOCASDB::GetStringField: Returning empty string." << endl;
+    std::cout << "LOCASDB::GetStringField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
+    std::cout << "LOCASDB::GetStringField: Returning empty string." << endl;
 
     return resultStr;
   }
@@ -462,14 +464,14 @@ std::string LOCASDB::GetStringField( const std::string &tableName, const std::st
 //////////////////////////////////////
 //////////////////////////////////////
 
-Double_t LOCASDB::GetDoubleField( const std::string &tableName, const std::string &fieldName );
+Double_t LOCASDB::GetDoubleField( const std::string &tableName, const std::string &fieldName )
 {
 
   Double_t resultD = 0.0; 
 
   if (fCurrentFile == NULL){
-    cout << "LOCASDB::GetDoubleField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
-    cout << "LOCASDB::GetDoubleField: Returning type Double_t = 0.0." << endl;
+    std::cout << "LOCASDB::GetDoubleField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
+    std::cout << "LOCASDB::GetDoubleField: Returning type Double_t = 0.0." << endl;
 
     return resultD;
   }
@@ -487,14 +489,14 @@ Double_t LOCASDB::GetDoubleField( const std::string &tableName, const std::strin
 //////////////////////////////////////
 //////////////////////////////////////
 
-Int_t LOCASDB::GetIntField( const std::string &tableName, const std::string &fieldName );
+Int_t LOCASDB::GetIntField( const std::string &tableName, const std::string &fieldName )
 {
 
   Int_t resultI = 0; 
 
   if (fCurrentFile == NULL){
-    cout << "LOCASDB::GetIntField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
-    cout << "LOCASDB::GetIntField: Returning type Int_t = 0." << endl;
+    std::cout << "LOCASDB::GetIntField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
+    std::cout << "LOCASDB::GetIntField: Returning type Int_t = 0." << endl;
 
     return resultI;
   }
@@ -512,14 +514,14 @@ Int_t LOCASDB::GetIntField( const std::string &tableName, const std::string &fie
 //////////////////////////////////////
 //////////////////////////////////////
 
-Bool_t LOCASDB::GetBoolField( const std::string &tableName, const std::string &fieldName );
+Bool_t LOCASDB::GetBoolField( const std::string &tableName, const std::string &fieldName )
 {
 
   Bool_t resultBool = false;
 
   if (fCurrentFile == NULL){
-    cout << "LOCASDB::GetIntField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
-    cout << "LOCASDB::GetIntField: Returning type Bool_t = false" << endl;
+    std::cout << "LOCASDB::GetIntField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
+    std::cout << "LOCASDB::GetIntField: Returning type Bool_t = false" << endl;
 
     return resultBool;
   }
@@ -529,9 +531,10 @@ Bool_t LOCASDB::GetBoolField( const std::string &tableName, const std::string &f
   fRATDBPtr = fRATDB->GetLink( tableName  );
   assert( fRATDBPtr );
 
+  Int_t resultI = 0;
   resultI = fRATDBPtr->GetI( fieldName );
   
-  Bool_t resultBool = false;
+  resultBool = false;
   if ( resultI == 0 ){ resultBool = false; }
   else if ( resultI > 0 ){ resultBool = true; }
 

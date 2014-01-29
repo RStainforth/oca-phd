@@ -21,6 +21,7 @@
 #include "LOCASDB.hh"
 #include "LOCASPMT.hh"
 #include "LOCASMath.hh"
+#include "LOCASFit.hh"
 
 #include <map>
 
@@ -33,13 +34,13 @@ LOCASFit::LOCASFit( const char* fitFile )
 
   LOCASDB lDB;
   lDB.LoadRunList( fitFile );
-  lDB.LoadFile( fitFile );
+  lDB.SetFile( fitFile );
   
 
   fFitName = lDB.GetStringField( "FITFILE", "fit_name" );
   fFitTitle = lDB.GetStringField( "FITFILE", "fit_title" );
     
-  fListOfRunIDs = lDB.GetListOfRunIDs();
+  fListOfRunIDs = lDB.GetRunList();
   fNumberOfRuns = fListOfRunIDs.size();
 
   for (Int_t iRun = 0; iRun < fNumberOfRuns; iRun++ ){
@@ -81,11 +82,12 @@ LOCASFit::LOCASFit( const char* fitFile )
     + fNAngularResponseBins
     + fNLBDistributionThetaBins * fNLBDistributionPhiBins;
 
-  fMrqParameters = LOCASVector( 1, fNParametersInFit );
-  fMrqVary = LOCASVector( 1, fNParametersInFit );
+  LOCASMath lMath;
+  fMrqParameters = lMath.LOCASVector( 1, fNParametersInFit );
+  fMrqVary = lMath.LOCASIntVector( 1, fNParametersInFit );
 
-  fMrqCovariance = LOCASMatrix( 1, fNParametersInFit, 1, fNParametersInFit );
-  fMrqAlpha = LOCASMatrix( 1, fNParametersInFit, 1, fNParametersInFit );
+  fMrqCovariance = lMath.LOCASMatrix( 1, fNParametersInFit, 1, fNParametersInFit );
+  fMrqAlpha = lMath.LOCASMatrix( 1, fNParametersInFit, 1, fNParametersInFit );
 
   Float_t angle = 0.0;
   for ( Int_t iT = 0; iT < fNAngularResponseBins; iT++ ){

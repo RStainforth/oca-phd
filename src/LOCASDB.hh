@@ -31,6 +31,7 @@
 
 #include <map>
 #include <string>
+#include <sstream>
 #include <vector>
 
 #include "RAT/SOCReader.hh"
