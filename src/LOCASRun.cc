@@ -381,9 +381,6 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
     ( iLP->second ).SetNorm( lDB.GetPMTNormal( pmtID ) );
     ( iLP->second ).SetType( lDB.GetPMTType( pmtID ) );
 
-    ( iLP->second ).SetLBTheta( ( lDB.GetPMTPosition( pmtID ) - GetLBPos() ).Theta() );
-    ( iLP->second ).SetLBPhi( ( lDB.GetPMTPosition( pmtID ) - GetLBPos() ).Phi() );
-
     ( iLP->second ).SetNLBPulses( GetNLBPulses() );
     ( iLP->second ).SetLBIntensityNorm( GetMainLBIntensityNorm() );
 
@@ -397,6 +394,10 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
     
     // 'feed' the light path to the PMT
     ( iLP->second ).ProcessLightPath( lLP );
+
+    TVector3 pmtRelativeVec = lLP.GetInitialLightVec();
+    ( iLP->second ).SetLBTheta( pmtRelativeVec.Theta() );
+    ( iLP->second ).SetLBPhi( pmtRelativeVec.Phi() );
     
     // Reset the light path object
     lLP.Clear();

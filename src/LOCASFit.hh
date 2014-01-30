@@ -43,14 +43,16 @@ namespace LOCAS{
     //void Clear( Option_t* option = "" );
     //void DoFit();
 
-    //void DataScreen();                             // Perform final checks on data before performing the fit
-    //void CalculateChiSquare();                     // Calculate the chiSquare
+    void DataScreen();                                  // Perform final checks on data before performing the fit
+    Bool_t PMTSkip( LOCASPMT* pmt, Float_t mean, Float_t sigma );
+    Float_t ModelPrediction( LOCASPMT* pmt );
+    //void CalculateChiSquare();                        // Calculate the chiSquare
 
     //void CopyParamterValues( LOCASFit* seedFit );    // Copy the parameter values from seedFit to THIS fit
     //void GiveParameterValues( LOCASFit* targetFit ); // Give the parameter values from THIS fit to targetFit
 
-    //Float_t ModelAngularResponse( LOCASPMT* locasPMT );
-    //Float_t ModelLaserballDistribution( LOCASPMT* locasPMT );
+    Float_t ModelAngularResponse( LOCASPMT* locasPMT, Int_t& iAng );
+    Float_t ModelLBDistribution( LOCASRun* locasRun, LOCASPMT* locasPMT, Int_t& iLBDist );
 
 
     /////////////////////////////////
@@ -72,9 +74,9 @@ namespace LOCAS{
     std::vector< Int_t > GetListOfRunIDs(){ return fListOfRunIDs; }
     
     Bool_t GetVaryAll(){ return fVaryAll; }
-    Bool_t GetScintAttVary(){ return fScintAttVary; }
-    Bool_t GetAVAttVary(){ return fAVAttVary; }
-    Bool_t GetWaterAttVary(){ return fWaterAttVary; }
+    Bool_t GetScintVary(){ return fScintVary; }
+    Bool_t GetAVVary(){ return fAVVary; }
+    Bool_t GetWaterVary(){ return fWaterVary; }
     Bool_t GetAngularResponseVary(){ return fAngularResponseVary; }
     Bool_t GetLBDistributionVary(){ return fLBDistributionVary; }
 
@@ -98,16 +100,26 @@ namespace LOCAS{
     Int_t GetAngularResponseParIndex();
     Int_t GetLBDistributionParIndex();
 
+    Float_t GetScintPar(){ return fMrqParameters[ GetScintParIndex() ]; }
+    Float_t GetAVPar(){ return fMrqParameters[ GetAVParIndex() ]; }
+    Float_t GetWaterPar(){ return fMrqParameters[ GetWaterParIndex() ]; }
+    Float_t GetAngularResponsePar( Int_t n ){ return fMrqParameters[ GetAngularResponseParIndex() + n ]; }
+    Float_t GetLBDistributionPar( Int_t n ){ return fMrqParameters[ GetLBDistributionParIndex() + n ]; }
+
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
 
     //void SetVaryAll();
-    void SetScintAttVary( Bool_t varyBool ){ fScintAttVary = true; }
-    void SetAVAttVary( Bool_t varyBool = true ){ fAVAttVary = true; }
-    void SetWaterAttVary( Bool_t varyBool = true ){ fWaterAttVary = true; }
+    void SetScintVary( Bool_t varyBool ){ fScintVary = true; }
+    void SetAVVary( Bool_t varyBool = true ){ fAVVary = true; }
+    void SetWaterVary( Bool_t varyBool = true ){ fWaterVary = true; }
     void SetAngularResponseVary( Bool_t varyBool = true ){ fAngularResponseVary = true; }
     void SetLBDistributionVary( Bool_t varyBool = true ){ fLBDistributionVary = true; }
+
+    void SetScintPar( Float_t parVal ){ fMrqParameters[ GetScintParIndex() ] = parVal; }
+    void SetAVPar( Float_t parVal ){ fMrqParameters[ GetAVParIndex() ] = parVal; }
+    void SetWaterPar( Float_t parVal ){ fMrqParameters[ GetWaterParIndex() ] = parVal; }
 
     // Notes for Laserball Distribution Model
     // QOCAFit: .cxx Function of CosTheta, Phi
@@ -129,15 +141,15 @@ namespace LOCAS{
     std::vector< Int_t > fListOfRunIDs;
 
     Bool_t fVaryAll;
-    Bool_t fScintAttVary;
-    Bool_t fAVAttVary;
-    Bool_t fWaterAttVary;
+    Bool_t fScintVary;
+    Bool_t fAVVary;
+    Bool_t fWaterVary;
     Bool_t fAngularResponseVary;
     Bool_t fLBDistributionVary;
 
-    Double_t fScintAttInit;
-    Double_t fAVAttInit;
-    Double_t fWaterAttInit;
+    Double_t fScintInit;
+    Double_t fAVInit;
+    Double_t fWaterInit;
     Double_t fAngularResponseInit;
     Double_t fLBDistributionInit;
 
@@ -145,10 +157,12 @@ namespace LOCAS{
     Int_t fNLBDistributionThetaBins;
     Int_t fNLBDistributionPhiBins;
     Int_t fNPMTsPerLBDistributionBinMin;
+    Int_t fLBDistIndex;
 
     TH1F* fAngularResponse;
     Int_t fNAngularResponseBins;
     Int_t fNPMTsPerAngularResponseBinMin;
+    Int_t fAngRespIndex;
 
     Int_t fNParametersInFit;
 
@@ -158,6 +172,11 @@ namespace LOCAS{
     Float_t fChiSquare;
     Float_t fChiSquareMaxLimit;
     Float_t fChiSquareMinLimit;
+
+    Float_t fNSigma;
+
+    Float_t* fChiArray;
+    Float_t* fResArray;
 
 
     // The arrays used by the Levenburg-Marquadt (Mrq) algorithm to find the parameters

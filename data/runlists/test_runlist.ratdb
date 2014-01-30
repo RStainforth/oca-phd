@@ -43,6 +43,7 @@ ang_resp_min_n_pmts : [ 25 ]
 
 # Set the maximum ChiSquared value for PMTs to be cut on
 chisq_max_limit : [ 100.0 ]
+n_sigma : [ 1.5 ]
 
 # Set the number of PMTs to skip in the data set
 # Higher = Faster Overall Fitting Calculation
@@ -54,14 +55,14 @@ n_pmts_skip : [ 1 ]
 
 # The attenuation lengths and their initial values in
 # the scintillator, acrylic (AV) and water regions
-scint_att_vary : [ 1 ]
-scint_att_init : [ 0.0 ]
+scint_vary : [ 1 ]
+scint_init : [ 0.0 ]
 
-av_att_vary : [ 1 ]
-av_att_init : [ 0.0 ]
+av_vary : [ 1 ]
+av_init : [ 0.0 ]
 
-water_att_vary : [ 1 ]
-water_att_init : [ 0.0 ]
+water_vary : [ 1 ]
+water_init : [ 0.0 ]
 
 # For the histograms, the initial value is the minimum pedestal value in the zero-th bin
 lb_dist_vary : [ 1 ]
