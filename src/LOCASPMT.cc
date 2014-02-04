@@ -33,6 +33,7 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
 {
   
   fID = rhs.fID;
+  fRunID = rhs.fRunID;
   fType = rhs.fType;
 
   fIsVerified = rhs.fIsVerified;
@@ -100,6 +101,7 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
 {
 
   fID = rhs.fID;
+  fRunID = rhs.fRunID;
   fType = rhs.fType;
 
   fIsVerified = rhs.fIsVerified;
@@ -169,6 +171,7 @@ void LOCASPMT::Initialise()
 {
 
   SetID( 0.0 );
+  SetRunID( 0.0 );
   SetType ( 0 );
 
   SetIsVerified( false );
@@ -247,6 +250,7 @@ void LOCASPMT::AddSOCPMTData( RAT::DS::SOCPMT& socPMT )
 {
 
   SetID( socPMT.GetLCN() );
+  SetRunID( 0 );
   SetType( 0 );                                  // SetType is done by LOCAS::LOCASRun::Fill
 
   SetIsVerified( false );                        // SetIsVerified is done by LOCASRun::Fill

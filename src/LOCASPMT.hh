@@ -58,6 +58,9 @@ namespace LOCAS{
     /////////////////////////////////
     
     void SetID( Int_t pmtID ){ fID = pmtID; }
+    void SetRunID( Int_t runID ){ fRunID = runID; }
+    void SetCentralRunID( Int_t ctrRunID ){ fCentralRunID = ctrRunID; }
+    void SetWavelengthRunID( Int_t wvRunID ){ fWavelengthRunID = wvRunID; }
     void SetType( Int_t pmtType ){ fType = pmtType; }
 
 
@@ -123,6 +126,9 @@ namespace LOCAS{
     /////////////////////////////////
     
     Int_t GetID(){ return fID; }
+    Int_t GetRunID(){ return fRunID; }
+    Int_t GetCentralRunID(){ return fCentralRunID; }
+    Int_t GetWavelengthRunID(){ return fWavelengthRunID; }
     Int_t GetType(){ return fType; }
 
     Bool_t GetIsVerified(){ return fIsVerified; }
@@ -180,10 +186,14 @@ namespace LOCAS{
     Float_t GetCorrDistInScint(){ return fCorrDistInScint; }
     Float_t GetCorrDistInAV(){ return fCorrDistInAV; }
     Float_t GetCorrDistInWater(){ return fCorrDistInWater; }
+
     
   private:
     
     Int_t fID;                          // PMT ID/LCN
+    Int_t fRunID;                       // The Run ID
+    Int_t fCentralRunID;                // The Central Run ID
+    Int_t fWavelengthRunID;             // The Wavelength RUn ID
     Int_t fType;                        // The PMT type
 
     // The following PMT types are defined in 'rat/data/pmt/airfill2.ratdb' found in RAT.

@@ -376,6 +376,7 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
     // Get the PMT ID and LOCASPMT object
     pmtID = iLP->first;
     
+    ( iLP->second ).SetRunID( runID );
     // Set the Normals and Positions
     ( iLP->second ).SetPos( lDB.GetPMTPosition( pmtID ) );
     ( iLP->second ).SetNorm( lDB.GetPMTNormal( pmtID ) );
@@ -555,6 +556,23 @@ LOCASPMT& LOCASRun::GetPMT( Int_t iPMT )
 //////////////////////////////////////
 //////////////////////////////////////
 
+void LOCASRun::CrossRunFill( LOCASRun& cRun, LOCASRun& wRun )
+{
+  std::map< Int_t, LOCASPMT >::iterator iPMT;
+  for( iPMT = cRun.GetLOCASPMTIterBegin(); iPMT != cRun.GetLOCASPMTIterEnd(); iPMT++ ){
+    Int_t pmtID = ( iPMT->first );
+    ( fLOCASPMTs[ pmtID ] ).SetCentralRunID( cRun.GetRunID() );
+  }
+  for( iPMT = wRun.GetLOCASPMTIterBegin(); iPMT != wRun.GetLOCASPMTIterEnd(); iPMT++ ){
+    Int_t pmtID = ( iPMT->first );
+    ( fLOCASPMTs[ pmtID ] ).SetWavelengthRunID( wRun.GetRunID() );
+  }
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 void LOCASRun::SetLBPosType( Int_t posType )
 {
   // Set the fitted laserball type to be used in the LOCAS fit
@@ -578,66 +596,6 @@ void LOCASRun::SetLBPosType( Int_t posType )
 
   }
 
-}
-
-//////////////////////////////////////
-//////////////////////////////////////
-
-void LOCASRun::CrossRunFill( LOCASRun& cRun, LOCASRun& wRun )
-{
-
-  // Check that the specified Runs are what they say they are
-  // i.e. that 'cRun' is a central run (and whether it has been filled)
-  // and that 'wRun' is a wavelength-run (and whether is has been filled)
-  
-  Bool_t validMRun, validCRun, validWRun = false;
-
-  if ( fIsMainRun != true ){ cout << "LOCAS::LOCASRun::CrossRunFill ERROR: The Run that is being filled is not the main run! Aborting." << endl; return; }
-  else { validMRun = true; }
-
-  if ( cRun.GetIsCentralRun() ){
-    if ( cRun.GetRunID() < 0 ){ cout << "LOCAS::LOCASRun::CrossRunFill: No central-run information specified to be cross-filled into run file " << fRunID << "_LOCASRun.root" << endl; }
-    else{ validCRun == true; cout << "LOCAS::LOCASRun::CrossRunFill: Central-run information has been specified and will be cross-filled into run file " << fRunID << "_LOCASRun.root" << endl; }
-  }
-  else{ cout << "LOCAS::LOCASRun::CrossRunFill: Specified 'central-run' isn't a central-run. Aborting." << endl; return; }
-  
-  if ( wRun.GetIsWavelengthRun() ){
-    if ( wRun.GetRunID() < 0 ){ cout << "LOCAS::LOCASRun::CrossRunFill: No wavelength-run information specified to be cross-filled into run file " << fRunID << "_LOCASRun.root" << endl; }
-    else{ validWRun == true; cout << "LOCAS::LOCASRun::CrossRunFill: wavelength-run information has been specified and will be cross-filled into run file " << fRunID << "_LOCASRun.root" << endl; }
-  }
-  else{ cout << "LOCAS::LOCASRun::CrossRunFill: Specified 'wavelength-run' isn't a wavelength-run. Aborting." << endl; return; }
-  // As an example, now fill all the relative solid-angles
-  
-  std::map<Int_t, LOCASPMT>::iterator iPMT;
-  
-  for ( iPMT = GetLOCASPMTIterBegin(); iPMT != GetLOCASPMTIterEnd(); ++iPMT ){
-    
-    LOCASPMT rPMT ( fLOCASPMTs[ iPMT->first ] );
-
-    Int_t pmtID = rPMT.GetID();
-    LOCASPMT crPMT = cRun.GetPMT( pmtID );
-
-    if ( crPMT.GetIsVerified() && rPMT.GetIsVerified() ){
-
-      ( fLOCASPMTs[ pmtID ] ).SetOccRatio( rPMT.GetMPECorrOccupancy() / crPMT.GetMPECorrOccupancy() );
-      ( fLOCASPMTs[ pmtID ] ).SetOccRatioErr( ( fLOCASPMTs[ pmtID ] ).GetOccRatio() 
-					      * ( TMath::Sqrt( TMath::Power( ( rPMT.GetMPECorrOccupancyErr() / rPMT.GetMPECorrOccupancy() ), 2 ) +
-							       TMath::Power( ( crPMT.GetMPECorrOccupancyErr() / crPMT.GetMPECorrOccupancy() ), 2 ) ) ) );
-      
-      ( fLOCASPMTs[ pmtID ] ).SetCorrLBIntensityNorm( rPMT.GetLBIntensityNorm() / crPMT.GetLBIntensityNorm() );
-
-      ( fLOCASPMTs[ pmtID ] ).SetCorrSolidAngle( rPMT.GetSolidAngle() / crPMT.GetSolidAngle() );
-      ( fLOCASPMTs[ pmtID ] ).SetCorrFresnelTCoeff( rPMT.GetFresnelTCoeff() / crPMT.GetFresnelTCoeff() );
-
-      ( fLOCASPMTs[ pmtID ] ).SetCorrDistInScint( rPMT.GetDistInScint() - crPMT.GetDistInScint() );
-      ( fLOCASPMTs[ pmtID ] ).SetCorrDistInAV( rPMT.GetDistInAV() - crPMT.GetDistInAV() );
-      ( fLOCASPMTs[ pmtID ] ).SetCorrDistInWater( rPMT.GetDistInWater() - crPMT.GetDistInWater() );
-
-    }
-    
-  }  
-  
-  
 }
 
 

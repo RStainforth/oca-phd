@@ -542,4 +542,28 @@ Bool_t LOCASDB::GetBoolField( const std::string &tableName, const std::string &f
   
 }
 
+//////////////////////////////////////
+//////////////////////////////////////
+
+std::vector< Int_t > LOCASDB::GetIntVectorField( const std::string &tableName, const std::string &fieldName )
+{
+  
+  std::vector< Int_t > intVec;
+  
+  if (fCurrentFile == NULL){
+    std::cout << "LOCASDB::GetIntVectorField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
+    std::cout << "LOCASDB::GetIntVectorField: Returning type empty vector" << endl;
+    
+    return intVec;
+  }
+  
+  fRATDBPtr = fRATDB->GetLink( tableName );
+  assert( fRATDBPtr );
+  
+  intVec = fRATDBPtr->GetIArray( fieldName );
+  
+  return intVec;
+  
+}
+
 

@@ -44,6 +44,10 @@ namespace LOCAS{
     Float_t* LOCASVector( Long_t nStart, Long_t nEnd );
     Int_t* LOCASIntVector( Long_t nStart, Long_t nEnd );
     Float_t** LOCASMatrix( Long_t nStarti, Long_t nEndi, Long_t nStartj, Long_t nEndj );
+
+    void LOCASFree_Matrix(float **m, long nrl, long nrh, long ncl, long nch);
+    void LOCASFree_Vector(float *v, long nl, long nh);
+    void LOCASFree_IntVector(int *v, long nl, long nh);
     
     ClassDef( LOCASMath, 0 );
 

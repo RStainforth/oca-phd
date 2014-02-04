@@ -44,16 +44,38 @@ namespace LOCAS{
     //void DoFit();
 
     void DataScreen();                                  // Perform final checks on data before performing the fit
+    void Screen();
     Bool_t PMTSkip( LOCASPMT* pmt, Float_t mean, Float_t sigma );
     Float_t ModelPrediction( LOCASPMT* pmt );
+    Float_t ModelPrediction( Int_t iPMT, Int_t nA, Float_t* dyda );
+    Float_t CalculateChiSquare( LOCASPMT* pmt );                 // Calculate the chisquare
     //void CalculateChiSquare();                        // Calculate the chiSquare
 
     //void CopyParamterValues( LOCASFit* seedFit );    // Copy the parameter values from seedFit to THIS fit
     //void GiveParameterValues( LOCASFit* targetFit ); // Give the parameter values from THIS fit to targetFit
 
     Float_t ModelAngularResponse( LOCASPMT* locasPMT, Int_t& iAng );
-    Float_t ModelLBDistribution( LOCASRun* locasRun, LOCASPMT* locasPMT, Int_t& iLBDist );
+    Float_t ModelLBDistribution( LOCASPMT* locasPMT, Int_t& iLBDist );
 
+    // FITTING METHODS
+    Int_t MrqFit(float x[], float y[], float sig[], int ndata, float a[],
+		 int ia[], int ma, float **covar, float **alpha, float *chisq );
+
+    Int_t  mrqmin(float x[], float y[], float sig[], int ndata, float a[],
+    		  int ia[], int ma, float **covar, float **alpha, float *chisq,
+    		  float *alambda );
+    
+    void covsrt(float **covar, int ma, int ia[], int mfit);
+    
+    Int_t gaussj(float **a, int n, float **b, int m);
+    
+    virtual void mrqcof(float x[], float y[], float sig[], int ndata, float a[],
+    			int ia[], int ma, float **alpha, float beta[],
+    			float *chisq);
+    
+    virtual void mrqfuncs(Float_t x,Int_t ix,Float_t a[],Float_t *y,
+    			  Float_t dyda[],Int_t na);
+    
 
     /////////////////////////////////
     ////////     GETTERS     ////////
@@ -129,16 +151,20 @@ namespace LOCAS{
     std::string fFitName;
     std::string fFitTitle;
 
-    Bool_t fValidPars;             // The LOCASFit structure has allocated, valid parameters
+    Bool_t fValidPars;             // The LOCASFit structure has allocated valid parameters
     Bool_t fDataScreen;            // The Data has been screened and filtered for reasonable tubes
     
-    LOCASRunReader fRunReader;     // The Run reader to go over all the LOCASRun files
+    LOCASRunReader fRunReader;            // The Run reader to go over all the LOCASRun files
+    LOCASRunReader fCentralRunReader;     // The Run reader to go over all the Central LOCASRun files
+    LOCASRunReader fWavelengthRunReader;  // The Run reader to go over all the Wavelength LOCASRun files
 
     LOCASRun* fCurrentRun;     // Pointer to the current LOCASRun object
     LOCASPMT* fCurrentPMT;     // Pointer to the current LOCASPMT object
 
     Int_t fNumberOfRuns;
     std::vector< Int_t > fListOfRunIDs;
+    std::vector< Int_t > fListOfCentralRunIDs;
+    std::vector< Int_t > fListOfWavelengthRunIDs;
 
     Bool_t fVaryAll;
     Bool_t fScintVary;
@@ -175,8 +201,21 @@ namespace LOCAS{
 
     Float_t fNSigma;
 
+    Float_t fAVHDShadowingMin;
+    Float_t fAVHDShadowingMax;
+    Float_t fGeoShadowingMin;
+    Float_t fGeoShadowingMax;
+
+    Bool_t fCHSFlag;
+    Bool_t fCSSFlag;
+
     Float_t* fChiArray;
     Float_t* fResArray;
+
+    Int_t fiAng;
+    Int_t fCiAng;
+    Int_t fiLBDist;
+    Int_t fCiLBDist;
 
 
     // The arrays used by the Levenburg-Marquadt (Mrq) algorithm to find the parameters
@@ -188,6 +227,8 @@ namespace LOCAS{
     Int_t* fMrqVary;
     Float_t** fMrqCovariance;
     Float_t** fMrqAlpha; 
+
+    std::map< Int_t, LOCASPMT > fFitPMTs;
 
     ClassDef( LOCASFit, 1 )
 

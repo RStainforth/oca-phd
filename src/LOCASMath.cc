@@ -34,6 +34,7 @@
 
 using namespace LOCAS;
 using namespace std;
+#define FREE_ARG char*
 
 ClassImp( LOCASMath );
 
@@ -115,4 +116,32 @@ Float_t** LOCASMath::LOCASMatrix( Long_t nStarti, Long_t nEndi, Long_t nStartj, 
 	/* return pointer to array of pointers to rows */
 	return m;
 
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASMath::LOCASFree_Vector(float *v, long nl, long nh)
+/* free a float vector allocated with vector() */
+{
+	free((FREE_ARG) (v+nl-NR_END));
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASMath::LOCASFree_Matrix(float **m, long nrl, long nrh, long ncl, long nch)
+/* free a float vector allocated with vector() */
+{
+	free((FREE_ARG) (m[nrl]+ncl-NR_END));
+	free((FREE_ARG) (m+nrl-NR_END));
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASMath::LOCASFree_IntVector(int *v, long nl, long nh)
+/* free a float vector allocated with vector() */
+{
+	free((FREE_ARG) (v+nl-NR_END));
 }
