@@ -143,74 +143,75 @@ int main( int argc, char** argv ){
 void EvaluateGlobalChiSquare( Int_t &nPar, Double_t* gIn, Double_t &f, Double_t* params, Int_t iFlag )
 {
 
-  //cout << "Params value: " << params[0] << endl;
-  Float_t chiSquare = 0.0;
+//   //cout << "Params value: " << params[0] << endl;
+//   Float_t chiSquare = 0.0;
 
-  Int_t nPMTs = 0;
+//   Int_t nPMTs = 0;
 
-  for ( Int_t iRun = 1; iRun < 2; iRun++ ){
-    currentRun = lReader->GetLOCASRun( listOfRunIDs[ iRun ] );
+//   for ( Int_t iRun = 1; iRun < 2; iRun++ ){
+//     currentRun = lReader->GetLOCASRun( listOfRunIDs[ iRun ] );
 
-    std::map< Int_t, LOCASPMT >::iterator iPMT;    
-    for ( iPMT = currentRun->GetLOCASPMTIterBegin(); iPMT != currentRun->GetLOCASPMTIterEnd(); iPMT++ ){
+//     std::map< Int_t, LOCASPMT >::iterator iPMT;    
+//     for ( iPMT = currentRun->GetLOCASPMTIterBegin(); iPMT != currentRun->GetLOCASPMTIterEnd(); iPMT++ ){
 
-      currentPMT = &( iPMT->second );
-      if ( currentPMT->GetCosTheta() >= 0.99
-	   && currentPMT->GetIsVerified() 
-	   && currentPMT->GetAVHDShadowVal() > 0.95 
-	   && currentPMT->GetGeometricShadowVal() > 0.95 
-	   && currentPMT->GetAVHDShadowVal() < 1.05 
-	   && currentPMT->GetGeometricShadowVal() < 1.05
-	   && (currentPMT->GetPos()).Mag() > 8000.0
-	   && (currentPMT->GetPos()).Mag() < 9000.0
-	   && currentPMT->GetType() == 1
-	   && currentPMT->GetOccupancy() > 100.0 ){
-	nPMTs++;
-	Float_t dataROcc = currentPMT->GetOccRatio();
-	Float_t dataFactor =  1.0;// ( (currentPMT->GetCorrSolidAngle())*(currentPMT->GetCorrFresnelTCoeff()));
-	//cout << "######################" << endl;
-	//cout << "[Data]ROcc: " << dataROcc << " | Scaling Factor: " << dataFactor << " | Corrected [Data]Rocc: " << dataROcc * dataFactor << endl;
-	dataROcc = dataROcc*dataFactor;
+//       currentPMT = &( iPMT->second );
+//       if ( currentPMT->GetCosTheta() >= 0.99
+// 	   && currentPMT->GetIsVerified() 
+// 	   && currentPMT->GetAVHDShadowVal() > 0.95 
+// 	   && currentPMT->GetGeometricShadowVal() > 0.95 
+// 	   && currentPMT->GetAVHDShadowVal() < 1.05 
+// 	   && currentPMT->GetGeometricShadowVal() < 1.05
+// 	   && (currentPMT->GetPos()).Mag() > 8000.0
+// 	   && (currentPMT->GetPos()).Mag() < 9000.0
+// 	   && currentPMT->GetType() == 1
+// 	   && ( ( currentPMT->GetOccupancy() / currentPMT->GetCentralOccupancy() ) > 100.0 ){
+// 	nPMTs++;
+// 	Float_t dataROcc = currentPMT->GetOccRatio();
+// 	Float_t dataFactor =  1.0;// ( (currentPMT->GetCorrSolidAngle())*(currentPMT->GetCorrFresnelTCoeff()));
+// 	//cout << "######################" << endl;
+// 	//cout << "[Data]ROcc: " << dataROcc << " | Scaling Factor: " << dataFactor << " | Corrected [Data]Rocc: " << dataROcc * dataFactor << endl;
+// 	dataROcc = dataROcc*dataFactor;
 
-	cout << dataROcc << endl;
-	histoData->Fill( dataROcc );
+// 	cout << dataROcc << endl;
+// 	histoData->Fill( dataROcc );
 
-	Float_t modelROcc = CalcModelROcc( params );
+// 	Float_t modelROcc = CalcModelROcc( params );
 
-	cout << modelROcc << endl;
-	histoModel->Fill( modelROcc );
+// 	cout << modelROcc << endl;
+// 	histoModel->Fill( modelROcc );
 
-	graph->SetPoint( point++, dataROcc, modelROcc );
-
-	Float_t roccError = currentPMT->GetOccRatioErr();
-	// cout << "[Data]ROcc error: " << roccError << endl;
-	cout << "PMT ID: " << currentPMT->GetID() << endl;
-	//cout << "Z pos: " << (currentPMT->GetPos()).Z() << endl;
-	if ( roccError > 0.0 ){
-	  Float_t calcVal =  ( ( dataROcc - modelROcc ) * ( dataROcc - modelROcc ) ) / ( ( modelROcc ) );
+// 	graph->SetPoint( point++, dataROcc, modelROcc );
+// 	LOCASMath lMath;
+// 	Float_t roccError = lMath.OccRatioErr( currentPMT );
+// 	// cout << "[Data]ROcc error: " << roccError << endl;
+// 	cout << "PMT ID: " << currentPMT->GetID() << endl;
+// 	//cout << "Z pos: " << (currentPMT->GetPos()).Z() << endl;
+// 	if ( roccError > 0.0 ){
+// 	  Float_t calcVal =  ( ( dataROcc - modelROcc ) * ( dataROcc - modelROcc ) ) / ( ( modelROcc ) );
 	  
-	  chiSquare += calcVal;
-	  cout << "ChiSquare: " << calcVal << endl;
-	  cout << "Total ChiSquare: " << chiSquare << endl;
-	  cout << "Number of PMTs is: " << nPMTs << endl;
-	  cout << "ChiqSquare/nPMTs-1= " << (Double_t)chiSquare/(Double_t)(nPMTs-1.0) << endl;
-	  cout << "##################" << endl;
-	  }
-	}
-      }      
-  }     
-  f = chiSquare;
-}
+// 	  chiSquare += calcVal;
+// 	  cout << "ChiSquare: " << calcVal << endl;
+// 	  cout << "Total ChiSquare: " << chiSquare << endl;
+// 	  cout << "Number of PMTs is: " << nPMTs << endl;
+// 	  cout << "ChiqSquare/nPMTs-1= " << (Double_t)chiSquare/(Double_t)(nPMTs-1.0) << endl;
+// 	  cout << "##################" << endl;
+// 	  }
+// 	}
+//       }      
+//     }
+//   }   
+//   f = chiSquare;
+// }
 
 
-Float_t CalcModelROcc( Double_t* params )
-{
+// Float_t CalcModelROcc( Double_t* params )
+// {
 
-  Float_t diffScint = currentPMT->GetCorrDistInScint();
-  Float_t normTerm = currentPMT->GetCorrLBIntensityNorm();
+//   Float_t diffScint = currentPMT->GetDistInScint() - currentPMT->GetCentralDistInScint();
+//   Float_t normTerm = currentPMT->GetOccupancyCorr();
   
-  Float_t expTerm = TMath::Exp( - ( diffScint / params[0] ) );
-  // cout << "[Model]ROcc: " << expTerm << " | Scint Diff: " << diffScint << " | Scintillator Attn.: " << params[0] << endl;
-  return normTerm * expTerm;
+//   Float_t expTerm = TMath::Exp( - ( diffScint / params[0] ) );
+//   // cout << "[Model]ROcc: " << expTerm << " | Scint Diff: " << diffScint << " | Scintillator Attn.: " << params[0] << endl;
+//   return normTerm * expTerm;
   
 }

@@ -34,6 +34,9 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
   
   fID = rhs.fID;
   fRunID = rhs.fRunID;
+  fCentralRunID = rhs.fCentralRunID;
+  fWavelengthRunID = rhs.fWavelengthRunID;
+
   fType = rhs.fType;
 
   fIsVerified = rhs.fIsVerified;
@@ -66,8 +69,8 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
   fSolidAngle = rhs.fSolidAngle;
   fCosTheta = rhs.fCosTheta;
 
-  fLBTheta = rhs.fLBTheta;
-  fLBPhi = rhs.fLBPhi;
+  fRelLBTheta = rhs.fRelLBTheta;
+  fRelLBPhi = rhs.fRelLBPhi;
 
   fAVHDShadowVal = rhs.fAVHDShadowVal;
   fGeometricShadowVal = rhs.fGeometricShadowVal;
@@ -80,17 +83,84 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
   fBadPath = rhs.fBadPath;
   fNeckFlag = rhs.fNeckFlag;
 
-  fOccRatio = rhs.fOccRatio;
-  fOccRatioErr = rhs.fOccRatioErr; 
 
-  fCorrLBIntensityNorm = rhs.fCorrLBIntensityNorm;
+  fCentralPromptPeakTime = rhs.fCentralPromptPeakTime;
+  fCentralPromptPeakWidth = rhs.fCentralPromptPeakWidth;
+  fCentralTimeOfFlight = rhs.fCentralTimeOfFlight;
+  fCentralOccupancy = rhs.fCentralOccupancy;
+  fCentralOccupancyErr = rhs.fCentralOccupancyErr;
+  fCentralOccupancyCorr = rhs.fCentralOccupancyCorr;
+  fCentralLBIntensityNorm = rhs.fCentralLBIntensityNorm;
 
-  fCorrSolidAngle = rhs.fCorrSolidAngle;
-  fCorrFresnelTCoeff = rhs.fCorrFresnelTCoeff;
+  fCentralNLBPulses = rhs.fCentralNLBPulses;
 
-  fCorrDistInScint = rhs.fCorrDistInScint;
-  fCorrDistInAV = rhs.fCorrDistInAV;
-  fCorrDistInWater = rhs.fCorrDistInWater;
+  fCentralMPECorrOccupancy = rhs.fCentralMPECorrOccupancy;
+  fCentralMPECorrOccupancyErr = rhs.fCentralMPECorrOccupancyErr;
+  fCentralMPECorrOccupancyCorr = rhs.fCentralMPECorrOccupancyCorr;
+
+  fCentralFresnelTCoeff = rhs.fCentralFresnelTCoeff;
+
+  fCentralDistInScint = rhs.fCentralDistInScint;
+  fCentralDistInAV = rhs.fCentralDistInAV;
+  fCentralDistInWater = rhs.fCentralDistInWater;
+  fCentralDistInNeck = rhs.fCentralDistInNeck;
+  fCentralTotalDist = rhs.fCentralTotalDist;
+
+  fCentralSolidAngle = rhs.fCentralSolidAngle;
+  fCentralCosTheta = rhs.fCentralCosTheta;
+
+  fCentralRelLBTheta = rhs.fCentralRelLBTheta;
+  fCentralRelLBPhi = rhs.fCentralRelLBPhi;
+
+  fCentralAVHDShadowVal = rhs.fCentralAVHDShadowVal;
+  fCentralGeometricShadowVal = rhs.fCentralGeometricShadowVal;
+
+  fCentralAVHDShadowFlag = rhs.fCentralAVHDShadowFlag;
+  fCentralGeometricShadowFlag = rhs.fCentralGeometricShadowFlag;
+
+  fCentralCHSFlag = rhs.fCentralCHSFlag;
+  fCentralCSSFlag = rhs.fCentralCSSFlag;
+  fCentralBadPath = rhs.fCentralBadPath;
+  fCentralNeckFlag = rhs.fCentralNeckFlag;
+
+  fWavelengthPromptPeakTime = rhs.fWavelengthPromptPeakTime;
+  fWavelengthPromptPeakWidth = rhs.fWavelengthPromptPeakWidth;
+  fWavelengthTimeOfFlight = rhs.fWavelengthTimeOfFlight;
+  fWavelengthOccupancy = rhs.fWavelengthOccupancy;
+  fWavelengthOccupancyErr = rhs.fWavelengthOccupancyErr;
+  fWavelengthOccupancyCorr = rhs.fWavelengthOccupancyCorr;
+  fWavelengthLBIntensityNorm = rhs.fWavelengthLBIntensityNorm;
+
+  fWavelengthNLBPulses = rhs.fWavelengthNLBPulses;
+
+  fWavelengthMPECorrOccupancy = rhs.fWavelengthMPECorrOccupancy;
+  fWavelengthMPECorrOccupancyErr = rhs.fWavelengthMPECorrOccupancyErr;
+  fWavelengthMPECorrOccupancyCorr = rhs.fWavelengthMPECorrOccupancyCorr;
+
+  fWavelengthFresnelTCoeff = rhs.fWavelengthFresnelTCoeff;
+
+  fWavelengthDistInScint = rhs.fWavelengthDistInScint;
+  fWavelengthDistInAV = rhs.fWavelengthDistInAV;
+  fWavelengthDistInWater = rhs.fWavelengthDistInWater;
+  fWavelengthDistInNeck = rhs.fWavelengthDistInNeck;
+  fWavelengthTotalDist = rhs.fWavelengthTotalDist;
+
+  fWavelengthSolidAngle = rhs.fWavelengthSolidAngle;
+  fWavelengthCosTheta = rhs.fWavelengthCosTheta;
+
+  fWavelengthRelLBTheta = rhs.fWavelengthRelLBTheta;
+  fWavelengthRelLBPhi = rhs.fWavelengthRelLBPhi;
+
+  fWavelengthAVHDShadowVal = rhs.fWavelengthAVHDShadowVal;
+  fWavelengthGeometricShadowVal = rhs.fWavelengthGeometricShadowVal;
+
+  fWavelengthAVHDShadowFlag = rhs.fWavelengthAVHDShadowFlag;
+  fWavelengthGeometricShadowFlag = rhs.fWavelengthGeometricShadowFlag;
+
+  fWavelengthCHSFlag = rhs.fWavelengthCHSFlag;
+  fWavelengthCSSFlag = rhs.fWavelengthCSSFlag;
+  fWavelengthBadPath = rhs.fWavelengthBadPath;
+  fWavelengthNeckFlag = rhs.fWavelengthNeckFlag;
 
 }
 
@@ -134,8 +204,8 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
   fSolidAngle = rhs.fSolidAngle;
   fCosTheta = rhs.fCosTheta;
 
-  fLBTheta = rhs.fLBTheta;
-  fLBPhi = rhs.fLBPhi;
+  fRelLBTheta = rhs.fRelLBTheta;
+  fRelLBPhi = rhs.fRelLBPhi;
 
   fAVHDShadowVal = rhs.fAVHDShadowVal;
   fGeometricShadowVal = rhs.fGeometricShadowVal;
@@ -148,17 +218,83 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
   fBadPath = rhs.fBadPath;
   fNeckFlag = rhs.fNeckFlag;
 
-  fOccRatio = rhs.fOccRatio;
-  fOccRatioErr = rhs.fOccRatioErr; 
+  fCentralPromptPeakTime = rhs.fCentralPromptPeakTime;
+  fCentralPromptPeakWidth = rhs.fCentralPromptPeakWidth;
+  fCentralTimeOfFlight = rhs.fCentralTimeOfFlight;
+  fCentralOccupancy = rhs.fCentralOccupancy;
+  fCentralOccupancyErr = rhs.fCentralOccupancyErr;
+  fCentralOccupancyCorr = rhs.fCentralOccupancyCorr;
+  fCentralLBIntensityNorm = rhs.fCentralLBIntensityNorm;
 
-  fCorrLBIntensityNorm = rhs.fCorrLBIntensityNorm;
+  fCentralNLBPulses = rhs.fCentralNLBPulses;
 
-  fCorrSolidAngle = rhs.fCorrSolidAngle;
-  fCorrFresnelTCoeff = rhs.fCorrFresnelTCoeff;
+  fCentralMPECorrOccupancy = rhs.fCentralMPECorrOccupancy;
+  fCentralMPECorrOccupancyErr = rhs.fCentralMPECorrOccupancyErr;
+  fCentralMPECorrOccupancyCorr = rhs.fCentralMPECorrOccupancyCorr;
 
-  fCorrDistInScint = rhs.fCorrDistInScint;
-  fCorrDistInAV = rhs.fCorrDistInAV;
-  fCorrDistInWater = rhs.fCorrDistInWater;
+  fCentralFresnelTCoeff = rhs.fCentralFresnelTCoeff;
+
+  fCentralDistInScint = rhs.fCentralDistInScint;
+  fCentralDistInAV = rhs.fCentralDistInAV;
+  fCentralDistInWater = rhs.fCentralDistInWater;
+  fCentralDistInNeck = rhs.fCentralDistInNeck;
+  fCentralTotalDist = rhs.fCentralTotalDist;
+
+  fCentralSolidAngle = rhs.fCentralSolidAngle;
+  fCentralCosTheta = rhs.fCentralCosTheta;
+
+  fCentralRelLBTheta = rhs.fCentralRelLBTheta;
+  fCentralRelLBPhi = rhs.fCentralRelLBPhi;
+
+  fCentralAVHDShadowVal = rhs.fCentralAVHDShadowVal;
+  fCentralGeometricShadowVal = rhs.fCentralGeometricShadowVal;
+
+  fCentralAVHDShadowFlag = rhs.fCentralAVHDShadowFlag;
+  fCentralGeometricShadowFlag = rhs.fCentralGeometricShadowFlag;
+
+  fCentralCHSFlag = rhs.fCentralCHSFlag;
+  fCentralCSSFlag = rhs.fCentralCSSFlag;
+  fCentralBadPath = rhs.fCentralBadPath;
+  fCentralNeckFlag = rhs.fCentralNeckFlag;
+
+  fWavelengthPromptPeakTime = rhs.fWavelengthPromptPeakTime;
+  fWavelengthPromptPeakWidth = rhs.fWavelengthPromptPeakWidth;
+  fWavelengthTimeOfFlight = rhs.fWavelengthTimeOfFlight;
+  fWavelengthOccupancy = rhs.fWavelengthOccupancy;
+  fWavelengthOccupancyErr = rhs.fWavelengthOccupancyErr;
+  fWavelengthOccupancyCorr = rhs.fWavelengthOccupancyCorr;
+  fWavelengthLBIntensityNorm = rhs.fWavelengthLBIntensityNorm;
+
+  fWavelengthNLBPulses = rhs.fWavelengthNLBPulses;
+
+  fWavelengthMPECorrOccupancy = rhs.fWavelengthMPECorrOccupancy;
+  fWavelengthMPECorrOccupancyErr = rhs.fWavelengthMPECorrOccupancyErr;
+  fWavelengthMPECorrOccupancyCorr = rhs.fWavelengthMPECorrOccupancyCorr;
+
+  fWavelengthFresnelTCoeff = rhs.fWavelengthFresnelTCoeff;
+
+  fWavelengthDistInScint = rhs.fWavelengthDistInScint;
+  fWavelengthDistInAV = rhs.fWavelengthDistInAV;
+  fWavelengthDistInWater = rhs.fWavelengthDistInWater;
+  fWavelengthDistInNeck = rhs.fWavelengthDistInNeck;
+  fWavelengthTotalDist = rhs.fWavelengthTotalDist;
+
+  fWavelengthSolidAngle = rhs.fWavelengthSolidAngle;
+  fWavelengthCosTheta = rhs.fWavelengthCosTheta;
+
+  fWavelengthRelLBTheta = rhs.fWavelengthRelLBTheta;
+  fWavelengthRelLBPhi = rhs.fWavelengthRelLBPhi;
+
+  fWavelengthAVHDShadowVal = rhs.fWavelengthAVHDShadowVal;
+  fWavelengthGeometricShadowVal = rhs.fWavelengthGeometricShadowVal;
+
+  fWavelengthAVHDShadowFlag = rhs.fWavelengthAVHDShadowFlag;
+  fWavelengthGeometricShadowFlag = rhs.fWavelengthGeometricShadowFlag;
+
+  fWavelengthCHSFlag = rhs.fWavelengthCHSFlag;
+  fWavelengthCSSFlag = rhs.fWavelengthCSSFlag;
+  fWavelengthBadPath = rhs.fWavelengthBadPath;
+  fWavelengthNeckFlag = rhs.fWavelengthNeckFlag;
  
   return *this;
 
@@ -205,8 +341,8 @@ void LOCASPMT::Initialise()
   SetSolidAngle( 0.0 );
   SetCosTheta( 0.0 );
 
-  SetLBTheta( 0.0 );
-  SetLBPhi( 0.0 );
+  SetRelLBTheta( 0.0 );
+  SetRelLBPhi( 0.0 );
 
   SetAVHDShadowVal( 0.0 );
   SetGeometricShadowVal( 0.0 );
@@ -219,17 +355,83 @@ void LOCASPMT::Initialise()
   SetBadPath( false );
   SetNeckFlag( false );
 
-  SetOccRatio( 0.0 );
-  SetOccRatioErr( 0.0 );
+  SetCentralPromptPeakTime( 0.0 );
+  SetCentralPromptPeakWidth( 0.0 );
+  SetCentralTimeOfFlight( 0.0 );
+  SetCentralOccupancy( 0.0 );
+  SetCentralOccupancyErr( 0.0 );
+  SetCentralOccupancyCorr( 0.0 );
+  SetCentralLBIntensityNorm( 0.0 );
 
-  SetCorrLBIntensityNorm( 0.0 );
+  SetCentralNLBPulses( 0.0 );
 
-  SetCorrSolidAngle( 0.0 );
-  SetCorrFresnelTCoeff( 0.0 );
+  SetCentralMPECorrOccupancy( 0.0 );
+  SetCentralMPECorrOccupancyErr( 0.0 );
+  SetCentralMPECorrOccupancyCorr( 0.0 );
 
-  SetCorrDistInScint( 0.0 );
-  SetCorrDistInAV( 0.0 ); 
-  SetCorrDistInWater( 0.0 );
+  SetCentralFresnelTCoeff( 0.0 );
+
+  SetCentralDistInScint( 0.0 );
+  SetCentralDistInAV( 0.0 );
+  SetCentralDistInWater( 0.0 );
+  SetCentralDistInNeck( 0.0 );
+  SetCentralTotalDist( 0.0 );
+
+  SetCentralSolidAngle( 0.0 );
+  SetCentralCosTheta( 0.0 );
+
+  SetCentralRelLBTheta( 0.0 );
+  SetCentralRelLBPhi( 0.0 );
+
+  SetCentralAVHDShadowVal( 0.0 );
+  SetCentralGeometricShadowVal( 0.0 );
+
+  SetCentralAVHDShadowFlag( false );
+  SetCentralGeometricShadowFlag( false );
+
+  SetCentralCHSFlag( false );
+  SetCentralCSSFlag( false );
+  SetCentralBadPath( false );
+  SetCentralNeckFlag( false );
+
+  SetWavelengthPromptPeakTime( 0.0 );
+  SetWavelengthPromptPeakWidth( 0.0 );
+  SetWavelengthTimeOfFlight( 0.0 );
+  SetWavelengthOccupancy( 0.0 );
+  SetWavelengthOccupancyErr( 0.0 );
+  SetWavelengthOccupancyCorr( 0.0 );
+  SetWavelengthLBIntensityNorm( 0.0 );
+
+  SetWavelengthNLBPulses( 0.0 );
+
+  SetWavelengthMPECorrOccupancy( 0.0 );
+  SetWavelengthMPECorrOccupancyErr( 0.0 );
+  SetWavelengthMPECorrOccupancyCorr( 0.0 );
+
+  SetWavelengthFresnelTCoeff( 0.0 );
+
+  SetWavelengthDistInScint( 0.0 );
+  SetWavelengthDistInAV( 0.0 );
+  SetWavelengthDistInWater( 0.0 );
+  SetWavelengthDistInNeck( 0.0 );
+  SetWavelengthTotalDist( 0.0 );
+
+  SetWavelengthSolidAngle( 0.0 );
+  SetWavelengthCosTheta( 0.0 );
+
+  SetWavelengthRelLBTheta( 0.0 );
+  SetWavelengthRelLBPhi( 0.0 );
+
+  SetWavelengthAVHDShadowVal( 0.0 );
+  SetWavelengthGeometricShadowVal( 0.0 );
+
+  SetWavelengthAVHDShadowFlag( false );
+  SetWavelengthGeometricShadowFlag( false );
+
+  SetWavelengthCHSFlag( false );
+  SetWavelengthCSSFlag( false );
+  SetWavelengthBadPath( false );
+  SetWavelengthNeckFlag( false );
 
 }
 
@@ -289,8 +491,8 @@ void LOCASPMT::AddSOCPMTData( RAT::DS::SOCPMT& socPMT )
   SetSolidAngle( 0.0 );                         // SetSolidAngle is done by LOCASPMT::ProcessLightPath
   SetCosTheta( 0.0 );                           // SetCosTheta is done by LOCASPMT::ProcessLightPath
 
-  SetLBTheta( 0.0 );                            // SetLBTheta is done by LOCAS::LOCASRun::Fill
-  SetLBPhi( 0.0 );                              // SetLBPhi is done by LOCAS::LOCASRun::Fill
+  SetRelLBTheta( 0.0 );                            // SetLBTheta is done by LOCAS::LOCASRun::Fill
+  SetRelLBPhi( 0.0 );                              // SetLBPhi is done by LOCAS::LOCASRun::Fill
 
   SetGeometricShadowVal( socPMT.GetRelOccSim_fullShadow() );
   SetAVHDShadowVal( socPMT.GetRelOccSim_hdRopeShadow() );
@@ -302,18 +504,6 @@ void LOCASPMT::AddSOCPMTData( RAT::DS::SOCPMT& socPMT )
   SetCSSFlag( false );                          // SetCSSFlag is done by LOCAS::LOCASRun::Fill
   SetBadPath( false );                          // SetBadPath is done by LOCASPMT::ProcessLightPath
   SetNeckFlag( false );                         // SetNeckFlag is done by LOCASPMT::ProcessLightPath
-
-  SetOccRatio( 0.0 );                           // SetOccRatio is done by LOCAS::LOCASRun::CrossRunFill  
-  SetOccRatioErr( 0.0 );                        // SetOccRatioErr is done by LOCAS::LOCASRun::CrossRunFill
-
-  SetCorrLBIntensityNorm( 0.0 );                // SetCorrLBIntensityNorm is done by LOCAS::LOCASRun::CrossRunFill
- 
-  SetCorrSolidAngle( 0.0 );                     // SetCorrSolidAngle is done by LOCAS::LOCASRun::CrossRunFill
-  SetCorrFresnelTCoeff( 0.0 );                  // SetCorrFresnelTCoeff is done by LOCAS::LOCASRun::CrossRunFill
-
-  SetCorrDistInScint( 0.0 );                    // SetCorrDistInScint is done by LOCAS::LOCASRun::CrossRunFill
-  SetCorrDistInAV( 0.0 );                       // SetCorrDistInAV is done by LOCAS::LOCASRun::CrossRunFill
-  SetCorrDistInWater( 0.0 );                    // SetCorrDistInWater is done by LOCAS::LOCASRun::CrossRunFill
 
 }
 

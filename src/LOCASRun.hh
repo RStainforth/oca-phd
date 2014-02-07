@@ -57,7 +57,6 @@ namespace LOCAS{
     void Initialise();
     void Clear( Option_t* option="" );
     void Fill( RAT::SOCReader& socR, Int_t runID );
-    void CalculateLBIntensityNorm();
     
     void CopySOCRunInfo( RAT::DS::SOC* socRun );
     void CopySOCPMTInfo( RAT::DS::SOC* socRun );
@@ -78,7 +77,12 @@ namespace LOCAS{
     /////////////////////////////////
     
     void SetRunID( Int_t runID ){ fRunID = runID; }
+    void SetCentralRunID( Int_t runID ){ fCentralRunID = runID; }
+    void SetWavelengthRunID( Int_t runID ){ fWavelengthRunID = runID; }
+
     void SetSourceID( Int_t sourceID ){ fSourceID = sourceID; }
+    void SetCentralSourceID( Int_t sourceID ){ fCentralSourceID = sourceID; }
+    void SetWavelengthSourceID( Int_t sourceID ){ fWavelengthSourceID = sourceID; }
 
     void SetIsMainRun( Bool_t isMain ){ fIsMainRun = isMain; }
     void SetIsCentralRun( Bool_t isCentral ){ fIsCentralRun = isCentral; }
@@ -86,6 +90,10 @@ namespace LOCAS{
     
     void SetLambda( Float_t lambda ){ fLambda = lambda; } 
     void SetNLBPulses( Float_t nPulses ){ fNLBPulses = nPulses; }
+    void SetCentralLambda( Float_t lambda ){ fCentralLambda = lambda; } 
+    void SetCentralNLBPulses( Float_t nPulses ){ fCentralNLBPulses = nPulses; }
+    void SetWavelengthLambda( Float_t lambda ){ fWavelengthLambda = lambda; } 
+    void SetWavelengthNLBPulses( Float_t nPulses ){ fWavelengthNLBPulses = nPulses; }
 
     void SetMainLBIntensityNorm( Float_t mRunLI ){ fMainLBIntensityNorm = mRunLI; }
     void SetCentralLBIntensityNorm( Float_t cRunLI ){ fCentralLBIntensityNorm = cRunLI; }
@@ -96,16 +104,7 @@ namespace LOCAS{
     
     // ABREVIATIONS
     // LB := LaserBall
-    // DirFit := Direct Fit
-    // LPFit := Light Path Fit
-    // Manip := Manipulator
-    
-    // Set the fitted laserball type to be used in the LOCAS fit
-    // 0 := Direct Straight Line laserball position
-    // 1 := LOCAS::LOCASLightPath fitted laserball position
-    // 2 := Manipulator coordinates laserball position
-    void SetLBPosType( Int_t posType = 2 );
-    
+       
     ////////////////////////////////////////
     
     void SetLBPos( Float_t xPos, Float_t yPos, Float_t zPos ){ 
@@ -116,67 +115,48 @@ namespace LOCAS{
     void SetLBPos( TVector3 xyzPos ){ 
       fLBPos = xyzPos;
     }
+
+    void SetCentralLBPos( Float_t xPos, Float_t yPos, Float_t zPos ){ 
+      fCentralLBPos.SetX( xPos );
+      fCentralLBPos.SetY( yPos );
+      fCentralLBPos.SetZ( zPos );
+    }
+    void SetCentralLBPos( TVector3 xyzPos ){ 
+      fCentralLBPos = xyzPos;
+    }
+
+    void SetWavelengthLBPos( Float_t xPos, Float_t yPos, Float_t zPos ){ 
+      fWavelengthLBPos.SetX( xPos );
+      fWavelengthLBPos.SetY( yPos );
+      fWavelengthLBPos.SetZ( zPos );
+    }
+    void SetWavelengthLBPos( TVector3 xyzPos ){ 
+      fWavelengthLBPos = xyzPos;
+    }
     
     void SetLBXPosErr( Float_t LBXPosErr ){ fLBXPosErr = LBXPosErr; }
     void SetLBYPosErr( Float_t LBYPosErr ){ fLBYPosErr = LBYPosErr; }
     void SetLBZPosErr( Float_t LBZPosErr ){ fLBZPosErr = LBZPosErr; }
+
+    void SetCentralLBXPosErr( Float_t LBXPosErr ){ fCentralLBXPosErr = LBXPosErr; }
+    void SetCentralLBYPosErr( Float_t LBYPosErr ){ fCentralLBYPosErr = LBYPosErr; }
+    void SetCentralLBZPosErr( Float_t LBZPosErr ){ fCentralLBZPosErr = LBZPosErr; }
+
+    void SetWavelengthLBXPosErr( Float_t LBXPosErr ){ fWavelengthLBXPosErr = LBXPosErr; }
+    void SetWavelengthLBYPosErr( Float_t LBYPosErr ){ fWavelengthLBYPosErr = LBYPosErr; }
+    void SetWavelengthLBZPosErr( Float_t LBZPosErr ){ fWavelengthLBZPosErr = LBZPosErr; }
     
     void SetLBPosChi2( Float_t LBPosChi2 ){ fLBPosChi2 = LBPosChi2; }
     void SetLBTheta( Float_t LBTheta ){ fLBTheta = LBTheta; }
     void SetLBPhi( Float_t LBPhi ){ fLBPhi = LBPhi; }
-    
-    ////////////////////////////////////////
-    
-    void SetDirFitLBPos(  Float_t xPos, Float_t yPos, Float_t zPos ){ 
-      fDirFitLBPos.SetX( xPos );
-      fDirFitLBPos.SetY( yPos );
-      fDirFitLBPos.SetZ( zPos );
-    }
-    void SetDirFitLBPos( TVector3 xyzPos ){ 
-      fDirFitLBPos = xyzPos;
-    }
-    
-    void SetDirFitLBXPosErr( Float_t LBXPosErr ){ fDirFitLBXPosErr = LBXPosErr; }
-    void SetDirFitLBYPosErr( Float_t LBYPosErr ){ fDirFitLBYPosErr = LBYPosErr; }
-    void SetDirFitLBZPosErr( Float_t LBZPosErr ){ fDirFitLBZPosErr = LBZPosErr; }
-    
-    void SetDirFitLBPosChi2( Float_t LBPosChi2 ){ fDirFitLBPosChi2 = LBPosChi2; }
-    
-    ////////////////////////////////////////
-    
-    void SetLPFitLBPos( Float_t xPos, Float_t yPos, Float_t zPos ){ 
-      fLPFitLBPos.SetX( xPos );
-      fLPFitLBPos.SetY( yPos );
-      fLPFitLBPos.SetZ( zPos );
-    }
-    void SetLPFitLBPos( TVector3 xyzPos ){ 
-      fLPFitLBPos = xyzPos;
-    }
-    
-    void SetLPFitLBXPosErr( Float_t LBXPosErr ){ fLPFitLBXPosErr = LBXPosErr; }
-    void SetLPFitLBYPosErr( Float_t LBYPosErr ){ fLPFitLBYPosErr = LBYPosErr; }
-    void SetLPFitLBZPosErr( Float_t LBZPosErr ){ fLPFitLBZPosErr = LBZPosErr; }
-    
-    void SetLPFitLBPosChi2( Float_t LBPosChi2 ){ fLPFitLBPosChi2 = LBPosChi2; }
-    
-    ////////////////////////////////////////
-    
-    void SetManipLBPos( Float_t xPos, Float_t yPos, Float_t zPos  ){ 
-      fManipLBPos.SetX( xPos );
-      fManipLBPos.SetY( yPos );
-      fManipLBPos.SetZ( zPos );
-    }
-    void SetManipLBPos( TVector3 xyzPos ){ 
-      fManipLBPos = xyzPos;
-    }
-    
-    void SetManipLBXPosErr( Float_t LBXPosErr ){ fManipLBXPosErr = LBXPosErr; }
-    void SetManipLBYPosErr( Float_t LBYPosErr ){ fManipLBYPosErr = LBYPosErr; }
-    void SetManipLBZPosErr( Float_t LBZPosErr ){ fManipLBZPosErr = LBZPosErr; }
-    
-    void SetManipLBPosChi2( Float_t LBPosChi2 ){ fManipLBPosChi2 = LBPosChi2; }
-    
-    ////////////////////////////////////////
+
+    void SetCentralLBPosChi2( Float_t LBPosChi2 ){ fCentralLBPosChi2 = LBPosChi2; }
+    void SetCentralLBTheta( Float_t LBTheta ){ fCentralLBTheta = LBTheta; }
+    void SetCentralLBPhi( Float_t LBPhi ){ fCentralLBPhi = LBPhi; }
+
+    void SetWavelengthLBPosChi2( Float_t LBPosChi2 ){ fWavelengthLBPosChi2 = LBPosChi2; }
+    void SetWavelengthLBTheta( Float_t LBTheta ){ fWavelengthLBTheta = LBTheta; }
+    void SetWavelengthLBPhi( Float_t LBPhi ){ fWavelengthLBPhi = LBPhi; }
     
     
     /////////////////////////////////
@@ -184,7 +164,12 @@ namespace LOCAS{
     /////////////////////////////////
     
     Int_t GetRunID(){ return fRunID; }
+    Int_t GetCentralRunID(){ return fCentralRunID; }
+    Int_t GetWavelengthRunID(){ return fWavelengthRunID; }
+
     Int_t GetSourceID(){ return fSourceID; }
+    Int_t GetCentralSourceID(){ return fCentralSourceID; }
+    Int_t GetWavelengthSourceID(){ return fWavelengthSourceID; }
 
     Bool_t GetIsMainRun(){ return fIsMainRun; }
     Bool_t GetIsCentralRun(){ return fIsCentralRun; }
@@ -194,6 +179,10 @@ namespace LOCAS{
     
     Float_t GetLambda(){ return fLambda; } 
     Float_t GetNLBPulses(){ return fNLBPulses; }
+    Float_t GetCentralLambda(){ return fCentralLambda; } 
+    Float_t GetCentralNLBPulses(){ return fCentralNLBPulses; }
+    Float_t GetWavelengthLambda(){ return fWavelengthLambda; } 
+    Float_t GetWavelengthNLBPulses(){ return fWavelengthNLBPulses; }
 
     Float_t GetMainLBIntensityNorm(){ return fMainLBIntensityNorm; }  
     Float_t GetCentralLBIntensityNorm(){ return fCentralLBIntensityNorm; }  
@@ -202,59 +191,48 @@ namespace LOCAS{
     Float_t GetTimeSigmaMean(){ return fTimeSigmaMean; }
     Float_t GetTimeSigmaSigma(){ return fTimeSigmaSigma; }
     
-    Int_t GetLBPosType(){ return fLBPosType; }
-    
     ////////////////////////////////////////
     
     TVector3 GetLBPos(){ return fLBPos; } 
+    TVector3 GetCentralLBPos(){ return fCentralLBPos; } 
+    TVector3 GetWavelengthLBPos(){ return fWavelengthLBPos; } 
     
     Float_t GetLBXPosErr(){ return fLBXPosErr; }
     Float_t GetLBYPosErr(){ return fLBYPosErr; }
     Float_t GetLBZPosErr(){ return fLBZPosErr; }
+
+    Float_t GetCentralLBXPosErr(){ return fCentralLBXPosErr; }
+    Float_t GetCentralLBYPosErr(){ return fCentralLBYPosErr; }
+    Float_t GetCentralLBZPosErr(){ return fCentralLBZPosErr; }
+
+    Float_t GetWavelengthLBXPosErr(){ return fWavelengthLBXPosErr; }
+    Float_t GetWavelengthLBYPosErr(){ return fWavelengthLBYPosErr; }
+    Float_t GetWavelengthLBZPosErr(){ return fWavelengthLBZPosErr; }
     
     Float_t GetLBPosChi2(){ return fLBPosChi2; }
     Float_t GetLBTheta(){ return fLBTheta; }
     Float_t GetLBPhi(){ return fLBPhi; }
-    
-    ////////////////////////////////////////
-    
-    TVector3 GetDirFitLBPos(){ return fDirFitLBPos; }
-    
-    Float_t GetDirFitLBXPosErr(){ return fDirFitLBXPosErr; }
-    Float_t GetDirFitLBYPosErr(){ return fDirFitLBYPosErr; }
-    Float_t GetDirFitLBZPosErr(){ return fDirFitLBZPosErr; }
-    
-    Float_t GetDirFitLBPosChi2(){ return fDirFitLBPosChi2; }
-    
-    ////////////////////////////////////////
-    
-    TVector3 GetLPFitLBPos(){ return fLPFitLBPos; }
-    
-    Float_t GetLPFitLBXPosErr(){ return fLPFitLBXPosErr; }
-    Float_t GetLPFitLBYPosErr(){ return fLPFitLBYPosErr; }
-    Float_t GetLPFitLBZPosErr(){ return fLPFitLBZPosErr; }
-    
-    Float_t GetLPFitLBPosChi2(){ return fLPFitLBPosChi2; }
-    
-    ////////////////////////////////////////
-    
-    TVector3 GetManipLBPos(){ return fManipLBPos; }
-    
-    Float_t GetManipLBXPosErr(){ return fManipLBXPosErr; }
-    Float_t GetManipLBYPosErr(){ return fManipLBYPosErr; }
-    Float_t GetManipLBZPosErr(){ return fManipLBZPosErr; }
-    
-    Float_t GetManipLBPosChi2(){ return fManipLBPosChi2; }
-    
-    //////////////////////////////////////// 
-    
+
+    Float_t GetCentralLBPosChi2(){ return fCentralLBPosChi2; }
+    Float_t GetCentralLBTheta(){ return fCentralLBTheta; }
+    Float_t GetCentralLBPhi(){ return fCentralLBPhi; }
+
+    Float_t GetWavelengthLBPosChi2(){ return fWavelengthLBPosChi2; }
+    Float_t GetWavelengthLBTheta(){ return fWavelengthLBTheta; }
+    Float_t GetWavelengthLBPhi(){ return fWavelengthLBPhi; }
+       
     std::map<Int_t, LOCASPMT>::iterator GetLOCASPMTIterBegin(){ return fLOCASPMTs.begin(); }
     std::map<Int_t, LOCASPMT>::iterator GetLOCASPMTIterEnd(){ return fLOCASPMTs.end(); }
     
   private:
     
     Int_t fRunID;                          // The Run ID
+    Int_t fCentralRunID;                   // The Central Run ID
+    Int_t fWavelengthRunID;                // The Wavelength Run ID
+
     Int_t fSourceID;                       // The Source ID
+    Int_t fCentralSourceID;                // The Source ID
+    Int_t fWavelengthSourceID;             // The Source ID
     
     Bool_t fIsMainRun;                     // TRUE: Main Run False: Other
     Bool_t fIsCentralRun;                  // TRUE: Central Run FALSE: Other Run
@@ -262,53 +240,46 @@ namespace LOCAS{
     
     Float_t fLambda;                       // The wavelength of the laser in this run
     Float_t fNLBPulses;                    // Number of laserball pulses in this run
+    Float_t fCentralLambda;                // The wavelength of the laser in the central run
+    Float_t fCentralNLBPulses;             // Number of laserball pulses in the central run
+    Float_t fWavelengthLambda;             // The wavelength of the laser in the wavelength run
+    Float_t fWavelengthNLBPulses;          // Number of laserball pulses in the wavelength run
 
     Float_t fMainLBIntensityNorm;          // Number of total hits in prompt timing window (for main run)
-    Float_t fCentralLBIntensityNorm;      // Number of total hits in prompt timing window (for central run)
+    Float_t fCentralLBIntensityNorm;       // Number of total hits in prompt timing window (for central run)
     Float_t fWavelengthLBIntensityNorm;    // Number of total hits in prompt timing window (for wavelength run)
     
     Float_t fTimeSigmaMean;                // Average PMT time spread for this run
     Float_t fTimeSigmaSigma;               // Spread of PMT time spreads for this run (i.e. standard deviation)
     
-    Int_t fLBPosType;                      // The fitted LaserBall position type to be used in the LOCAS fit
-                                           //  0 := Direct Straight Line laserball position
-                                           //  1 := RAT::DS::LightPath fitted laserball position
-                                           //  2 := Manipulator coordinates laserball position
-    
     TVector3 fLBPos;                       // The Laserball position used in the LOCAS fit
+    TVector3 fCentralLBPos;                // The Laserball position used in the central run
+    TVector3 fWavelengthLBPos;             // The Laserball position used in the wavelength run
     
     Float_t fLBXPosErr;                    // Error on the x laserball coordinate
     Float_t fLBYPosErr;                    // Error on the y laserball coordinate
     Float_t fLBZPosErr;                    // Error on the z laserball coordinate
+
+    Float_t fCentralLBZPosErr;             // Error on the z laserball coordinate in the central run
+    Float_t fCentralLBXPosErr;             // Error on the x laserball coordinate in the central run
+    Float_t fCentralLBYPosErr;             // Error on the y laserball coordinate in the central run
+
+    Float_t fWavelengthLBZPosErr;          // Error on the z laserball coordinate in the wavelength run
+    Float_t fWavelengthLBXPosErr;          // Error on the x laserball coordinate in the wavelength run
+    Float_t fWavelengthLBYPosErr;          // Error on the y laserball coordinate in the wavelength run
     
     Float_t fLBPosChi2;                    // Chi-squared of the laserball position
     Float_t fLBTheta;                      // Theta orientation value ( usually fLBTheta=0 )
     Float_t fLBPhi;                        // Phi orientation value ( 0:=South, pi/2:=West, pi:=North, 3pi/2:=East )
-    
-    TVector3 fDirFitLBPos;                 // Direct Fitted LaserBall position
-    
-    Float_t fDirFitLBXPosErr;        
-    Float_t fDirFitLBYPosErr;
-    Float_t fDirFitLBZPosErr;
-    
-    Float_t fDirFitLBPosChi2;
-    
-    TVector3 fLPFitLBPos;                  // RAT::DS::LightPath fitted LaserBall position
-    
-    Float_t fLPFitLBXPosErr;
-    Float_t fLPFitLBYPosErr;
-    Float_t fLPFitLBZPosErr;
-    
-    Float_t fLPFitLBPosChi2;
-    
-    TVector3 fManipLBPos;                  // Manipulator LaserBall position
-    
-    Float_t fManipLBXPosErr;
-    Float_t fManipLBYPosErr;
-    Float_t fManipLBZPosErr;
-    
-    Float_t fManipLBPosChi2;
-    
+
+    Float_t fCentralLBPosChi2;             // Chi-squared of the laserball position
+    Float_t fCentralLBTheta;               // Theta orientation value ( usually fLBTheta=0 )
+    Float_t fCentralLBPhi;                 // Phi orientation value ( 0:=South, pi/2:=West, pi:=North, 3pi/2:=East )
+
+    Float_t fWavelengthLBPosChi2;          // Chi-squared of the laserball position in the wavelength run
+    Float_t fWavelengthLBTheta;            // Theta orientation value ( usually fLBTheta=0 ) in the wavelength run
+    Float_t fWavelengthLBPhi;              // Phi orientation value ( 0:=South, pi/2:=West, pi:=North, 3pi/2:=East ) in the wavelength run
+        
     std::map<Int_t, LOCASPMT> fLOCASPMTs;  // Map of LOCASPMTs (i.e. the PMTs in this Run)
     
     ClassDef(LOCASRun,1)

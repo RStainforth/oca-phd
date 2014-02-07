@@ -44,18 +44,23 @@ namespace LOCAS{
     //void DoFit();
 
     void DataScreen();                                  // Perform final checks on data before performing the fit
-    void Screen();
-    Bool_t PMTSkip( LOCASPMT* pmt, Float_t mean, Float_t sigma );
-    Float_t ModelPrediction( LOCASPMT* pmt );
-    Float_t ModelPrediction( Int_t iPMT, Int_t nA, Float_t* dyda );
-    Float_t CalculateChiSquare( LOCASPMT* pmt );                 // Calculate the chisquare
+    //void Screen();
+    Bool_t PMTSkip( Int_t iRun, Int_t iPMT, Float_t mean, Float_t sigma );
+    Float_t ModelPrediction( Int_t iRun, Int_t iPMT, Int_t nA = 0, Float_t* dyda = NULL );
+    Float_t CalculatePMTChiSquare( Int_t iRun, Int_t iPMT );                 // Calculate the chisquare
     //void CalculateChiSquare();                        // Calculate the chiSquare
 
     //void CopyParamterValues( LOCASFit* seedFit );    // Copy the parameter values from seedFit to THIS fit
     //void GiveParameterValues( LOCASFit* targetFit ); // Give the parameter values from THIS fit to targetFit
 
-    Float_t ModelAngularResponse( LOCASPMT* locasPMT, Int_t& iAng );
-    Float_t ModelLBDistribution( LOCASPMT* locasPMT, Int_t& iLBDist );
+    Float_t ModelAngularResponse( LOCASPMT* locasPMT, Int_t& iAng, Int_t runType );
+    Float_t ModelLBDistribution( LOCASPMT* locasPMT, Int_t& iLBDist, Int_t runType );
+
+    void PerformFit();
+
+    void FillParameterbase();
+    void FillAngIndex();
+    void FillParameterPoint();
 
     // FITTING METHODS
     Int_t MrqFit(float x[], float y[], float sig[], int ndata, float a[],
@@ -91,9 +96,17 @@ namespace LOCAS{
 
     LOCASRun* GetCurrentRun(){ return fCurrentRun; }
     LOCASPMT* GetCurrentPMT(){ return fCurrentPMT; }
+    LOCASRun* GetCurrentCentralRun(){ return fCurrentCentralRun; }
+    LOCASPMT* GetCurrentCentralPMT(){ return fCurrentCentralPMT; }
+    LOCASRun* GetCurrentWavelengthRun(){ return fCurrentWavelengthRun; }
+    LOCASPMT* GetCurrentWavelengthPMT(){ return fCurrentWavelengthPMT; }
 
-    Int_t GetNumberOfRuns(){ return fNumberOfRuns; }
+    Int_t GetNRuns(){ return fNRuns; }
     std::vector< Int_t > GetListOfRunIDs(){ return fListOfRunIDs; }
+    Int_t GetNCentralRuns(){ return fNCentralRuns; }
+    std::vector< Int_t > GetListOfCentralRunIDs(){ return fListOfCentralRunIDs; }
+    Int_t GetNWavelengthRuns(){ return fNWavelengthRuns; }
+    std::vector< Int_t > GetListOfWavelengthRunIDs(){ return fListOfWavelengthRunIDs; }
     
     Bool_t GetVaryAll(){ return fVaryAll; }
     Bool_t GetScintVary(){ return fScintVary; }
@@ -148,87 +161,98 @@ namespace LOCAS{
 
   private:
 
-    std::string fFitName;
-    std::string fFitTitle;
+    std::string fFitName;                                    // The name of the fit
+    std::string fFitTitle;                                   // The title of the fit
 
-    Bool_t fValidPars;             // The LOCASFit structure has allocated valid parameters
-    Bool_t fDataScreen;            // The Data has been screened and filtered for reasonable tubes
+    Bool_t fValidPars;                                       //! The LOCASFit structure has allocated valid parameters
+    Bool_t fDataScreen;                                      //! The Data has been screened and filtered for reasonable tubes
     
-    LOCASRunReader fRunReader;            // The Run reader to go over all the LOCASRun files
-    LOCASRunReader fCentralRunReader;     // The Run reader to go over all the Central LOCASRun files
-    LOCASRunReader fWavelengthRunReader;  // The Run reader to go over all the Wavelength LOCASRun files
+    LOCASRunReader fRunReader;                               //! The Run reader to go over all the LOCASRun files
+    LOCASRunReader fCentralRunReader;                        //! The Run reader to go over all the Central LOCASRun files
+    LOCASRunReader fWavelengthRunReader;                     //! The Run reader to go over all the Wavelength LOCASRun files
 
-    LOCASRun* fCurrentRun;     // Pointer to the current LOCASRun object
-    LOCASPMT* fCurrentPMT;     // Pointer to the current LOCASPMT object
+    LOCASRun* fCurrentRun;                                   //! Pointer to the current LOCASRun object
+    LOCASPMT* fCurrentPMT;                                   //! Pointer to the current LOCASPMT object
+    LOCASRun* fCurrentCentralRun;                            //! Pointer to the current central LOCASRun object
+    LOCASPMT* fCurrentCentralPMT;                            //! Pointer to the current central LOCASPMT object
+    LOCASRun* fCurrentWavelengthRun;                         //! Pointer to the current wavelength LOCASRun object
+    LOCASPMT* fCurrentWavelengthPMT;                         //! Pointer to the current wavelength LOCASPMT object
 
-    Int_t fNumberOfRuns;
-    std::vector< Int_t > fListOfRunIDs;
-    std::vector< Int_t > fListOfCentralRunIDs;
-    std::vector< Int_t > fListOfWavelengthRunIDs;
+    Int_t fNRuns;                                            // Number of runs loaded into the fit
+    Int_t fNCentralRuns;                                     // Number of central runs loaded
+    Int_t fNWavelengthRuns;                                  // Number of wavelength runs loaded
+    std::vector< Int_t > fListOfRunIDs;                      //! List of run IDs in the fit
+    std::vector< Int_t > fListOfCentralRunIDs;               //! List of central run IDs used in the fit
+    std::vector< Int_t > fListOfWavelengthRunIDs;            //! List of wavelength run IDs in the fit
 
-    Bool_t fVaryAll;
-    Bool_t fScintVary;
-    Bool_t fAVVary;
-    Bool_t fWaterVary;
-    Bool_t fAngularResponseVary;
-    Bool_t fLBDistributionVary;
+    Bool_t fVaryAll;                                         // TRUE: All parameters in the fit were varied (FALSE: not)
+    Bool_t fScintVary;                                       // Whether the scintillator attenuation length was varied
+    Bool_t fAVVary;                                          // Whether the acrylic (AV) attenuation length was varied
+    Bool_t fWaterVary;                                       // Whether the water attenuation length was varied
+    Bool_t fAngularResponseVary;                             // Whether the angular response was varied 
+    Bool_t fLBDistributionVary;                              // Whether the laserball distribution was varied
 
-    Double_t fScintInit;
-    Double_t fAVInit;
-    Double_t fWaterInit;
-    Double_t fAngularResponseInit;
-    Double_t fLBDistributionInit;
+    Double_t fScintInit;                                     // Initial scintillator (1/attenuation length) value
+    Double_t fAVInit;                                        // Initial acrylic (AV) (1/attenuation length) value
+    Double_t fWaterInit;                                     // Initial water (1/attenuation length) value
+    Double_t fAngularResponseInit;                           // Initial angular response value
+    Double_t fLBDistributionInit;                            // Initial laserball distribution value
 
-    TH2F* fLBDistribution;
-    Int_t fNLBDistributionThetaBins;
-    Int_t fNLBDistributionPhiBins;
-    Int_t fNPMTsPerLBDistributionBinMin;
-    Int_t fLBDistIndex;
+    TH2F* fLBDistribution;                                   // Pointer to the laserball distribution 2D histogram
+    Int_t fNLBDistributionThetaBins;                         // Number of theta bins in the laserball distribution histogram
+    Int_t fNLBDistributionPhiBins;                           // Number of phi bins in the laserball distribution histogram
+    Int_t fNPMTsPerLBDistributionBinMin;                     // Minimum required number of PMTs per bin in the laserball distribution histogram
 
-    TH1F* fAngularResponse;
-    Int_t fNAngularResponseBins;
-    Int_t fNPMTsPerAngularResponseBinMin;
-    Int_t fAngRespIndex;
+    TH1F* fAngularResponse;                                  // Pointer to the PMT angular response 1D histogram
+    Int_t fNAngularResponseBins;                             // Number of (theta) bins in the angular response histogram
+    Int_t fNPMTsPerAngularResponseBinMin;                    // Minimum required number of PMTs per bin in the angular response histogram
 
-    Int_t fNParametersInFit;
+    Int_t fNParametersInFit;                                 // Total number of parameters in the fit
+    Int_t fNDataPointsInFit;                                 // Total number of data points (including PMTs which do NOT pass the selection criteria)
+    Int_t fNPMTsInFit;                                       // Total number of PMTs in the fit (PMTs which pass the selection criteria, see LOCASFit::PMTSkip method)
 
-    Int_t fNDataPointsInFit;
-    Int_t fNPMTsInFit;
+    Float_t fChiSquare;                                      // Most recent ChiSquare value (not reduced)
+    Float_t fChiSquareMaxLimit;                              // Maximum value of the chisquare for PMTs to be cut from the fit
+    Float_t fChiSquareMinLimit;                              // Minimum value of the chisquare for PMTs to be cut from the fit
 
-    Float_t fChiSquare;
-    Float_t fChiSquareMaxLimit;
-    Float_t fChiSquareMinLimit;
+    Float_t fNSigma;                                         // The number of standard deviations away from the mean occupancy for a PMT to be cut on (see LOCASFit::PMTSkip method)
+    Float_t fNOccupancy;                                     // The number of prompt counts for a PMT to be cut on (see LOCASFit::PMTSkip method)
 
-    Float_t fNSigma;
+    Float_t fAVHDShadowingMin;                               // The minimum value of of the AV hold-down rope shadowing for the PMTs to be cut on
+    Float_t fAVHDShadowingMax;                               // The maximum value of of the AV hold-down rope shadowing for the PMTs to be cut on
+    Float_t fGeoShadowingMin;                                // The minimum value of of the AV geometry shadowing for the PMTs to be cut on
+    Float_t fGeoShadowingMax;                                // The maximum value of of the AV geometry shadowing for the PMTs to be cut on
 
-    Float_t fAVHDShadowingMin;
-    Float_t fAVHDShadowingMax;
-    Float_t fGeoShadowingMin;
-    Float_t fGeoShadowingMax;
+    Bool_t fCHSFlag;                                         // The CHS Flag status for PMTs to be cut on
+    Bool_t fCSSFlag;                                         // The CSS Flag status for PMTs to be cut on
 
-    Bool_t fCHSFlag;
-    Bool_t fCSSFlag;
+    Int_t fNElements;                                        //! The number of elements in the fChiArray[] and fResArray[] array
+    Float_t* fChiArray;                                      //! [fNElements] Array of chisquared for mrqcof() calls
+    Float_t* fResArray;                                      //! [fNElements] Array of residuals for mrqcof() calls
 
-    Float_t* fChiArray;
-    Float_t* fResArray;
+    Int_t fiAng;                                             //! Index for PMT angular response to be re-zeroed
+    Int_t fCiAng;                                            //! Index for PMT angular response in the central run to be re-zeroed
+    Int_t fiLBDist;                                          //! Index for laserball distribution to be re-zeroed
+    Int_t fCiLBDist;                                         //! Index for laserball distribution in the central run to be re-zeroed
 
-    Int_t fiAng;
-    Int_t fCiAng;
-    Int_t fiLBDist;
-    Int_t fCiLBDist;
-
+    
+    Int_t fParamBase;                                        // Number of variable parameters, not including PMT Response or LB Distribution
+    Int_t fParam;                                            // Number of variable parameters, including PMT response and LB distribution
+    Int_t*** fAngIndex;                                      //! Lookup table for unique variable parameters in the PMT response
+    Int_t* fParamIndex;                                      //! Lookup table for ordered variable parameters
+    Int_t* fParamVarMap;                                     //! Lookup table for variable parameters (global)
 
     // The arrays used by the Levenburg-Marquadt (Mrq) algorithm to find the parameters
-    Float_t* fMrqX;
-    Float_t* fMrqY;
-    Float_t* fMrqSigma;
+    Float_t* fMrqX;                                          //! [fNDataPointsInFit+1] Index into the PMTs to be used in the fit
+    Float_t* fMrqY;                                          //! [fNDataPointsInFit+1] Index into the PMTs (from above) corresponding OccRatio
+    Float_t* fMrqSigma;                                      //! [fNDataPointsInFit+1] Error on each PMT occupancy (statistical)
 
-    Float_t* fMrqParameters;
-    Int_t* fMrqVary;
-    Float_t** fMrqCovariance;
-    Float_t** fMrqAlpha; 
+    Float_t* fMrqParameters;                                 //! [fNParameters+1] Parameters for the model
+    Int_t* fMrqVary;                                         //! [fNParameters+1] Flag for the parameters which vary in the model (from above)
+    Float_t** fMrqCovariance;                                //! [fNParameters+1][fNParameters+1] Covariance matrix
+    Float_t** fMrqAlpha;                                     //! [fNParameters+1][fNParameters+1] Curvature matrix
 
-    std::map< Int_t, LOCASPMT > fFitPMTs;
+    std::map< Int_t, LOCASPMT > fFitPMTs;                    // Map of PMTs which pass the cut selection and are to be used in the fit
 
     ClassDef( LOCASFit, 1 )
 

@@ -204,9 +204,6 @@ int main( int argc, char** argv ){
   if ( crBool ){ lCRun.Fill( soc, crID ); }
   if ( wrBool ){ lWRun.Fill( soc, wrID ); }
 
-  lRun.SetCentralLBIntensityNorm( lCRun.GetMainLBIntensityNorm() );
-  lRun.SetWavelengthLBIntensityNorm( lWRun.GetMainLBIntensityNorm() );
-
 
   // Now that all the SOC files have been loaded, and the LOCASRun objects
   // created, the corrections to the main-run entries can be calculated

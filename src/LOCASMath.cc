@@ -29,6 +29,7 @@
 #include <stdlib.h>
 
 #include "LOCASMath.hh"
+#include "LOCASPMT.hh"
 
 #define NR_END 1
 
@@ -60,6 +61,19 @@ Float_t LOCASMath::MPECorrectedNPromptErr( Float_t nPrompt, Float_t nPulses )
   Float_t mpePromptErr = ( TMath::Sqrt( nPrompt ) ) / ( 1.0 - ( nPrompt / nPulses ) );
   return mpePromptErr;
 
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASMath::OccRatioErr( LOCASPMT* pmt ){
+
+  Float_t errResult = 1.0;
+  Float_t run2 = TMath::Power( ( ( pmt->GetMPECorrOccupancyErr() ) / ( pmt->GetMPECorrOccupancy() ) ), 2 );
+  Float_t centralRun2 = TMath::Power( ( ( pmt->GetCentralMPECorrOccupancyErr() ) / ( pmt->GetCentralMPECorrOccupancy() ) ), 2 );
+  errResult = ( pmt->GetMPECorrOccupancy() / pmt->GetCentralMPECorrOccupancy() ) * TMath::Sqrt( run2 + centralRun2 );
+  return errResult;
+  
 }
 
 //////////////////////////////////////

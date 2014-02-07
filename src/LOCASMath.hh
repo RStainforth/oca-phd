@@ -25,6 +25,8 @@
 #include <TMath.h>
 #include <TObject.h>
 
+#include "LOCASPMT.hh"
+
 
 namespace LOCAS{
 
@@ -40,6 +42,8 @@ namespace LOCAS{
 
     Float_t MPECorrectedNPrompt( Float_t nPrompt, Float_t nPulses );         // Calculate the MPE correction for the prompt counts
     Float_t MPECorrectedNPromptErr( Float_t nPrompt, Float_t nPulses );      // Calculate the error on the MPE corrected prompt counts
+
+    Float_t OccRatioErr( LOCASPMT* pmt );
 
     Float_t* LOCASVector( Long_t nStart, Long_t nEnd );
     Int_t* LOCASIntVector( Long_t nStart, Long_t nEnd );
