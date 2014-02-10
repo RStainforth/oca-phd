@@ -444,8 +444,8 @@ std::string LOCASDB::GetStringField( const std::string &tableName, const std::st
   std::string resultStr = ""; 
 
   if (fCurrentFile == NULL){
-    std::cout << "LOCASDB::GetStringField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
-    std::cout << "LOCASDB::GetStringField: Returning empty string." << endl;
+    std::cout << "LOCASDB::GetStringField: Error, no current file loaded (use LOCASDB::LoadFile)" << std::endl;
+    std::cout << "LOCASDB::GetStringField: Returning empty string." << std::endl;
 
     return resultStr;
   }
@@ -470,8 +470,8 @@ Double_t LOCASDB::GetDoubleField( const std::string &tableName, const std::strin
   Double_t resultD = 0.0; 
 
   if (fCurrentFile == NULL){
-    std::cout << "LOCASDB::GetDoubleField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
-    std::cout << "LOCASDB::GetDoubleField: Returning type Double_t = 0.0." << endl;
+    std::cout << "LOCASDB::GetDoubleField: Error, no current file loaded (use LOCASDB::LoadFile)" << std::endl;
+    std::cout << "LOCASDB::GetDoubleField: Returning type Double_t = 0.0." << std::endl;
 
     return resultD;
   }
@@ -496,8 +496,8 @@ Int_t LOCASDB::GetIntField( const std::string &tableName, const std::string &fie
   Int_t resultI = 0; 
 
   if (fCurrentFile == NULL){
-    std::cout << "LOCASDB::GetIntField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
-    std::cout << "LOCASDB::GetIntField: Returning type Int_t = 0." << endl;
+    std::cout << "LOCASDB::GetIntField: Error, no current file loaded (use LOCASDB::LoadFile)" << std::endl;
+    std::cout << "LOCASDB::GetIntField: Returning type Int_t = 0." << std::endl;
 
     return resultI;
   }
@@ -522,8 +522,8 @@ Bool_t LOCASDB::GetBoolField( const std::string &tableName, const std::string &f
   Bool_t resultBool = false;
 
   if (fCurrentFile == NULL){
-    std::cout << "LOCASDB::GetIntField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
-    std::cout << "LOCASDB::GetIntField: Returning type Bool_t = false" << endl;
+    std::cout << "LOCASDB::GetIntField: Error, no current file loaded (use LOCASDB::LoadFile)" << std::endl;
+    std::cout << "LOCASDB::GetIntField: Returning type Bool_t = false" << std::endl;
 
     return resultBool;
   }
@@ -551,8 +551,8 @@ std::vector< Int_t > LOCASDB::GetIntVectorField( const std::string &tableName, c
   std::vector< Int_t > intVec;
   
   if (fCurrentFile == NULL){
-    std::cout << "LOCASDB::GetIntVectorField: Error, no current file loaded (use LOCASDB::LoadFile)" << endl;
-    std::cout << "LOCASDB::GetIntVectorField: Returning type empty vector" << endl;
+    std::cout << "LOCASDB::GetIntVectorField: Error, no current file loaded (use LOCASDB::LoadFile)" << std::endl;
+    std::cout << "LOCASDB::GetIntVectorField: Returning type empty vector" << std::endl;
     
     return intVec;
   }

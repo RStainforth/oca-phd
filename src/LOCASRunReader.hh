@@ -61,6 +61,7 @@ namespace LOCAS{
     void GetCurrentLOCASPMT( LOCASPMT* lPMT ){ lPMT = fCurrentPMT; }
 
     LOCASRun* GetLOCASRun( Int_t runID );
+    LOCASRun* GetRunEntry( Int_t runEntry ){ fLOCASRunT->GetEntry( runEntry ); return fLOCASRun; } 
 
     Long64_t GetNLOCASRuns(){ return fNLOCASRuns; }
 

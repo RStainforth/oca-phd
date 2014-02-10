@@ -568,9 +568,6 @@ void LOCASRun::CrossRunFill( LOCASRun& cRun, LOCASRun& wRun )
     ( fLOCASPMTs[ pmtID ] ).SetCentralAVHDShadowVal( ( iCPMT->second ).GetAVHDShadowVal() );
     ( fLOCASPMTs[ pmtID ] ).SetCentralGeometricShadowVal( ( iCPMT->second ).GetGeometricShadowVal() );
     
-    ( fLOCASPMTs[ pmtID ] ).SetCentralAVHDShadowFlag( ( iCPMT->second ).GetAVHDShadowFlag() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralGeometricShadowFlag( ( iCPMT->second ).GetGeometricShadowFlag() );
-    
     ( fLOCASPMTs[ pmtID ] ).SetCentralCHSFlag( ( iCPMT->second ).GetCHSFlag() );
     ( fLOCASPMTs[ pmtID ] ).SetCentralCSSFlag( ( iCPMT->second ).GetCSSFlag() );
     
@@ -614,9 +611,6 @@ void LOCASRun::CrossRunFill( LOCASRun& cRun, LOCASRun& wRun )
     
     ( fLOCASPMTs[ pmtID ] ).SetWavelengthAVHDShadowVal( ( iWPMT->second ).GetAVHDShadowVal() );
     ( fLOCASPMTs[ pmtID ] ).SetWavelengthGeometricShadowVal( ( iWPMT->second ).GetGeometricShadowVal() );
-    
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthAVHDShadowFlag( ( iWPMT->second ).GetAVHDShadowFlag() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthGeometricShadowFlag( ( iWPMT->second ).GetGeometricShadowFlag() );
     
     ( fLOCASPMTs[ pmtID ] ).SetWavelengthCHSFlag( ( iWPMT->second ).GetCHSFlag() );
     ( fLOCASPMTs[ pmtID ] ).SetWavelengthCSSFlag( ( iWPMT->second ).GetCSSFlag() );

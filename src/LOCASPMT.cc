@@ -33,6 +33,7 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
 {
   
   fID = rhs.fID;
+
   fRunID = rhs.fRunID;
   fCentralRunID = rhs.fCentralRunID;
   fWavelengthRunID = rhs.fWavelengthRunID;
@@ -75,9 +76,6 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
   fAVHDShadowVal = rhs.fAVHDShadowVal;
   fGeometricShadowVal = rhs.fGeometricShadowVal;
 
-  fAVHDShadowFlag = rhs.fAVHDShadowFlag;
-  fGeometricShadowFlag = rhs.fGeometricShadowFlag;
-
   fCHSFlag = rhs.fCHSFlag;
   fCSSFlag = rhs.fCSSFlag;
   fBadPath = rhs.fBadPath;
@@ -115,9 +113,6 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
   fCentralAVHDShadowVal = rhs.fCentralAVHDShadowVal;
   fCentralGeometricShadowVal = rhs.fCentralGeometricShadowVal;
 
-  fCentralAVHDShadowFlag = rhs.fCentralAVHDShadowFlag;
-  fCentralGeometricShadowFlag = rhs.fCentralGeometricShadowFlag;
-
   fCentralCHSFlag = rhs.fCentralCHSFlag;
   fCentralCSSFlag = rhs.fCentralCSSFlag;
   fCentralBadPath = rhs.fCentralBadPath;
@@ -153,9 +148,6 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
 
   fWavelengthAVHDShadowVal = rhs.fWavelengthAVHDShadowVal;
   fWavelengthGeometricShadowVal = rhs.fWavelengthGeometricShadowVal;
-
-  fWavelengthAVHDShadowFlag = rhs.fWavelengthAVHDShadowFlag;
-  fWavelengthGeometricShadowFlag = rhs.fWavelengthGeometricShadowFlag;
 
   fWavelengthCHSFlag = rhs.fWavelengthCHSFlag;
   fWavelengthCSSFlag = rhs.fWavelengthCSSFlag;
@@ -210,9 +202,6 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
   fAVHDShadowVal = rhs.fAVHDShadowVal;
   fGeometricShadowVal = rhs.fGeometricShadowVal;
 
-  fAVHDShadowFlag = rhs.fAVHDShadowFlag;
-  fGeometricShadowFlag = rhs.fGeometricShadowFlag;
-
   fCHSFlag = rhs.fCHSFlag;
   fCSSFlag = rhs.fCSSFlag;
   fBadPath = rhs.fBadPath;
@@ -249,9 +238,6 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
   fCentralAVHDShadowVal = rhs.fCentralAVHDShadowVal;
   fCentralGeometricShadowVal = rhs.fCentralGeometricShadowVal;
 
-  fCentralAVHDShadowFlag = rhs.fCentralAVHDShadowFlag;
-  fCentralGeometricShadowFlag = rhs.fCentralGeometricShadowFlag;
-
   fCentralCHSFlag = rhs.fCentralCHSFlag;
   fCentralCSSFlag = rhs.fCentralCSSFlag;
   fCentralBadPath = rhs.fCentralBadPath;
@@ -287,9 +273,6 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
 
   fWavelengthAVHDShadowVal = rhs.fWavelengthAVHDShadowVal;
   fWavelengthGeometricShadowVal = rhs.fWavelengthGeometricShadowVal;
-
-  fWavelengthAVHDShadowFlag = rhs.fWavelengthAVHDShadowFlag;
-  fWavelengthGeometricShadowFlag = rhs.fWavelengthGeometricShadowFlag;
 
   fWavelengthCHSFlag = rhs.fWavelengthCHSFlag;
   fWavelengthCSSFlag = rhs.fWavelengthCSSFlag;
@@ -347,9 +330,6 @@ void LOCASPMT::Initialise()
   SetAVHDShadowVal( 0.0 );
   SetGeometricShadowVal( 0.0 );
 
-  SetAVHDShadowFlag( false );
-  SetGeometricShadowFlag( false );
-
   SetCHSFlag( false );
   SetCSSFlag( false );
   SetBadPath( false );
@@ -385,9 +365,6 @@ void LOCASPMT::Initialise()
 
   SetCentralAVHDShadowVal( 0.0 );
   SetCentralGeometricShadowVal( 0.0 );
-
-  SetCentralAVHDShadowFlag( false );
-  SetCentralGeometricShadowFlag( false );
 
   SetCentralCHSFlag( false );
   SetCentralCSSFlag( false );
@@ -425,9 +402,6 @@ void LOCASPMT::Initialise()
   SetWavelengthAVHDShadowVal( 0.0 );
   SetWavelengthGeometricShadowVal( 0.0 );
 
-  SetWavelengthAVHDShadowFlag( false );
-  SetWavelengthGeometricShadowFlag( false );
-
   SetWavelengthCHSFlag( false );
   SetWavelengthCSSFlag( false );
   SetWavelengthBadPath( false );
@@ -452,14 +426,6 @@ void LOCASPMT::AddSOCPMTData( RAT::DS::SOCPMT& socPMT )
 {
 
   SetID( socPMT.GetLCN() );
-  SetRunID( 0 );
-  SetType( 0 );                                  // SetType is done by LOCAS::LOCASRun::Fill
-
-  SetIsVerified( false );                        // SetIsVerified is done by LOCASRun::Fill
-
-  TVector3 nullVec( 0.0, 0.0, 0.0 );
-  SetPos( nullVec );                             // SetPos is done by LOCAS::LOCASRun::Fill
-  SetNorm( nullVec );                            // SetNorm is done by LOCAS::LOCASRun::Fill
 
   Double_t pmtTACCal = 0.0;
   Double_t pmtTACRMS = 0.0;
@@ -471,39 +437,10 @@ void LOCASPMT::AddSOCPMTData( RAT::DS::SOCPMT& socPMT )
   SetOccupancy( socPMT.GetPromptOcc() );
   SetOccupancyErr( TMath::Sqrt( fOccupancy ) );
   SetOccupancyCorr( ( fOccupancy ) / ( ( socPMT.GetTACs() ).size() ) );
-  SetLBIntensityNorm( 0.0 );                    // SetLBIntensityNorm is done by LOCAS::LOCASRun::Fill
-
-  SetNLBPulses( 0.0 );                          // SetNLBPulses is done by LOCAS::LOCASRun::Fill
-
-
-  SetMPECorrOccupancy( 0.0 );                   // SetMPECorrOccupancy is done by LOCAS::LOCASRun::Fill
-  SetMPECorrOccupancyErr( 0.0 );                // SetMPECorrOccupancyErr is done by LOCAS::LOCASRun::Fill
-  SetMPECorrOccupancyCorr( 0.0 );               // SetMPECorrOccupancyCorr is done by LOCAS::LOCASRun::Fill
-		       
-  SetFresnelTCoeff( 0.0 );                      // SetFresnelTCOeff is done by LOCASPMT::ProcessLightPath
-
-  SetDistInScint( 0.0 );                        // SetDistInScint is done by LOCASPMT::ProcessLightPath
-  SetDistInAV( 0.0 );                           // SetDistInAV is done by LOCASPMT::ProcessLightPath
-  SetDistInWater( 0.0 );                        // SetDistInWater is done by LOCASPMT::ProcessLightPath
-  SetDistInNeck( 0.0 );                         // SetDistInNeck is done by LOCASPMT::ProcessLightPath
-  SetTotalDist( 0.0 );                          // SetTotalDist is done by LOCASPMT::ProcessLightPath
-
-  SetSolidAngle( 0.0 );                         // SetSolidAngle is done by LOCASPMT::ProcessLightPath
-  SetCosTheta( 0.0 );                           // SetCosTheta is done by LOCASPMT::ProcessLightPath
-
-  SetRelLBTheta( 0.0 );                            // SetLBTheta is done by LOCAS::LOCASRun::Fill
-  SetRelLBPhi( 0.0 );                              // SetLBPhi is done by LOCAS::LOCASRun::Fill
 
   SetGeometricShadowVal( socPMT.GetRelOccSim_fullShadow() );
   SetAVHDShadowVal( socPMT.GetRelOccSim_hdRopeShadow() );
 
-  SetAVHDShadowFlag( false );                   // SetAVHDShadowFlag is done by LOCAS::LOCASRun::Fill
-  SetGeometricShadowFlag( false );              // SetGeometricShadowFlag is done by LOCAS::LOCASRun::Fill
-
-  SetCHSFlag( false );                          // SetCHSFlag is done by LOCAS::LOCASRun::Fill
-  SetCSSFlag( false );                          // SetCSSFlag is done by LOCAS::LOCASRun::Fill
-  SetBadPath( false );                          // SetBadPath is done by LOCASPMT::ProcessLightPath
-  SetNeckFlag( false );                         // SetNeckFlag is done by LOCASPMT::ProcessLightPath
 
 }
 
@@ -514,7 +451,9 @@ void LOCASPMT::ProcessLightPath( LOCASLightPath& lPath )
 {
 
   if ( fType == 1 ){
+    
     if ( lPath.GetTIR() || lPath.GetResvHit() ){ fBadPath = true; }
+
     if ( lPath.GetXAVNeck() ){ 
       fNeckFlag = true;
       fDistInNeck = lPath.GetDistInNeck();
@@ -526,24 +465,25 @@ void LOCASPMT::ProcessLightPath( LOCASLightPath& lPath )
     fDistInWater = lPath.GetDistInWater();
     fTotalDist = fDistInScint + fDistInAV + fDistInWater;
 
-    if ( lPath.GetTIR() || lPath.GetResvHit() ){
-      fBadPath = true;
-    }
-
-    fNeckFlag = lPath.GetXAVNeck();
     lPath.CalculateFresnelTRCoeff();
     fFresnelTCoeff = lPath.GetFresnelTCoeff();
 
     if ( ( lPath.GetStartPos() ).Mag() < 4500.0 ){
+
       lPath.CalculateSolidAngle( fNorm, 0 );
       fSolidAngle = lPath.GetSolidAngle();
       fCosTheta = lPath.GetCosThetaAvg();
+
     }
+
     else{
+
       lPath.CalculateSolidAngle( fNorm, 80 );
       fSolidAngle = lPath.GetSolidAngle();
       fCosTheta = lPath.GetCosThetaAvg();
+
     }
+
   }
 
 }
@@ -555,47 +495,31 @@ void LOCASPMT::VerifyPMT()
 {
   fIsVerified = true;
 
-  if ( fID < 1 || fID > 10000 ){ fIsVerified == false; }
+  if ( fID < 0 || fID > 10000 ){ fIsVerified == false; }
   if ( fType < 1 || fType > 11 ){ fIsVerified == false; }
   
-  if ( fPos.Mag() < 6000.0 || fPos.Mag() > 9000.0  ){ fIsVerified = false; }
+  if ( fPos.Mag() < 8000.0 || fPos.Mag() > 9000.0  ){ fIsVerified = false; }
   if ( fNorm.Mag() < 0.9 || fNorm.Mag() > 1.1 ){ fIsVerified = false; }
   
   if ( fPromptPeakTime == 0.0 || fPromptPeakTime > 410.0 ){ fIsVerified = false; }
-  if ( fTimeOfFlight == 0.0 || fTimeOfFlight > 410.0 ){ fIsVerified = false; }
-  if ( fOccupancy == 0.0 ){ fIsVerified = false; }
-  if ( fOccupancyErr == 0.0 ){ fIsVerified = false; }
-  if ( fOccupancyCorr == 0.0 ){ fIsVerified = false; }
-  if ( fLBIntensityNorm == 0.0 ){ fIsVerified = false; }
+  if ( fTimeOfFlight <= 0.1 || fTimeOfFlight > 410.0 ){ fIsVerified = false; }
+  if ( fOccupancy <= 0.1 ){ fIsVerified = false; }
 
-  if ( fNLBPulses == 0.0 ){ fIsVerified = false; }
 
-  if ( fMPECorrOccupancy == 0.0 ){ fIsVerified = false; }
-  if ( fMPECorrOccupancyErr == 0.0 ){ fIsVerified = false; }
-  if ( fMPECorrOccupancyCorr == 0.0 ){ fIsVerified = false; }
+  if ( fMPECorrOccupancy <= 0.0 ){ fIsVerified = false; }
+
 
   if ( fFresnelTCoeff == 0.0 || fFresnelTCoeff > 1.0 ){ fIsVerified = false; }
 
   if ( fDistInScint == 0.0 || fDistInScint > 12000.0 ){ fIsVerified = false; }
   if ( fDistInAV == 0.0 || fDistInAV > 1000.0 ){ fIsVerified = false; }
   if ( fDistInWater == 0.0 || fDistInWater > 10000.0 ){ fIsVerified = false; }
-  // DistInNeck is optional - doesn't need to be checked here
-  // TotalDist is implicit - doesn't need to be checked here
 
   if ( fSolidAngle == 0.0 ){ fIsVerified = false; }
   if ( fCosTheta < 0.0 || fCosTheta > 1.0 ){ fIsVerified = false; }
 
   if ( fAVHDShadowVal < 0.0 || fAVHDShadowVal > 3.0 ){ fIsVerified = false; }
   if ( fGeometricShadowVal < 0.0 || fGeometricShadowVal > 3.0 ){ fIsVerified = false; }
-
-  // CHSFlag doesn't need to be checked here
-  // CSSFlag doesn't need to be checked here
-  // BadPath doesn't need to be checked here
-  // NeckFlag doesn't need to be checked here
-  
-  // all Corr* values don't need to be checked here
-  // As all Corr* values are dependent on pre-verified values
-  // done in respective runs
 
 }
 

@@ -22,6 +22,7 @@
 
 #include "LOCASRun.hh"
 #include "LOCASPMT.hh"
+#include "LOCASMath.hh"
 #include "LOCASRunReader.hh"
 
 #include "TH1F.h"
@@ -45,16 +46,19 @@ namespace LOCAS{
 
     void DataScreen();                                  // Perform final checks on data before performing the fit
     //void Screen();
-    Bool_t PMTSkip( Int_t iRun, Int_t iPMT, Float_t mean, Float_t sigma );
+    Bool_t PMTSkip( Float_t mean, Float_t sigma );
     Float_t ModelPrediction( Int_t iRun, Int_t iPMT, Int_t nA = 0, Float_t* dyda = NULL );
     Float_t CalculatePMTChiSquare( Int_t iRun, Int_t iPMT );                 // Calculate the chisquare
     //void CalculateChiSquare();                        // Calculate the chiSquare
+    void AllocateParameters();
+    void InitialiseParameters();
+    void PrintInitialisationInfo();
 
     //void CopyParamterValues( LOCASFit* seedFit );    // Copy the parameter values from seedFit to THIS fit
     //void GiveParameterValues( LOCASFit* targetFit ); // Give the parameter values from THIS fit to targetFit
 
-    Float_t ModelAngularResponse( LOCASPMT* locasPMT, Int_t& iAng, Int_t runType );
-    Float_t ModelLBDistribution( LOCASPMT* locasPMT, Int_t& iLBDist, Int_t runType );
+    Float_t ModelAngularResponse( Int_t iRun, Int_t iPMT, Int_t& iAng, Int_t runType );
+    Float_t ModelLBDistribution( Int_t iRun, Int_t iPMT, Int_t& iLBDist, Int_t runType );
 
     void PerformFit();
 
@@ -210,6 +214,7 @@ namespace LOCAS{
     Int_t fNParametersInFit;                                 // Total number of parameters in the fit
     Int_t fNDataPointsInFit;                                 // Total number of data points (including PMTs which do NOT pass the selection criteria)
     Int_t fNPMTsInFit;                                       // Total number of PMTs in the fit (PMTs which pass the selection criteria, see LOCASFit::PMTSkip method)
+    Int_t fNPMTSkip;                                        // Number of PMTs to skip through (higher speeds up fitting, but with less data points)
 
     Float_t fChiSquare;                                      // Most recent ChiSquare value (not reduced)
     Float_t fChiSquareMaxLimit;                              // Maximum value of the chisquare for PMTs to be cut from the fit
@@ -253,6 +258,9 @@ namespace LOCAS{
     Float_t** fMrqAlpha;                                     //! [fNParameters+1][fNParameters+1] Curvature matrix
 
     std::map< Int_t, LOCASPMT > fFitPMTs;                    // Map of PMTs which pass the cut selection and are to be used in the fit
+    std::map< Int_t, LOCASPMT >::iterator fiPMT;             //! Map iterator used when scanning through PMTs
+
+    LOCASMath flMath;  //!
 
     ClassDef( LOCASFit, 1 )
 

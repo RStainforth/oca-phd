@@ -100,9 +100,6 @@ namespace LOCAS{
     void SetAVHDShadowVal( Float_t avhdShadow ){ fAVHDShadowVal = avhdShadow; }
     void SetGeometricShadowVal( Float_t geomShadow ){ fGeometricShadowVal = geomShadow; }
     
-    void SetAVHDShadowFlag( Bool_t avhdFlag ){ fAVHDShadowFlag = avhdFlag; }
-    void SetGeometricShadowFlag( Bool_t geomFlag ){ fGeometricShadowFlag = geomFlag; }
-    
     void SetCHSFlag( Bool_t chsFlag ){ fCHSFlag = chsFlag; }
     void SetCSSFlag( Bool_t cssFlag ){ fCSSFlag = cssFlag; }
     void SetBadPath( Bool_t badPath ){ fBadPath = badPath; }
@@ -142,9 +139,6 @@ namespace LOCAS{
     
     void SetCentralAVHDShadowVal( Float_t avhdShadow ){ fCentralAVHDShadowVal = avhdShadow; }
     void SetCentralGeometricShadowVal( Float_t geomShadow ){ fCentralGeometricShadowVal = geomShadow; }
-    
-    void SetCentralAVHDShadowFlag( Bool_t avhdFlag ){ fCentralAVHDShadowFlag = avhdFlag; }
-    void SetCentralGeometricShadowFlag( Bool_t geomFlag ){ fCentralGeometricShadowFlag = geomFlag; }
     
     void SetCentralCHSFlag( Bool_t chsFlag ){ fCentralCHSFlag = chsFlag; }
     void SetCentralCSSFlag( Bool_t cssFlag ){ fCentralCSSFlag = cssFlag; }
@@ -186,9 +180,6 @@ namespace LOCAS{
     void SetWavelengthAVHDShadowVal( Float_t avhdShadow ){ fWavelengthAVHDShadowVal = avhdShadow; }
     void SetWavelengthGeometricShadowVal( Float_t geomShadow ){ fWavelengthGeometricShadowVal = geomShadow; }
     
-    void SetWavelengthAVHDShadowFlag( Bool_t avhdFlag ){ fWavelengthAVHDShadowFlag = avhdFlag; }
-    void SetWavelengthGeometricShadowFlag( Bool_t geomFlag ){ fWavelengthGeometricShadowFlag = geomFlag; }
-    
     void SetWavelengthCHSFlag( Bool_t chsFlag ){ fWavelengthCHSFlag = chsFlag; }
     void SetWavelengthCSSFlag( Bool_t cssFlag ){ fWavelengthCSSFlag = cssFlag; }
     void SetWavelengthBadPath( Bool_t badPath ){ fWavelengthBadPath = badPath; }
@@ -200,6 +191,7 @@ namespace LOCAS{
     /////////////////////////////////
     
     Int_t GetID(){ return fID; }
+
     Int_t GetRunID(){ return fRunID; }
     Int_t GetCentralRunID(){ return fCentralRunID; }
     Int_t GetWavelengthRunID(){ return fWavelengthRunID; }
@@ -241,13 +233,14 @@ namespace LOCAS{
     Float_t GetAVHDShadowVal(){ return fAVHDShadowVal; }
     Float_t GetGeometricShadowVal(){ return fGeometricShadowVal; }
     
-    Bool_t GetAVHDShadowFlag(){ return fAVHDShadowFlag; }
-    Bool_t GetGeometricShadowFlag(){ return fGeometricShadowFlag; }
-    
     Bool_t GetCHSFlag(){ return fCHSFlag; }
     Bool_t GetCSSFlag(){ return fCSSFlag; }
+
     Bool_t GetBadPath(){ return fBadPath; }
     Bool_t GetNeckFlag(){ return fNeckFlag; }
+
+    TVector3 GetLBInitialVec(){ return fInitialLBVec; }
+    TVector3 GetLBIncidentVec(){ return fIncidentLBVec; }
     
     /////////////////////////////////////////
     ////////     CENTRAL GETTERS     ////////
@@ -285,13 +278,14 @@ namespace LOCAS{
     Float_t GetCentralAVHDShadowVal(){ return fCentralAVHDShadowVal; }
     Float_t GetCentralGeometricShadowVal(){ return fCentralGeometricShadowVal; }
     
-    Bool_t GetCentralAVHDShadowFlag(){ return fCentralAVHDShadowFlag; }
-    Bool_t GetCentralGeometricShadowFlag(){ return fCentralGeometricShadowFlag; }
-    
     Bool_t GetCentralCHSFlag(){ return fCentralCHSFlag; }
     Bool_t GetCentralCSSFlag(){ return fCentralCSSFlag; }
+
     Bool_t GetCentralBadPath(){ return fCentralBadPath; }
     Bool_t GetCentralNeckFlag(){ return fCentralNeckFlag; }
+
+    TVector3 GetCentralLBInitialVec(){ return fCentralInitialLBVec; }
+    TVector3 GetCentralLBIncidentVec(){ return fCentralIncidentLBVec; }
 
     ////////////////////////////////////////////
     ////////     WAVELENGTH GETTERS     ////////
@@ -328,17 +322,19 @@ namespace LOCAS{
     Float_t GetWavelengthAVHDShadowVal(){ return fWavelengthAVHDShadowVal; }
     Float_t GetWavelengthGeometricShadowVal(){ return fWavelengthGeometricShadowVal; }
     
-    Bool_t GetWavelengthAVHDShadowFlag(){ return fWavelengthAVHDShadowFlag; }
-    Bool_t GetWavelengthGeometricShadowFlag(){ return fWavelengthGeometricShadowFlag; }
-    
     Bool_t GetWavelengthCHSFlag(){ return fWavelengthCHSFlag; }
     Bool_t GetWavelengthCSSFlag(){ return fWavelengthCSSFlag; }
+
     Bool_t GetWavelengthBadPath(){ return fWavelengthBadPath; }
     Bool_t GetWavelengthNeckFlag(){ return fWavelengthNeckFlag; }
+
+    TVector3 GetWavelengthLBInitialVec(){ return fWavelengthInitialLBVec; }
+    TVector3 GetWavelengthLBIncidentVec(){ return fWavelengthIncidentLBVec; }
     
   private:
     
     Int_t fID;                          // PMT ID/LCN
+
     Int_t fRunID;                       // The Run ID
     Int_t fCentralRunID;                // The Central Run ID
     Int_t fWavelengthRunID;             // The Wavelength Run ID
@@ -386,20 +382,21 @@ namespace LOCAS{
     
     Float_t fSolidAngle;                // Solid Angle subtended by this PMT from source (LaserBall) position
     Float_t fCosTheta;                  // Cosine of light vector incident on the the PMT face
-    
+
     Float_t fRelLBTheta;                // LaserBall Theta value for this PMT from the Laserball position
     Float_t fRelLBPhi;                  // LaserBall Phi value for this PMT from the LaserBall position
     
     Float_t fAVHDShadowVal;             // Relative shadowing value due to the AV HD ropes
     Float_t fGeometricShadowVal;        // Relative shadowing value due to the enveloping AV geometry
     
-    Bool_t fAVHDShadowFlag;             // TRUE: Shadowed due to AV HD FALSE: Unshadowed (i.e. unaffected by the AV HD)
-    Bool_t fGeometricShadowFlag;        // TRUE: Shadowed due to Geometry FALSE: Unshadowed (i.e. unaffected by the Geoemtry)
-    
     Bool_t fCHSFlag;                    // (DQXX Flag) TRUE: Bad Channel FALSE: Good Channel
     Bool_t fCSSFlag;                    // (ANXX Flag) TRUE: Bad Channel FALSE: Good Channel
+
     Bool_t fBadPath;                    // Bad Light Path for this Channel (TRUE)
     Bool_t fNeckFlag;                   // If the Light Path for this PMT enters the neck (TRUE)
+
+    TVector3 fInitialLBVec;             // Initial (unit) vector direction of light from source
+    TVector3 fIncidentLBVec;            // Incident (unit) vector direction on PMT face
 
     /////////////////////////////////////
     //////// CENTRAL PMT VALUES /////////
@@ -430,20 +427,21 @@ namespace LOCAS{
     
     Float_t fCentralSolidAngle;                // Solid Angle subtended by this PMT from source (LaserBall) position - From the central run
     Float_t fCentralCosTheta;                  // Cosine of light vector incident on the the PMT face - From the central run
-    
+
     Float_t fCentralRelLBTheta;                // LaserBall Theta value for this PMT from the Laserball position - From the central run
     Float_t fCentralRelLBPhi;                  // LaserBall Phi value for this PMT from the LaserBall position - From the central run
     
     Float_t fCentralAVHDShadowVal;             // Relative shadowing value due to the AV HD ropes - From the central run
     Float_t fCentralGeometricShadowVal;        // Relative shadowing value due to the enveloping AV geometry - From the central run
     
-    Bool_t fCentralAVHDShadowFlag;             // TRUE: Shadowed due to AV HD FALSE: Unshadowed (i.e. unaffected by the AV HD) - From the central run
-    Bool_t fCentralGeometricShadowFlag;        // TRUE: Shadowed due to Geometry FALSE: Unshadowed (i.e. unaffected by the Geoemtry) - From the central run
-    
     Bool_t fCentralCHSFlag;                    // (DQXX Flag) TRUE: Bad Channel FALSE: Good Channel - From the central run
     Bool_t fCentralCSSFlag;                    // (ANXX Flag) TRUE: Bad Channel FALSE: Good Channel - From the central run
+
     Bool_t fCentralBadPath;                    // Bad Light Path for this Channel (TRUE) - From the central run
     Bool_t fCentralNeckFlag;                   // If the Light Path for this PMT enters the neck (TRUE) - From the central run
+
+    TVector3 fCentralInitialLBVec;             // Initial (unit) vector direction of light from source - From the central run
+    TVector3 fCentralIncidentLBVec;            // Incident (unit) vector direction on PMT face - From the central run
 
     /////////////////////////////////////
     //////// WAVELENGTH PMT VALUES /////////
@@ -463,7 +461,6 @@ namespace LOCAS{
     Float_t fWavelengthMPECorrOccupancyErr;       // Error on the MPE corrected occupancy- From the wavelength run
     Float_t fWavelengthMPECorrOccupancyCorr;      // Ratio of MPE corrected occupancy to input occupancy- From the wavelength run
 
-    
     Float_t fWavelengthFresnelTCoeff;             // Acrylic Fresnel transmission coefficient- From the wavelength run
     
     Float_t fWavelengthDistInScint;               // Distance through the scintillator region [mm]- From the wavelength run
@@ -474,20 +471,21 @@ namespace LOCAS{
     
     Float_t fWavelengthSolidAngle;                // Solid Angle subtended by this PMT from source (LaserBall) position- From the wavelength run
     Float_t fWavelengthCosTheta;                  // Cosine of light vector incident on the the PMT face- From the wavelength run
-    
+
     Float_t fWavelengthRelLBTheta;                // LaserBall Theta value for this PMT from the Laserball position- From the wavelength run
     Float_t fWavelengthRelLBPhi;                  // LaserBall Phi value for this PMT from the LaserBall position- From the wavelength run
     
     Float_t fWavelengthAVHDShadowVal;             // Relative shadowing value due to the AV HD ropes- From the wavelength run
     Float_t fWavelengthGeometricShadowVal;        // Relative shadowing value due to the enveloping AV geometry- From the wavelength run
     
-    Bool_t fWavelengthAVHDShadowFlag;             // TRUE: Shadowed due to AV HD FALSE: Unshadowed (i.e. unaffected by the AV HD)- From the wavelength run
-    Bool_t fWavelengthGeometricShadowFlag;        // TRUE: Shadowed due to Geometry FALSE: Unshadowed (i.e. unaffected by the Geoemtry)- From the wavelength run
-    
     Bool_t fWavelengthCHSFlag;                    // (DQXX Flag) TRUE: Bad Channel FALSE: Good Channel- From the wavelength run
     Bool_t fWavelengthCSSFlag;                    // (ANXX Flag) TRUE: Bad Channel FALSE: Good Channel- From the wavelength run
+
     Bool_t fWavelengthBadPath;                    // Bad Light Path for this Channel (TRUE)- From the wavelength run
     Bool_t fWavelengthNeckFlag;                   // If the Light Path for this PMT enters the neck (TRUE)- From the wavelength run
+
+    TVector3 fWavelengthInitialLBVec;             // Initial (unit) vector direction of light from source- From the wavelength run
+    TVector3 fWavelengthIncidentLBVec;            // Incident (unit) vector direction on PMT face- From the wavelength run
     
     ClassDef( LOCASPMT, 1 );
     
