@@ -41,6 +41,8 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
   fType = rhs.fType;
 
   fIsVerified = rhs.fIsVerified;
+  fCentralIsVerified = rhs.fCentralIsVerified;
+  fWavelengthIsVerified = rhs.fWavelengthIsVerified;
 
   fPos = rhs.fPos;
   fNorm = rhs.fNorm;
@@ -167,6 +169,8 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
   fType = rhs.fType;
 
   fIsVerified = rhs.fIsVerified;
+  fCentralIsVerified = rhs.fCentralIsVerified;
+  fWavelengthIsVerified = rhs.fWavelengthIsVerified;
 
   fPos = rhs.fPos;
   fNorm = rhs.fNorm;
@@ -294,6 +298,8 @@ void LOCASPMT::Initialise()
   SetType ( 0 );
 
   SetIsVerified( false );
+  SetCentralIsVerified( false );
+  SetWavelengthIsVerified( false );
 
   TVector3 nullVec( 0.0, 0.0, 0.0 );
   SetPos( nullVec );
@@ -491,12 +497,12 @@ void LOCASPMT::ProcessLightPath( LOCASLightPath& lPath )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASPMT::VerifyPMT()
+void LOCASPMT::VerifyPMT( TVector3& sourcePos )
 {
   fIsVerified = true;
 
   if ( fID < 0 || fID > 10000 ){ fIsVerified == false; }
-  if ( fType < 1 || fType > 11 ){ fIsVerified == false; }
+  if ( fType != 1 ){ fIsVerified == false; }
   
   if ( fPos.Mag() < 8000.0 || fPos.Mag() > 9000.0  ){ fIsVerified = false; }
   if ( fNorm.Mag() < 0.9 || fNorm.Mag() > 1.1 ){ fIsVerified = false; }
@@ -505,22 +511,20 @@ void LOCASPMT::VerifyPMT()
   if ( fTimeOfFlight <= 0.1 || fTimeOfFlight > 410.0 ){ fIsVerified = false; }
   if ( fOccupancy <= 0.1 ){ fIsVerified = false; }
 
-
   if ( fMPECorrOccupancy <= 0.0 ){ fIsVerified = false; }
-
 
   if ( fFresnelTCoeff == 0.0 || fFresnelTCoeff > 1.0 ){ fIsVerified = false; }
 
   if ( fDistInScint == 0.0 || fDistInScint > 12000.0 ){ fIsVerified = false; }
   if ( fDistInAV == 0.0 || fDistInAV > 1000.0 ){ fIsVerified = false; }
   if ( fDistInWater == 0.0 || fDistInWater > 10000.0 ){ fIsVerified = false; }
-
+  
   if ( fSolidAngle == 0.0 ){ fIsVerified = false; }
   if ( fCosTheta < 0.0 || fCosTheta > 1.0 ){ fIsVerified = false; }
 
   if ( fAVHDShadowVal < 0.0 || fAVHDShadowVal > 3.0 ){ fIsVerified = false; }
   if ( fGeometricShadowVal < 0.0 || fGeometricShadowVal > 3.0 ){ fIsVerified = false; }
-
+  
 }
 
 

@@ -46,7 +46,7 @@ namespace LOCAS{
 
     void DataScreen();                                  // Perform final checks on data before performing the fit
     //void Screen();
-    Bool_t PMTSkip( Float_t mean, Float_t sigma );
+    Bool_t PMTSkip( Int_t iRun, Int_t iPMT, Float_t mean, Float_t sigma );
     Float_t ModelPrediction( Int_t iRun, Int_t iPMT, Int_t nA = 0, Float_t* dyda = NULL );
     Float_t CalculatePMTChiSquare( Int_t iRun, Int_t iPMT );                 // Calculate the chisquare
     //void CalculateChiSquare();                        // Calculate the chiSquare
@@ -145,6 +145,8 @@ namespace LOCAS{
     Float_t GetAngularResponsePar( Int_t n ){ return fMrqParameters[ GetAngularResponseParIndex() + n ]; }
     Float_t GetLBDistributionPar( Int_t n ){ return fMrqParameters[ GetLBDistributionParIndex() + n ]; }
 
+    Int_t GetMrqX( Int_t n ){ if ( n == 0 ){ return 0; } else{ return fMrqX[ n ]; } }
+    LOCASRun* GetRun( Int_t iRun ){ return fRunReader.GetRunEntry( iRun ); }
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
@@ -159,6 +161,8 @@ namespace LOCAS{
     void SetScintPar( Float_t parVal ){ fMrqParameters[ GetScintParIndex() ] = parVal; }
     void SetAVPar( Float_t parVal ){ fMrqParameters[ GetAVParIndex() ] = parVal; }
     void SetWaterPar( Float_t parVal ){ fMrqParameters[ GetWaterParIndex() ] = parVal; }
+
+    void SetPar( Int_t nIndex, Float_t parVal ){ fMrqParameters[ nIndex ] = parVal; }
 
     // Notes for Laserball Distribution Model
     // QOCAFit: .cxx Function of CosTheta, Phi

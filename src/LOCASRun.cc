@@ -389,8 +389,8 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
     
     // Reset the light path object
     lLP.Clear();
-
-    ( iLP->second ).VerifyPMT();
+    
+    ( iLP->second ).VerifyPMT( fLBPos );
     
   }
 
@@ -531,11 +531,28 @@ void LOCASRun::CrossRunFill( LOCASRun& cRun, LOCASRun& wRun )
 {
   fCentralRunID = cRun.GetRunID();
   fWavelengthRunID = wRun.GetRunID();
+  fCentralSourceID = cRun.GetSourceID();
+  fWavelengthSourceID = wRun.GetSourceID();
+
+  fCentralLambda = cRun.GetLambda();
+  fWavelengthLambda = wRun.GetLambda();
+  fCentralNLBPulses = cRun.GetNLBPulses();
+  fWavelengthNLBPulses = wRun.GetNLBPulses();
+
+  fCentralLBPos = cRun.GetLBPos();
+  fWavelengthLBPos = wRun.GetLBPos();
+
+  fCentralLBTheta = cRun.GetLBTheta();
+  fCentralLBPhi = wRun.GetLBPhi();
+
+  fWavelengthLBTheta = cRun.GetLBTheta();
+  fWavelengthLBPhi = wRun.GetLBPhi();
 
   std::map< Int_t, LOCASPMT >::iterator iCPMT;
   for( iCPMT = cRun.GetLOCASPMTIterBegin(); iCPMT != cRun.GetLOCASPMTIterEnd(); iCPMT++ ){
     Int_t pmtID = ( iCPMT->first );
     ( fLOCASPMTs[ pmtID ] ).SetCentralRunID( cRun.GetRunID() );
+    ( fLOCASPMTs[ pmtID ] ).SetCentralIsVerified( ( iCPMT->second ).GetIsVerified() );
     
     ( fLOCASPMTs[ pmtID ] ).SetCentralPromptPeakTime( ( iCPMT->second ).GetPromptPeakTime() );
     ( fLOCASPMTs[ pmtID ] ).SetCentralPromptPeakWidth( ( iCPMT->second ).GetPromptPeakWidth() );
@@ -580,6 +597,7 @@ void LOCASRun::CrossRunFill( LOCASRun& cRun, LOCASRun& wRun )
   for( iWPMT = wRun.GetLOCASPMTIterBegin(); iWPMT != wRun.GetLOCASPMTIterEnd(); iWPMT++ ){
     Int_t pmtID = ( iWPMT->first );
     ( fLOCASPMTs[ pmtID ] ).SetWavelengthRunID( wRun.GetRunID() );
+    ( fLOCASPMTs[ pmtID ] ).SetWavelengthIsVerified( ( iWPMT->second ).GetIsVerified() );
     
     ( fLOCASPMTs[ pmtID ] ).SetWavelengthPromptPeakTime( ( iWPMT->second ).GetPromptPeakTime() );
     ( fLOCASPMTs[ pmtID ] ).SetWavelengthPromptPeakWidth( ( iWPMT->second ).GetPromptPeakWidth() );

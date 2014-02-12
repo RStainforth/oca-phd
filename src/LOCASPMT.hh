@@ -51,7 +51,7 @@ namespace LOCAS{
     void Clear( Option_t* option="");
     void AddSOCPMTData( RAT::DS::SOCPMT& socPMT );                    // Add information from a SOCPMT object to this LOCASPMT object
     void ProcessLightPath( LOCASLightPath& lPath );                   // Process a light path to calculate the distances, solidangle etc.
-    void VerifyPMT();                                                 // Verify that the fields of the PMT are complete and have 'reasonable' values
+    void VerifyPMT( TVector3& sourcePos );                                                 // Verify that the fields of the PMT are complete and have 'reasonable' values
     
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -65,6 +65,8 @@ namespace LOCAS{
 
 
     void SetIsVerified( Bool_t verified ){ fIsVerified = verified; }
+    void SetCentralIsVerified( Bool_t verified ){ fCentralIsVerified = verified; }
+    void SetWavelengthIsVerified( Bool_t verified ){ fWavelengthIsVerified = verified; }
                                                                           
     void SetPos( TVector3 xyzPos ){ fPos = xyzPos; }                  
     void SetNorm( TVector3 uvwOri ){ fNorm = uvwOri; }                
@@ -198,7 +200,9 @@ namespace LOCAS{
     Int_t GetType(){ return fType; }
 
     Bool_t GetIsVerified(){ return fIsVerified; }
-    
+    Bool_t GetCentralIsVerified(){ return fCentralIsVerified; }
+    Bool_t GetWavelengthIsVerified(){ return fWavelengthIsVerified; }  
+  
     TVector3 GetPos(){ return fPos; }
     TVector3 GetNorm(){ return fNorm; }
     
@@ -353,6 +357,8 @@ namespace LOCAS{
 
     Bool_t fIsVerified;                 // TRUE: PMT has sensible values FALSE: Some bad values
                                         // See LOCASPMT::VerifyPMT for details (LOCASPMT.cc)
+    Bool_t fCentralIsVerified;
+    Bool_t fWavelengthIsVerified;
     
     TVector3 fPos;                      // PMT Position
     TVector3 fNorm;                     // PMT Orientation

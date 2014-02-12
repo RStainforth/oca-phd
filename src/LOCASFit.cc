@@ -74,11 +74,13 @@ LOCASFit::LOCASFit( const char* fitFile )
   fAVInit = lDB.GetDoubleField( "FITFILE", "av_init" );
   fWaterVary = lDB.GetBoolField( "FITFILE", "water_vary" );
   fWaterInit = lDB.GetDoubleField( "FITFILE", "water_init" );
+  cout << "HELLO!" << endl;
 
   fAngularResponseVary = lDB.GetBoolField( "FITFILE", "ang_resp_vary" );
   fAngularResponseInit = lDB.GetDoubleField( "FITFILE", "ang_resp_init" );
   fLBDistributionVary = lDB.GetBoolField( "FITFILE", "lb_dist_vary" );
   fLBDistributionInit = lDB.GetDoubleField( "FITFILE", "lb_dist_init" );
+  cout << "HELLO1" << endl;
 
   // Get the number of theta and phi bins for the laserball distribution 2D historgram
   // and the minimum number of entires required for each bin
@@ -90,6 +92,7 @@ LOCASFit::LOCASFit( const char* fitFile )
   // and the minimum number of entries for each bin
   fNAngularResponseBins = lDB.GetIntField( "FITFILE", "ang_resp_n_bins" );
   fNPMTsPerAngularResponseBinMin = lDB.GetIntField( "FITFILE", "ang_resp_min_n_pmts" );
+  cout << "HELLO2" << endl;
 
   // Get the cut variables (i.e. the variables to exclude PMTs from the fit with)
   // each PMT is cut on the below criteria in LOCASFit::PMTSkip.
@@ -114,9 +117,8 @@ LOCASFit::LOCASFit( const char* fitFile )
   fCHSFlag = lDB.GetBoolField( "FITFILE", "cut_chs_flag" );
   // Whether to cut on CSS flag
   fCSSFlag = lDB.GetBoolField( "FITFILE", "cut_css_flag" );
-
+  cout << "HELLO3" << endl;
   fNPMTSkip = lDB.GetIntField( "FITFILE", "n_pmts_skip" );
-
   AllocateParameters();
   PrintInitialisationInfo();
 
@@ -203,7 +205,7 @@ void LOCASFit::DataScreen()
       occVal = nUp / nDown;
       //cout << "Data occVal is: " << occVal << " = " << nUp << " / " << nDown << endl;
      
-      Bool_t skipPMT = PMTSkip( dcOccValMean, dcSigma );
+      Bool_t skipPMT = PMTSkip( iRun, iPMT, dcOccValMean, dcSigma );
       //if (skipPMT){ cout << "PMT is skipped" << endl; }
       //else cout << "PMT is used" << endl;
 
@@ -333,7 +335,7 @@ void LOCASFit::DataScreen()
 //////////////////////////////////////
 //////////////////////////////////////
 
-Bool_t LOCASFit::PMTSkip( Float_t mean, Float_t sigma )
+Bool_t LOCASFit::PMTSkip( Int_t iRun, Int_t iPMT, Float_t mean, Float_t sigma )
 {
 
   Bool_t pmtSkip = false;
@@ -341,7 +343,8 @@ Bool_t LOCASFit::PMTSkip( Float_t mean, Float_t sigma )
   Float_t occVal = ( fCurrentPMT->GetMPECorrOccupancy() ) / ( fCurrentPMT->GetCentralMPECorrOccupancy() );
   Float_t occValErr = flMath.OccRatioErr( fCurrentPMT );
 
-  if ( fCurrentPMT->GetCHSFlag() == fCHSFlag
+  if ( !fCurrentPMT->GetIsVerified() 
+       || fCurrentPMT->GetCHSFlag() == fCHSFlag
        || fCurrentPMT->GetCSSFlag() == fCSSFlag
        || fCurrentPMT->GetCentralCHSFlag() == fCHSFlag
        || fCurrentPMT->GetCentralCSSFlag() == fCHSFlag
@@ -546,7 +549,6 @@ Int_t LOCASFit::MrqFit( float x[], float y[], float sig[], int ndata, float a[],
   
   // Next set lambda to 0.01, and iterate until convergence is reached
   // Bryce Moffat - 21-Oct-2000 - Changed from gooditer<6 to <4
-  cout << "HELLO THERE" << endl;
   cout << "(fabs(*chisq - oldchisq) > tol): " << (fabs(*chisq - oldchisq)) << " and tol is: " << tol << endl;
   cout << "gooditer < 4, gooditer is: " << gooditer << endl;
   cout << "(numiter < maxiter): " << "numiter is: " << numiter << " and maxiter is: " << maxiter << endl;
@@ -555,7 +557,6 @@ Int_t LOCASFit::MrqFit( float x[], float y[], float sig[], int ndata, float a[],
   lamda = 0.01;
   while (((fabs(*chisq - oldchisq) > tol || gooditer < 4) && (numiter < maxiter))
          && retval == 0 && lamda != 0.0) {
-    cout << "HELLO?" << endl;
     oldchisq = *chisq;
     retval = mrqmin(x,y,sig,ndata,a,ia,ma,covar,alpha,chisq,&lamda );
     numiter++;
@@ -995,7 +996,7 @@ void LOCASFit::PerformFit( )
 
   cout << "Example Parameters:" << endl;
   for ( Int_t iPar = 1; iPar <= fNParametersInFit; iPar++ ){
-    cout << "Parameter " << iPar << ": " << fMrqParameters[ iPar ] << endl;
+    cout << "Parameter | Vary Flag: " << iPar << " : " << fMrqParameters[ iPar ] << " | " << fMrqVary[ iPar ] << endl;
   }
 
 }

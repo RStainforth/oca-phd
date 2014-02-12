@@ -506,7 +506,6 @@ Int_t LOCASDB::GetIntField( const std::string &tableName, const std::string &fie
 
   fRATDBPtr = fRATDB->GetLink( tableName  );
   assert( fRATDBPtr );
-  std::cout << "THERE!" << std::endl;
   resultI = fRATDBPtr->GetI( fieldName );
   return resultI;
   
