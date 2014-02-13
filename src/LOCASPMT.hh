@@ -10,7 +10,7 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     0X/2014 : RPFS - First Revision, new file. \n
+///     02/2014 : RPFS - First Revision, new file. \n
 ///
 /// DETAIL: This data structure contains all the information
 ///         for a specific PMT in a run, required as an input
@@ -51,148 +51,158 @@ namespace LOCAS{
     void Clear( Option_t* option="");
     void AddSOCPMTData( RAT::DS::SOCPMT& socPMT );                    // Add information from a SOCPMT object to this LOCASPMT object
     void ProcessLightPath( LOCASLightPath& lPath );                   // Process a light path to calculate the distances, solidangle etc.
-    void VerifyPMT( TVector3& sourcePos );                                                 // Verify that the fields of the PMT are complete and have 'reasonable' values
+    void VerifyPMT( const TVector3& sourcePos );                            // Verify that the fields of the PMT are complete and have 'reasonable' values
     
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
     
-    void SetID( Int_t pmtID ){ fID = pmtID; }
-    void SetRunID( Int_t runID ){ fRunID = runID; }
-    void SetCentralRunID( Int_t ctrRunID ){ fCentralRunID = ctrRunID; }
-    void SetWavelengthRunID( Int_t wvRunID ){ fWavelengthRunID = wvRunID; }
-    void SetType( Int_t pmtType ){ fType = pmtType; }
+    void SetID( const Int_t pmtID ){ fID = pmtID; }
+
+    void SetRunID( const Int_t runID ){ fRunID = runID; }
+    void SetCentralRunID( const Int_t ctrRunID ){ fCentralRunID = ctrRunID; }
+    void SetWavelengthRunID( const Int_t wvRunID ){ fWavelengthRunID = wvRunID; }
+    void SetType( const Int_t pmtType ){ fType = pmtType; }
 
 
-    void SetIsVerified( Bool_t verified ){ fIsVerified = verified; }
-    void SetCentralIsVerified( Bool_t verified ){ fCentralIsVerified = verified; }
-    void SetWavelengthIsVerified( Bool_t verified ){ fWavelengthIsVerified = verified; }
+    void SetIsVerified( const Bool_t verified ){ fIsVerified = verified; }
+    void SetCentralIsVerified( const Bool_t verified ){ fCentralIsVerified = verified; }
+    void SetWavelengthIsVerified( const Bool_t verified ){ fWavelengthIsVerified = verified; }
                                                                           
-    void SetPos( TVector3 xyzPos ){ fPos = xyzPos; }                  
-    void SetNorm( TVector3 uvwOri ){ fNorm = uvwOri; }                
+    void SetPos( const TVector3 xyzPos ){ fPos = xyzPos; }                  
+    void SetNorm( const TVector3 uvwOri ){ fNorm = uvwOri; }                
     
-    void SetPromptPeakTime( Float_t tPeak ){ fPromptPeakTime = tPeak; }
-    void SetPromptPeakWidth( Float_t tWidth ){ fPromptPeakWidth = tWidth; }  
-    void SetTimeOfFlight( Float_t tOF ){ fTimeOfFlight = tOF; }
-    void SetOccupancy( Float_t occ ){ fOccupancy = occ; }
-    void SetOccupancyErr( Float_t occErr ){ fOccupancyErr = occErr; }
-    void SetOccupancyCorr( Float_t occCorr ){ fOccupancyCorr = occCorr; }
-    void SetLBIntensityNorm( Float_t intensityNorm ){ fLBIntensityNorm = intensityNorm; }
+    void SetPromptPeakTime( const Float_t tPeak ){ fPromptPeakTime = tPeak; }
+    void SetPromptPeakWidth( const Float_t tWidth ){ fPromptPeakWidth = tWidth; }  
+    void SetTimeOfFlight( const Float_t tOF ){ fTimeOfFlight = tOF; }
+    void SetOccupancy( const Float_t occ ){ fOccupancy = occ; }
+    void SetOccupancyErr( const Float_t occErr ){ fOccupancyErr = occErr; }
+    void SetOccupancyCorr( const Float_t occCorr ){ fOccupancyCorr = occCorr; }
 
-    void SetNLBPulses( Float_t nPulses ){ fNLBPulses = nPulses; }
+    void SetLBIntensityNorm( const Float_t intensityNorm ){ fLBIntensityNorm = intensityNorm; }
+    void SetNLBPulses( const Float_t nPulses ){ fNLBPulses = nPulses; }
 
-    void SetMPECorrOccupancy( Float_t mpeCorr ){ fMPECorrOccupancy = mpeCorr; }
-    void SetMPECorrOccupancyErr( Float_t mpeCorrErr ){ fMPECorrOccupancyErr = mpeCorrErr; }
-    void SetMPECorrOccupancyCorr( Float_t mpeCorrCorr ){ fMPECorrOccupancyCorr = mpeCorrCorr; }
+    void SetMPECorrOccupancy( const Float_t mpeCorr ){ fMPECorrOccupancy = mpeCorr; }
+    void SetMPECorrOccupancyErr( const Float_t mpeCorrErr ){ fMPECorrOccupancyErr = mpeCorrErr; }
+    void SetMPECorrOccupancyCorr( const Float_t mpeCorrCorr ){ fMPECorrOccupancyCorr = mpeCorrCorr; }
     
-    void SetFresnelTCoeff( Float_t fresnelCoeff ){ fFresnelTCoeff = fresnelCoeff; }
+    void SetFresnelTCoeff( const Float_t fresnelCoeff ){ fFresnelTCoeff = fresnelCoeff; }
     
-    void SetDistInScint( Float_t distInScint ){ fDistInScint = distInScint; }
-    void SetDistInAV( Float_t distInAV ){ fDistInAV = distInAV; }
-    void SetDistInWater( Float_t distInWater ){ fDistInWater = distInWater; }
-    void SetDistInNeck( Float_t distInNeck ){ fDistInNeck = distInNeck; }
-    void SetTotalDist( Float_t distTotal ){ fTotalDist = distTotal; }
+    void SetDistInScint( const Float_t distInScint ){ fDistInScint = distInScint; }
+    void SetDistInAV( const Float_t distInAV ){ fDistInAV = distInAV; }
+    void SetDistInWater( const Float_t distInWater ){ fDistInWater = distInWater; }
+    void SetDistInNeck( const Float_t distInNeck ){ fDistInNeck = distInNeck; }
+    void SetTotalDist( const Float_t distTotal ){ fTotalDist = distTotal; }
     
-    void SetSolidAngle( Float_t solidA ){ fSolidAngle = solidA; }
-    void SetCosTheta( Float_t cosTheta ){ fCosTheta = cosTheta; }
+    void SetSolidAngle( const Float_t solidA ){ fSolidAngle = solidA; }
+    void SetCosTheta( const Float_t cosTheta ){ fCosTheta = cosTheta; }
     
-    void SetRelLBTheta( Float_t theta ){ fRelLBTheta = theta; }
-    void SetRelLBPhi( Float_t phi ){ fRelLBPhi = phi; }
+    void SetRelLBTheta( const Float_t theta ){ fRelLBTheta = theta; }
+    void SetRelLBPhi( const Float_t phi ){ fRelLBPhi = phi; }
     
-    void SetAVHDShadowVal( Float_t avhdShadow ){ fAVHDShadowVal = avhdShadow; }
-    void SetGeometricShadowVal( Float_t geomShadow ){ fGeometricShadowVal = geomShadow; }
+    void SetAVHDShadowVal( const Float_t avhdShadow ){ fAVHDShadowVal = avhdShadow; }
+    void SetGeometricShadowVal( const Float_t geomShadow ){ fGeometricShadowVal = geomShadow; }
     
-    void SetCHSFlag( Bool_t chsFlag ){ fCHSFlag = chsFlag; }
-    void SetCSSFlag( Bool_t cssFlag ){ fCSSFlag = cssFlag; }
-    void SetBadPath( Bool_t badPath ){ fBadPath = badPath; }
-    void SetNeckFlag( Bool_t neckFlag ){ fNeckFlag = neckFlag; }
+    void SetCHSFlag( const Bool_t chsFlag ){ fCHSFlag = chsFlag; }
+    void SetCSSFlag( const Bool_t cssFlag ){ fCSSFlag = cssFlag; }
+    void SetBadPath( const Bool_t badPath ){ fBadPath = badPath; }
+    void SetNeckFlag( const Bool_t neckFlag ){ fNeckFlag = neckFlag; }
+
+    void SetInitialLBVec( const TVector3 vec ){ fInitialLBVec = vec; }
+    void SetIncidentLBVec( const TVector3 vec ){ fIncidentLBVec = vec; }
 
     /////////////////////////////////////////
     ////////     CENTRAL SETTERS     ////////
     /////////////////////////////////////////
 
-    void SetCentralPromptPeakTime( Float_t tPeak ){ fCentralPromptPeakTime = tPeak; }
-    void SetCentralPromptPeakWidth( Float_t tWidth ){ fCentralPromptPeakWidth = tWidth; }  
-    void SetCentralTimeOfFlight( Float_t tOF ){ fCentralTimeOfFlight = tOF; }
-    void SetCentralOccupancy( Float_t occ ){ fCentralOccupancy = occ; }
-    void SetCentralOccupancyErr( Float_t occErr ){ fCentralOccupancyErr = occErr; }
-    void SetCentralOccupancyCorr( Float_t occCorr ){ fCentralOccupancyCorr = occCorr; }
-    void SetCentralLBIntensityNorm( Float_t intensityNorm ){ fCentralLBIntensityNorm = intensityNorm; }
+    void SetCentralPromptPeakTime( const  Float_t tPeak ){ fCentralPromptPeakTime = tPeak; }
+    void SetCentralPromptPeakWidth( const  Float_t tWidth ){ fCentralPromptPeakWidth = tWidth; }  
+    void SetCentralTimeOfFlight( const  Float_t tOF ){ fCentralTimeOfFlight = tOF; }
+    void SetCentralOccupancy( const  Float_t occ ){ fCentralOccupancy = occ; }
+    void SetCentralOccupancyErr( const  Float_t occErr ){ fCentralOccupancyErr = occErr; }
+    void SetCentralOccupancyCorr( const  Float_t occCorr ){ fCentralOccupancyCorr = occCorr; }
+    void SetCentralLBIntensityNorm( const  Float_t intensityNorm ){ fCentralLBIntensityNorm = intensityNorm; }
 
-    void SetCentralNLBPulses( Float_t nPulses ){ fCentralNLBPulses = nPulses; }
+    void SetCentralNLBPulses( const  Float_t nPulses ){ fCentralNLBPulses = nPulses; }
 
-    void SetCentralMPECorrOccupancy( Float_t mpeCorr ){ fCentralMPECorrOccupancy = mpeCorr; }
-    void SetCentralMPECorrOccupancyErr( Float_t mpeCorrErr ){ fCentralMPECorrOccupancyErr = mpeCorrErr; }
-    void SetCentralMPECorrOccupancyCorr( Float_t mpeCorrCorr ){ fCentralMPECorrOccupancyCorr = mpeCorrCorr; }
+    void SetCentralMPECorrOccupancy( const  Float_t mpeCorr ){ fCentralMPECorrOccupancy = mpeCorr; }
+    void SetCentralMPECorrOccupancyErr( const  Float_t mpeCorrErr ){ fCentralMPECorrOccupancyErr = mpeCorrErr; }
+    void SetCentralMPECorrOccupancyCorr( const  Float_t mpeCorrCorr ){ fCentralMPECorrOccupancyCorr = mpeCorrCorr; }
     
-    void SetCentralFresnelTCoeff( Float_t fresnelCoeff ){ fCentralFresnelTCoeff = fresnelCoeff; }
+    void SetCentralFresnelTCoeff( const  Float_t fresnelCoeff ){ fCentralFresnelTCoeff = fresnelCoeff; }
     
-    void SetCentralDistInScint( Float_t distInScint ){ fCentralDistInScint = distInScint; }
-    void SetCentralDistInAV( Float_t distInAV ){ fCentralDistInAV = distInAV; }
-    void SetCentralDistInWater( Float_t distInWater ){ fCentralDistInWater = distInWater; }
-    void SetCentralDistInNeck( Float_t distInNeck ){ fCentralDistInNeck = distInNeck; }
-    void SetCentralTotalDist( Float_t distTotal ){ fCentralTotalDist = distTotal; }
+    void SetCentralDistInScint( const  Float_t distInScint ){ fCentralDistInScint = distInScint; }
+    void SetCentralDistInAV( const  Float_t distInAV ){ fCentralDistInAV = distInAV; }
+    void SetCentralDistInWater( const  Float_t distInWater ){ fCentralDistInWater = distInWater; }
+    void SetCentralDistInNeck( const  Float_t distInNeck ){ fCentralDistInNeck = distInNeck; }
+    void SetCentralTotalDist( const  Float_t distTotal ){ fCentralTotalDist = distTotal; }
     
-    void SetCentralSolidAngle( Float_t solidA ){ fCentralSolidAngle = solidA; }
-    void SetCentralCosTheta( Float_t cosTheta ){ fCentralCosTheta = cosTheta; }
+    void SetCentralSolidAngle( const  Float_t solidA ){ fCentralSolidAngle = solidA; }
+    void SetCentralCosTheta( const  Float_t cosTheta ){ fCentralCosTheta = cosTheta; }
     
-    void SetCentralRelLBTheta( Float_t theta ){ fCentralRelLBTheta = theta; }
-    void SetCentralRelLBPhi( Float_t phi ){ fCentralRelLBPhi = phi; }
+    void SetCentralRelLBTheta( const  Float_t theta ){ fCentralRelLBTheta = theta; }
+    void SetCentralRelLBPhi( const  Float_t phi ){ fCentralRelLBPhi = phi; }
     
-    void SetCentralAVHDShadowVal( Float_t avhdShadow ){ fCentralAVHDShadowVal = avhdShadow; }
-    void SetCentralGeometricShadowVal( Float_t geomShadow ){ fCentralGeometricShadowVal = geomShadow; }
+    void SetCentralAVHDShadowVal( const  Float_t avhdShadow ){ fCentralAVHDShadowVal = avhdShadow; }
+    void SetCentralGeometricShadowVal( const  Float_t geomShadow ){ fCentralGeometricShadowVal = geomShadow; }
     
-    void SetCentralCHSFlag( Bool_t chsFlag ){ fCentralCHSFlag = chsFlag; }
-    void SetCentralCSSFlag( Bool_t cssFlag ){ fCentralCSSFlag = cssFlag; }
-    void SetCentralBadPath( Bool_t badPath ){ fCentralBadPath = badPath; }
-    void SetCentralNeckFlag( Bool_t neckFlag ){ fCentralNeckFlag = neckFlag; }
+    void SetCentralCHSFlag( const  Bool_t chsFlag ){ fCentralCHSFlag = chsFlag; }
+    void SetCentralCSSFlag( const  Bool_t cssFlag ){ fCentralCSSFlag = cssFlag; }
+    void SetCentralBadPath( const  Bool_t badPath ){ fCentralBadPath = badPath; }
+    void SetCentralNeckFlag( const  Bool_t neckFlag ){ fCentralNeckFlag = neckFlag; }
+
+    void SetCentralInitialLBVec( const TVector3 vec ){ fCentralInitialLBVec = vec; }
+    void SetCentralIncidentLBVec( const TVector3 vec ){ fCentralIncidentLBVec = vec; }
 
     ////////////////////////////////////////////
     ////////     WAVELENGTH SETTERS     ////////
     ////////////////////////////////////////////
 
-    void SetWavelengthPromptPeakTime( Float_t tPeak ){ fWavelengthPromptPeakTime = tPeak; }
-    void SetWavelengthPromptPeakWidth( Float_t tWidth ){ fWavelengthPromptPeakWidth = tWidth; }  
-    void SetWavelengthTimeOfFlight( Float_t tOF ){ fWavelengthTimeOfFlight = tOF; }
-    void SetWavelengthOccupancy( Float_t occ ){ fWavelengthOccupancy = occ; }
-    void SetWavelengthOccupancyErr( Float_t occErr ){ fWavelengthOccupancyErr = occErr; }
-    void SetWavelengthOccupancyCorr( Float_t occCorr ){ fWavelengthOccupancyCorr = occCorr; }
-    void SetWavelengthLBIntensityNorm( Float_t intensityNorm ){ fWavelengthLBIntensityNorm = intensityNorm; }
+    void SetWavelengthPromptPeakTime( const  Float_t tPeak ){ fWavelengthPromptPeakTime = tPeak; }
+    void SetWavelengthPromptPeakWidth( const  Float_t tWidth ){ fWavelengthPromptPeakWidth = tWidth; }  
+    void SetWavelengthTimeOfFlight( const  Float_t tOF ){ fWavelengthTimeOfFlight = tOF; }
+    void SetWavelengthOccupancy( const  Float_t occ ){ fWavelengthOccupancy = occ; }
+    void SetWavelengthOccupancyErr( const  Float_t occErr ){ fWavelengthOccupancyErr = occErr; }
+    void SetWavelengthOccupancyCorr( const  Float_t occCorr ){ fWavelengthOccupancyCorr = occCorr; }
+    void SetWavelengthLBIntensityNorm( const  Float_t intensityNorm ){ fWavelengthLBIntensityNorm = intensityNorm; }
 
-    void SetWavelengthNLBPulses( Float_t nPulses ){ fWavelengthNLBPulses = nPulses; }
+    void SetWavelengthNLBPulses( const  Float_t nPulses ){ fWavelengthNLBPulses = nPulses; }
 
-    void SetWavelengthMPECorrOccupancy( Float_t mpeCorr ){ fWavelengthMPECorrOccupancy = mpeCorr; }
-    void SetWavelengthMPECorrOccupancyErr( Float_t mpeCorrErr ){ fWavelengthMPECorrOccupancyErr = mpeCorrErr; }
-    void SetWavelengthMPECorrOccupancyCorr( Float_t mpeCorrCorr ){ fWavelengthMPECorrOccupancyCorr = mpeCorrCorr; }
+    void SetWavelengthMPECorrOccupancy( const  Float_t mpeCorr ){ fWavelengthMPECorrOccupancy = mpeCorr; }
+    void SetWavelengthMPECorrOccupancyErr( const  Float_t mpeCorrErr ){ fWavelengthMPECorrOccupancyErr = mpeCorrErr; }
+    void SetWavelengthMPECorrOccupancyCorr( const  Float_t mpeCorrCorr ){ fWavelengthMPECorrOccupancyCorr = mpeCorrCorr; }
     
-    void SetWavelengthFresnelTCoeff( Float_t fresnelCoeff ){ fWavelengthFresnelTCoeff = fresnelCoeff; }
+    void SetWavelengthFresnelTCoeff( const  Float_t fresnelCoeff ){ fWavelengthFresnelTCoeff = fresnelCoeff; }
     
-    void SetWavelengthDistInScint( Float_t distInScint ){ fWavelengthDistInScint = distInScint; }
-    void SetWavelengthDistInAV( Float_t distInAV ){ fWavelengthDistInAV = distInAV; }
-    void SetWavelengthDistInWater( Float_t distInWater ){ fWavelengthDistInWater = distInWater; }
-    void SetWavelengthDistInNeck( Float_t distInNeck ){ fWavelengthDistInNeck = distInNeck; }
-    void SetWavelengthTotalDist( Float_t distTotal ){ fWavelengthTotalDist = distTotal; }
+    void SetWavelengthDistInScint( const  Float_t distInScint ){ fWavelengthDistInScint = distInScint; }
+    void SetWavelengthDistInAV( const  Float_t distInAV ){ fWavelengthDistInAV = distInAV; }
+    void SetWavelengthDistInWater( const  Float_t distInWater ){ fWavelengthDistInWater = distInWater; }
+    void SetWavelengthDistInNeck( const  Float_t distInNeck ){ fWavelengthDistInNeck = distInNeck; }
+    void SetWavelengthTotalDist( const  Float_t distTotal ){ fWavelengthTotalDist = distTotal; }
     
-    void SetWavelengthSolidAngle( Float_t solidA ){ fWavelengthSolidAngle = solidA; }
-    void SetWavelengthCosTheta( Float_t cosTheta ){ fWavelengthCosTheta = cosTheta; }
+    void SetWavelengthSolidAngle( const  Float_t solidA ){ fWavelengthSolidAngle = solidA; }
+    void SetWavelengthCosTheta( const  Float_t cosTheta ){ fWavelengthCosTheta = cosTheta; }
     
-    void SetWavelengthRelLBTheta( Float_t theta ){ fWavelengthRelLBTheta = theta; }
-    void SetWavelengthRelLBPhi( Float_t phi ){ fWavelengthRelLBPhi = phi; }
+    void SetWavelengthRelLBTheta( const  Float_t theta ){ fWavelengthRelLBTheta = theta; }
+    void SetWavelengthRelLBPhi( const  Float_t phi ){ fWavelengthRelLBPhi = phi; }
     
-    void SetWavelengthAVHDShadowVal( Float_t avhdShadow ){ fWavelengthAVHDShadowVal = avhdShadow; }
-    void SetWavelengthGeometricShadowVal( Float_t geomShadow ){ fWavelengthGeometricShadowVal = geomShadow; }
+    void SetWavelengthAVHDShadowVal( const  Float_t avhdShadow ){ fWavelengthAVHDShadowVal = avhdShadow; }
+    void SetWavelengthGeometricShadowVal( const  Float_t geomShadow ){ fWavelengthGeometricShadowVal = geomShadow; }
     
-    void SetWavelengthCHSFlag( Bool_t chsFlag ){ fWavelengthCHSFlag = chsFlag; }
-    void SetWavelengthCSSFlag( Bool_t cssFlag ){ fWavelengthCSSFlag = cssFlag; }
-    void SetWavelengthBadPath( Bool_t badPath ){ fWavelengthBadPath = badPath; }
-    void SetWavelengthNeckFlag( Bool_t neckFlag ){ fWavelengthNeckFlag = neckFlag; }
+    void SetWavelengthCHSFlag( const  Bool_t chsFlag ){ fWavelengthCHSFlag = chsFlag; }
+    void SetWavelengthCSSFlag( const  Bool_t cssFlag ){ fWavelengthCSSFlag = cssFlag; }
+    void SetWavelengthBadPath( const  Bool_t badPath ){ fWavelengthBadPath = badPath; }
+    void SetWavelengthNeckFlag( const  Bool_t neckFlag ){ fWavelengthNeckFlag = neckFlag; }
+
+    void SetWavelengthInitialLBVec( const TVector3 vec ){ fWavelengthInitialLBVec = vec; }
+    void SetWavelengthIncidentLBVec( const TVector3 vec ){ fWavelengthIncidentLBVec = vec; }
     
     
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
     
-    Int_t GetID() const{ return fID; }
+    Int_t GetID() const { return fID; }
 
     Int_t GetRunID() const { return fRunID; }
     Int_t GetCentralRunID() const { return fCentralRunID; }
@@ -243,8 +253,8 @@ namespace LOCAS{
     Bool_t GetBadPath() const { return fBadPath; }
     Bool_t GetNeckFlag() const { return fNeckFlag; }
 
-    TVector3 GetLBInitialVec() const { return fInitialLBVec; }
-    TVector3 GetLBIncidentVec() const { return fIncidentLBVec; }
+    TVector3 GetInitialLBVec() const { return fInitialLBVec; }
+    TVector3 GetIncidentLBVec() const { return fIncidentLBVec; }
     
     /////////////////////////////////////////
     ////////     CENTRAL GETTERS     ////////
@@ -288,8 +298,8 @@ namespace LOCAS{
     Bool_t GetCentralBadPath() const { return fCentralBadPath; }
     Bool_t GetCentralNeckFlag() const { return fCentralNeckFlag; }
 
-    TVector3 GetCentralLBInitialVec() const { return fCentralInitialLBVec; }
-    TVector3 GetCentralLBIncidentVec() const { return fCentralIncidentLBVec; }
+    TVector3 GetCentralInitialLBVec() const { return fCentralInitialLBVec; }
+    TVector3 GetCentralIncidentLBVec() const { return fCentralIncidentLBVec; }
 
     ////////////////////////////////////////////
     ////////     WAVELENGTH GETTERS     ////////
@@ -332,8 +342,8 @@ namespace LOCAS{
     Bool_t GetWavelengthBadPath() const { return fWavelengthBadPath; }
     Bool_t GetWavelengthNeckFlag() const { return fWavelengthNeckFlag; }
 
-    TVector3 GetWavelengthLBInitialVec() const { return fWavelengthInitialLBVec; }
-    TVector3 GetWavelengthLBIncidentVec() const { return fWavelengthIncidentLBVec; }
+    TVector3 GetWavelengthInitialLBVec() const { return fWavelengthInitialLBVec; }
+    TVector3 GetWavelengthIncidentLBVec() const { return fWavelengthIncidentLBVec; }
     
   private:
     
@@ -342,6 +352,7 @@ namespace LOCAS{
     Int_t fRunID;                       // The Run ID
     Int_t fCentralRunID;                // The Central Run ID
     Int_t fWavelengthRunID;             // The Wavelength Run ID
+
     Int_t fType;                        // The PMT type
 
     // The following PMT types are defined in 'rat/data/pmt/airfill2.ratdb' found in RAT.

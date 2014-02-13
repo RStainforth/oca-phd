@@ -10,7 +10,7 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     0X/2014 : RPFS - First Revision, new file. \n
+///     02/2014 : RPFS - First Revision, new file. \n
 ///
 /// DETAIL: This is a slightly modified version of RAT's
 ///         LightPath class. The LightPath is treated as
@@ -51,7 +51,7 @@ namespace LOCAS{
     // the straight line path of the light from 'eventPos'
     // to the 'pmtPos'.
     void CalculatePath( const TVector3& eventPos,
-			const TVector3& pmtPos );
+                        const TVector3& pmtPos );
     
     // CalculatePath prototype 2: Use this to calculate
     // the refracted path of the light. The final argument,
@@ -59,39 +59,39 @@ namespace LOCAS{
     // final PMT position you want your path to be calculated to.
     // Defaults to 400.0 nm for the wavelength
     void CalculatePath( const TVector3& eventPos,
-			const TVector3& pmtPos,
-			const Double_t& localityVal );
+                        const TVector3& pmtPos,
+                        const Double_t& localityVal );
     
     /// CalculatePath prototype 3: Same as prototype 2, except
     /// the wavelength can be specified.
     void CalculatePath( const TVector3& eventPos,
-			const TVector3& pmtPos,
-			const Double_t& localityVal,
-			const Double_t& lambda );
+                        const TVector3& pmtPos,
+                        const Double_t& localityVal,
+                        const Double_t& lambda );
     
     // Calculate distances in partial 
     // fill for constant wavelength using
     // straight line calculations
     void CalculatePathPartial( const TVector3& eventPos,
-			       const TVector3& pmtPos );
+                               const TVector3& pmtPos );
     
     // Calculate refracted path distances in 
     // partial fill for constant wavelength
     void CalculatePathPartial( const TVector3& eventPos,
-			       const TVector3& pmtPos,
-			       const Double_t& localityVal );
+                               const TVector3& pmtPos,
+                               const Double_t& localityVal );
     
     // Calculate distances in partial fill
     void CalculatePathPartial( const TVector3& eventPos,
-			       const TVector3& pmtPos,
-			       const Double_t& localityVal,
-			       const Double_t& lambda );
+                               const TVector3& pmtPos,
+                               const Double_t& localityVal,
+                               const Double_t& lambda );
     
     // Calculate the solid angle for this light path.
     // A call to CalculatePath() must be made first before
     // calling this.
     void CalculateSolidAngle( const TVector3& pmtNorm,
-			      const Int_t nVal );
+                              const Int_t nVal );
     
     void CalculateFresnelTRCoeff();
     
@@ -100,63 +100,63 @@ namespace LOCAS{
     ////////     SETTERS     ////////
     /////////////////////////////////
     
-    void SetLoopCeiling( Int_t loopCeil ){ fLoopCeiling = loopCeil; }
+    void SetLoopCeiling( const Int_t loopCeil ){ fLoopCeiling = loopCeil; }
     
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
     
-    Bool_t GetTIR(){ return fTIR; }  
-    Bool_t GetResvHit(){ return fResvHit; }
-    Bool_t GetXAVNeck(){ return fXAVNeck; }
+    Bool_t GetTIR() const { return fTIR; }  
+    Bool_t GetResvHit() const { return fResvHit; }
+    Bool_t GetXAVNeck() const { return fXAVNeck; }
     
-    Double_t GetLoopCeiling(){ return fLoopCeiling; }  
-    Double_t GetFinalLoopValue(){ return fFinalLoopValue; }
+    Double_t GetLoopCeiling() const { return fLoopCeiling; }  
+    Double_t GetFinalLoopValue() const { return fFinalLoopValue; }
     
-    Double_t GetFillFraction(){ return fFillFraction; }
-    Double_t GetPathPrecision(){ return fPathPrecision; }
-    Double_t GetLambda(){ return fLambda; }
+    Double_t GetFillFraction() const { return fFillFraction; }
+    Double_t GetPathPrecision() const { return fPathPrecision; }
+    Double_t GetLambda() const { return fLambda; }
     
-    Double_t GetDistInNeck(){ return fDistInNeck; }
-    Double_t GetDistInUpperTarget(){ return fDistInUpperTarget; }
-    Double_t GetDistInLowerTarget(){ return fDistInLowerTarget; }
-    Double_t GetDistInScint(){ return fDistInScint; }
-    Double_t GetDistInAV(){ return fDistInAV; }
-    Double_t GetDistInWater(){ return fDistInWater; }
+    Double_t GetDistInNeck() const { return fDistInNeck; }
+    Double_t GetDistInUpperTarget() const { return fDistInUpperTarget; }
+    Double_t GetDistInLowerTarget() const { return fDistInLowerTarget; }
+    Double_t GetDistInScint() const { return fDistInScint; }
+    Double_t GetDistInAV() const { return fDistInAV; }
+    Double_t GetDistInWater() const { return fDistInWater; }
     
-    Double_t GetTotalDist(){ return fDistInScint + fDistInAV + fDistInWater; }
-    Double_t GetTotalDistPartial(){ return fDistInUpperTarget + fDistInLowerTarget + fDistInAV + fDistInWater; }
+    Double_t GetTotalDist() const { return fDistInScint + fDistInAV + fDistInWater; }
+    Double_t GetTotalDistPartial() const { return fDistInUpperTarget + fDistInLowerTarget + fDistInAV + fDistInWater; }
     
     // A call to 'CalculateSolidAngle' must first be made before using this 'getter'
-    Double_t GetSolidAngle(){ return fSolidAngle; }
-    Double_t GetCosThetaAvg(){ return fCosThetaAvg; }
-    Double_t GetFresnelTCoeff(){ return fFresnelTCoeff; }
-    Double_t GetFresnelRCoeff(){ return fFresnelRCoeff; }
+    Double_t GetSolidAngle() const { return fSolidAngle; }
+    Double_t GetCosThetaAvg() const { return fCosThetaAvg; }
+    Double_t GetFresnelTCoeff() const { return fFresnelTCoeff; }
+    Double_t GetFresnelRCoeff() const { return fFresnelRCoeff; }
     
-    TVector3 GetStartPos(){ return fStartPos; }
-    TVector3 GetEndPos(){ return fEndPos; }
-    TVector3 GetLightPathEndPos(){ return fLightPathEndPos; }
-    TVector3 GetIncidentVecOnPMT(){ return fIncidentVecOnPMT; }
-    TVector3 GetInitialLightVec(){ return fInitialLightVec; }
-    TVector3 GetPointOnAV1st(){ return fPointOnAV1st; }
-    TVector3 GetPointOnAV2nd(){ return fPointOnAV2nd; }
-    TVector3 GetPointOnAV3rd(){ return fPointOnAV3rd; }
-    TVector3 GetPointOnAV4th(){ return fPointOnAV4th; }
+    TVector3 GetStartPos() const { return fStartPos; }
+    TVector3 GetEndPos() const { return fEndPos; }
+    TVector3 GetLightPathEndPos() const { return fLightPathEndPos; }
+    TVector3 GetIncidentVecOnPMT() const { return fIncidentVecOnPMT; }
+    TVector3 GetInitialLightVec() const { return fInitialLightVec; }
+    TVector3 GetPointOnAV1st() const { return fPointOnAV1st; }
+    TVector3 GetPointOnAV2nd() const { return fPointOnAV2nd; }
+    TVector3 GetPointOnAV3rd() const { return fPointOnAV3rd; }
+    TVector3 GetPointOnAV4th() const { return fPointOnAV4th; }
     
-    Int_t GetLightPathType(){ return fLightPathType; }
+    Int_t GetLightPathType() const { return fLightPathType; }
     
     // Returns the incident vectors on each of the intersections the path makes
     // throughout the detector. 
-    TVector3 GetIncidentVecOn1stSurf(){ return ( fPointOnAV1st - fStartPos ).Unit(); }
-    TVector3 GetIncidentVecOn2ndSurf(){ return ( fPointOnAV2nd - fPointOnAV1st ).Unit(); }
-    TVector3 GetIncidentVecOn3rdSurf(){ return ( fPointOnAV3rd - fPointOnAV2nd ).Unit(); }
-    TVector3 GetIncidentVecOn4thSurf(){ return ( fPointOnAV4th - fPointOnAV3rd ).Unit(); }
+    TVector3 GetIncidentVecOn1stSurf() const { return ( fPointOnAV1st - fStartPos ).Unit(); }
+    TVector3 GetIncidentVecOn2ndSurf() const { return ( fPointOnAV2nd - fPointOnAV1st ).Unit(); }
+    TVector3 GetIncidentVecOn3rdSurf() const { return ( fPointOnAV3rd - fPointOnAV2nd ).Unit(); }
+    TVector3 GetIncidentVecOn4thSurf() const { return ( fPointOnAV4th - fPointOnAV3rd ).Unit(); }
     
-    Double_t GetAVInnerRadius(){ return fAVInnerRadius; }
-    Double_t GetAVOuterRadius(){ return fAVOuterRadius; }
-    Double_t GetAVNeckInnerRadius(){ return fAVNeckInnerRadius; }
-    Double_t GetAVNeckOuterRadius(){ return fAVNeckOuterRadius; }
-    Double_t GetPMTRadius(){ return fPMTRadius; }
+    Double_t GetAVInnerRadius() const { return fAVInnerRadius; }
+    Double_t GetAVOuterRadius() const { return fAVOuterRadius; }
+    Double_t GetAVNeckInnerRadius() const { return fAVNeckInnerRadius; }
+    Double_t GetAVNeckOuterRadius() const { return fAVNeckOuterRadius; }
+    Double_t GetPMTRadius() const { return fPMTRadius; }
     
     // Return the refractive indices, argument 'lambda*' refers to the wavelength [nm]
     // The number '0.001243125' is to convert the wavelengths into energies [MeV] (?)
@@ -172,56 +172,56 @@ namespace LOCAS{
     // Calculates the distance in a given sphere, used for straight line
     // path calculations only
     Double_t CalcDistInSphere( const TVector3& eventPos,
-			       const TVector3& pmtPos,
-			       const Double_t sphereRadius );
+                               const TVector3& pmtPos,
+                               const Double_t sphereRadius );
     
     // The straight line path calculation used internally by 'CalculateStraightPath'
     // prototype 1.
     void CalculateStraightPath( const TVector3& eventPos,
-				const TVector3& pmtPos );
+                                const TVector3& pmtPos );
     
     // Calculate the refracted path. Performs most of the work required to
     // obtained a refracted path
     void PathCalculation( const TVector3& eventPos,
-			  const TVector3& pmtPos,
-			  const TVector3& initOffset,
-			  TVector3& distScint,
-			  TVector3& distAV,
-			  TVector3& distAVXDet,
-			  TVector3& distWater,
-			  TVector3& distWaterXDet,
-			  TVector3& incidentVecOnPMT,
-			  const Double_t& lambda );  
+                          const TVector3& pmtPos,
+                          const TVector3& initOffset,
+                          TVector3& distScint,
+                          TVector3& distAV,
+                          TVector3& distAVXDet,
+                          TVector3& distWater,
+                          TVector3& distWaterXDet,
+                          TVector3& incidentVecOnPMT,
+                          const Double_t& lambda );  
     
     // Defines the distances through the scintillator, AV and water based
     // on a refracted path which met the locality conditions
     void DefineDistances( const TVector3& eventPos,
-			  const TVector3& pmtPos,
-			  const TVector3& distScint,
-			  const TVector3& distAV,
-			  const TVector3& distAVXdet,
-			  const TVector3& distWater,
-			  const TVector3& distWaterXDet,
-			  const TVector3& incidentVecOnPMT,
-			  const Int_t iVal );
+                          const TVector3& pmtPos,
+                          const TVector3& distScint,
+                          const TVector3& distAV,
+                          const TVector3& distAVXdet,
+                          const TVector3& distWater,
+                          const TVector3& distWaterXDet,
+                          const TVector3& incidentVecOnPMT,
+                          const Int_t iVal );
     
     // Readjust the inital photon direction. Used if the previous path
     // does not meet the locality conditions
     void ReadjustOffset( const TVector3& eventPos,
-			 const TVector3& pmtPos,
-			 const TVector3& distWater,
-			 TVector3& initOffset );
+                         const TVector3& pmtPos,
+                         const TVector3& distWater,
+                         TVector3& initOffset );
     
     // Test the locality conditions for the hypothesised path end point ( hypEndPos )
     // against the actual PMT position ( pmtPos )
     Bool_t LocalityCheck( const TVector3& pmtPos,
-			  const TVector3& hypEndPos,
-			  const Int_t i );
+                          const TVector3& hypEndPos,
+                          const Int_t i );
     
     // Calculate the closest angular displacement of a path
     // close to a surface interface
     Double_t ClosestAngle( const TVector3& eventPos,
-			   const Double_t& edgeRadius );
+                           const Double_t& edgeRadius );
     
     
     // Calculate refracted vector direction for a light path
@@ -230,25 +230,25 @@ namespace LOCAS{
     // refractive medium with index 'incRIndex' to another
     // with index 'refRIndex'
     TVector3 PathRefraction( const TVector3& incidentVec,
-			     const TVector3& incidentSurfVec,
-			     const Double_t& incRIndex,
-			     const Double_t& refRIndex );
+                             const TVector3& incidentSurfVec,
+                             const Double_t& incRIndex,
+                             const Double_t& refRIndex );
     
     // Calculate vector from some initial point ('startPos'), with an initial
     // starting direction, 'startDir' to the edge of a sphere of given radius
     // 'radiusFromCentre'. The Boolean ( Bool_t outside ) is passed based on if the
     // path originates outside of the AV or not.
     TVector3 VectorToSphereEdge( const TVector3& startPos,
-				 const TVector3& startDir,
-				 const Double_t radiusFromCentre,
-				 const Bool_t outside);
+                                 const TVector3& startDir,
+                                 const Double_t radiusFromCentre,
+                                 const Bool_t outside);
     
     // Calculated the path through either the lower/upper target
     // [Used for Partial Fill]
     void PathThroughTarget( const TVector3& enterPos,
-			    const TVector3& enterDir,
-			    TVector3& exitPos,
-			    TVector3& exitDir );
+                            const TVector3& enterDir,
+                            TVector3& exitPos,
+                            TVector3& exitDir );
     
     // Calculate the refracted path. Performs most of the work required to
     // obtained a refracted path [Used for Partial Fill]
@@ -261,37 +261,37 @@ namespace LOCAS{
     // Calculates the distance in a given partially filled sphere, used for
     // straight line path calculations only [Used for Partial Fill]
     void CalcDistInSpheresPartial( const TVector3& startPos,
-				   const TVector3& endPos);
+                                   const TVector3& endPos);
     
     // Set the AV neck variables (i.e. those pertaining to whether the
     // path entered the neck or not, and if it did, the distance it travelled ).
     // This is called for all light paths, which, at some point, leave the AV region
     void SetAVNeckInformation( const TVector3& pointOnAV,
-			       const TVector3& dirVec );
+                               const TVector3& dirVec );
     
     // Calculates the solid angle using a more rigourous method.
     // This is reserved for calculating the solid angle for locations
     // close to the AV (i.e. near AV region, large R ( e.g. R > 5000 mm )
     void CalculateSolidAnglePolygon( const TVector3& pmtNorm,
-				     const Int_t nVal );
+                                     const Int_t nVal );
     
     // Calculates the fresnel transmission 
     void FresnelTRCoeff( const TVector3& dir,
-			 const TVector3& norm,
-			 const Double_t n1,
-			 const Double_t n2,
-			 Double_t& T,
-			 Double_t& R );
+                         const TVector3& norm,
+                         const Double_t n1,
+                         const Double_t n2,
+                         Double_t& T,
+                         Double_t& R );
     
     
     Bool_t fTIR;                          // TRUE: Total Internal Reflection Occured ( straight line path calculated instead )
                                           // FALSE: Reflection did not occur and refracted path distances were calculated
     
     Bool_t fResvHit;                      // TRUE: Calculated Path finished over 1000 mm away from required PMT position [fEndPos]
-    // FALSE: It didn't
+                                          // FALSE: It didn't
     
     Bool_t fXAVNeck;                      // TRUE: Light path entered the AV Neck region
-    // FALSE: It didn't
+                                          // FALSE: It didn't
     
     Int_t fLoopCeiling;                   // Iteration Ceiling for algortithm loop
     Int_t fFinalLoopValue;                // Final loop value which meets locality conditions

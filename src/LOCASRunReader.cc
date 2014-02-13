@@ -9,7 +9,7 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     0X/2014 : RPFS - First Revision, new file. \n
+///     02/2014 : RPFS - First Revision, new file. \n
 ///
 ////////////////////////////////////////////////////////////////////
 

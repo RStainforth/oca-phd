@@ -167,33 +167,36 @@ int main( int argc, char** argv ){
   LOCASRun lWRun;
   // Set Default run-IDs and Run-Types
   lRun.SetRunID( rID );
-  lRun.SetIsMainRun( mrBool );
   lRun.SetNLBPulses( 5000.0 );
 
   lCRun.SetRunID( crID );
-  lCRun.SetIsCentralRun( crBool );
   lCRun.SetNLBPulses( 5000.0 );
 
   lWRun.SetRunID( wrID );
-  lWRun.SetIsWavelengthRun( wrBool );
   lWRun.SetNLBPulses( 5000.0 );
   
   // Create the SOCReader object <-- This allows for multiple SOC files
   // to be loaded
-  cout << "Adding main-run SOC file: " << rIDStr + (string)"_Run.root" << endl;
+  cout << "Adding main-run SOC file: " << endl;
+  cout << rIDStr + (string)"_Run.root" << endl;
+  cout << "--------------------------" << endl;
   // Add the main-run to the SOC reader first
   RAT::SOCReader soc( ( socRunDir + rIDStr + (string)"_Run.root" ).c_str() );
 
   // If a central-run has been specified, add it to the SOCReader
   if ( crBool ){
-    cout << "Adding central-run SOC file: " << crIDStr + (string)"_Run.root" << endl;
+    cout << "Adding central-run SOC file: " << endl;
+    cout << crIDStr + (string)"_Run.root" << endl;
+    cout << "--------------------------" << endl;
     // Add the central-run to the SOC reader
     soc.Add( ( socRunDir + crIDStr + (string)"_Run.root" ).c_str() );
   }
 
   // If a wavelength-run has been specified, add it to the SOCReader
   if ( wrBool ){
-    cout << "Adding wavelength-run SOC file: " << wrIDStr + (string)"_Run.root" << endl;
+    cout << "Adding wavelength-run SOC file: " << endl;
+    cout << wrIDStr + (string)"_Run.root" << endl;
+    cout << "--------------------------" << endl;
     // Add the central-run to the SOC reader
     soc.Add( ( socRunDir + wrIDStr + (string)"_Run.root" ).c_str() );
   }

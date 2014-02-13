@@ -32,7 +32,7 @@ ClassImp( LOCASDB );
 LOCASDB::LOCASDB()
 {
 
-  // First need to ensure that all private variables are set to zero, or empty.
+  // First need to ensure that all private variables are set to non-physical values, or empty.
 
   fPMTPositions.clear();
   fPMTNormals.clear();
@@ -42,21 +42,21 @@ LOCASDB::LOCASDB()
   fAVRI.Set( 0 );
   fWaterRI.Set( 0 );
 
-  fAVInnerRadius = 0.0;
-  fAVOuterRadius = 0.0;
-  fAVNeckInnerRadius = 0.0;
-  fAVNeckOuterRadius = 0.0;
-  fPMTRadius = 0.0;
+  fAVInnerRadius = -10.0;
+  fAVOuterRadius = -10.0;
+  fAVNeckInnerRadius = -10.0;
+  fAVNeckOuterRadius = -10.0;
+  fPMTRadius = -10.0;
 
-  fNTotalPMTs = 0;
-  fNNormalPMTs = 0;
-  fNOWLPMTs = 0;
-  fNLowGainPMTs = 0;
-  fNBUTTPMTs = 0;
-  fNNeckPMTs = 0;
-  fNCalibPMTs = 0;
-  fNSparePMTs = 0;
-  fNInvalidPMTs = 0;
+  fNTotalPMTs = -10;
+  fNNormalPMTs = -10;
+  fNOWLPMTs = -10;
+  fNLowGainPMTs = -10;
+  fNBUTTPMTs = -10;
+  fNNeckPMTs = -10;
+  fNCalibPMTs = -10;
+  fNSparePMTs = -10;
+  fNInvalidPMTs = -10;
 
   fGeoPMTShadowingVals.clear();
   fAVHDRopePMTShadowingVals.clear();
@@ -105,22 +105,22 @@ void LOCASDB::Clear()
   fAVRI.Set( 0 );
   fWaterRI.Set( 0 );
 
-  fAVInnerRadius = 0.0;
-  fAVOuterRadius = 0.0;
-  fAVNeckInnerRadius = 0.0;
-  fAVNeckOuterRadius = 0.0;
-  fPMTRadius = 0.0;
+  fAVInnerRadius = -10.0;
+  fAVOuterRadius = -10.0;
+  fAVNeckInnerRadius = -10.0;
+  fAVNeckOuterRadius = -10.0;
+  fPMTRadius = -10.0;
 
-  fNTotalPMTs = 0;
-  fNNormalPMTs = 0;
-  fNOWLPMTs = 0;
-  fNLowGainPMTs = 0;
-  fNBUTTPMTs = 0;
-  fNNeckPMTs = 0;
-  fNCalibPMTs = 0;
-  fNSparePMTs = 0;
-  fNInvalidPMTs = 0;
-  
+  fNTotalPMTs = -10;
+  fNNormalPMTs = -10;
+  fNOWLPMTs = -10;
+  fNLowGainPMTs = -10;
+  fNBUTTPMTs = -10;
+  fNNeckPMTs = -10;
+  fNCalibPMTs = -10;
+  fNSparePMTs = -10;
+  fNInvalidPMTs = -10;
+
   fGeoPMTShadowingVals.clear();
   fAVHDRopePMTShadowingVals.clear();
 
@@ -129,9 +129,9 @@ void LOCASDB::Clear()
 
   fRunList.clear();
 
-  fRATDB->Clear();
-
   fCurrentFile = "";
+
+  Initialise();
 
 }
 
@@ -247,7 +247,7 @@ void LOCASDB::LoadPMTTypes()
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASDB::LoadRefractiveIndices()
+void LOCASDB::LoadRefractiveIndices( const char* scintRegion, const char* avRegion, const char* waterRegion )
 {
 
   fRATDB->Clear();
@@ -259,7 +259,7 @@ void LOCASDB::LoadRefractiveIndices()
 
   //////// LOAD THE SCINTILLATOR VOLUME REFRACTIVE INDICES ///////
 
-  fRATDBPtr = fRATDB->GetLink( "OPTICS", "labppo_scintillator" );
+  fRATDBPtr = fRATDB->GetLink( "OPTICS", scintRegion );
   assert( fRATDBPtr );
 
   std::vector<Double_t> wavelengths = fRATDBPtr->GetDArray( "RINDEX_value1" );
@@ -272,7 +272,7 @@ void LOCASDB::LoadRefractiveIndices()
 
  //////// LOAD THE AV VOLUME REFRACTIVE INDICES ///////
 
-  fRATDBPtr = fRATDB->GetLink( "OPTICS", "acrylic_sno" );
+  fRATDBPtr = fRATDB->GetLink( "OPTICS", avRegion );
   assert( fRATDBPtr );
 
   wavelengths = fRATDBPtr->GetDArray( "RINDEX_value1" );
@@ -285,7 +285,7 @@ void LOCASDB::LoadRefractiveIndices()
 
  //////// LOAD THE WATER VOLUME REFRACTIVE INDICES ///////
 
-  fRATDBPtr = fRATDB->GetLink( "OPTICS", "lightwater_sno" );
+  fRATDBPtr = fRATDB->GetLink( "OPTICS", waterRegion );
   assert( fRATDBPtr );
 
   wavelengths = fRATDBPtr->GetDArray( "RINDEX_value1" );
@@ -437,7 +437,7 @@ void LOCASDB::SetFile( const char* file )
 //////////////////////////////////////
 //////////////////////////////////////
 
-std::string LOCASDB::GetStringField( const std::string &tableName, const std::string &fieldName )
+std::string LOCASDB::GetStringField( const std::string& tableName, const std::string& fieldName )
 {
 
   fRATDB->Clear();
@@ -463,7 +463,7 @@ std::string LOCASDB::GetStringField( const std::string &tableName, const std::st
 //////////////////////////////////////
 //////////////////////////////////////
 
-Double_t LOCASDB::GetDoubleField( const std::string &tableName, const std::string &fieldName )
+Double_t LOCASDB::GetDoubleField( const std::string& tableName, const std::string& fieldName )
 {
 
   fRATDB->Clear();
@@ -489,7 +489,7 @@ Double_t LOCASDB::GetDoubleField( const std::string &tableName, const std::strin
 //////////////////////////////////////
 //////////////////////////////////////
 
-Int_t LOCASDB::GetIntField( const std::string &tableName, const std::string &fieldName )
+Int_t LOCASDB::GetIntField( const std::string& tableName, const std::string& fieldName )
 {
 
   fRATDB->Clear();
@@ -514,7 +514,7 @@ Int_t LOCASDB::GetIntField( const std::string &tableName, const std::string &fie
 //////////////////////////////////////
 //////////////////////////////////////
 
-Bool_t LOCASDB::GetBoolField( const std::string &tableName, const std::string &fieldName )
+Bool_t LOCASDB::GetBoolField( const std::string& tableName, const std::string& fieldName )
 {
 
   fRATDB->Clear();
@@ -543,7 +543,7 @@ Bool_t LOCASDB::GetBoolField( const std::string &tableName, const std::string &f
 //////////////////////////////////////
 //////////////////////////////////////
 
-std::vector< Int_t > LOCASDB::GetIntVectorField( const std::string &tableName, const std::string &fieldName )
+std::vector< Int_t > LOCASDB::GetIntVectorField( const std::string& tableName, const std::string& fieldName )
 {
   
   fRATDB->Clear();
@@ -570,7 +570,7 @@ std::vector< Int_t > LOCASDB::GetIntVectorField( const std::string &tableName, c
 //////////////////////////////////////
 //////////////////////////////////////
 
-std::vector< Double_t > LOCASDB::GetDoubleVectorField( const std::string &tableName,  const std::string &fieldName, const std::string &indexName )
+std::vector< Double_t > LOCASDB::GetDoubleVectorField( const std::string& tableName,  const std::string& fieldName, const std::string& indexName )
 {
   
   fRATDB->Clear();

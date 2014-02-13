@@ -10,7 +10,7 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     0X/2014 : RPFS - First Revision, new file. \n
+///     02/2014 : RPFS - First Revision, new file. \n
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -59,9 +59,6 @@ LOCASRun::~LOCASRun()
 LOCASRun::LOCASRun( const LOCASRun& locasRHS )
 {
 
-  // Copies all Run information from locasRHS
-  // EXCEPT for the fLOCASPMTs map
-
   fRunID = locasRHS.fRunID;
   fCentralRunID = locasRHS.fCentralRunID;
   fWavelengthRunID = locasRHS.fWavelengthRunID;
@@ -76,17 +73,16 @@ LOCASRun::LOCASRun( const LOCASRun& locasRHS )
 
   fLambda = locasRHS.fLambda;
   fNLBPulses = locasRHS.fNLBPulses;
+
   fCentralLambda = locasRHS.fCentralLambda;
   fCentralNLBPulses = locasRHS.fCentralNLBPulses;
+
   fWavelengthLambda = locasRHS.fWavelengthLambda;
   fWavelengthNLBPulses = locasRHS.fWavelengthNLBPulses;
 
   fMainLBIntensityNorm = locasRHS.fMainLBIntensityNorm;
   fCentralLBIntensityNorm = locasRHS.fCentralLBIntensityNorm;
   fWavelengthLBIntensityNorm = locasRHS.fWavelengthLBIntensityNorm;
-
-  fTimeSigmaMean = locasRHS.fTimeSigmaMean;
-  fTimeSigmaSigma = locasRHS.fTimeSigmaSigma;
 
   fLBPos = locasRHS.fLBPos;
   fCentralLBPos = locasRHS.fCentralLBPos;
@@ -95,6 +91,14 @@ LOCASRun::LOCASRun( const LOCASRun& locasRHS )
   fLBXPosErr = locasRHS.fLBXPosErr;
   fLBYPosErr = locasRHS.fLBYPosErr;
   fLBZPosErr = locasRHS.fLBZPosErr;
+
+  fCentralLBXPosErr = locasRHS.fCentralLBXPosErr;
+  fCentralLBYPosErr = locasRHS.fCentralLBYPosErr;
+  fCentralLBZPosErr = locasRHS.fCentralLBZPosErr;
+
+  fWavelengthLBXPosErr = locasRHS.fWavelengthLBXPosErr;
+  fWavelengthLBYPosErr = locasRHS.fWavelengthLBYPosErr;
+  fWavelengthLBZPosErr = locasRHS.fWavelengthLBZPosErr;
 
   fLBPosChi2 = locasRHS.fLBPosChi2;
   fLBTheta = locasRHS.fLBTheta;
@@ -107,7 +111,6 @@ LOCASRun::LOCASRun( const LOCASRun& locasRHS )
   fWavelengthLBPosChi2 = locasRHS.fWavelengthLBPosChi2;
   fWavelengthLBTheta = locasRHS.fWavelengthLBTheta;
   fWavelengthLBPhi = locasRHS.fWavelengthLBPhi;
-
 
   if ( !fLOCASPMTs.empty() ){ fLOCASPMTs.clear(); }
 
@@ -136,17 +139,16 @@ LOCASRun& LOCASRun::operator=( const LOCASRun& locasRHS )
 
   fLambda = locasRHS.fLambda;
   fNLBPulses = locasRHS.fNLBPulses;
+
   fCentralLambda = locasRHS.fCentralLambda;
   fCentralNLBPulses = locasRHS.fCentralNLBPulses;
+
   fWavelengthLambda = locasRHS.fWavelengthLambda;
   fWavelengthNLBPulses = locasRHS.fWavelengthNLBPulses;
 
   fMainLBIntensityNorm = locasRHS.fMainLBIntensityNorm;
   fCentralLBIntensityNorm = locasRHS.fCentralLBIntensityNorm;
   fWavelengthLBIntensityNorm = locasRHS.fWavelengthLBIntensityNorm;
-
-  fTimeSigmaMean = locasRHS.fTimeSigmaMean;
-  fTimeSigmaSigma = locasRHS.fTimeSigmaSigma;
 
   fLBPos = locasRHS.fLBPos;
   fCentralLBPos = locasRHS.fCentralLBPos;
@@ -155,6 +157,14 @@ LOCASRun& LOCASRun::operator=( const LOCASRun& locasRHS )
   fLBXPosErr = locasRHS.fLBXPosErr;
   fLBYPosErr = locasRHS.fLBYPosErr;
   fLBZPosErr = locasRHS.fLBZPosErr;
+
+  fCentralLBXPosErr = locasRHS.fCentralLBXPosErr;
+  fCentralLBYPosErr = locasRHS.fCentralLBYPosErr;
+  fCentralLBZPosErr = locasRHS.fCentralLBZPosErr;
+
+  fWavelengthLBXPosErr = locasRHS.fWavelengthLBXPosErr;
+  fWavelengthLBYPosErr = locasRHS.fWavelengthLBYPosErr;
+  fWavelengthLBZPosErr = locasRHS.fWavelengthLBZPosErr;
 
   fLBPosChi2 = locasRHS.fLBPosChi2;
   fLBTheta = locasRHS.fLBTheta;
@@ -181,59 +191,56 @@ LOCASRun& LOCASRun::operator=( const LOCASRun& locasRHS )
 void LOCASRun::Initialise()
 { 
 
-  SetRunID( 0 );
-  SetCentralRunID( 0 );
-  SetWavelengthRunID( 0 );
+  SetRunID( -1 );
+  SetCentralRunID( -1 );
+  SetWavelengthRunID( -1 );
 
-  SetSourceID( 0 );
-  SetCentralSourceID( 0 );
-  SetWavelengthSourceID( 0 );
+  SetSourceID( -1 );
+  SetCentralSourceID( -1 );
+  SetWavelengthSourceID( -1 );
 
   SetIsMainRun( false );
   SetIsCentralRun( false );
   SetIsWavelengthRun( false );
 
-  SetLambda( 0.0 );
-  SetNLBPulses( 0.0 );  
-  SetCentralLambda( 0.0 );
-  SetCentralNLBPulses( 0.0 );
-  SetWavelengthLambda( 0.0 );
-  SetWavelengthNLBPulses( 0.0 );
+  SetLambda( -10.0 );
+  SetNLBPulses( -10.0 );  
+  SetCentralLambda( -10.0 );
+  SetCentralNLBPulses( -10.0 );
+  SetWavelengthLambda( -10.0 );
+  SetWavelengthNLBPulses( -10.0 );
 
-  SetMainLBIntensityNorm( 0.0 );
-  SetCentralLBIntensityNorm( 0.0 );
-  SetWavelengthLBIntensityNorm( 0.0 );
-
-  SetTimeSigmaMean( 0.0 );
-  SetTimeSigmaSigma( 0.0 );
+  SetMainLBIntensityNorm( -10.0 );
+  SetCentralLBIntensityNorm( -10.0 );
+  SetWavelengthLBIntensityNorm( -10.0 );
 
   SetLBPos( -9999.9, -9999.9, -9999.9 );
   SetCentralLBPos( -9999.9, -9999.9, -9999.9 );
   SetWavelengthLBPos( -9999.9, -9999.9, -9999.9 );
 
-  SetLBXPosErr( 0.0 );
-  SetLBYPosErr( 0.0 );
-  SetLBZPosErr( 0.0 );
+  SetLBXPosErr( -10.0 );
+  SetLBYPosErr( -10.0 );
+  SetLBZPosErr( -10.0 );
 
-  SetCentralLBXPosErr( 0.0 );
-  SetCentralLBYPosErr( 0.0 );
-  SetCentralLBZPosErr( 0.0 );
+  SetCentralLBXPosErr( -10.0 );
+  SetCentralLBYPosErr( -10.0 );
+  SetCentralLBZPosErr( -10.0 );
 
-  SetWavelengthLBXPosErr( 0.0 );
-  SetWavelengthLBYPosErr( 0.0 );
-  SetWavelengthLBZPosErr( 0.0 );
+  SetWavelengthLBXPosErr( -10.0 );
+  SetWavelengthLBYPosErr( -10.0 );
+  SetWavelengthLBZPosErr( -10.0 );
 
-  SetLBPosChi2( 0.0 );
-  SetLBTheta( 0.0 );
-  SetLBPhi( 0.0 );
+  SetLBPosChi2( -10.0 );
+  SetLBTheta( -10.0 );
+  SetLBPhi( -10.0 );
 
-  SetCentralLBPosChi2( 0.0 );
-  SetCentralLBTheta( 0.0 );
-  SetCentralLBPhi( 0.0 );
+  SetCentralLBPosChi2( -10.0 );
+  SetCentralLBTheta( -10.0 );
+  SetCentralLBPhi( -10.0 );
 
-  SetWavelengthLBPosChi2( 0.0 );
-  SetWavelengthLBTheta( 0.0 );
-  SetWavelengthLBPhi( 0.0 );
+  SetWavelengthLBPosChi2( -10.0 );
+  SetWavelengthLBTheta( -10.0 );
+  SetWavelengthLBPhi( -10.0 );
 
   if ( !fLOCASPMTs.empty() ){ fLOCASPMTs.clear(); }
 
@@ -244,63 +251,8 @@ void LOCASRun::Initialise()
 
 void LOCASRun::Clear( Option_t* option )
 {
-  // Reset all the values for this LOCASRun
 
-  SetRunID( 0 );
-  SetCentralRunID( 0 );
-  SetWavelengthRunID( 0 );
-
-  SetSourceID( 0 );
-  SetCentralSourceID( 0 );
-  SetWavelengthSourceID( 0 );
-
-  SetIsMainRun( false );
-  SetIsCentralRun( false );
-  SetIsWavelengthRun( false );
-
-  SetLambda( 0.0 );
-  SetNLBPulses( 0.0 );  
-  SetCentralLambda( 0.0 );
-  SetCentralNLBPulses( 0.0 );
-  SetWavelengthLambda( 0.0 );
-  SetWavelengthNLBPulses( 0.0 );
-
-  SetMainLBIntensityNorm( 0.0 );
-  SetCentralLBIntensityNorm( 0.0 );
-  SetWavelengthLBIntensityNorm( 0.0 );
-
-  SetTimeSigmaMean( 0.0 );
-  SetTimeSigmaSigma( 0.0 );
-
-  SetLBPos( -9999.9, -9999.9, -9999.9 );
-  SetCentralLBPos( -9999.9, -9999.9, -9999.9 );
-  SetWavelengthLBPos( -9999.9, -9999.9, -9999.9 );
-
-  SetLBXPosErr( 0.0 );
-  SetLBYPosErr( 0.0 );
-  SetLBZPosErr( 0.0 );
-
-  SetCentralLBXPosErr( 0.0 );
-  SetCentralLBYPosErr( 0.0 );
-  SetCentralLBZPosErr( 0.0 );
-
-  SetWavelengthLBXPosErr( 0.0 );
-  SetWavelengthLBYPosErr( 0.0 );
-  SetWavelengthLBZPosErr( 0.0 );
-
-  SetLBPosChi2( 0.0 );
-  SetLBTheta( 0.0 );
-  SetLBPhi( 0.0 );
-
-  SetCentralLBPosChi2( 0.0 );
-  SetCentralLBTheta( 0.0 );
-  SetCentralLBPhi( 0.0 );
-
-  SetWavelengthLBPosChi2( 0.0 );
-  SetWavelengthLBTheta( 0.0 );
-  SetWavelengthLBPhi( 0.0 );
-
-  if ( !fLOCASPMTs.empty() ){ fLOCASPMTs.clear(); }
+  Initialise();
   
 }
 
@@ -310,30 +262,26 @@ void LOCASRun::Clear( Option_t* option )
 void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
 {
 
-  // First perform the neccessary checks
   RAT::DS::SOC* socPtr = NULL;
-  Long64_t NSOCs = socR.GetNSOC();
 
-  for ( Int_t iSOC = 0; iSOC < NSOCs; iSOC++ ){
-
+  // First check that a SOC file with the specified runID exists in the SOCReader
+  for ( Int_t iSOC = 0; iSOC < socR.GetNSOC(); iSOC++ ){
     socPtr = socR.GetSOC( iSOC );
-
-    if ( socPtr->GetRunID() == runID ){
-      socPtr = socR.GetSOC( iSOC );
-      break;
+    if ( socPtr->GetRunID() == runID ){ break; }
+    else{ continue; }
+    
+    if ( iSOC == ( socR.GetNSOC() - 1 ) ){
+      cout << "LOCASRun::Fill: Error: No SOC file with specified run-ID found" << endl;
     }
-
-    if ( ( iSOC == NSOCs - 1 ) && ( socPtr->GetRunID() != runID ) ){
-      std::cout << "No SOC File with specified Run ID found in the SOCReader! Setting to Default" << std::endl;
-      socPtr = socR.GetSOC( 0 );
-    }
-
   }
 
   // Now that a SOC file which matches the run ID specified has been
   // found. We can now begin to fill the LOCASRun object with all the
   // neccessary information.
+  
+  // The run information from the SOC file...
   CopySOCRunInfo( socPtr );
+  // ... and the PMT information from the SOC file.
   CopySOCPMTInfo( socPtr );
 
   // Create the LOCAS Data base Object (LOCASDB) and
@@ -345,7 +293,7 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
   lDB.LoadPMTTypes();
 
   // Create an iterator to loop over the PMTs...
-  std::map<Int_t, LOCASPMT>::iterator iLP;
+  std::map< Int_t, LOCASPMT >::iterator iLP;
 
   // The PMT ID variable for each PMT in the loop
   Int_t pmtID;
@@ -362,13 +310,16 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
 
     // Get the PMT ID and LOCASPMT object
     pmtID = iLP->first;
-    
+    // Set the run ID
     ( iLP->second ).SetRunID( runID );
+
     // Set the Normals and Positions
     ( iLP->second ).SetPos( lDB.GetPMTPosition( pmtID ) );
     ( iLP->second ).SetNorm( lDB.GetPMTNormal( pmtID ) );
     ( iLP->second ).SetType( lDB.GetPMTType( pmtID ) );
-
+    // Put some of the run specific information on the PMT data structure.
+    // This is worth it when it comes to fitting, as only a single pointer to
+    // the PMT object will be required.
     ( iLP->second ).SetNLBPulses( GetNLBPulses() );
     ( iLP->second ).SetLBIntensityNorm( GetMainLBIntensityNorm() );
 
@@ -381,12 +332,7 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
     lLP.CalculatePath( GetLBPos(), GetPMT( iLP->first ).GetPos(), 10.0, GetLambda() );
     
     // 'feed' the light path to the PMT
-    ( iLP->second ).ProcessLightPath( lLP );
-
-    TVector3 pmtRelativeVec = lLP.GetInitialLightVec();
-    ( iLP->second ).SetRelLBTheta( pmtRelativeVec.Theta() );
-    ( iLP->second ).SetRelLBPhi( pmtRelativeVec.Phi() );
-    
+    ( iLP->second ).ProcessLightPath( lLP );    
     // Reset the light path object
     lLP.Clear();
     

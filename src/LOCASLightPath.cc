@@ -11,7 +11,7 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     0X/2014 : RPFS - First Revision, new file.
+///     02/2014 : RPFS - First Revision, new file.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -97,60 +97,60 @@ void LOCASLightPath::Initialise()
   fResvHit = false;
   fXAVNeck = false;
 
-  fLoopCeiling = 0;
-  fFinalLoopValue = 0;
+  fLoopCeiling = -1;
+  fFinalLoopValue = -1;
 
-  fFillFraction = 0.0;
-  fPathPrecision = 0.0;
-  fLambda = 0.0;
+  fFillFraction = -10.0;
+  fPathPrecision = -10.0;
+  fLambda = -10.0;
 
-  fDistInNeck = 0.0;
-  fDistInUpperTarget = 0.0;
-  fDistInLowerTarget = 0.0;
-  fDistInScint = 0.0;
-  fDistInAV = 0.0;
-  fDistInWater = 0.0;
+  fDistInNeck = -10.0;
+  fDistInUpperTarget = -10.0;
+  fDistInLowerTarget = -10.0;
+  fDistInScint = -10.0;
+  fDistInAV = -10.0;
+  fDistInWater = -10.0;
 
-  fSolidAngle = 0.0;
-  fCosThetaAvg = 0.0;
-  fFresnelTCoeff = 0.0;
-  fFresnelRCoeff = 0.0;
+  fSolidAngle = -10.0;
+  fCosThetaAvg = -10.0;
+  fFresnelTCoeff = -10.0;
+  fFresnelRCoeff = -10.0;
 
-  fStartPos.SetX( 0.0 );
-  fStartPos.SetY( 0.0 );
-  fStartPos.SetZ( 0.0 );
+  fStartPos.SetX( -9999.9 );
+  fStartPos.SetY( -9999.9 );
+  fStartPos.SetZ( -9999.9 );
 
-  fEndPos.SetX( 0.0 );
-  fEndPos.SetY( 0.0 );
-  fEndPos.SetZ( 0.0 );
+  fEndPos.SetX( -9999.9 );
+  fEndPos.SetY( -9999.9 );
+  fEndPos.SetZ( -9999.9 );
 
-  fLightPathEndPos.SetX( 0.0 );
-  fLightPathEndPos.SetY( 0.0 );
-  fLightPathEndPos.SetZ( 0.0 );
+  fLightPathEndPos.SetX( -9999.9 );
+  fLightPathEndPos.SetY( -9999.9 );
+  fLightPathEndPos.SetZ( -9999.9 );
 
-  fIncidentVecOnPMT.SetX( 0.0 ); 
-  fIncidentVecOnPMT.SetY( 0.0 );
-  fIncidentVecOnPMT.SetZ( 0.0 );
+  fIncidentVecOnPMT.SetX( -9999.9 ); 
+  fIncidentVecOnPMT.SetY( -9999.9 );
+  fIncidentVecOnPMT.SetZ( -9999.9 );
 
-  fInitialLightVec.SetX( 0.0 ); 
-  fInitialLightVec.SetY( 0.0 );
-  fInitialLightVec.SetZ( 0.0 );
+  fInitialLightVec.SetX( -9999.9 ); 
+  fInitialLightVec.SetY( -9999.9 );
+  fInitialLightVec.SetZ( -9999.9 );
 
-  fPointOnAV1st.SetX( 0.0 );
-  fPointOnAV1st.SetY( 0.0 );
-  fPointOnAV1st.SetZ( 0.0 );
+  fPointOnAV1st.SetX( -9999.9 );
+  fPointOnAV1st.SetY( -9999.9 );
+  fPointOnAV1st.SetZ( -9999.9 );
   
-  fPointOnAV2nd.SetX( 0.0 );
-  fPointOnAV2nd.SetY( 0.0 );
-  fPointOnAV2nd.SetZ( 0.0 );
+  fPointOnAV2nd.SetX( -9999.9 );
+  fPointOnAV2nd.SetY( -9999.9 );
+  fPointOnAV2nd.SetZ( -9999.9 );
   
-  fPointOnAV3rd.SetX( 0.0 );
-  fPointOnAV3rd.SetY( 0.0 );
-  fPointOnAV3rd.SetZ( 0.0 );
+  fPointOnAV3rd.SetX( -9999.9 );
+  fPointOnAV3rd.SetY( -9999.9 );
+  fPointOnAV3rd.SetZ( -9999.9 );
   
-  fPointOnAV4th.SetX( 0.0 );
-  fPointOnAV4th.SetY( 0.0 );
-  fPointOnAV4th.SetZ( 0.0 );
+  fPointOnAV4th.SetX( -9999.9 );
+  fPointOnAV4th.SetY( -9999.9 );
+  fPointOnAV4th.SetZ( -9999.9 );
 
   fLightPathType = -1;
 
@@ -184,65 +184,65 @@ void LOCASLightPath::Initialise()
 
 void LOCASLightPath::Clear()
 {
+
   fTIR = false;
   fResvHit = false;
   fXAVNeck = false;
 
-  fLoopCeiling = 0;
-  fFinalLoopValue = 0;
+  fLoopCeiling = -1;
+  fFinalLoopValue = -1;
 
-  fFillFraction = 0.0;
-  fPathPrecision = 0.0;
-  fLambda = 0.0;
+  fFillFraction = -10.0;
+  fPathPrecision = -10.0;
+  fLambda = -10.0;
 
-  fDistInNeck = 0.0;
-  fDistInUpperTarget = 0.0;
-  fDistInLowerTarget = 0.0;
-  fDistInScint = 0.0;
-  fDistInAV = 0.0;
-  fDistInWater = 0.0;
+  fDistInNeck = -10.0;
+  fDistInUpperTarget = -10.0;
+  fDistInLowerTarget = -10.0;
+  fDistInScint = -10.0;
+  fDistInAV = -10.0;
+  fDistInWater = -10.0;
 
-  fSolidAngle = 0.0;
-  fCosThetaAvg = 0.0;
+  fSolidAngle = -10.0;
+  fCosThetaAvg = -10.0;
+  fFresnelTCoeff = -10.0;
+  fFresnelRCoeff = -10.0;
 
-  fFresnelTCoeff = 0.0;
-  fFresnelRCoeff = 0.0;
+  fStartPos.SetX( -9999.9 );
+  fStartPos.SetY( -9999.9 );
+  fStartPos.SetZ( -9999.9 );
 
-  fStartPos.SetX( 0.0 );
-  fStartPos.SetY( 0.0 );
-  fStartPos.SetZ( 0.0 );
+  fEndPos.SetX( -9999.9 );
+  fEndPos.SetY( -9999.9 );
+  fEndPos.SetZ( -9999.9 );
 
-  fEndPos.SetX( 0.0 );
-  fEndPos.SetY( 0.0 );
-  fEndPos.SetZ( 0.0 );
+  fLightPathEndPos.SetX( -9999.9 );
+  fLightPathEndPos.SetY( -9999.9 );
+  fLightPathEndPos.SetZ( -9999.9 );
 
-  fLightPathEndPos.SetX( 0.0 );
-  fLightPathEndPos.SetY( 0.0 );
-  fLightPathEndPos.SetZ( 0.0 );
+  fIncidentVecOnPMT.SetX( -9999.9 ); 
+  fIncidentVecOnPMT.SetY( -9999.9 );
+  fIncidentVecOnPMT.SetZ( -9999.9 );
 
-  fIncidentVecOnPMT.SetX( 0.0 ); 
-  fIncidentVecOnPMT.SetY( 0.0 );
-  fIncidentVecOnPMT.SetZ( 0.0 );
+  fInitialLightVec.SetX( -9999.9 ); 
+  fInitialLightVec.SetY( -9999.9 );
+  fInitialLightVec.SetZ( -9999.9 );
 
-  fInitialLightVec.SetX( 0.0 ); 
-  fInitialLightVec.SetY( 0.0 );
-  fInitialLightVec.SetZ( 0.0 );
-
-  fPointOnAV1st.SetX( 0.0 );
-  fPointOnAV1st.SetY( 0.0 );
-  fPointOnAV1st.SetZ( 0.0 );
+  fPointOnAV1st.SetX( -9999.9 );
+  fPointOnAV1st.SetY( -9999.9 );
+  fPointOnAV1st.SetZ( -9999.9 );
   
-  fPointOnAV2nd.SetX( 0.0 );
-  fPointOnAV2nd.SetY( 0.0 );
-  fPointOnAV2nd.SetZ( 0.0 );
+  fPointOnAV2nd.SetX( -9999.9 );
+  fPointOnAV2nd.SetY( -9999.9 );
+  fPointOnAV2nd.SetZ( -9999.9 );
   
-  fPointOnAV3rd.SetX( 0.0 );
-  fPointOnAV3rd.SetY( 0.0 );
-  fPointOnAV3rd.SetZ( 0.0 );
+  fPointOnAV3rd.SetX( -9999.9 );
+  fPointOnAV3rd.SetY( -9999.9 );
+  fPointOnAV3rd.SetZ( -9999.9 );
   
-  fPointOnAV4th.SetX( 0.0 );
-  fPointOnAV4th.SetY( 0.0 );
-  fPointOnAV4th.SetZ( 0.0 );
+  fPointOnAV4th.SetX( -9999.9 );
+  fPointOnAV4th.SetY( -9999.9 );
+  fPointOnAV4th.SetZ( -9999.9 );
 
   fLightPathType = -1;
 
@@ -308,7 +308,7 @@ void LOCASLightPath::CalculatePath( const TVector3& eventPos,
   fLambda = lambda;
   
   // If locality Value is 0.0, use the straight path calculation
-  if ( fPathPrecision == 0.0 ){
+  if ( fPathPrecision <= 0.0 ){
     
     fLightPathEndPos = pmtPos ;
     fIncidentVecOnPMT = ( pmtPos - eventPos ).Unit();

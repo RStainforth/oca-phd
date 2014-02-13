@@ -9,7 +9,7 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     0X/2014 : RPFS - First Revision, new file.
+///     02/2014 : RPFS - First Revision, new file.
 ///
 /// DETAIL: This class loads information from the RAT
 ///         or LOCAS database. For instance, for all LOCASRun
@@ -60,7 +60,9 @@ namespace LOCAS{
     void LoadPMTNormals();                                   // Load the PMT normals into memory
     void LoadPMTTypes();                                     // Load the PMT types into memory
     
-    void LoadRefractiveIndices();                            // Load the refractive indices into memory
+    void LoadRefractiveIndices( const char* scintRegion = "labppo_scintillator",
+                                const char* avRegion = "acrylic_sno",
+                                const char* waterRegion = "lightwater_sno" ); // Load the refractive indices into memory
      
     void LoadDetectorGeoParameters();                        // Load the detector geometry parameters into memory
     void LoadPMTGeoParameters();                             // Load the pmt geometry parameters into memory
@@ -71,7 +73,7 @@ namespace LOCAS{
     void LoadRunList( const char* runList );                 // Load a list of run IDs from a run list file into memory
 
     void SetFile( const char* file );                        // Set an arbitrary file in .ratdb format to be loaded when
-                                                             // using LOCASDB::Get*Field Functions
+                                                             // using LOCASDB::Get[Type]Field Functions
     
     /////////////////////////////////
     ////////     GETTERS     ////////
@@ -79,7 +81,8 @@ namespace LOCAS{
 
     // NOTE: Before any of the below 'getters' are used, the corresponding data must be loaded
     // into memory by using the appropriate method above. For example, before calling 'GetPMTPosition( pmtID )',
-    // you must first call 'LoadPMTPositions()'.
+    // you must first call 'LoadPMTPositions()'. Also, if you want to get a "Double" from a field in a file, you
+    // must load the file using SetFile()
     
     TVector3 GetPMTPosition( Int_t pmtID ){ return fPMTPositions[ pmtID ]; }
     TVector3 GetPMTNormal( Int_t pmtID ){ return fPMTNormals[ pmtID ]; }
@@ -113,12 +116,24 @@ namespace LOCAS{
 
     std::vector< Int_t > GetRunList(){ return fRunList; }
 
-    std::string GetStringField( const std::string &tableName, const std::string &fieldName  );
-    Double_t GetDoubleField( const std::string &tableName, const std::string &fieldName );
-    Int_t GetIntField( const std::string &tableName, const std::string &fieldName );
-    Bool_t GetBoolField( const std::string &tableName, const std::string &fieldName );
-    std::vector< Int_t > GetIntVectorField( const std::string &tableName, const std::string &fieldName );
-    std::vector< Double_t > GetDoubleVectorField( const std::string &tableName, const std::string& fieldName, const std::string& indexName = "" );
+    std::string GetStringField( const std::string& tableName, 
+                                const std::string& fieldName  );
+
+    Double_t GetDoubleField( const std::string& tableName, 
+                             const std::string& fieldName );
+
+    Int_t GetIntField( const std::string& tableName, 
+                       const std::string& fieldName );
+
+    Bool_t GetBoolField( const std::string& tableName, 
+                         const std::string& fieldName );
+
+    std::vector< Int_t > GetIntVectorField( const std::string& tableName, 
+                                            const std::string& fieldName );
+
+    std::vector< Double_t > GetDoubleVectorField( const std::string& tableName, 
+                                                  const std::string& fieldName, 
+                                                  const std::string& indexName = "" );
     
   private:
     
@@ -176,7 +191,7 @@ namespace LOCAS{
 
     std::vector< Int_t > fRunList;                           // The list of RunIDs loaded from a runlist file
 
-    std::string fCurrentFile;                                // The Full Path of the current file loaded into memory
+    std::string fCurrentFile;                                // The Full Path of the current file loaded into memory, and used in Get[Type]Field() methods
     
     ClassDef( LOCASDB, 1 );
         

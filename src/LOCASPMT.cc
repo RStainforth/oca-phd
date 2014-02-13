@@ -10,7 +10,7 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     0X/2014 : RPFS - First Revision, new file.
+///     02/2014 : RPFS - First Revision, new file.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -80,9 +80,14 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
 
   fCHSFlag = rhs.fCHSFlag;
   fCSSFlag = rhs.fCSSFlag;
+
   fBadPath = rhs.fBadPath;
   fNeckFlag = rhs.fNeckFlag;
 
+  fInitialLBVec = rhs.fInitialLBVec;
+  fIncidentLBVec = rhs.fIncidentLBVec;
+
+  // Central Values
 
   fCentralPromptPeakTime = rhs.fCentralPromptPeakTime;
   fCentralPromptPeakWidth = rhs.fCentralPromptPeakWidth;
@@ -117,8 +122,14 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
 
   fCentralCHSFlag = rhs.fCentralCHSFlag;
   fCentralCSSFlag = rhs.fCentralCSSFlag;
+
   fCentralBadPath = rhs.fCentralBadPath;
   fCentralNeckFlag = rhs.fCentralNeckFlag;
+
+  fCentralInitialLBVec = rhs.fCentralInitialLBVec;
+  fCentralIncidentLBVec = rhs.fCentralIncidentLBVec;
+
+  // Wavelength values
 
   fWavelengthPromptPeakTime = rhs.fWavelengthPromptPeakTime;
   fWavelengthPromptPeakWidth = rhs.fWavelengthPromptPeakWidth;
@@ -153,8 +164,12 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
 
   fWavelengthCHSFlag = rhs.fWavelengthCHSFlag;
   fWavelengthCSSFlag = rhs.fWavelengthCSSFlag;
+
   fWavelengthBadPath = rhs.fWavelengthBadPath;
   fWavelengthNeckFlag = rhs.fWavelengthNeckFlag;
+
+  fWavelengthInitialLBVec = rhs.fWavelengthInitialLBVec;
+  fWavelengthIncidentLBVec = rhs.fWavelengthIncidentLBVec;
 
 }
 
@@ -165,7 +180,11 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
 {
 
   fID = rhs.fID;
+
   fRunID = rhs.fRunID;
+  fCentralRunID = rhs.fCentralRunID;
+  fWavelengthRunID = rhs.fWavelengthRunID;
+
   fType = rhs.fType;
 
   fIsVerified = rhs.fIsVerified;
@@ -208,8 +227,14 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
 
   fCHSFlag = rhs.fCHSFlag;
   fCSSFlag = rhs.fCSSFlag;
+
   fBadPath = rhs.fBadPath;
   fNeckFlag = rhs.fNeckFlag;
+
+  fInitialLBVec = rhs.fInitialLBVec;
+  fIncidentLBVec = rhs.fIncidentLBVec;
+
+  // Central Values
 
   fCentralPromptPeakTime = rhs.fCentralPromptPeakTime;
   fCentralPromptPeakWidth = rhs.fCentralPromptPeakWidth;
@@ -244,8 +269,14 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
 
   fCentralCHSFlag = rhs.fCentralCHSFlag;
   fCentralCSSFlag = rhs.fCentralCSSFlag;
+
   fCentralBadPath = rhs.fCentralBadPath;
   fCentralNeckFlag = rhs.fCentralNeckFlag;
+
+  fCentralInitialLBVec = rhs.fCentralInitialLBVec;
+  fCentralIncidentLBVec = rhs.fCentralIncidentLBVec;
+
+  // Wavelength values
 
   fWavelengthPromptPeakTime = rhs.fWavelengthPromptPeakTime;
   fWavelengthPromptPeakWidth = rhs.fWavelengthPromptPeakWidth;
@@ -280,8 +311,12 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
 
   fWavelengthCHSFlag = rhs.fWavelengthCHSFlag;
   fWavelengthCSSFlag = rhs.fWavelengthCSSFlag;
+
   fWavelengthBadPath = rhs.fWavelengthBadPath;
   fWavelengthNeckFlag = rhs.fWavelengthNeckFlag;
+
+  fWavelengthInitialLBVec = rhs.fWavelengthInitialLBVec;
+  fWavelengthIncidentLBVec = rhs.fWavelengthIncidentLBVec;
  
   return *this;
 
@@ -293,125 +328,142 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
 void LOCASPMT::Initialise()
 {
 
-  SetID( 0.0 );
-  SetRunID( 0.0 );
-  SetType ( 0 );
+  SetID( -1 );
+
+  SetRunID( -1 );
+  SetCentralRunID( -1 );
+  SetWavelengthRunID( -1 );
+
+  SetType ( -1 );
 
   SetIsVerified( false );
   SetCentralIsVerified( false );
   SetWavelengthIsVerified( false );
 
-  TVector3 nullVec( 0.0, 0.0, 0.0 );
+  TVector3 nullVec( -99999.9, -99999.9, -99999.9 );
   SetPos( nullVec );
   SetNorm( nullVec );
 
-  SetPromptPeakTime( 0.0 );
-  SetPromptPeakWidth( 0.0 );
-  SetTimeOfFlight( 0.0 );
-  SetOccupancy( 0.0 );
-  SetOccupancyErr( 0.0 );
-  SetOccupancyCorr( 0.0 );
-  SetLBIntensityNorm( 0.0 );
+  SetPromptPeakTime( -10.0 );
+  SetPromptPeakWidth( -10.0 );
+  SetTimeOfFlight( -10.0 );
+  SetOccupancy( -10.0 );
+  SetOccupancyErr( -10.0 );
+  SetOccupancyCorr( -10.0 );
+  SetLBIntensityNorm( -10.0 );
 
-  SetNLBPulses( 0.0 );
+  SetNLBPulses( -10.0 );
 
-  SetMPECorrOccupancy( 0.0 );
-  SetMPECorrOccupancyErr( 0.0 );
-  SetMPECorrOccupancyCorr( 0.0 );
+  SetMPECorrOccupancy( -10.0 );
+  SetMPECorrOccupancyErr( -10.0 );
+  SetMPECorrOccupancyCorr( 10.0 );
 
-  SetFresnelTCoeff( 0.0 );
+  SetFresnelTCoeff( -10.0 );
 
-  SetDistInScint( 0.0 );
-  SetDistInAV( 0.0 );
-  SetDistInWater( 0.0 );
-  SetDistInNeck( 0.0 );
-  SetTotalDist( 0.0 );
+  SetDistInScint( -10.0 );
+  SetDistInAV( -10.0 );
+  SetDistInWater( -10.0 );
+  SetDistInNeck( -10.0 );
+  SetTotalDist( -10.0 );
 
-  SetSolidAngle( 0.0 );
-  SetCosTheta( 0.0 );
+  SetSolidAngle( -10.0 );
+  SetCosTheta( -10.0 );
 
-  SetRelLBTheta( 0.0 );
-  SetRelLBPhi( 0.0 );
+  SetRelLBTheta( -10.0 );
+  SetRelLBPhi( -10.0 );
 
-  SetAVHDShadowVal( 0.0 );
-  SetGeometricShadowVal( 0.0 );
+  SetAVHDShadowVal( -10.0 );
+  SetGeometricShadowVal( -10.0 );
 
   SetCHSFlag( false );
   SetCSSFlag( false );
   SetBadPath( false );
   SetNeckFlag( false );
 
-  SetCentralPromptPeakTime( 0.0 );
-  SetCentralPromptPeakWidth( 0.0 );
-  SetCentralTimeOfFlight( 0.0 );
-  SetCentralOccupancy( 0.0 );
-  SetCentralOccupancyErr( 0.0 );
-  SetCentralOccupancyCorr( 0.0 );
-  SetCentralLBIntensityNorm( 0.0 );
+  SetInitialLBVec( nullVec );
+  SetIncidentLBVec( nullVec );
 
-  SetCentralNLBPulses( 0.0 );
+  // Central Values
 
-  SetCentralMPECorrOccupancy( 0.0 );
-  SetCentralMPECorrOccupancyErr( 0.0 );
-  SetCentralMPECorrOccupancyCorr( 0.0 );
+  SetCentralPromptPeakTime( -10.0 );
+  SetCentralPromptPeakWidth( -10.0 );
+  SetCentralTimeOfFlight( -10.0 );
+  SetCentralOccupancy( -10.0 );
+  SetCentralOccupancyErr( -10.0 );
+  SetCentralOccupancyCorr( -10.0 );
+  SetCentralLBIntensityNorm( -10.0 );
 
-  SetCentralFresnelTCoeff( 0.0 );
+  SetCentralNLBPulses( -10.0 );
 
-  SetCentralDistInScint( 0.0 );
-  SetCentralDistInAV( 0.0 );
-  SetCentralDistInWater( 0.0 );
-  SetCentralDistInNeck( 0.0 );
-  SetCentralTotalDist( 0.0 );
+  SetCentralMPECorrOccupancy( -10.0 );
+  SetCentralMPECorrOccupancyErr( -10.0 );
+  SetCentralMPECorrOccupancyCorr( -10.0 );
 
-  SetCentralSolidAngle( 0.0 );
-  SetCentralCosTheta( 0.0 );
+  SetCentralFresnelTCoeff( -10.0 );
 
-  SetCentralRelLBTheta( 0.0 );
-  SetCentralRelLBPhi( 0.0 );
+  SetCentralDistInScint( -10.0 );
+  SetCentralDistInAV( -10.0 );
+  SetCentralDistInWater( -10.0 );
+  SetCentralDistInNeck( -10.0 );
+  SetCentralTotalDist( -10.0 );
 
-  SetCentralAVHDShadowVal( 0.0 );
-  SetCentralGeometricShadowVal( 0.0 );
+  SetCentralSolidAngle( -10.0 );
+  SetCentralCosTheta( -10.0 );
+
+  SetCentralRelLBTheta( -10.0 );
+  SetCentralRelLBPhi( -10.0 );
+
+  SetCentralAVHDShadowVal( -10.0 );
+  SetCentralGeometricShadowVal( -10.0 );
 
   SetCentralCHSFlag( false );
   SetCentralCSSFlag( false );
   SetCentralBadPath( false );
   SetCentralNeckFlag( false );
 
-  SetWavelengthPromptPeakTime( 0.0 );
-  SetWavelengthPromptPeakWidth( 0.0 );
-  SetWavelengthTimeOfFlight( 0.0 );
-  SetWavelengthOccupancy( 0.0 );
-  SetWavelengthOccupancyErr( 0.0 );
-  SetWavelengthOccupancyCorr( 0.0 );
-  SetWavelengthLBIntensityNorm( 0.0 );
+  SetCentralInitialLBVec( nullVec );
+  SetCentralIncidentLBVec( nullVec );
 
-  SetWavelengthNLBPulses( 0.0 );
+  // Wavelength values
 
-  SetWavelengthMPECorrOccupancy( 0.0 );
-  SetWavelengthMPECorrOccupancyErr( 0.0 );
-  SetWavelengthMPECorrOccupancyCorr( 0.0 );
+  SetWavelengthPromptPeakTime( -10.0 );
+  SetWavelengthPromptPeakWidth( -10.0 );
+  SetWavelengthTimeOfFlight( -10.0 );
+  SetWavelengthOccupancy( -10.0 );
+  SetWavelengthOccupancyErr( -10.0 );
+  SetWavelengthOccupancyCorr( -10.0 );
+  SetWavelengthLBIntensityNorm( -10.0 );
 
-  SetWavelengthFresnelTCoeff( 0.0 );
+  SetWavelengthNLBPulses( -10.0 );
 
-  SetWavelengthDistInScint( 0.0 );
-  SetWavelengthDistInAV( 0.0 );
-  SetWavelengthDistInWater( 0.0 );
-  SetWavelengthDistInNeck( 0.0 );
-  SetWavelengthTotalDist( 0.0 );
+  SetWavelengthMPECorrOccupancy( -10.0 );
+  SetWavelengthMPECorrOccupancyErr( -10.0 );
+  SetWavelengthMPECorrOccupancyCorr( -10.0 );
 
-  SetWavelengthSolidAngle( 0.0 );
-  SetWavelengthCosTheta( 0.0 );
+  SetWavelengthFresnelTCoeff( -10.0 );
 
-  SetWavelengthRelLBTheta( 0.0 );
-  SetWavelengthRelLBPhi( 0.0 );
+  SetWavelengthDistInScint( -10.0 );
+  SetWavelengthDistInAV( -10.0 );
+  SetWavelengthDistInWater( -10.0 );
+  SetWavelengthDistInNeck( -10.0 );
+  SetWavelengthTotalDist( -10.0 );
 
-  SetWavelengthAVHDShadowVal( 0.0 );
-  SetWavelengthGeometricShadowVal( 0.0 );
+  SetWavelengthSolidAngle( -10.0 );
+  SetWavelengthCosTheta( -10.0 );
+
+  SetWavelengthRelLBTheta( -10.0 );
+  SetWavelengthRelLBPhi( -10.0 );
+
+  SetWavelengthAVHDShadowVal( -10.0 );
+  SetWavelengthGeometricShadowVal( -10.0 );
 
   SetWavelengthCHSFlag( false );
   SetWavelengthCSSFlag( false );
   SetWavelengthBadPath( false );
   SetWavelengthNeckFlag( false );
+
+  SetWavelengthInitialLBVec( nullVec );
+  SetWavelengthIncidentLBVec( nullVec );
 
 }
 
@@ -458,36 +510,38 @@ void LOCASPMT::ProcessLightPath( LOCASLightPath& lPath )
 
   if ( fType == 1 ){
     
-    if ( lPath.GetTIR() || lPath.GetResvHit() ){ fBadPath = true; }
+    if ( lPath.GetTIR() || lPath.GetResvHit() ){ SetBadPath( true ); }
 
     if ( lPath.GetXAVNeck() ){ 
-      fNeckFlag = true;
-      fDistInNeck = lPath.GetDistInNeck();
+      SetNeckFlag( true );
+      SetDistInNeck( lPath.GetDistInNeck() );
     }
     
-    fDistInNeck = lPath.GetDistInNeck();
-    fDistInScint = lPath.GetDistInScint();
-    fDistInAV = lPath.GetDistInAV();
-    fDistInWater = lPath.GetDistInWater();
-    fTotalDist = fDistInScint + fDistInAV + fDistInWater;
+    SetDistInNeck( lPath.GetDistInNeck() );
+    SetDistInScint( lPath.GetDistInScint() );
+    SetDistInAV( lPath.GetDistInAV() );
+    SetDistInWater( lPath.GetDistInWater() );
+    SetTotalDist( lPath.GetTotalDist() );
+
+    SetInitialLBVec( lPath.GetInitialLightVec() );
+    SetIncidentLBVec( lPath.GetIncidentVecOnPMT() );
+
+    SetRelLBTheta( GetInitialLBVec().Theta() );
+    SetRelLBPhi( GetInitialLBVec().Phi() );
 
     lPath.CalculateFresnelTRCoeff();
-    fFresnelTCoeff = lPath.GetFresnelTCoeff();
+    SetFresnelTCoeff( lPath.GetFresnelTCoeff() );
 
     if ( ( lPath.GetStartPos() ).Mag() < 4500.0 ){
-
       lPath.CalculateSolidAngle( fNorm, 0 );
-      fSolidAngle = lPath.GetSolidAngle();
-      fCosTheta = lPath.GetCosThetaAvg();
-
+      SetSolidAngle( lPath.GetSolidAngle() );
+      SetCosTheta( lPath.GetCosThetaAvg() );
     }
 
     else{
-
-      lPath.CalculateSolidAngle( fNorm, 80 );
-      fSolidAngle = lPath.GetSolidAngle();
-      fCosTheta = lPath.GetCosThetaAvg();
-
+      lPath.CalculateSolidAngle( GetNorm(), 80 );
+      SetSolidAngle( lPath.GetSolidAngle() );
+      SetCosTheta( lPath.GetCosThetaAvg() );
     }
 
   }
@@ -497,33 +551,33 @@ void LOCASPMT::ProcessLightPath( LOCASLightPath& lPath )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASPMT::VerifyPMT( TVector3& sourcePos )
+void LOCASPMT::VerifyPMT( const TVector3& sourcePos )
 {
   fIsVerified = true;
 
-  if ( fID < 0 || fID > 10000 ){ fIsVerified == false; }
+  if ( fID < 0 || fID > 10000 ){ SetIsVerified( false ); }
   if ( fType != 1 ){ fIsVerified == false; }
   
-  if ( fPos.Mag() < 8000.0 || fPos.Mag() > 9000.0  ){ fIsVerified = false; }
-  if ( fNorm.Mag() < 0.9 || fNorm.Mag() > 1.1 ){ fIsVerified = false; }
+  if ( fPos.Mag() < 8000.0 || fPos.Mag() > 9000.0  ){ SetIsVerified( false ); }
+  if ( fNorm.Mag() < 0.9 || fNorm.Mag() > 1.1 ){ SetIsVerified( false ); }
   
-  if ( fPromptPeakTime == 0.0 || fPromptPeakTime > 410.0 ){ fIsVerified = false; }
-  if ( fTimeOfFlight <= 0.1 || fTimeOfFlight > 410.0 ){ fIsVerified = false; }
-  if ( fOccupancy <= 0.1 ){ fIsVerified = false; }
+  if ( fPromptPeakTime == 0.0 || fPromptPeakTime > 500.0 ){ SetIsVerified( false ); }
+  if ( fTimeOfFlight <= 0.1 || fTimeOfFlight > 500.0 ){ SetIsVerified( false ); }
+  if ( fOccupancy <= 0.1 ){ SetIsVerified( false ); }
 
-  if ( fMPECorrOccupancy <= 0.0 ){ fIsVerified = false; }
+  if ( fMPECorrOccupancy <= 0.0 ){ SetIsVerified( false ); }
 
-  if ( fFresnelTCoeff == 0.0 || fFresnelTCoeff > 1.0 ){ fIsVerified = false; }
+  if ( fFresnelTCoeff == 0.0 || fFresnelTCoeff > 1.0 ){ SetIsVerified( false ); }
 
-  if ( fDistInScint == 0.0 || fDistInScint > 12000.0 ){ fIsVerified = false; }
-  if ( fDistInAV == 0.0 || fDistInAV > 1000.0 ){ fIsVerified = false; }
-  if ( fDistInWater == 0.0 || fDistInWater > 10000.0 ){ fIsVerified = false; }
+  if ( fDistInScint < 0.0 || fDistInScint > 13000.0 ){ SetIsVerified( false ); }
+  if ( fDistInAV < 0.0 || fDistInAV > 1000.0 ){ SetIsVerified( false ); }
+  if ( fDistInWater < 0.0 || fDistInWater > 10000.0 ){ SetIsVerified( false ); }
   
-  if ( fSolidAngle == 0.0 ){ fIsVerified = false; }
-  if ( fCosTheta < 0.0 || fCosTheta > 1.0 ){ fIsVerified = false; }
+  if ( fSolidAngle == 0.0 ){ SetIsVerified( false ); }
+  if ( fCosTheta < 0.0 || fCosTheta > 1.0 ){ SetIsVerified( false ); }
 
-  if ( fAVHDShadowVal < 0.0 || fAVHDShadowVal > 3.0 ){ fIsVerified = false; }
-  if ( fGeometricShadowVal < 0.0 || fGeometricShadowVal > 3.0 ){ fIsVerified = false; }
+  if ( fAVHDShadowVal < 0.0 || fAVHDShadowVal > 3.0 ){ SetIsVerified( false ); }
+  if ( fGeometricShadowVal < 0.0 || fGeometricShadowVal > 3.0 ){ SetIsVerified( false ); }
   
 }
 

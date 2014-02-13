@@ -9,7 +9,7 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     0X/2014 : RPFS - First Revision, new file. \n
+///     02/2014 : RPFS - First Revision, new file. \n
 ///
 /// DETAIL: This class is used for easily reading in the LOCASRun
 ///         files. This is similar to the SOCReader class used
@@ -23,9 +23,7 @@
 
 #include <TObject.h>
 #include <TChain.h>
-#include <TMinuit.h>
 
-#include <string>
 #include <vector>
 
 #include "LOCASRun.hh"
@@ -35,6 +33,7 @@ namespace LOCAS{
   class LOCASRunReader : public TObject
   {
   public:
+
     LOCASRunReader();
     LOCASRunReader( std::vector< Int_t >& runIDs );
     LOCASRunReader( Int_t runID );
@@ -55,11 +54,6 @@ namespace LOCAS{
     /////////////////////////////////
 
     LOCASRun* GetCurrentLOCASRun(){ return fLOCASRun; }
-    void GetCurrentLOCASRun( LOCASRun* lRun ){ lRun = fLOCASRun; }
-    
-    LOCASPMT* GetCurrentLOCASPMT(){ return fCurrentPMT; }
-    void GetCurrentLOCASPMT( LOCASPMT* lPMT ){ lPMT = fCurrentPMT; }
-
     LOCASRun* GetLOCASRun( Int_t runID );
     LOCASRun* GetRunEntry( Int_t runEntry ){ fLOCASRunT->GetEntry( runEntry ); return fLOCASRun; } 
 
