@@ -118,6 +118,7 @@ namespace LOCAS{
     Int_t GetIntField( const std::string &tableName, const std::string &fieldName );
     Bool_t GetBoolField( const std::string &tableName, const std::string &fieldName );
     std::vector< Int_t > GetIntVectorField( const std::string &tableName, const std::string &fieldName );
+    std::vector< Double_t > GetDoubleVectorField( const std::string &tableName, const std::string& fieldName, const std::string& indexName = "" );
     
   private:
     

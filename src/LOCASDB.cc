@@ -567,4 +567,30 @@ std::vector< Int_t > LOCASDB::GetIntVectorField( const std::string &tableName, c
   
 }
 
+//////////////////////////////////////
+//////////////////////////////////////
+
+std::vector< Double_t > LOCASDB::GetDoubleVectorField( const std::string &tableName,  const std::string &fieldName, const std::string &indexName )
+{
+  
+  fRATDB->Clear();
+  std::vector< Double_t > dubVec;
+  
+  if (fCurrentFile == NULL){
+    std::cout << "LOCASDB::GetDoubleVectorField: Error, no current file loaded (use LOCASDB::LoadFile)" << std::endl;
+    std::cout << "LOCASDB::GetDoubleVectorField: Returning type empty vector" << std::endl;
+    
+    return dubVec;
+  }
+
+  fRATDB->LoadFile( fCurrentFile );
+  fRATDBPtr = fRATDB->GetLink( tableName, indexName );
+  assert( fRATDBPtr );
+  
+  dubVec = fRATDBPtr->GetDArray( fieldName );
+  
+  return dubVec;
+  
+}
+
 
