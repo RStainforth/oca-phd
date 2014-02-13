@@ -23,6 +23,8 @@
 #include "LOCASMath.hh"
 #include "LOCASFit.hh"
 
+#include "TFile.h"
+
 #include <map>
 
 #ifdef SWAP
@@ -65,6 +67,7 @@ LOCASFit::LOCASFit( const char* fitFile )
   fChiArray = new Float_t[ fNDataPointsInFit ];
   fResArray = new Float_t[ fNDataPointsInFit ];
   fNElements = fNDataPointsInFit;
+  
 
   // Set which of the variables in the fit are to be varied
   // and what the starting, initial values of these parameters are
@@ -103,6 +106,7 @@ LOCASFit::LOCASFit( const char* fitFile )
   fChiSquareMinLimit = lDB.GetDoubleField( "FITFILE", "cut_chisq_min" );
   // Number of sigma away from mean occupancy for entire run
   fNSigma = lDB.GetDoubleField( "FITFILE", "cut_n_sigma" );
+  fNChiSquare = lDB.GetDoubleField( "FITFILE", "cut_n_chisquare" );
   // Number of occupancy to cut on
   fNOccupancy = lDB.GetIntField( "FITFILE", "cut_n_occupancy" );
   // Minimum AVHD shadowing value
@@ -126,6 +130,10 @@ LOCASFit::LOCASFit( const char* fitFile )
   fParamIndex = NULL;
   fParamVarMap = NULL;
   fAngIndex = NULL;
+
+  fNPMTsInFit = 0;
+
+  fChiSquare = 0;
 
 }
 
@@ -157,8 +165,7 @@ void LOCASFit::DataScreen()
   Float_t angle;
   Int_t tmpRun, tmpPMT, iX, nPMTs;
 
-  Float_t pmtResidual, pmtChiSquared, pmtSigma;
-  Float_t pmtModelPrediction, pmtData;
+  Float_t pmtResidual, pmtChiSquared, pmtSigma, pmtData;
 
   Float_t occValErr, occVal, dcOccValMean, dcSigma;
 
@@ -176,69 +183,111 @@ void LOCASFit::DataScreen()
       occVal = ( ( fiPMT->second ).GetMPECorrOccupancy() / ( fiPMT->second ).GetCentralMPECorrOccupancy() );
       dcOccValMean += occVal;
     }
-
-    if( nPMTs != 0 ){
-      dcOccValMean /= nPMTs;
-    }
+    if( nPMTs != 0 ){ dcOccValMean /= nPMTs; }
 
     // Obtain the sigma occRatio for the run
     for ( fiPMT = fCurrentRun->GetLOCASPMTIterBegin(); fiPMT != fCurrentRun->GetLOCASPMTIterEnd(); fiPMT++ ){      
       occVal = ( ( fiPMT->second ).GetMPECorrOccupancy() / ( fiPMT->second ).GetCentralMPECorrOccupancy() );
       dcSigma += TMath::Power( (occVal - dcOccValMean), 2 );
     }
-
-    if( nPMTs != 0 ){
-      dcSigma = TMath::Sqrt( dcSigma / nPMTs );
-    }
+    if( nPMTs != 0 ){ dcSigma = TMath::Sqrt( dcSigma / nPMTs ); }
 
     // Screen PMTs for bad tubes
-    for ( Int_t iPMT = 0; iPMT < fCurrentRun->GetNPMTs(); iPMT = iPMT+fNPMTSkip){
-
-      counter++;
-      Double_t nPMTsToCheck = (Double_t)( fCurrentRun->GetNPMTs() / fNPMTSkip );
-      if ( counter % 50 == 0 ){ cout << (Double_t)( counter / nPMTsToCheck ) * 100.0 << " % of run complete" << endl; }
- 
+    for ( Int_t iPMT = 0; iPMT < fCurrentRun->GetNPMTs(); iPMT = iPMT++){
       fCurrentPMT = &( fCurrentRun->GetPMT( iPMT ) );
-
-      Float_t nUp = fCurrentPMT->GetMPECorrOccupancy();
-      Float_t nDown = fCurrentPMT->GetCentralMPECorrOccupancy();
-      occVal = nUp / nDown;
-      //cout << "Data occVal is: " << occVal << " = " << nUp << " / " << nDown << endl;
-     
-      Bool_t skipPMT = PMTSkip( iRun, iPMT, dcOccValMean, dcSigma );
-      //if (skipPMT){ cout << "PMT is skipped" << endl; }
-      //else cout << "PMT is used" << endl;
-
+      counter++;
+      Double_t nPMTsToCheck = (Double_t)( fCurrentRun->GetNPMTs() / 1 );
+      if ( counter % 50 == 0 ){ 
+	cout << (Double_t)( counter / nPMTsToCheck ) * 100.0 << " % of run " << iRun + 1 << " of " << fNRuns << " complete." << endl; 
+      }
+      
+      Bool_t skipPMT = PMTSkip( fCurrentRun, fCurrentPMT, dcOccValMean, dcSigma );
       if( !skipPMT ){
-
-        pmtModelPrediction = ModelPrediction( iRun, iPMT );
-        pmtResidual = ( pmtModelPrediction - occVal );       
-        pmtSigma = flMath.OccRatioErr( fCurrentPMT );
-        
+	
         // Note: Not including PMT variability sigma in here, this was in LOCAS (SNO)
         // but will probably have changed for SNO+ so will need recomputing
-        pmtChiSquared = ( pmtResidual * pmtResidual ) / ( pmtSigma * pmtSigma );
-    
-        if ( fNPMTsInFit >= 0 && fNPMTsInFit < ( fNElements - 1 ) ){
+        pmtChiSquared = CalculatePMTChiSquare( fCurrentRun, fCurrentPMT );
+	pmtSigma = CalculatePMTSigma( fCurrentRun, fCurrentPMT );
+	pmtData = CalculatePMTData( fCurrentRun, fCurrentPMT );
+		
+        if ( fNPMTsInFit >= 0 && fNPMTsInFit < ( fNElements - 1 ) ){	  
+	  fChiArray[ fNPMTsInFit + 1 ] = pmtChiSquared;
+	  fResArray[ fNPMTsInFit + 1 ] = pmtSigma;	  
+	}
+	
+	fMrqX[ fNPMTsInFit + 1 ] = (Float_t)( ( iPMT ) + ( iRun * 10000 ) );         // 'Special' Indexing Scheme
+	fMrqY[ fNPMTsInFit + 1 ] = pmtData;
+	fMrqSigma[ fNPMTsInFit + 1 ] = pmtSigma;
 
-          if ( pmtChiSquared > fChiSquareMinLimit && pmtChiSquared < fChiSquareMaxLimit ){
-
-            fChiSquare += pmtChiSquared;
-            
-            fChiArray[ fNPMTsInFit + 1 ] = pmtChiSquared;
-            fResArray[ fNPMTsInFit + 1 ] = pmtSigma;
-            
-            fMrqX[ fNPMTsInFit + 1 ] = (Int_t)( ( fCurrentPMT->GetID() ) + ( iRun * 10000 ) );         // 'Special' Indexing Scheme
-            fMrqY[ fNPMTsInFit + 1 ] = occVal;
-            fMrqSigma[ fNPMTsInFit + 1 ] = pmtSigma;
-            
-            fNPMTsInFit++;
-
-          }
-        }
-      }      
-    }   
+	fNPMTsInFit++;
+	
+      }
+    }
   }
+
+  cout << "Number of PMTs in Fit is: " << fNPMTsInFit << endl;
+
+  Int_t jVar = 0;
+  for ( Int_t iK = 1; iK < fNPMTsInFit; iK++ ){
+
+    if ( !isnan( fMrqX[ iK ] ) 
+	 && !isnan( fMrqY[ iK ] ) 
+	 && !isnan( fMrqSigma[ iK ] )
+	 && !isnan( fChiArray[ iK ] )
+	 && !isnan( fResArray[ iK ] )){
+      
+      fMrqX[ jVar + 1 ] = fMrqX[ iK ];
+      fMrqY[ jVar + 1 ] = fMrqY[ iK ];
+      fMrqSigma[ jVar + 1 ] = fMrqSigma[ iK ];
+
+      fChiArray[ jVar + 1 ] = fChiArray[ iK ];
+      fChiSquare += fChiArray[ iK ];
+      fResArray[ jVar + 1 ] = fResArray[ iK ];
+
+      jVar++;
+
+    }
+  }
+
+  fNPMTsInFit = jVar;
+  cout << "Number of PMTs in Fit is: " << fNPMTsInFit << endl;
+
+  Float_t redChiSq = (Double_t)fChiSquare / ( fNPMTsInFit - 3 );
+  cout << "redChiSq is: " << redChiSq << endl;
+
+  jVar = 0;
+  for ( Int_t iK = 1; iK < fNPMTsInFit; iK++ ){
+    
+    if ( fChiArray[ iK ]  < redChiSq * fNChiSquare 
+	 && fChiArray[ iK ] > fChiSquareMinLimit ){
+
+      fMrqX[ jVar + 1 ] = fMrqX[ iK ];
+      fMrqY[ jVar + 1 ] = fMrqY[ iK ];
+      fMrqSigma[ jVar + 1 ] = fMrqSigma[ iK ];
+
+      fChiArray[ jVar + 1 ] = fChiArray[ iK ];
+      fResArray[ jVar + 1 ] = fResArray[ iK ];
+    
+      jVar++;
+    }
+    
+  }
+
+  fNPMTsInFit = jVar;
+  cout << "Number of PMTs in Fit is: " << fNPMTsInFit << endl;
+
+  fChiSquare = 0.0;
+  cout << "fChiSquare is: " << fChiSquare << endl;
+  for ( Int_t iP = 1; iP < fNPMTsInFit; iP++ ){
+    fChiSquare += (fChiArray[ iP ]);
+    // cout << "+= " << fChiArray[ iP ] << endl;
+    // cout << fChiSquare << endl;
+    // cout << "---------" << endl;
+  }
+  cout << "fChiSquare is now: " << fChiSquare << endl;
+  Float_t redChiSq1 = (Double_t)fChiSquare / ( fNPMTsInFit - 3 );
+  cout << "redChiSq is: " << redChiSq1 << endl;
+  
 
   Int_t nLBDistBins = fNLBDistributionPhiBins * fNLBDistributionThetaBins;
   Int_t iAngValid, iLBValid;
@@ -249,24 +298,25 @@ void LOCASFit::DataScreen()
 
   Int_t *pmtAngleValid = new Int_t[ fNAngularResponseBins ];
   for (Int_t i = 0; i < fNAngularResponseBins; i++ ){ pmtAngleValid[ i ] = 0; }
-
+  
   for ( Int_t iPMT = 1; iPMT <= fNPMTsInFit; iPMT++ ){
-
+    
+    //cout << "On PMT: " << iPMT << " of " << fNPMTsInFit << endl;
     iX = (Int_t)fMrqX[ iPMT ];
     tmpRun = (Int_t)( iX / 10000 );
     tmpPMT = (Int_t)( iX % 10000 );
-
+    
     fCurrentRun = fRunReader.GetRunEntry( tmpRun );
     fCurrentPMT = &( fCurrentRun->GetPMT( tmpPMT ) );
-
-    pmtR = ModelAngularResponse( tmpRun, tmpPMT, iAngValid, 0 );
+    
+    pmtR = ModelAngularResponse( fCurrentRun, fCurrentPMT, iAngValid, 0 );
     pmtAngleValid[ iAngValid ]++;
-
-    pmtLB = ModelLBDistribution( tmpRun, tmpPMT, iLBValid, 0 );
+    
+    pmtLB = ModelLBDistribution( fCurrentRun, fCurrentPMT, iLBValid, 0 );
     lbValid[ iLBValid ]++;
-
+    
   }
-
+  
   // LB Distribution
   Int_t lbBinsInvalid = 0;
   for ( Int_t iBin = 0; iBin < nLBDistBins; iBin++ ){
@@ -330,13 +380,25 @@ void LOCASFit::DataScreen()
 
   cout << "Number of PMTs in Fit is: " << fNPMTsInFit << endl;
 
+  for ( Int_t iPM = 1; iPM < fNPMTsInFit; iPM++ ){
+    Int_t iX = fMrqX[ iPM ];
+    Int_t pmtID = iX % 10000;
+    Int_t runN = iX / 10000;
+    LOCASRun* lRun = fRunReader.GetRunEntry( runN );
+    LOCASPMT lPmt = lRun->GetPMT( pmtID );
+    fFitPMTs[ pmtID ] = lPmt;
+  }
+
 }
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-Bool_t LOCASFit::PMTSkip( Int_t iRun, Int_t iPMT, Float_t mean, Float_t sigma )
+Bool_t LOCASFit::PMTSkip( const Int_t iRun, const Int_t iPMT, Float_t mean, Float_t sigma )
 {
+
+  fCurrentRun = fRunReader.GetRunEntry( iRun );
+  fCurrentPMT = &( fCurrentRun->GetPMT( iPMT ) );
 
   Bool_t pmtSkip = false;
 
@@ -344,6 +406,7 @@ Bool_t LOCASFit::PMTSkip( Int_t iRun, Int_t iPMT, Float_t mean, Float_t sigma )
   Float_t occValErr = flMath.OccRatioErr( fCurrentPMT );
 
   if ( !fCurrentPMT->GetIsVerified() 
+       || !fCurrentPMT->GetCentralIsVerified()
        || fCurrentPMT->GetCHSFlag() == fCHSFlag
        || fCurrentPMT->GetCSSFlag() == fCSSFlag
        || fCurrentPMT->GetCentralCHSFlag() == fCHSFlag
@@ -359,6 +422,44 @@ Bool_t LOCASFit::PMTSkip( Int_t iRun, Int_t iPMT, Float_t mean, Float_t sigma )
        || fCurrentPMT->GetMPECorrOccupancy() < fNOccupancy
        || fCurrentPMT->GetCentralMPECorrOccupancy() < fNOccupancy
        || ( occValErr / occVal ) > 0.25
+       || (( occVal - mean ) / sigma) > fNSigma
+       || occVal < 0.25 
+       || occVal > 2.0 ){
+    pmtSkip = true;
+  }
+  
+  return pmtSkip;
+    
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Bool_t LOCASFit::PMTSkip( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Float_t mean, Float_t sigma )
+{
+
+  Bool_t pmtSkip = false;
+
+  Float_t occVal = ( iPMTPtr->GetMPECorrOccupancy() ) / ( iPMTPtr->GetCentralMPECorrOccupancy() );
+  Float_t occValErr = flMath.OccRatioErr( iPMTPtr );
+
+  if ( !iPMTPtr->GetIsVerified() 
+       || !iPMTPtr->GetCentralIsVerified()
+       || iPMTPtr->GetCHSFlag() == fCHSFlag
+       || iPMTPtr->GetCSSFlag() == fCSSFlag
+       || iPMTPtr->GetCentralCHSFlag() == fCHSFlag
+       || iPMTPtr->GetCentralCSSFlag() == fCHSFlag
+       || iPMTPtr->GetAVHDShadowVal() > fAVHDShadowingMax
+       || iPMTPtr->GetAVHDShadowVal() < fAVHDShadowingMin
+       || iPMTPtr->GetGeometricShadowVal() > fGeoShadowingMax
+       || iPMTPtr->GetGeometricShadowVal() < fGeoShadowingMin
+       || iPMTPtr->GetCentralAVHDShadowVal() > fAVHDShadowingMax
+       || iPMTPtr->GetCentralAVHDShadowVal() < fAVHDShadowingMin
+       || iPMTPtr->GetCentralGeometricShadowVal() > fGeoShadowingMax
+       || iPMTPtr->GetCentralGeometricShadowVal() < fGeoShadowingMin
+       || iPMTPtr->GetMPECorrOccupancy() < fNOccupancy
+       || iPMTPtr->GetCentralMPECorrOccupancy() < fNOccupancy
+       || ( occValErr / occVal ) > 0.25
        || (( occVal - mean ) / sigma) > fNSigma ){
     pmtSkip = true;
   }
@@ -370,7 +471,7 @@ Bool_t LOCASFit::PMTSkip( Int_t iRun, Int_t iPMT, Float_t mean, Float_t sigma )
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t LOCASFit::ModelAngularResponse( Int_t iRun, Int_t iPMT, Int_t& iAng, Int_t runType )
+Float_t LOCASFit::ModelAngularResponse( const Int_t iRun, const Int_t iPMT, Int_t& iAng, Int_t runType )
 {
 
   fCurrentRun = fRunReader.GetRunEntry( iRun );
@@ -391,7 +492,25 @@ Float_t LOCASFit::ModelAngularResponse( Int_t iRun, Int_t iPMT, Int_t& iAng, Int
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t LOCASFit::ModelLBDistribution( Int_t iRun, Int_t iPMT, Int_t& iLBDist, Int_t runType )
+Float_t LOCASFit::ModelAngularResponse( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t& iAng, Int_t runType )
+{
+
+  Float_t cosTheta = 1.0;
+  if ( runType == 0 ) cosTheta = iPMTPtr->GetCosTheta();
+  if ( runType == 1 ) cosTheta = iPMTPtr->GetCentralCosTheta();
+  if ( runType == 2 ) cosTheta = iPMTPtr->GetWavelengthCosTheta();
+  
+  Float_t angle = ( TMath::ACos( cosTheta ) ) * ( 180.0 / TMath::Pi() );
+  iAng = (Int_t)( angle * fNAngularResponseBins / 90.0 );
+  
+  return GetAngularResponsePar( iAng );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::ModelLBDistribution( const Int_t iRun, const Int_t iPMT, Int_t& iLBDist, Int_t runType )
 {
 
   fCurrentRun = fRunReader.GetRunEntry( iRun );
@@ -421,6 +540,79 @@ Float_t LOCASFit::ModelLBDistribution( Int_t iRun, Int_t iPMT, Int_t& iLBDist, I
     lbPhi = fCurrentRun->GetWavelengthLBPhi();
     lbRelTheta = fCurrentPMT->GetWavelengthRelLBTheta();
     lbRelPhi = fCurrentPMT->GetWavelengthRelLBPhi();
+  }
+
+  Float_t cosTheta = 0.0;
+  Float_t phi = 0.0;
+
+  if ( lbTheta != 0.0 ){
+    lbAxis.SetTheta( lbTheta );
+    lbAxis.SetPhi( lbPhi );
+
+    pmtRelVec.SetTheta( lbRelTheta );
+    pmtRelVec.SetPhi( lbRelPhi );
+
+    cosTheta = lbAxis * pmtRelVec;
+    phi = 0.0;
+  }
+
+  else{
+    cosTheta = TMath::Cos( lbRelTheta );
+    phi = fmod( (Double_t) ( lbPhi + lbRelPhi ), 2.0 * TMath::Pi() );
+  }
+
+  if ( cosTheta > 1.0 ) cosTheta = 1.0;
+  else if ( cosTheta < -1.0 ) cosTheta = -1.0;
+
+  if ( phi > 2 * TMath::Pi() ) phi -= 2 * TMath::Pi();
+  else if ( phi < 0 ) phi += 2 * TMath::Pi();
+
+  
+  
+  Int_t iTheta = (Int_t)( ( 1 + cosTheta ) / 2 * fNLBDistributionThetaBins );
+  if ( iTheta < 0 ) iTheta = 0;
+  if ( iTheta >= fNLBDistributionThetaBins ) iTheta = fNLBDistributionThetaBins - 1;
+
+  Int_t iPhi = (Int_t)( phi / ( 2 * TMath::Pi() ) * fNLBDistributionPhiBins );
+  if ( iPhi < 0 ) iPhi = 0;
+  if ( iPhi >= fNLBDistributionPhiBins ) iPhi = fNLBDistributionPhiBins - 1;
+
+  iLBDist = iTheta * fNLBDistributionPhiBins + iPhi;
+  Float_t laserlight = GetLBDistributionPar( iLBDist );
+  return laserlight;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::ModelLBDistribution( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t& iLBDist, Int_t runType )
+{
+
+  Float_t lbTheta, lbPhi, lbRelTheta, lbRelPhi;
+
+  TVector3 lbAxis( 0.0, 0.0, 1.0 );
+  TVector3 pmtRelVec( 0.0, 0.0, 0.0 );
+
+  if ( runType == 0 ){
+    lbTheta = iRunPtr->GetLBTheta();
+    lbPhi = iRunPtr->GetLBPhi();
+    lbRelTheta = iPMTPtr->GetRelLBTheta();
+    lbRelPhi = iPMTPtr->GetRelLBPhi();
+  }
+
+  if ( runType == 1 ){
+    lbTheta = iRunPtr->GetCentralLBTheta();
+    lbPhi = iRunPtr->GetCentralLBPhi();
+    lbRelTheta = iPMTPtr->GetCentralRelLBTheta();
+    lbRelPhi = iPMTPtr->GetCentralRelLBPhi();
+  }
+
+  if ( runType == 2 ){
+    lbTheta = iRunPtr->GetWavelengthLBTheta();
+    lbPhi = iRunPtr->GetWavelengthLBPhi();
+    lbRelTheta = iPMTPtr->GetWavelengthRelLBTheta();
+    lbRelPhi = iPMTPtr->GetWavelengthRelLBPhi();
   }
 
   Float_t cosTheta = 0.0;
@@ -512,16 +704,80 @@ Float_t LOCASFit::ModelLBDistribution( Int_t iRun, Int_t iPMT, Int_t& iLBDist, I
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t LOCASFit::CalculatePMTChiSquare( Int_t iRun, Int_t iPMT )
+Float_t LOCASFit::CalculatePMTChiSquare( const Int_t iRun, const Int_t iPMT )
 {
-  Float_t chiSq = 0.0;
+
+  fCurrentRun = fRunReader.GetRunEntry( iRun );
+  fCurrentPMT = &( fCurrentRun->GetPMT( iPMT ) );
 
   Float_t modelPred = ModelPrediction( iRun, iPMT );
-  Float_t occVal = ( fCurrentPMT->GetMPECorrOccupancy() ) / ( fCurrentPMT->GetCentralMPECorrOccupancy() );
-  Float_t occValErr = flMath.OccRatioErr( fCurrentPMT );
-  chiSq = ( ( modelPred - occVal ) * ( modelPred - occVal ) ) / ( occValErr * occValErr );
+  Float_t occVal = CalculatePMTData( iRun, iPMT );
+  Float_t occValErr = CalculatePMTData( iRun, iPMT );
+  Float_t chiSq = ( ( modelPred - occVal ) * ( modelPred - occVal ) ) / ( occValErr * occValErr );
 
   return chiSq;
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::CalculatePMTChiSquare( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr )
+{
+
+  Float_t modelPred = ModelPrediction( iRunPtr, iPMTPtr );
+  Float_t occVal = CalculatePMTData( iRunPtr, iPMTPtr );
+  Float_t occValErr = CalculatePMTData( iRunPtr, iPMTPtr );
+  Float_t chiSq = ( ( modelPred - occVal ) * ( modelPred - occVal ) ) / ( occValErr * occValErr );
+
+  return chiSq;
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::CalculatePMTSigma( const Int_t iRun, const Int_t iPMT )
+{
+
+  fCurrentRun = fRunReader.GetRunEntry( iRun );
+  fCurrentPMT = &( fCurrentRun->GetPMT( iPMT ) );
+  Float_t pmtSigma = flMath.OccRatioErr( fCurrentPMT );
+  return pmtSigma;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::CalculatePMTSigma( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr )
+{
+
+  Float_t pmtSigma = flMath.OccRatioErr( iPMTPtr );
+  return pmtSigma;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::CalculatePMTData( const Int_t iRun, const Int_t iPMT )
+{
+
+  fCurrentRun = fRunReader.GetRunEntry( iRun );
+  fCurrentPMT = &( fCurrentRun->GetPMT( iPMT ) );
+  Float_t pmtData = ( fCurrentPMT->GetMPECorrOccupancy() / fCurrentPMT->GetCentralMPECorrOccupancy() );
+  return pmtData;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::CalculatePMTData( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr )
+{
+
+  Float_t pmtData = ( iPMTPtr->GetMPECorrOccupancy() / iPMTPtr->GetCentralMPECorrOccupancy() );
+  return pmtData;
+
 }
 
 //////////////////////////////////////
@@ -608,6 +864,8 @@ Int_t LOCASFit::mrqmin(float x[], float y[], float sig[], int ndata, float a[],
         
       }
     }
+
+    cout << "Value of mfit is: " << mfit << endl;
     
     oneda=flMath.LOCASMatrix(1,mfit,1,1);
     *alamda=0.001;
@@ -615,10 +873,26 @@ Int_t LOCASFit::mrqmin(float x[], float y[], float sig[], int ndata, float a[],
     ochisq=(*chisq);
     for (j=1;j<=ma;j++) atry[j]=a[j];
   }
-  for (j=1; j<=mfit; j++){
-    for (k=1; k<=mfit;k++) covar[j][k] = alpha[j][k];
-    covar[j][j]=alpha[j][j]*(1.0+(*alamda));
-    oneda[j][1]=beta[j];
+
+  // Bookkeeping on covariance and derivatives to prepare next parameter set.
+  for (j=0,l=1;l<=ma;l++) {
+    if (ia[l]) {
+      for (j++,k=0,m=1;m<=ma;m++) {
+	if (ia[m]) {
+	  k++;
+	  covar[j][k]=alpha[j][k];
+	}
+      }
+      covar[j][j]=alpha[j][j]*(1.0+(*alamda));
+      oneda[j][1]=beta[j];
+	  if(covar[j][j] <= 0.0) {
+	    if(covar[j][j] == 0.0) {
+	      cout << "*** Zero covariance diagonal element at j " << endl;
+	    } else {
+	      cout << "*** Negative covariance diagonal element at j %d (l %d)\n" << endl;
+	    }
+	  }
+    }
   }
 
   //--------------------
@@ -643,7 +917,7 @@ Int_t LOCASFit::mrqmin(float x[], float y[], float sig[], int ndata, float a[],
   //   }
   // }
 
-
+  cout << "About to Call gaussj" << endl;
   retval = gaussj(covar,mfit,oneda,1);
 
   
@@ -653,7 +927,6 @@ Int_t LOCASFit::mrqmin(float x[], float y[], float sig[], int ndata, float a[],
   // Final call to prepare covariance matrix and deallocate memory.
   if (*alamda == 0.0 ) {
     covsrt(covar,ma,ia,mfit);
-    covsrt(alpha,ma,ia,mfit);
     flMath.LOCASFree_Matrix(oneda,1,mfit,1,1);
     flMath.LOCASFree_Vector(da,1,ma);
     flMath.LOCASFree_Vector(beta,1,ma);
@@ -671,13 +944,19 @@ Int_t LOCASFit::mrqmin(float x[], float y[], float sig[], int ndata, float a[],
   if (*chisq < ochisq) {
     *alamda *= 0.1;
     ochisq=(*chisq);
-    for (j=1;j<=mfit;j++) {
-      for (k=1;k<=mfit;k++)alpha[j][k]=covar[j][k];
-      beta[j]=da[j];
+    for (j=0,l=1;l<=ma;l++) {
+      if (ia[l]) {
+	for (j++,k=0,m=1;m<=ma;m++) {
+	  if (ia[m]) {
+	    k++;
+	    alpha[j][k]=covar[j][k];
+	  }
+	}
+	beta[j]=da[j];
+	a[l]=atry[l];
+      }
     }
-    for(l=1;l<=ma;l++)a[l]=atry[l];
-  }
-  else {
+  } else {
     *alamda *= 10.0;
     *chisq=ochisq;
   }
@@ -835,7 +1114,7 @@ void LOCASFit::mrqcof(float x[], float y[], float sig[], int ndata, float a[],
 /////////////////////////////////////
 //////////////////////////////////////
 
-Float_t LOCASFit::ModelPrediction( Int_t iRun, Int_t iPMT, Int_t nA, Float_t* dyda )
+Float_t LOCASFit::ModelPrediction( const Int_t iRun, const Int_t iPMT, Int_t nA, Float_t* dyda )
 {
 
   fCurrentRun = fRunReader.GetRunEntry( iRun );
@@ -904,6 +1183,72 @@ Float_t LOCASFit::ModelPrediction( Int_t iRun, Int_t iPMT, Int_t nA, Float_t* dy
 /////////////////////////////////////
 //////////////////////////////////////
 
+Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t nA, Float_t* dyda )
+{
+
+  Bool_t derivatives = false;
+  if( nA > 0 && dyda ){
+    derivatives = true;
+    dyda[ GetAngularResponseParIndex() + fiAng ] = 0;
+    dyda[ GetAngularResponseParIndex() + fCiAng ] = 0;
+    dyda[ GetLBDistributionParIndex() + fiLBDist ] = 0;
+    dyda[ GetLBDistributionParIndex() + fCiLBDist ] = 0;
+  }
+
+
+  fiAng = 0;
+  fiLBDist = 0;
+  Float_t dScint = ( iPMTPtr->GetDistInScint() ) - ( iPMTPtr->GetCentralDistInScint() );
+  Float_t dAV = ( iPMTPtr->GetDistInAV() ) - ( iPMTPtr->GetCentralDistInAV() );
+  Float_t dWater = ( iPMTPtr->GetDistInWater() ) - ( iPMTPtr->GetCentralDistInWater() );
+
+  Float_t corrSolidAngle = ( iPMTPtr->GetSolidAngle() ) / ( iPMTPtr->GetCentralSolidAngle() );
+  Float_t corrFresnelTCoeff = ( iPMTPtr->GetFresnelTCoeff() ) / ( iPMTPtr->GetCentralFresnelTCoeff() );
+
+  Float_t angResp = ModelAngularResponse( iRunPtr, iPMTPtr, fiAng, 0 );
+  Float_t intensity = ModelLBDistribution( iRunPtr, iPMTPtr, fiLBDist, 0 );
+
+  Float_t pmtResponse = angResp * intensity * corrSolidAngle * corrFresnelTCoeff * TMath::Exp( - ( dScint * GetScintPar() )
+                                                                                               - ( dAV * GetAVPar() )
+                                                                                               - ( dWater * GetWaterPar() ) );
+  
+  if( derivatives ){
+
+    dyda[ GetScintParIndex() ] = -dScint;
+    dyda[ GetAVParIndex() ] = -dAV;
+    dyda[ GetWaterParIndex() ] = -dWater;
+    dyda[ GetAngularResponseParIndex() + fiAng ] = +1.0 / angResp;
+    dyda[ GetLBDistributionParIndex() + fiLBDist ] = +1.0 / intensity;
+
+  }
+
+  fCiAng = 0;
+  fCiLBDist = 0;
+  Float_t angRespCtr = ModelAngularResponse( iRunPtr, iPMTPtr, fCiAng, 1 );
+  Float_t intensityCtr = ModelLBDistribution( iRunPtr, iPMTPtr, fCiLBDist, 1 );
+
+  Float_t pmtResponseCtr = angRespCtr * intensityCtr;
+
+  if( derivatives ){
+    dyda[ GetAngularResponseParIndex() + fCiAng ] -= 1.0 / angRespCtr;
+    dyda[ GetLBDistributionParIndex() + fCiLBDist ] -= 1.0 / intensityCtr;
+  }
+  Float_t modelValue = pmtResponse / pmtResponseCtr;
+
+  if( derivatives ){
+    FillParameterPoint();
+    for ( Int_t i = 1; i <= fParam; i++ ){
+      dyda[ fParamIndex[ i ] ] *= modelValue;
+    }
+  }
+
+  return modelValue;
+
+}
+
+/////////////////////////////////////
+//////////////////////////////////////
+
 Int_t LOCASFit::gaussj(float **a, int n, float **b, int m)
 {
   // Gauss-Jordan matrix solution helper routine for mrqmin.
@@ -920,20 +1265,20 @@ Int_t LOCASFit::gaussj(float **a, int n, float **b, int m)
     big=0.0;
     for (j=1;j<=n;j++)
       if (ipiv[j] != 1)
-        for (k=1;k<=n;k++) {
-          if (ipiv[k] == 0) {
-            if (fabs(a[j][k]) >= big) {
-              big=fabs(a[j][k]);
-              irow=j;
-              icol=k;
-            }
-          } else if (ipiv[k] > 1) 
-            {
-              //nrerror("gaussj: Singular Matrix-1");
-              cout << "Singular Matrix-1" << endl;
-              retval = -1;
-            }
-        }
+	for (k=1;k<=n;k++) {
+	  if (ipiv[k] == 0) {
+	    if (fabs(a[j][k]) >= big) {
+	      big=fabs(a[j][k]);
+	      irow=j;
+	      icol=k;
+	    }
+	  } else if (ipiv[k] > 1) 
+	    {
+	      //nrerror("gaussj: Singular Matrix-1");
+	      //gSNO->Warning("gaussj","Singular Matrix-1");
+	      retval = -1;
+	    }
+	}
     ++(ipiv[icol]);
     if (irow != icol) {
       for (l=1;l<=n;l++) { SWAP(a[irow][l],a[icol][l]) }
@@ -943,9 +1288,9 @@ Int_t LOCASFit::gaussj(float **a, int n, float **b, int m)
     indxc[i]=icol;
     if (a[icol][icol] == 0.0) 
       {
-        //nrerror("gaussj: Singular Matrix-2");
-        cout << "Singular Matrix-2" << endl;
-        retval = -2;
+	//nrerror("gaussj: Singular Matrix-2");
+	//gSNO->Warning("gaussj","Singular Matrix-2");
+	retval = -2;
       }
     pivinv=1.0/a[icol][icol];
     a[icol][icol]=1.0;
@@ -953,23 +1298,110 @@ Int_t LOCASFit::gaussj(float **a, int n, float **b, int m)
     for (l=1;l<=m;l++) b[icol][l] *= pivinv;
     for (ll=1;ll<=n;ll++)
       if (ll != icol) {
-        dum=a[ll][icol];
-        a[ll][icol]=0.0;
-        for (l=1;l<=n;l++) a[ll][l] -= a[icol][l]*dum;
-        for (l=1;l<=m;l++) b[ll][l] -= b[icol][l]*dum;
+	dum=a[ll][icol];
+	a[ll][icol]=0.0;
+	for (l=1;l<=n;l++) a[ll][l] -= a[icol][l]*dum;
+	for (l=1;l<=m;l++) b[ll][l] -= b[icol][l]*dum;
       }
   }
   for (l=n;l>=1;l--) {
     if (indxr[l] != indxc[l])
       for (k=1;k<=n;k++)
-        SWAP(a[k][indxr[l]],a[k][indxc[l]]);
+	SWAP(a[k][indxr[l]],a[k][indxc[l]]);
   }
   
   flMath.LOCASFree_IntVector(ipiv,1,n);
   flMath.LOCASFree_IntVector(indxr,1,n);
   flMath.LOCASFree_IntVector(indxc,1,n);
-  cout << "Got return value for gaussj" << endl;
   return retval;
+
+  // int *indxc,*indxr,*ipiv;
+  // int i,icol,irow,j,k,l,ll;
+  // float big,dum,pivinv,swap;
+  // Int_t retval = 0;
+  // cout << "TEST 1" << endl;
+  // indxc=flMath.LOCASIntVector(1,n);
+  // cout << "TEST 2" << endl;
+  // indxr=flMath.LOCASIntVector(1,n);
+  // cout << "TEST 3" << endl;
+  // ipiv=flMath.LOCASIntVector(1,n);
+  // cout << "TEST 4" << endl;
+  // for (j=1;j<=n;j++) ipiv[j]=0;
+  // for (i=1;i<=n;i++) {
+  //   cout << "TEST 5" << endl;
+  //   big=0.0;
+  //   for (j=1;j<=n;j++)
+  //     cout << "TEST 5i" << endl;    
+  //     if (ipiv[j] != 1)
+  //      for (k=1;k<=n;k++) {
+  // 	  cout << "TEST 5ii" << endl;
+  // 	  if (ipiv[k] == 0) {
+  // 	    if (fabs(a[j][k]) >= big) {
+  // 	      big=fabs(a[j][k]);
+  // 	      irow=j;
+  // 	      icol=k;
+  // 	      cout << "Value of irow is: " << irow << " here!" << endl;
+  //           }
+  //         } else if (ipiv[k] > 1) 
+  //           {
+  //             //nrerror("gaussj: Singular Matrix-1");
+  //             cout << "Singular Matrix-1" << endl;
+  //             retval = -1;
+  //           }
+  //       }
+  //   ++(ipiv[icol]);
+  //   if (irow != icol) {
+  //     for (l=1;l<=n;l++) { SWAP(a[irow][l],a[icol][l]);     cout << "TEST 5iii" << endl; }
+  //     cout << "l is: " << l << " and n is: " << n << " and m is: " << m << endl;
+
+  //     if ( b ) { cout << "b exists!" << endl; }
+  //     for (l=1;l<=m;l++) { 
+  // 	cout << "l is here: " << l << endl;
+  // 	cout << "irow is: " << irow << endl;
+  // 	cout << "icol is: " << icol << endl;
+  // 	cout << "b[irow][l] is: " << b[irow][l] << " and b[icol][l] is: " << b[icol][l] << endl;
+  // 	SWAP(b[irow][l],b[icol][l]);     
+  // 	cout << "TEST 5iv" << endl;
+  //     }
+
+  //   }
+  //   indxr[i]=irow;
+  //   indxc[i]=icol;
+  //   if (a[icol][icol] == 0.0) 
+  //     {
+  //       //nrerror("gaussj: Singular Matrix-2");
+  //       cout << "Singular Matrix-2" << endl;
+  //       retval = -2;
+  //     }
+  //   pivinv=1.0/a[icol][icol];
+  //   a[icol][icol]=1.0;
+  //   for (l=1;l<=n;l++) a[icol][l] *= pivinv;     cout << "TEST 5v" << endl;
+  //   for (l=1;l<=m;l++) b[icol][l] *= pivinv;    cout << "TEST 5vi" << endl;
+  //   for (ll=1;ll<=n;ll++)
+  //     cout << "TEST 5vii" << endl;
+  //     if (ll != icol) {
+  //       dum=a[ll][icol];
+  //       a[ll][icol]=0.0;
+  //       for (l=1;l<=n;l++) a[ll][l] -= a[icol][l]*dum;    cout << "TEST 5viii" << endl;
+  //       for (l=1;l<=m;l++) b[ll][l] -= b[icol][l]*dum;    cout << "TEST 5ix" << endl;
+  //     }
+  // }
+  // for (l=n;l>=1;l--) {
+  //   cout << "TEST 5x" << endl;
+  //   if (indxr[l] != indxc[l])
+  //     for (k=1;k<=n;k++)
+  // 	cout << "TEST 5xi" << endl;
+  //       SWAP(a[k][indxr[l]],a[k][indxc[l]]);
+  // }
+  
+  // cout << "TEST 5xii" << endl;
+  // flMath.LOCASFree_IntVector(ipiv,1,n);
+  // cout << "TEST 5xiii" << endl;
+  // flMath.LOCASFree_IntVector(indxr,1,n);
+  // cout << "TEST 5xiv" << endl;
+  // flMath.LOCASFree_IntVector(indxc,1,n);
+  // cout << "Got return value for gaussj" << endl;
+  // return retval;
 }
 
 /////////////////////////////////////
@@ -979,23 +1411,25 @@ void LOCASFit::PerformFit( )
 {
 
 
+  cout << "About to fill parameter base" << endl;
   FillParameterbase();
 
+  cout << "About to fill AngIndex" << endl;
   FillAngIndex();
 
-  cout << "Example Parameters Values:" << endl;
-  for ( Int_t iPar = 1; iPar <= fNPMTsInFit; iPar++ ){
-    cout << iPar << ": X: " << fMrqX[ iPar ] << ", Y: " << fMrqY[ iPar ] << ", Sigma: " << fMrqSigma[ iPar ] << endl;
-    cout << "ChiSq: " << fChiArray[ iPar ] << endl;
+  // cout << "Example Parameters Values:" << endl;
+  // for ( Int_t iPar = 1; iPar <= fNPMTsInFit; iPar++ ){
+  //   cout << iPar << ": X: " << fMrqX[ iPar ] << ", Y: " << fMrqY[ iPar ] << ", Sigma: " << fMrqSigma[ iPar ] << endl;
+  //   cout << "ChiSq: " << fChiArray[ iPar ] << endl;
 
-    cout << "###########" << endl;
-  }
+  //   cout << "###########" << endl;
+  // }
 
   MrqFit(fMrqX, fMrqY, fMrqSigma, fNPMTsInFit, fMrqParameters, fMrqVary, fNParametersInFit, fMrqCovariance,
 	 fMrqAlpha, &fChiSquare);
 
   cout << "Example Parameters:" << endl;
-  for ( Int_t iPar = 1; iPar <= fNParametersInFit; iPar++ ){
+  for ( Int_t iPar = 1; iPar <= 50; iPar++ ){
     cout << "Parameter | Vary Flag: " << iPar << " : " << fMrqParameters[ iPar ] << " | " << fMrqVary[ iPar ] << endl;
   }
 
@@ -1009,7 +1443,7 @@ void LOCASFit::FillParameterbase( )
 
   if ( fParamIndex != NULL ) delete[] fParamIndex;
   fParamIndex = new Int_t[ fNParametersInFit ];          // The number of unique parameters is guaranteed to be less than 
-                                                          // the number of unique parameters
+                                                         // the number of total parameters
 
   fParamBase = 0;
   if( GetScintVary() ) fParamIndex[ ++fParamBase ] = GetScintParIndex();
@@ -1032,19 +1466,19 @@ void LOCASFit::FillAngIndex( )
 
   j = 0;
   for ( i = 1; i <= fNParametersInFit; i++ ) if ( fMrqVary[ i ] ) fParamVarMap[ i ] = ++j;
-
+  
   if ( fAngIndex != NULL ){
     for ( i = 0; i < fNAngularResponseBins + 1; i++ ){
       for ( j = 0; j < fNAngularResponseBins + 1; j++ ){
-    delete[] fAngIndex[ i ][ j ];
+	delete[] fAngIndex[ i ][ j ];
       }
       delete[] fAngIndex[ i ];
     }
     delete[] fAngIndex;
   }
-
+  
   fAngIndex = NULL;
-
+  
   fAngIndex = new Int_t**[ fNAngularResponseBins + 1 ];
   for ( i = 0; i < fNAngularResponseBins + 1; i++ ){
     fAngIndex[ i ] = new Int_t*[ fNAngularResponseBins + 1 ];
@@ -1191,11 +1625,11 @@ void LOCASFit::PrintInitialisationInfo( )
   else{ cout << "Parameter is fixed in the fit" << endl; }
   cout << " ------------- " << endl;
 
-  cout << "Acrylic (AV) (1/attenuation) length: " << fScintInit << endl;
+  cout << "Acrylic (AV) (1/attenuation) length: " << fAVInit << endl;
   if ( fAVVary ){ cout << "Parameter will vary in the fit" << endl; }
   else{ cout << "Parameter is fixed in the fit" << endl; }
 
-  cout << "Water (1/attenuation) length: " << fScintInit << endl;
+  cout << "Water (1/attenuation) length: " << fWaterInit << endl;
   if ( fWaterVary ){ cout << "Parameter will vary in the fit" << endl; }
   else{ cout << "Parameter is fixed in the fit" << endl; }
   cout << " ------------- " << endl;
@@ -1238,5 +1672,30 @@ void LOCASFit::PrintInitialisationInfo( )
   cout << "Each PMT must have a Geo Shadowing value, sh, in the region " << fGeoShadowingMin << " < sh < " << fGeoShadowingMax << " accross both off-acis and central runs." << endl;
   cout << "Values for which the PMTs will be cut from the CSS and CHS reports are, CSS: " << fCSSFlag << ", CHS: " << fCHSFlag << endl;
   
+}
+
+
+/////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASFit::WriteToFile( const char* fileName )
+{
+
+  TFile* file = TFile::Open( fileName, "RECREATE" );
+  // Create the Run Tree
+  TTree* runTree = new TTree( "LOCASRunT", "LOCAS Run Tree" );
+
+  // Declare a new branch pointing to the data stored in the lRun object
+  runTree->Branch( "LOCASFit", (*this).ClassName(), &(*this), 32000, 99 );
+  file->cd();
+
+  // Fill the tree and write it to the file
+  runTree->Fill();
+  runTree->Write();
+
+  // Close the file
+  file->Close();
+  delete file;
+
 }
 

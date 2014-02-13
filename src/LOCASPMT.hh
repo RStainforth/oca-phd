@@ -192,148 +192,148 @@ namespace LOCAS{
     ////////     GETTERS     ////////
     /////////////////////////////////
     
-    Int_t GetID(){ return fID; }
+    Int_t GetID() const{ return fID; }
 
-    Int_t GetRunID(){ return fRunID; }
-    Int_t GetCentralRunID(){ return fCentralRunID; }
-    Int_t GetWavelengthRunID(){ return fWavelengthRunID; }
-    Int_t GetType(){ return fType; }
+    Int_t GetRunID() const { return fRunID; }
+    Int_t GetCentralRunID() const { return fCentralRunID; }
+    Int_t GetWavelengthRunID() const { return fWavelengthRunID; }
+    Int_t GetType() const { return fType; }
 
-    Bool_t GetIsVerified(){ return fIsVerified; }
-    Bool_t GetCentralIsVerified(){ return fCentralIsVerified; }
-    Bool_t GetWavelengthIsVerified(){ return fWavelengthIsVerified; }  
+    Bool_t GetIsVerified() const { return fIsVerified; }
+    Bool_t GetCentralIsVerified() const { return fCentralIsVerified; }
+    Bool_t GetWavelengthIsVerified() const { return fWavelengthIsVerified; }  
   
-    TVector3 GetPos(){ return fPos; }
-    TVector3 GetNorm(){ return fNorm; }
+    TVector3 GetPos() const { return fPos; }
+    TVector3 GetNorm() const { return fNorm; }
     
-    Float_t GetPromptPeakTime(){ return fPromptPeakTime; }
-    Float_t GetPromptPeakWidth(){ return fPromptPeakWidth; }  
-    Float_t GetTimeOfFlight(){ return fTimeOfFlight; }
-    Float_t GetOccupancy(){ return fOccupancy; }
-    Float_t GetOccupancyErr(){ return fOccupancyErr; }
-    Float_t GetOccupancyCorr(){ return fOccupancyCorr; }
-    Float_t GetLBIntensityNorm(){ return fLBIntensityNorm; }
+    Float_t GetPromptPeakTime() const { return fPromptPeakTime; }
+    Float_t GetPromptPeakWidth() const { return fPromptPeakWidth; }  
+    Float_t GetTimeOfFlight() const { return fTimeOfFlight; }
+    Float_t GetOccupancy() const { return fOccupancy; }
+    Float_t GetOccupancyErr() const { return fOccupancyErr; }
+    Float_t GetOccupancyCorr() const { return fOccupancyCorr; }
+    Float_t GetLBIntensityNorm() const { return fLBIntensityNorm; }
 
-    Float_t GetNLBPulses(){ return fNLBPulses; }
+    Float_t GetNLBPulses() const { return fNLBPulses; }
 
-    Float_t GetMPECorrOccupancy(){ return fMPECorrOccupancy; }
-    Float_t GetMPECorrOccupancyErr(){ return fMPECorrOccupancyErr; }
-    Float_t GetMPECorrOccupancyCorr(){ return fMPECorrOccupancyCorr; }
+    Float_t GetMPECorrOccupancy() const { return fMPECorrOccupancy; }
+    Float_t GetMPECorrOccupancyErr() const { return fMPECorrOccupancyErr; }
+    Float_t GetMPECorrOccupancyCorr() const { return fMPECorrOccupancyCorr; }
     
-    Float_t GetFresnelTCoeff(){ return fFresnelTCoeff; }
+    Float_t GetFresnelTCoeff() const { return fFresnelTCoeff; }
     
-    Float_t GetDistInScint(){ return fDistInScint; }
-    Float_t GetDistInAV(){ return fDistInAV; }
-    Float_t GetDistInWater(){ return fDistInWater; }
-    Float_t GetDistInNeck(){ return fDistInNeck; }
-    Float_t GetTotalDist(){ return fTotalDist; }
+    Float_t GetDistInScint() const { return fDistInScint; }
+    Float_t GetDistInAV() const { return fDistInAV; }
+    Float_t GetDistInWater() const { return fDistInWater; }
+    Float_t GetDistInNeck() const { return fDistInNeck; }
+    Float_t GetTotalDist() const { return fTotalDist; }
     
-    Float_t GetSolidAngle(){ return fSolidAngle; }
-    Float_t GetCosTheta(){ return fCosTheta; }
+    Float_t GetSolidAngle() const { return fSolidAngle; }
+    Float_t GetCosTheta() const { return fCosTheta; }
     
-    Float_t GetRelLBTheta(){ return fRelLBTheta; }
-    Float_t GetRelLBPhi(){ return fRelLBPhi; }
+    Float_t GetRelLBTheta() const { return fRelLBTheta; }
+    Float_t GetRelLBPhi() const { return fRelLBPhi; }
     
-    Float_t GetAVHDShadowVal(){ return fAVHDShadowVal; }
-    Float_t GetGeometricShadowVal(){ return fGeometricShadowVal; }
+    Float_t GetAVHDShadowVal() const { return fAVHDShadowVal; }
+    Float_t GetGeometricShadowVal() const { return fGeometricShadowVal; }
     
-    Bool_t GetCHSFlag(){ return fCHSFlag; }
-    Bool_t GetCSSFlag(){ return fCSSFlag; }
+    Bool_t GetCHSFlag() const { return fCHSFlag; }
+    Bool_t GetCSSFlag() const { return fCSSFlag; }
 
-    Bool_t GetBadPath(){ return fBadPath; }
-    Bool_t GetNeckFlag(){ return fNeckFlag; }
+    Bool_t GetBadPath() const { return fBadPath; }
+    Bool_t GetNeckFlag() const { return fNeckFlag; }
 
-    TVector3 GetLBInitialVec(){ return fInitialLBVec; }
-    TVector3 GetLBIncidentVec(){ return fIncidentLBVec; }
+    TVector3 GetLBInitialVec() const { return fInitialLBVec; }
+    TVector3 GetLBIncidentVec() const { return fIncidentLBVec; }
     
     /////////////////////////////////////////
     ////////     CENTRAL GETTERS     ////////
     /////////////////////////////////////////
 
 
-    Float_t GetCentralPromptPeakTime(){ return fCentralPromptPeakTime; }
-    Float_t GetCentralPromptPeakWidth(){ return fCentralPromptPeakWidth; }  
-    Float_t GetCentralTimeOfFlight(){ return fCentralTimeOfFlight; }
-    Float_t GetCentralOccupancy(){ return fCentralOccupancy; }
-    Float_t GetCentralOccupancyErr(){ return fCentralOccupancyErr; }
-    Float_t GetCentralOccupancyCorr(){ return fCentralOccupancyCorr; }
-    Float_t GetCentralLBIntensityNorm(){ return fCentralLBIntensityNorm; }
+    Float_t GetCentralPromptPeakTime() const { return fCentralPromptPeakTime; }
+    Float_t GetCentralPromptPeakWidth() const { return fCentralPromptPeakWidth; }  
+    Float_t GetCentralTimeOfFlight() const { return fCentralTimeOfFlight; }
+    Float_t GetCentralOccupancy() const { return fCentralOccupancy; }
+    Float_t GetCentralOccupancyErr() const { return fCentralOccupancyErr; }
+    Float_t GetCentralOccupancyCorr() const { return fCentralOccupancyCorr; }
+    Float_t GetCentralLBIntensityNorm() const { return fCentralLBIntensityNorm; }
 
-    Float_t GetCentralNLBPulses(){ return fCentralNLBPulses; }
+    Float_t GetCentralNLBPulses() const { return fCentralNLBPulses; }
 
-    Float_t GetCentralMPECorrOccupancy(){ return fCentralMPECorrOccupancy; }
-    Float_t GetCentralMPECorrOccupancyErr(){ return fCentralMPECorrOccupancyErr; }
-    Float_t GetCentralMPECorrOccupancyCorr(){ return fCentralMPECorrOccupancyCorr; }
+    Float_t GetCentralMPECorrOccupancy() const { return fCentralMPECorrOccupancy; }
+    Float_t GetCentralMPECorrOccupancyErr() const { return fCentralMPECorrOccupancyErr; }
+    Float_t GetCentralMPECorrOccupancyCorr() const { return fCentralMPECorrOccupancyCorr; }
     
-    Float_t GetCentralFresnelTCoeff(){ return fCentralFresnelTCoeff; }
+    Float_t GetCentralFresnelTCoeff() const { return fCentralFresnelTCoeff; }
     
-    Float_t GetCentralDistInScint(){ return fCentralDistInScint; }
-    Float_t GetCentralDistInAV(){ return fCentralDistInAV; }
-    Float_t GetCentralDistInWater(){ return fCentralDistInWater; }
-    Float_t GetCentralDistInNeck(){ return fCentralDistInNeck; }
-    Float_t GetCentralTotalDist(){ return fCentralTotalDist; }
+    Float_t GetCentralDistInScint() const { return fCentralDistInScint; }
+    Float_t GetCentralDistInAV() const { return fCentralDistInAV; }
+    Float_t GetCentralDistInWater() const { return fCentralDistInWater; }
+    Float_t GetCentralDistInNeck() const { return fCentralDistInNeck; }
+    Float_t GetCentralTotalDist() const { return fCentralTotalDist; }
     
-    Float_t GetCentralSolidAngle(){ return fCentralSolidAngle; }
-    Float_t GetCentralCosTheta(){ return fCentralCosTheta; }
+    Float_t GetCentralSolidAngle() const { return fCentralSolidAngle; }
+    Float_t GetCentralCosTheta() const { return fCentralCosTheta; }
     
-    Float_t GetCentralRelLBTheta(){ return fCentralRelLBTheta; }
-    Float_t GetCentralRelLBPhi(){ return fCentralRelLBPhi; }
+    Float_t GetCentralRelLBTheta() const { return fCentralRelLBTheta; }
+    Float_t GetCentralRelLBPhi() const { return fCentralRelLBPhi; }
     
-    Float_t GetCentralAVHDShadowVal(){ return fCentralAVHDShadowVal; }
-    Float_t GetCentralGeometricShadowVal(){ return fCentralGeometricShadowVal; }
+    Float_t GetCentralAVHDShadowVal() const { return fCentralAVHDShadowVal; }
+    Float_t GetCentralGeometricShadowVal() const { return fCentralGeometricShadowVal; }
     
-    Bool_t GetCentralCHSFlag(){ return fCentralCHSFlag; }
-    Bool_t GetCentralCSSFlag(){ return fCentralCSSFlag; }
+    Bool_t GetCentralCHSFlag() const { return fCentralCHSFlag; }
+    Bool_t GetCentralCSSFlag() const { return fCentralCSSFlag; }
 
-    Bool_t GetCentralBadPath(){ return fCentralBadPath; }
-    Bool_t GetCentralNeckFlag(){ return fCentralNeckFlag; }
+    Bool_t GetCentralBadPath() const { return fCentralBadPath; }
+    Bool_t GetCentralNeckFlag() const { return fCentralNeckFlag; }
 
-    TVector3 GetCentralLBInitialVec(){ return fCentralInitialLBVec; }
-    TVector3 GetCentralLBIncidentVec(){ return fCentralIncidentLBVec; }
+    TVector3 GetCentralLBInitialVec() const { return fCentralInitialLBVec; }
+    TVector3 GetCentralLBIncidentVec() const { return fCentralIncidentLBVec; }
 
     ////////////////////////////////////////////
     ////////     WAVELENGTH GETTERS     ////////
     ////////////////////////////////////////////
 
-    Float_t GetWavelengthPromptPeakTime(){ return fWavelengthPromptPeakTime; }
-    Float_t GetWavelengthPromptPeakWidth(){ return fWavelengthPromptPeakWidth; }  
-    Float_t GetWavelengthTimeOfFlight(){ return fWavelengthTimeOfFlight; }
-    Float_t GetWavelengthOccupancy(){ return fWavelengthOccupancy; }
-    Float_t GetWavelengthOccupancyErr(){ return fWavelengthOccupancyErr; }
-    Float_t GetWavelengthOccupancyCorr(){ return fWavelengthOccupancyCorr; }
-    Float_t GetWavelengthLBIntensityNorm(){ return fWavelengthLBIntensityNorm; }
+    Float_t GetWavelengthPromptPeakTime() const { return fWavelengthPromptPeakTime; }
+    Float_t GetWavelengthPromptPeakWidth() const { return fWavelengthPromptPeakWidth; }  
+    Float_t GetWavelengthTimeOfFlight() const { return fWavelengthTimeOfFlight; }
+    Float_t GetWavelengthOccupancy() const { return fWavelengthOccupancy; }
+    Float_t GetWavelengthOccupancyErr() const { return fWavelengthOccupancyErr; }
+    Float_t GetWavelengthOccupancyCorr() const { return fWavelengthOccupancyCorr; }
+    Float_t GetWavelengthLBIntensityNorm() const { return fWavelengthLBIntensityNorm; }
 
-    Float_t GetWavelengthNLBPulses(){ return fWavelengthNLBPulses; }
+    Float_t GetWavelengthNLBPulses() const { return fWavelengthNLBPulses; }
 
-    Float_t GetWavelengthMPECorrOccupancy(){ return fWavelengthMPECorrOccupancy; }
-    Float_t GetWavelengthMPECorrOccupancyErr(){ return fWavelengthMPECorrOccupancyErr; }
-    Float_t GetWavelengthMPECorrOccupancyCorr(){ return fWavelengthMPECorrOccupancyCorr; }
+    Float_t GetWavelengthMPECorrOccupancy() const { return fWavelengthMPECorrOccupancy; }
+    Float_t GetWavelengthMPECorrOccupancyErr() const { return fWavelengthMPECorrOccupancyErr; }
+    Float_t GetWavelengthMPECorrOccupancyCorr() const { return fWavelengthMPECorrOccupancyCorr; }
     
-    Float_t GetWavelengthFresnelTCoeff(){ return fWavelengthFresnelTCoeff; }
+    Float_t GetWavelengthFresnelTCoeff() const { return fWavelengthFresnelTCoeff; }
     
-    Float_t GetWavelengthDistInScint(){ return fWavelengthDistInScint; }
-    Float_t GetWavelengthDistInAV(){ return fWavelengthDistInAV; }
-    Float_t GetWavelengthDistInWater(){ return fWavelengthDistInWater; }
-    Float_t GetWavelengthDistInNeck(){ return fWavelengthDistInNeck; }
-    Float_t GetWavelengthTotalDist(){ return fWavelengthTotalDist; }
+    Float_t GetWavelengthDistInScint() const { return fWavelengthDistInScint; }
+    Float_t GetWavelengthDistInAV() const { return fWavelengthDistInAV; }
+    Float_t GetWavelengthDistInWater() const { return fWavelengthDistInWater; }
+    Float_t GetWavelengthDistInNeck() const { return fWavelengthDistInNeck; }
+    Float_t GetWavelengthTotalDist() const { return fWavelengthTotalDist; }
     
-    Float_t GetWavelengthSolidAngle(){ return fWavelengthSolidAngle; }
-    Float_t GetWavelengthCosTheta(){ return fWavelengthCosTheta; }
+    Float_t GetWavelengthSolidAngle() const { return fWavelengthSolidAngle; }
+    Float_t GetWavelengthCosTheta() const { return fWavelengthCosTheta; }
     
-    Float_t GetWavelengthRelLBTheta(){ return fWavelengthRelLBTheta; }
-    Float_t GetWavelengthRelLBPhi(){ return fWavelengthRelLBPhi; }
+    Float_t GetWavelengthRelLBTheta() const { return fWavelengthRelLBTheta; }
+    Float_t GetWavelengthRelLBPhi() const { return fWavelengthRelLBPhi; }
     
-    Float_t GetWavelengthAVHDShadowVal(){ return fWavelengthAVHDShadowVal; }
-    Float_t GetWavelengthGeometricShadowVal(){ return fWavelengthGeometricShadowVal; }
+    Float_t GetWavelengthAVHDShadowVal() const { return fWavelengthAVHDShadowVal; }
+    Float_t GetWavelengthGeometricShadowVal() const { return fWavelengthGeometricShadowVal; }
     
-    Bool_t GetWavelengthCHSFlag(){ return fWavelengthCHSFlag; }
-    Bool_t GetWavelengthCSSFlag(){ return fWavelengthCSSFlag; }
+    Bool_t GetWavelengthCHSFlag() const { return fWavelengthCHSFlag; }
+    Bool_t GetWavelengthCSSFlag() const { return fWavelengthCSSFlag; }
 
-    Bool_t GetWavelengthBadPath(){ return fWavelengthBadPath; }
-    Bool_t GetWavelengthNeckFlag(){ return fWavelengthNeckFlag; }
+    Bool_t GetWavelengthBadPath() const { return fWavelengthBadPath; }
+    Bool_t GetWavelengthNeckFlag() const { return fWavelengthNeckFlag; }
 
-    TVector3 GetWavelengthLBInitialVec(){ return fWavelengthInitialLBVec; }
-    TVector3 GetWavelengthLBIncidentVec(){ return fWavelengthIncidentLBVec; }
+    TVector3 GetWavelengthLBInitialVec() const { return fWavelengthInitialLBVec; }
+    TVector3 GetWavelengthLBIncidentVec() const { return fWavelengthIncidentLBVec; }
     
   private:
     

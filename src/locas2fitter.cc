@@ -59,6 +59,8 @@ int main( int argc, char** argv ){
   lFit.DataScreen();
   lFit.PerformFit();
 
+  lFit.WriteToFile( "test.root" );
+
   // Float_t chiSq = 0.0;
 
   // TGraph* chiSquarePlot = new TGraph();

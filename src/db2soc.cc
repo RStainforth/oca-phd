@@ -161,8 +161,8 @@ int main( int argc, char** argv ){
 
   // Set SOC Run Information if it has been specified at the command line
   if ( srcFill > 0 ){
-    lDB.LoadAVHDRopePMTShadowingVals( rID );
-    lDB.LoadGeoPMTShadowingVals( rID );
+    lDB.LoadAVHDRopePMTShadowingVals( srcFill );
+    lDB.LoadGeoPMTShadowingVals( srcFill );
   }
 
   if ( srcID > 0 ){ socBr->SetSourceID( srcID ); }

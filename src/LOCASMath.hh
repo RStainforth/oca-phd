@@ -40,18 +40,18 @@ namespace LOCAS{
     ////////     METHODS     ////////
     /////////////////////////////////
 
-    Float_t MPECorrectedNPrompt( Float_t nPrompt, Float_t nPulses );         // Calculate the MPE correction for the prompt counts
-    Float_t MPECorrectedNPromptErr( Float_t nPrompt, Float_t nPulses );      // Calculate the error on the MPE corrected prompt counts
+    Float_t MPECorrectedNPrompt( const Float_t nPrompt, const Float_t nPulses );         // Calculate the MPE correction for the prompt counts
+    Float_t MPECorrectedNPromptErr( const Float_t nPrompt, const Float_t nPulses );      // Calculate the error on the MPE corrected prompt counts
 
-    Float_t OccRatioErr( LOCASPMT* pmt );
+    Float_t OccRatioErr( const LOCASPMT* pmt );
 
-    Float_t* LOCASVector( Long_t nStart, Long_t nEnd );
-    Int_t* LOCASIntVector( Long_t nStart, Long_t nEnd );
-    Float_t** LOCASMatrix( Long_t nStarti, Long_t nEndi, Long_t nStartj, Long_t nEndj );
+    float* LOCASVector( const long nStart, const long nEnd );
+    int* LOCASIntVector( const long nStart, const long nEnd );
+    float** LOCASMatrix( const long nStarti, const long nEndi, const long nStartj, const long nEndj );
 
-    void LOCASFree_Matrix(float **m, long nrl, long nrh, long ncl, long nch);
-    void LOCASFree_Vector(float *v, long nl, long nh);
-    void LOCASFree_IntVector(int *v, long nl, long nh);
+    void LOCASFree_Matrix(float **m, const long nrl, const long nrh, const long ncl, const long nch);
+    void LOCASFree_Vector(float *v, const long nl, const long nh);
+    void LOCASFree_IntVector(int *v, const long nl, const long nh);
     
     ClassDef( LOCASMath, 0 );
 

@@ -163,66 +163,66 @@ namespace LOCAS{
     ////////     GETTERS     ////////
     /////////////////////////////////
     
-    Int_t GetRunID(){ return fRunID; }
-    Int_t GetCentralRunID(){ return fCentralRunID; }
-    Int_t GetWavelengthRunID(){ return fWavelengthRunID; }
+    Int_t GetRunID() const { return fRunID; }
+    Int_t GetCentralRunID() const { return fCentralRunID; }
+    Int_t GetWavelengthRunID() const { return fWavelengthRunID; }
 
-    Int_t GetSourceID(){ return fSourceID; }
-    Int_t GetCentralSourceID(){ return fCentralSourceID; }
-    Int_t GetWavelengthSourceID(){ return fWavelengthSourceID; }
+    Int_t GetSourceID() const { return fSourceID; }
+    Int_t GetCentralSourceID() const { return fCentralSourceID; }
+    Int_t GetWavelengthSourceID() const { return fWavelengthSourceID; }
 
-    Bool_t GetIsMainRun(){ return fIsMainRun; }
-    Bool_t GetIsCentralRun(){ return fIsCentralRun; }
-    Bool_t GetIsWavelengthRun(){ return fIsWavelengthRun; }
+    Bool_t GetIsMainRun() const { return fIsMainRun; }
+    Bool_t GetIsCentralRun() const { return fIsCentralRun; }
+    Bool_t GetIsWavelengthRun() const { return fIsWavelengthRun; }
     
-    Int_t GetNPMTs(){ return fLOCASPMTs.size(); }
+    Int_t GetNPMTs() { return fLOCASPMTs.size(); }
     
-    Float_t GetLambda(){ return fLambda; } 
-    Float_t GetNLBPulses(){ return fNLBPulses; }
-    Float_t GetCentralLambda(){ return fCentralLambda; } 
-    Float_t GetCentralNLBPulses(){ return fCentralNLBPulses; }
-    Float_t GetWavelengthLambda(){ return fWavelengthLambda; } 
-    Float_t GetWavelengthNLBPulses(){ return fWavelengthNLBPulses; }
+    Float_t GetLambda() const { return fLambda; } 
+    Float_t GetNLBPulses() const { return fNLBPulses; }
+    Float_t GetCentralLambda() const { return fCentralLambda; } 
+    Float_t GetCentralNLBPulses() const { return fCentralNLBPulses; }
+    Float_t GetWavelengthLambda() const { return fWavelengthLambda; } 
+    Float_t GetWavelengthNLBPulses() const { return fWavelengthNLBPulses; }
 
-    Float_t GetMainLBIntensityNorm(){ return fMainLBIntensityNorm; }  
-    Float_t GetCentralLBIntensityNorm(){ return fCentralLBIntensityNorm; }  
-    Float_t GetWavelengthLBIntensityNorm(){ return fWavelengthLBIntensityNorm; }  
+    Float_t GetMainLBIntensityNorm() const { return fMainLBIntensityNorm; }  
+    Float_t GetCentralLBIntensityNorm() const { return fCentralLBIntensityNorm; }  
+    Float_t GetWavelengthLBIntensityNorm() const { return fWavelengthLBIntensityNorm; }  
     
-    Float_t GetTimeSigmaMean(){ return fTimeSigmaMean; }
-    Float_t GetTimeSigmaSigma(){ return fTimeSigmaSigma; }
+    Float_t GetTimeSigmaMean() const { return fTimeSigmaMean; }
+    Float_t GetTimeSigmaSigma() const { return fTimeSigmaSigma; }
     
     ////////////////////////////////////////
     
-    TVector3 GetLBPos(){ return fLBPos; } 
-    TVector3 GetCentralLBPos(){ return fCentralLBPos; } 
-    TVector3 GetWavelengthLBPos(){ return fWavelengthLBPos; } 
+    TVector3 GetLBPos() const { return fLBPos; } 
+    TVector3 GetCentralLBPos() const { return fCentralLBPos; } 
+    TVector3 GetWavelengthLBPos() const { return fWavelengthLBPos; } 
     
-    Float_t GetLBXPosErr(){ return fLBXPosErr; }
-    Float_t GetLBYPosErr(){ return fLBYPosErr; }
-    Float_t GetLBZPosErr(){ return fLBZPosErr; }
+    Float_t GetLBXPosErr() const { return fLBXPosErr; }
+    Float_t GetLBYPosErr() const { return fLBYPosErr; }
+    Float_t GetLBZPosErr() const { return fLBZPosErr; }
 
-    Float_t GetCentralLBXPosErr(){ return fCentralLBXPosErr; }
-    Float_t GetCentralLBYPosErr(){ return fCentralLBYPosErr; }
-    Float_t GetCentralLBZPosErr(){ return fCentralLBZPosErr; }
+    Float_t GetCentralLBXPosErr() const { return fCentralLBXPosErr; }
+    Float_t GetCentralLBYPosErr() const { return fCentralLBYPosErr; }
+    Float_t GetCentralLBZPosErr() const { return fCentralLBZPosErr; }
 
-    Float_t GetWavelengthLBXPosErr(){ return fWavelengthLBXPosErr; }
-    Float_t GetWavelengthLBYPosErr(){ return fWavelengthLBYPosErr; }
-    Float_t GetWavelengthLBZPosErr(){ return fWavelengthLBZPosErr; }
+    Float_t GetWavelengthLBXPosErr() const { return fWavelengthLBXPosErr; }
+    Float_t GetWavelengthLBYPosErr() const { return fWavelengthLBYPosErr; }
+    Float_t GetWavelengthLBZPosErr() const { return fWavelengthLBZPosErr; }
     
-    Float_t GetLBPosChi2(){ return fLBPosChi2; }
-    Float_t GetLBTheta(){ return fLBTheta; }
-    Float_t GetLBPhi(){ return fLBPhi; }
+    Float_t GetLBPosChi2() const { return fLBPosChi2; }
+    Float_t GetLBTheta() const { return fLBTheta; }
+    Float_t GetLBPhi() const { return fLBPhi; }
 
-    Float_t GetCentralLBPosChi2(){ return fCentralLBPosChi2; }
-    Float_t GetCentralLBTheta(){ return fCentralLBTheta; }
-    Float_t GetCentralLBPhi(){ return fCentralLBPhi; }
+    Float_t GetCentralLBPosChi2() const { return fCentralLBPosChi2; }
+    Float_t GetCentralLBTheta() const { return fCentralLBTheta; }
+    Float_t GetCentralLBPhi() const { return fCentralLBPhi; }
 
-    Float_t GetWavelengthLBPosChi2(){ return fWavelengthLBPosChi2; }
-    Float_t GetWavelengthLBTheta(){ return fWavelengthLBTheta; }
-    Float_t GetWavelengthLBPhi(){ return fWavelengthLBPhi; }
+    Float_t GetWavelengthLBPosChi2() const { return fWavelengthLBPosChi2; }
+    Float_t GetWavelengthLBTheta() const { return fWavelengthLBTheta; }
+    Float_t GetWavelengthLBPhi() const { return fWavelengthLBPhi; }
        
-    std::map<Int_t, LOCASPMT>::iterator GetLOCASPMTIterBegin(){ return fLOCASPMTs.begin(); }
-    std::map<Int_t, LOCASPMT>::iterator GetLOCASPMTIterEnd(){ return fLOCASPMTs.end(); }
+    std::map<Int_t, LOCASPMT>::iterator GetLOCASPMTIterBegin() { return fLOCASPMTs.begin(); }
+    std::map<Int_t, LOCASPMT>::iterator GetLOCASPMTIterEnd() { return fLOCASPMTs.end(); }
     
   private:
     

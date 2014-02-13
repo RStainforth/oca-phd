@@ -33,6 +33,7 @@ namespace LOCAS{
   class LOCASFit : public TObject
   {
   public:
+    LOCASFit(){}
     LOCASFit( const char* fitFile );
     virtual ~LOCASFit(){}
 
@@ -46,25 +47,40 @@ namespace LOCAS{
 
     void DataScreen();                                  // Perform final checks on data before performing the fit
     //void Screen();
-    Bool_t PMTSkip( Int_t iRun, Int_t iPMT, Float_t mean, Float_t sigma );
-    Float_t ModelPrediction( Int_t iRun, Int_t iPMT, Int_t nA = 0, Float_t* dyda = NULL );
-    Float_t CalculatePMTChiSquare( Int_t iRun, Int_t iPMT );                 // Calculate the chisquare
-    //void CalculateChiSquare();                        // Calculate the chiSquare
+    Bool_t PMTSkip( const Int_t iRun, const Int_t iPMT, Float_t mean, Float_t sigma );
+    Bool_t PMTSkip( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Float_t mean, Float_t sigma );
+
+    Float_t ModelPrediction( const Int_t iRun, const Int_t iPMT, Int_t nA = 0, Float_t* dyda = NULL );
+    Float_t ModelPrediction(  const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t nA = 0, Float_t* dyda = NULL );
+
+    Float_t CalculatePMTChiSquare( const Int_t iRun, const Int_t iPMT );
+    Float_t CalculatePMTChiSquare( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr );
+  
+    Float_t CalculatePMTSigma( const Int_t iRun, const Int_t iPMT );
+    Float_t CalculatePMTSigma( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr );
+
+    Float_t CalculatePMTData( const Int_t iRun, const Int_t iPMT ); 
+    Float_t CalculatePMTData( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr );
+
     void AllocateParameters();
-    void InitialiseParameters();
     void PrintInitialisationInfo();
 
     //void CopyParamterValues( LOCASFit* seedFit );    // Copy the parameter values from seedFit to THIS fit
     //void GiveParameterValues( LOCASFit* targetFit ); // Give the parameter values from THIS fit to targetFit
 
-    Float_t ModelAngularResponse( Int_t iRun, Int_t iPMT, Int_t& iAng, Int_t runType );
-    Float_t ModelLBDistribution( Int_t iRun, Int_t iPMT, Int_t& iLBDist, Int_t runType );
+    Float_t ModelAngularResponse( const Int_t iRun, const Int_t iPMT, Int_t& iAng, Int_t runType );
+    Float_t ModelAngularResponse( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t& iAng, Int_t runType );
+
+    Float_t ModelLBDistribution( const Int_t iRun, const Int_t iPMT, Int_t& iLBDist, Int_t runType );
+    Float_t ModelLBDistribution( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t& iLBDist, Int_t runType );
 
     void PerformFit();
 
     void FillParameterbase();
     void FillAngIndex();
     void FillParameterPoint();
+
+    void WriteToFile( const char* fileName );
 
     // FITTING METHODS
     Int_t MrqFit(float x[], float y[], float sig[], int ndata, float a[],
@@ -225,6 +241,7 @@ namespace LOCAS{
     Float_t fChiSquareMinLimit;                              // Minimum value of the chisquare for PMTs to be cut from the fit
 
     Float_t fNSigma;                                         // The number of standard deviations away from the mean occupancy for a PMT to be cut on (see LOCASFit::PMTSkip method)
+    Float_t fNChiSquare;
     Float_t fNOccupancy;                                     // The number of prompt counts for a PMT to be cut on (see LOCASFit::PMTSkip method)
 
     Float_t fAVHDShadowingMin;                               // The minimum value of of the AV hold-down rope shadowing for the PMTs to be cut on
