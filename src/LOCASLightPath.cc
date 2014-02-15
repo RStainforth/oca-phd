@@ -164,7 +164,9 @@ void LOCASLightPath::Initialise()
   fAVNeckOuterRadius = lDB.GetAVNeckOuterRadius();
 
   lDB.Clear();
-  lDB.LoadRefractiveIndices(); 
+  lDB.LoadRefractiveIndices( "lightwater_sno",
+			     "acrylic_sno",
+			     "lightwater_sno" ); 
  
   fScintRI = lDB.GetScintRI();
   fLowerTargetRI = fScintRI;
@@ -339,13 +341,13 @@ void LOCASLightPath::CalculatePath( const TVector3& eventPos,
   TVector3 incidentVecOnPMT;
   
   // Check the size of the loop, if not declared set to 20
-  if ( !fLoopCeiling ){
+  if ( fLoopCeiling <= 0 ){
     fLoopCeiling = 20;
   }
   
   // Check for the path precision - the proximity required to the PMT
   // If not declared, set to 10 mm to within the PMT.
-  if ( fPathPrecision == 0.0 ){
+  if ( fPathPrecision <= 0.0 ){
     fPathPrecision = 10.0;
   }
   

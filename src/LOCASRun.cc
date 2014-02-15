@@ -80,7 +80,7 @@ LOCASRun::LOCASRun( const LOCASRun& locasRHS )
   fWavelengthLambda = locasRHS.fWavelengthLambda;
   fWavelengthNLBPulses = locasRHS.fWavelengthNLBPulses;
 
-  fMainLBIntensityNorm = locasRHS.fMainLBIntensityNorm;
+  fLBIntensityNorm = locasRHS.fLBIntensityNorm;
   fCentralLBIntensityNorm = locasRHS.fCentralLBIntensityNorm;
   fWavelengthLBIntensityNorm = locasRHS.fWavelengthLBIntensityNorm;
 
@@ -146,7 +146,7 @@ LOCASRun& LOCASRun::operator=( const LOCASRun& locasRHS )
   fWavelengthLambda = locasRHS.fWavelengthLambda;
   fWavelengthNLBPulses = locasRHS.fWavelengthNLBPulses;
 
-  fMainLBIntensityNorm = locasRHS.fMainLBIntensityNorm;
+  fLBIntensityNorm = locasRHS.fLBIntensityNorm;
   fCentralLBIntensityNorm = locasRHS.fCentralLBIntensityNorm;
   fWavelengthLBIntensityNorm = locasRHS.fWavelengthLBIntensityNorm;
 
@@ -210,7 +210,7 @@ void LOCASRun::Initialise()
   SetWavelengthLambda( -10.0 );
   SetWavelengthNLBPulses( -10.0 );
 
-  SetMainLBIntensityNorm( -10.0 );
+  SetLBIntensityNorm( -10.0 );
   SetCentralLBIntensityNorm( -10.0 );
   SetWavelengthLBIntensityNorm( -10.0 );
 
@@ -292,6 +292,9 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
   lDB.LoadPMTNormals();
   lDB.LoadPMTTypes();
 
+  // Calculate the number of prompt counts over each PMT for the run
+  CalculateLBIntensityNorm();
+
   // Create an iterator to loop over the PMTs...
   std::map< Int_t, LOCASPMT >::iterator iLP;
 
@@ -321,7 +324,7 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
     // This is worth it when it comes to fitting, as only a single pointer to
     // the PMT object will be required.
     ( iLP->second ).SetNLBPulses( GetNLBPulses() );
-    ( iLP->second ).SetLBIntensityNorm( GetMainLBIntensityNorm() );
+    ( iLP->second ).SetLBIntensityNorm( GetLBIntensityNorm() );
 
     LOCASMath lMath;
     ( iLP->second ).SetMPECorrOccupancy( lMath.MPECorrectedNPrompt( ( iLP->second ).GetOccupancy(), GetNLBPulses() ) );
@@ -473,115 +476,145 @@ LOCASPMT& LOCASRun::GetPMT( Int_t iPMT )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASRun::CrossRunFill( LOCASRun& cRun, LOCASRun& wRun )
+void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
 {
-  fCentralRunID = cRun.GetRunID();
-  fWavelengthRunID = wRun.GetRunID();
-  fCentralSourceID = cRun.GetSourceID();
-  fWavelengthSourceID = wRun.GetSourceID();
 
-  fCentralLambda = cRun.GetLambda();
-  fWavelengthLambda = wRun.GetLambda();
-  fCentralNLBPulses = cRun.GetNLBPulses();
-  fWavelengthNLBPulses = wRun.GetNLBPulses();
+  if ( cRun == NULL && wRun == NULL ){
+    cout << "LOCASRun::CrossRunFill: Error: No Central or Wavelength Run Information to fill from" << endl;
+    cout << "--------------------------" << endl;
+    return;
+  }
 
-  fCentralLBPos = cRun.GetLBPos();
-  fWavelengthLBPos = wRun.GetLBPos();
-
-  fCentralLBTheta = cRun.GetLBTheta();
-  fCentralLBPhi = wRun.GetLBPhi();
-
-  fWavelengthLBTheta = cRun.GetLBTheta();
-  fWavelengthLBPhi = wRun.GetLBPhi();
-
-  std::map< Int_t, LOCASPMT >::iterator iCPMT;
-  for( iCPMT = cRun.GetLOCASPMTIterBegin(); iCPMT != cRun.GetLOCASPMTIterEnd(); iCPMT++ ){
-    Int_t pmtID = ( iCPMT->first );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralRunID( cRun.GetRunID() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralIsVerified( ( iCPMT->second ).GetIsVerified() );
+  if ( cRun != NULL ){
     
-    ( fLOCASPMTs[ pmtID ] ).SetCentralPromptPeakTime( ( iCPMT->second ).GetPromptPeakTime() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralPromptPeakWidth( ( iCPMT->second ).GetPromptPeakWidth() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralTimeOfFlight( ( iCPMT->second ).GetTimeOfFlight() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralOccupancy( ( iCPMT->second ).GetOccupancy() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralOccupancyErr( ( iCPMT->second ).GetOccupancyErr() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralOccupancyCorr( ( iCPMT->second ).GetOccupancyCorr() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralLBIntensityNorm( ( iCPMT->second ).GetLBIntensityNorm() );
+    fCentralRunID = cRun->GetRunID();
+    fCentralSourceID = cRun->GetSourceID();
     
-    ( fLOCASPMTs[ pmtID ] ).SetCentralNLBPulses( ( iCPMT->second ).GetNLBPulses() );
+    fCentralLambda = cRun->GetLambda();
+    fCentralNLBPulses = cRun->GetNLBPulses();
     
-    ( fLOCASPMTs[ pmtID ] ).SetCentralMPECorrOccupancy( ( iCPMT->second ).GetMPECorrOccupancy() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralMPECorrOccupancyErr( ( iCPMT->second ).GetMPECorrOccupancyErr() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralMPECorrOccupancyCorr( ( iCPMT->second ).GetMPECorrOccupancyCorr() );
+    fCentralLBIntensityNorm = cRun->GetLBIntensityNorm();
+    fCentralLBPos = cRun->GetLBPos();
     
-    ( fLOCASPMTs[ pmtID ] ).SetCentralFresnelTCoeff( ( iCPMT->second ).GetFresnelTCoeff() );
-    
-    ( fLOCASPMTs[ pmtID ] ).SetCentralDistInScint( ( iCPMT->second ).GetDistInScint() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralDistInAV( ( iCPMT->second ).GetDistInAV() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralDistInWater( ( iCPMT->second ).GetDistInWater() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralDistInNeck( ( iCPMT->second ).GetDistInNeck() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralTotalDist( ( iCPMT->second ).GetTotalDist() );
-    
-    ( fLOCASPMTs[ pmtID ] ).SetCentralSolidAngle( ( iCPMT->second ).GetSolidAngle() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralCosTheta( ( iCPMT->second ).GetCosTheta() );
-    
-    ( fLOCASPMTs[ pmtID ] ).SetCentralRelLBTheta( ( iCPMT->second ).GetRelLBTheta() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralRelLBPhi( ( iCPMT->second ).GetRelLBPhi() );
-    
-    ( fLOCASPMTs[ pmtID ] ).SetCentralAVHDShadowVal( ( iCPMT->second ).GetAVHDShadowVal() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralGeometricShadowVal( ( iCPMT->second ).GetGeometricShadowVal() );
-    
-    ( fLOCASPMTs[ pmtID ] ).SetCentralCHSFlag( ( iCPMT->second ).GetCHSFlag() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralCSSFlag( ( iCPMT->second ).GetCSSFlag() );
-    
-    ( fLOCASPMTs[ pmtID ] ).SetCentralBadPath( ( iCPMT->second ).GetBadPath() );
-    ( fLOCASPMTs[ pmtID ] ).SetCentralNeckFlag( ( iCPMT->second ).GetNeckFlag() );
-    
+    fCentralLBTheta = cRun->GetLBTheta();
+    fCentralLBPhi = cRun->GetLBPhi();
+        
   }
   
-  std::map< Int_t, LOCASPMT >::iterator iWPMT;
-  for( iWPMT = wRun.GetLOCASPMTIterBegin(); iWPMT != wRun.GetLOCASPMTIterEnd(); iWPMT++ ){
-    Int_t pmtID = ( iWPMT->first );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthRunID( wRun.GetRunID() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthIsVerified( ( iWPMT->second ).GetIsVerified() );
+  if ( wRun != NULL ){
     
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthPromptPeakTime( ( iWPMT->second ).GetPromptPeakTime() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthPromptPeakWidth( ( iWPMT->second ).GetPromptPeakWidth() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthTimeOfFlight( ( iWPMT->second ).GetTimeOfFlight() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthOccupancy( ( iWPMT->second ).GetOccupancy() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthOccupancyErr( ( iWPMT->second ).GetOccupancyErr() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthOccupancyCorr( ( iWPMT->second ).GetOccupancyCorr() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthLBIntensityNorm( ( iWPMT->second ).GetLBIntensityNorm() );
+    fWavelengthRunID = wRun->GetRunID();
+    fWavelengthSourceID = wRun->GetSourceID();
     
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthNLBPulses( ( iWPMT->second ).GetNLBPulses() );
+    fWavelengthLambda = wRun->GetLambda();
+    fWavelengthNLBPulses = wRun->GetNLBPulses();
     
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthMPECorrOccupancy( ( iWPMT->second ).GetMPECorrOccupancy() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthMPECorrOccupancyErr( ( iWPMT->second ).GetMPECorrOccupancyErr() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthMPECorrOccupancyCorr( ( iWPMT->second ).GetMPECorrOccupancyCorr() );
+    fWavelengthLBIntensityNorm = wRun->GetLBIntensityNorm();
+    fWavelengthLBPos = wRun->GetLBPos();
     
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthFresnelTCoeff( ( iWPMT->second ).GetFresnelTCoeff() );
+    fWavelengthLBTheta = wRun->GetLBTheta();
+    fWavelengthLBPhi = wRun->GetLBPhi();
     
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthDistInScint( ( iWPMT->second ).GetDistInScint() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthDistInAV( ( iWPMT->second ).GetDistInAV() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthDistInWater( ( iWPMT->second ).GetDistInWater() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthDistInNeck( ( iWPMT->second ).GetDistInNeck() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthTotalDist( ( iWPMT->second ).GetTotalDist() );
-    
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthSolidAngle( ( iWPMT->second ).GetSolidAngle() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthCosTheta( ( iWPMT->second ).GetCosTheta() );
-    
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthRelLBTheta( ( iWPMT->second ).GetRelLBTheta() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthRelLBPhi( ( iWPMT->second ).GetRelLBPhi() );
-    
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthAVHDShadowVal( ( iWPMT->second ).GetAVHDShadowVal() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthGeometricShadowVal( ( iWPMT->second ).GetGeometricShadowVal() );
-    
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthCHSFlag( ( iWPMT->second ).GetCHSFlag() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthCSSFlag( ( iWPMT->second ).GetCSSFlag() );
-    
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthBadPath( ( iWPMT->second ).GetBadPath() );
-    ( fLOCASPMTs[ pmtID ] ).SetWavelengthNeckFlag( ( iWPMT->second ).GetNeckFlag() );
-    
+  }
+
+  if ( cRun ){
+
+    cout << "LOCASRun::CrossRunFill: Filling Central Run Information..." << endl;
+    cout << "--------------------------" << endl;
+    std::map< Int_t, LOCASPMT >::iterator iCPMT;
+    for( iCPMT = cRun->GetLOCASPMTIterBegin(); iCPMT != cRun->GetLOCASPMTIterEnd(); iCPMT++ ){
+      Int_t pmtID = ( iCPMT->first );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralRunID( cRun->GetRunID() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralIsVerified( ( iCPMT->second ).GetIsVerified() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetCentralPromptPeakTime( ( iCPMT->second ).GetPromptPeakTime() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralPromptPeakWidth( ( iCPMT->second ).GetPromptPeakWidth() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralTimeOfFlight( ( iCPMT->second ).GetTimeOfFlight() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralOccupancy( ( iCPMT->second ).GetOccupancy() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralOccupancyErr( ( iCPMT->second ).GetOccupancyErr() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralOccupancyCorr( ( iCPMT->second ).GetOccupancyCorr() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralLBIntensityNorm( ( iCPMT->second ).GetLBIntensityNorm() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetCentralNLBPulses( ( iCPMT->second ).GetNLBPulses() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetCentralMPECorrOccupancy( ( iCPMT->second ).GetMPECorrOccupancy() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralMPECorrOccupancyErr( ( iCPMT->second ).GetMPECorrOccupancyErr() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralMPECorrOccupancyCorr( ( iCPMT->second ).GetMPECorrOccupancyCorr() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetCentralFresnelTCoeff( ( iCPMT->second ).GetFresnelTCoeff() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetCentralDistInScint( ( iCPMT->second ).GetDistInScint() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralDistInAV( ( iCPMT->second ).GetDistInAV() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralDistInWater( ( iCPMT->second ).GetDistInWater() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralDistInNeck( ( iCPMT->second ).GetDistInNeck() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralTotalDist( ( iCPMT->second ).GetTotalDist() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetCentralSolidAngle( ( iCPMT->second ).GetSolidAngle() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralCosTheta( ( iCPMT->second ).GetCosTheta() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetCentralRelLBTheta( ( iCPMT->second ).GetRelLBTheta() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralRelLBPhi( ( iCPMT->second ).GetRelLBPhi() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetCentralAVHDShadowVal( ( iCPMT->second ).GetAVHDShadowVal() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralGeometricShadowVal( ( iCPMT->second ).GetGeometricShadowVal() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetCentralCHSFlag( ( iCPMT->second ).GetCHSFlag() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralCSSFlag( ( iCPMT->second ).GetCSSFlag() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetCentralBadPath( ( iCPMT->second ).GetBadPath() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralNeckFlag( ( iCPMT->second ).GetNeckFlag() );
+      
+    }
+  }
+  
+  if ( wRun ){
+
+    cout << "LOCASRun::CrossRunFill: Filling Wavelength Run Information..." << endl;
+    cout << "--------------------------" << endl;
+    std::map< Int_t, LOCASPMT >::iterator iWPMT;
+    for( iWPMT = wRun->GetLOCASPMTIterBegin(); iWPMT != wRun->GetLOCASPMTIterEnd(); iWPMT++ ){
+      Int_t pmtID = ( iWPMT->first );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthRunID( wRun->GetRunID() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthIsVerified( ( iWPMT->second ).GetIsVerified() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthPromptPeakTime( ( iWPMT->second ).GetPromptPeakTime() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthPromptPeakWidth( ( iWPMT->second ).GetPromptPeakWidth() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthTimeOfFlight( ( iWPMT->second ).GetTimeOfFlight() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthOccupancy( ( iWPMT->second ).GetOccupancy() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthOccupancyErr( ( iWPMT->second ).GetOccupancyErr() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthOccupancyCorr( ( iWPMT->second ).GetOccupancyCorr() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthLBIntensityNorm( ( iWPMT->second ).GetLBIntensityNorm() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthNLBPulses( ( iWPMT->second ).GetNLBPulses() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthMPECorrOccupancy( ( iWPMT->second ).GetMPECorrOccupancy() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthMPECorrOccupancyErr( ( iWPMT->second ).GetMPECorrOccupancyErr() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthMPECorrOccupancyCorr( ( iWPMT->second ).GetMPECorrOccupancyCorr() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthFresnelTCoeff( ( iWPMT->second ).GetFresnelTCoeff() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthDistInScint( ( iWPMT->second ).GetDistInScint() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthDistInAV( ( iWPMT->second ).GetDistInAV() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthDistInWater( ( iWPMT->second ).GetDistInWater() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthDistInNeck( ( iWPMT->second ).GetDistInNeck() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthTotalDist( ( iWPMT->second ).GetTotalDist() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthSolidAngle( ( iWPMT->second ).GetSolidAngle() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthCosTheta( ( iWPMT->second ).GetCosTheta() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthRelLBTheta( ( iWPMT->second ).GetRelLBTheta() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthRelLBPhi( ( iWPMT->second ).GetRelLBPhi() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthAVHDShadowVal( ( iWPMT->second ).GetAVHDShadowVal() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthGeometricShadowVal( ( iWPMT->second ).GetGeometricShadowVal() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthCHSFlag( ( iWPMT->second ).GetCHSFlag() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthCSSFlag( ( iWPMT->second ).GetCSSFlag() );
+      
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthBadPath( ( iWPMT->second ).GetBadPath() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthNeckFlag( ( iWPMT->second ).GetNeckFlag() );
+      
+    }
   }
 
 }
@@ -589,6 +622,18 @@ void LOCASRun::CrossRunFill( LOCASRun& cRun, LOCASRun& wRun )
 //////////////////////////////////////
 //////////////////////////////////////
 
+void LOCASRun::CalculateLBIntensityNorm()
+{
+  
+  std::map< Int_t, LOCASPMT >::iterator iPMT;
+  Float_t lbIntensityNorm = 0.0;
+  for ( iPMT = GetLOCASPMTIterBegin(); iPMT != GetLOCASPMTIterEnd(); iPMT++ ){
+    lbIntensityNorm += ( iPMT->second ).GetOccupancy();
+  }
+
+  fLBIntensityNorm = lbIntensityNorm;
+
+}
 
  
 

@@ -34,6 +34,7 @@
 #include "TAxis.h"
 #include "TH1F.h"
 #include "TMath.h"
+#include "TMinuit.h"
 
 #include "TROOT.h"
 

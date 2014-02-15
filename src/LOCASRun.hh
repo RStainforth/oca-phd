@@ -77,7 +77,11 @@ namespace LOCAS{
     // Fill information about a central run (cRun) and a
     // wavelength run (wRun) (if specified) into this LOCASRun
     // object
-    void CrossRunFill( LOCASRun& cRun, LOCASRun& wRun );
+    void CrossRunFill( LOCASRun* cRun, LOCASRun* wRun );
+
+    // Calculate the number of prompt counts detected at each PMT
+    // within the run. This must be called after CopySOCPMTInfo()
+    void CalculateLBIntensityNorm();
     
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -102,7 +106,7 @@ namespace LOCAS{
     void SetWavelengthLambda( const Float_t lambda ){ fWavelengthLambda = lambda; } 
     void SetWavelengthNLBPulses( const Float_t nPulses ){ fWavelengthNLBPulses = nPulses; }
 
-    void SetMainLBIntensityNorm( const Float_t mRunLI ){ fMainLBIntensityNorm = mRunLI; }
+    void SetLBIntensityNorm( const Float_t mRunLI ){ fLBIntensityNorm = mRunLI; }
     void SetCentralLBIntensityNorm( const Float_t cRunLI ){ fCentralLBIntensityNorm = cRunLI; }
     void SetWavelengthLBIntensityNorm( const Float_t wRunLI ){ fWavelengthLBIntensityNorm = wRunLI; }
     
@@ -188,7 +192,7 @@ namespace LOCAS{
     Float_t GetWavelengthLambda() const { return fWavelengthLambda; } 
     Float_t GetWavelengthNLBPulses() const { return fWavelengthNLBPulses; }
 
-    Float_t GetMainLBIntensityNorm() const { return fMainLBIntensityNorm; }  
+    Float_t GetLBIntensityNorm() const { return fLBIntensityNorm; }  
     Float_t GetCentralLBIntensityNorm() const { return fCentralLBIntensityNorm; }  
     Float_t GetWavelengthLBIntensityNorm() const { return fWavelengthLBIntensityNorm; }  
     
@@ -249,7 +253,7 @@ namespace LOCAS{
     Float_t fWavelengthLambda;             // The wavelength of the laser in the wavelength run
     Float_t fWavelengthNLBPulses;          // Number of laserball pulses in the wavelength run
 
-    Float_t fMainLBIntensityNorm;          // Number of total hits in prompt timing window (for main run)
+    Float_t fLBIntensityNorm;          // Number of total hits in prompt timing window (for main run)
     Float_t fCentralLBIntensityNorm;       // Number of total hits in prompt timing window (for central run)
     Float_t fWavelengthLBIntensityNorm;    // Number of total hits in prompt timing window (for wavelength run)
     

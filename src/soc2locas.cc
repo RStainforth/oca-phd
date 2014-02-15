@@ -83,8 +83,7 @@ int main( int argc, char** argv ){
   
   Bool_t mrBool = false;
   Bool_t crBool = false;
-  Bool_t wrBool = false;
-  Bool_t secondFile = false;
+  Bool_t wrBool = false; 
 
   // Parse arguments passed to the command line
   LOCASCmdOptions Opts = ParseArguments( argc, argv );
@@ -99,30 +98,27 @@ int main( int argc, char** argv ){
   std::string rIDStr = Opts.fRIDStr;
   std::string crIDStr = Opts.fCRIDStr;
   std::string wrIDStr = Opts.fWRIDStr;
+
+  cout << "\n";
+  cout << "#################################" << endl;
+  cout << "######## SOC2LOCAS Start ########" << endl;
+  cout << "#################################" << endl;
+  cout << "\n";
   
   // Check that a main-run file has been specified.
   if ( rID < 0 ){ cout << "No Run-ID specified. Aborting" << endl; return 1; }
-  else{ mrBool = true; }
+  else{ mrBool = true; cout << "Run ID: " << rID << endl; }
 
   // Check whether a second run file has been specified (either a central- or wavelength-run file)
   if ( crID < 0 && wrID < 0 ){ cout << "No Central/Wavelength-Run ID specified. Aborting" << endl; return 1; }
-  else{ secondFile = true; }
 
-  // If a second file exists - check which type it is
-  if ( secondFile ){
-    if ( crID < 0 ){ cout << "No Central-Run ID specified." << endl; }
-    else{ crBool = true; }
-
-    if ( wrID < 0 ){ cout << "No Wavelength-Run ID specified." << endl; }
-    else{ wrBool = true; }
-  }
-
-  // This shouldn't be caught - but just in case
-  else{ 
-    cout << "No Central/Wavelength-Run ID specified. Aborting" << endl; return 1;
-  }
-    
+  if ( crID < 0 ){ cout << "No Central-Run ID specified." << endl; }
+  else{ crBool = true; cout << "Central Run ID: " << crID << endl; }
   
+  if ( wrID < 0 ){ cout << "No Wavelength-Run ID specified." << endl; }
+  else{ wrBool = true; cout << "Wavelength Run ID: " << wrID << endl; }
+    
+  cout << "--------------------------" << endl;
   // Obtain the directory path where the SOC files are located
   // from the environment and create the full filename paths.
   // SOC run filenames currently of the form "[Run-ID]_Run.root"
@@ -139,41 +135,69 @@ int main( int argc, char** argv ){
   // Check that the main-run file exists
   ifstream rfile( rFilename.c_str() );
   if ( !rfile ){    
-    cout << "The SOC Run file: " << rFilename << " does not exist. Aborting." << endl;
+    cout << "The SOC Run file: " << endl;
+    cout << rFilename << endl;
+    cout << "does not exist. Aborting." << endl;
+    cout << "--------------------------" << endl;
     return 1;
+  }
+  else{
+    cout << "The SOC Run file: " << endl;
+    cout << rFilename << endl;
+    cout << "will be used as the run file" << endl;
+    cout << "--------------------------" << endl;
   }
   rfile.close();
 
   // Check that the central-run file exists
-  ifstream crfile( crFilename.c_str() );
-  if ( !crfile ){    
-    cout << "The Central SOC Run file: " << crFilename << " does not exist. Aborting." << endl;
+  if ( crBool ){
+    ifstream crfile( crFilename.c_str() );
+    if ( !crfile ){ 
+      cout << "The SOC Run file: " << endl;
+      cout << crFilename << endl;
+      cout << "does not exist. Aborting." << endl;
+      cout << "--------------------------" << endl;   
     return 1;
+    }
+
+    else{
+      cout << "The SOC Run file: " << endl;
+      cout << crFilename << endl;
+      cout << "will be used as the central run file" << endl;
+      cout << "--------------------------" << endl;
+    }
+    crfile.close();
   }
-  crfile.close();
 
   // Check that the wavelength-run file exists
-  ifstream wrfile( wrFilename.c_str() );
-  if ( !wrfile ){    
-    cout << "The Wavelength SOC Run file: " << wrFilename << " does not exist. Aborting." << endl;
-    return 1;
+  if ( wrBool ){
+    ifstream wrfile( wrFilename.c_str() );
+    if ( !wrfile ){ 
+      cout << "The SOC Run file: " << endl;
+      cout << wrFilename << endl;
+      cout << "does not exist. Aborting." << endl;
+      cout << "--------------------------" << endl;    
+      return 1;
+    }
+
+    else{
+      cout << "The SOC Run file: " << endl;
+      cout << wrFilename << endl;
+      cout << "will be used as the wavelength run file" << endl;
+      cout << "--------------------------" << endl;
+    }
+    wrfile.close();
   }
-  wrfile.close();
 
   // Create the LOCASRun Objects for the run (lRun),
   // central (lCRun) and wavelength (lWRun) runs respectively.
-  LOCASRun lRun;
-  LOCASRun lCRun;
-  LOCASRun lWRun;
+  LOCASRun* lRunPtr = new LOCASRun();
   // Set Default run-IDs and Run-Types
-  lRun.SetRunID( rID );
-  lRun.SetNLBPulses( 5000.0 );
+  lRunPtr->SetRunID( rID );
+  lRunPtr->SetNLBPulses( 100000.0 );
 
-  lCRun.SetRunID( crID );
-  lCRun.SetNLBPulses( 5000.0 );
-
-  lWRun.SetRunID( wrID );
-  lWRun.SetNLBPulses( 5000.0 );
+  LOCASRun* lCRunPtr = NULL;
+  LOCASRun* lWRunPtr = NULL;
   
   // Create the SOCReader object <-- This allows for multiple SOC files
   // to be loaded
@@ -185,15 +209,26 @@ int main( int argc, char** argv ){
 
   // If a central-run has been specified, add it to the SOCReader
   if ( crBool ){
+
+    lCRunPtr = new LOCASRun();
+    lCRunPtr->SetRunID( crID );
+    lCRunPtr->SetNLBPulses( 100000.0 );
+
     cout << "Adding central-run SOC file: " << endl;
     cout << crIDStr + (string)"_Run.root" << endl;
     cout << "--------------------------" << endl;
     // Add the central-run to the SOC reader
     soc.Add( ( socRunDir + crIDStr + (string)"_Run.root" ).c_str() );
+    
   }
 
   // If a wavelength-run has been specified, add it to the SOCReader
   if ( wrBool ){
+
+    lWRunPtr = new LOCASRun();
+    lWRunPtr->SetRunID( crID );
+    lWRunPtr->SetNLBPulses( 100000.0 );
+
     cout << "Adding wavelength-run SOC file: " << endl;
     cout << wrIDStr + (string)"_Run.root" << endl;
     cout << "--------------------------" << endl;
@@ -203,9 +238,10 @@ int main( int argc, char** argv ){
 
   // Now fill the LOCASRuns objects with the respective information
   // from the SOC files in the SOC reader
-  lRun.Fill( soc, rID );
-  if ( crBool ){ lCRun.Fill( soc, crID ); }
-  if ( wrBool ){ lWRun.Fill( soc, wrID ); }
+  cout << "Now filling run information from SOC file..." << endl;
+  lRunPtr->Fill( soc, rID );
+  if ( crBool ){ lCRunPtr->Fill( soc, crID ); cout << "Now filling central run information from SOC file..." << endl;}
+  if ( wrBool ){ lWRunPtr->Fill( soc, wrID ); cout << "Now filling wavelength run information from SOC file..." << endl;}
 
 
   // Now that all the SOC files have been loaded, and the LOCASRun objects
@@ -216,7 +252,7 @@ int main( int argc, char** argv ){
   //cout << "Now Performing CrossRunFill" << endl;
   // // CALCULATION OF CROSS-RUN INFORMATION GOES HERE //
   // // START //
-  lRun.CrossRunFill( lCRun, lWRun );
+  lRunPtr->CrossRunFill( lCRunPtr, lWRunPtr );
   // // END //
 
 
@@ -231,7 +267,7 @@ int main( int argc, char** argv ){
   TTree* runTree = new TTree( "LOCASRunT", "LOCAS Run Tree" );
 
   // Declare a new branch pointing to the data stored in the lRun object
-  runTree->Branch( "LOCASRun", lRun.ClassName(), &lRun, 32000, 99 );
+  runTree->Branch( "LOCASRun", lRunPtr->ClassName(), &(*lRunPtr), 32000, 99 );
   file->cd();
 
   // Fill the tree and write it to the file
@@ -242,7 +278,14 @@ int main( int argc, char** argv ){
   file->Close();
   delete file;
 
-  cout << "LOCASRun file: " << ( locasRunDir + rIDStr + (string)"_LOCASRun.root" ).c_str() << " has been created." << endl;
+  cout << "LOCASRun file: " << endl;
+  cout << ( locasRunDir + rIDStr + (string)"_LOCASRun.root" ).c_str() << endl;
+  cout << "has been created." << endl;
+  cout << "\n";
+  cout << "################################" << endl;
+  cout << "######## SOC2LOCAS END #########" << endl;
+  cout << "################################" << endl;
+  cout << "\n";
 
 }
 
