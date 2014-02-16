@@ -46,25 +46,16 @@ namespace LOCAS{
     void PrintInitialisationInfo();
     void DataScreen();                              
 
-    Bool_t PMTSkip( const Int_t iRun, const Int_t iPMT, Float_t mean, Float_t sigma );
     Bool_t PMTSkip( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Float_t mean, Float_t sigma );
 
-    Float_t ModelPrediction( const Int_t iRun, const Int_t iPMT, Int_t nA = 0, Float_t* dyda = NULL );
     Float_t ModelPrediction(  const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t nA = 0, Float_t* dyda = NULL );
 
-    Float_t CalculatePMTChiSquare( const Int_t iRun, const Int_t iPMT );
     Float_t CalculatePMTChiSquare( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr );
-  
-    Float_t CalculatePMTSigma( const Int_t iRun, const Int_t iPMT );
-    Float_t CalculatePMTSigma( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr );
+    Float_t CalculateChiSquare();
 
-    Float_t CalculatePMTData( const Int_t iRun, const Int_t iPMT ); 
-    Float_t CalculatePMTData( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr );
-
-    Float_t ModelAngularResponse( const Int_t iRun, const Int_t iPMT, Int_t& iAng, Int_t runType );
-    Float_t ModelAngularResponse( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t& iAng, Int_t runType );
-
-    Float_t ModelLBDistribution( const Int_t iRun, const Int_t iPMT, Int_t& iLBDist, Int_t runType );
+    Float_t CalculatePMTSigma( const LOCASPMT* iPMTPtr );
+    Float_t CalculatePMTData( const LOCASPMT* iPMTPtr );
+    Float_t ModelAngularResponse( const LOCASPMT* iPMTPtr, Int_t& iAng, Int_t runType );
     Float_t ModelLBDistribution( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t& iLBDist, Int_t runType );
 
     void FillParameterbase();
@@ -73,7 +64,11 @@ namespace LOCAS{
 
     void PerformFit();
 
-    //void WriteToFile( const char* fileName );
+    void WriteFitToFile( const char* fileName );
+
+    void PlotLBDistributionHistogram( const char* fileName ){}
+    void PlotAngularResponseHistogram( const char* fileName );
+    void PlotROccVals( const char* fileName );
 
     void DeAllocate();
 
@@ -228,6 +223,10 @@ namespace LOCAS{
 
     Int_t GetNVariableParameters();
 
+    Float_t* GetMrqX() const { Float_t* mrqX = new Float_t[ ( fNPMTsInFit + 1 ) ]; *mrqX = *fMrqX; return mrqX; }
+    Float_t* GetMrqY() const { Float_t* mrqY = new Float_t[ ( fNPMTsInFit + 1 ) ]; *mrqY = *fMrqY; return mrqY; }
+    Float_t* GetMrqSigma() const { Float_t* mrqSigma = new Float_t[ ( fNPMTsInFit + 1 ) ]; *mrqSigma = *fMrqSigma; return mrqSigma; }
+
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
@@ -254,6 +253,7 @@ namespace LOCAS{
     void SetWaterRSPar( Float_t parVal ){ fMrqParameters[ GetWaterRSParIndex() ] = parVal; }
 
     void SetMrqParameter( Int_t n, Float_t val ){ if ( n == 0 ){ return; } else{ fMrqParameters[ n ] = val; } }
+    void SetMrqParameters( Double_t* pars ){ *fMrqParameters = *pars; }
     void SetMrqVary( Int_t n, Int_t val ){ if ( n == 0 ){ return; } else{ fMrqVary[ n ] = val; } }
 
   private:
@@ -357,7 +357,9 @@ namespace LOCAS{
     Float_t** fMrqCovariance;                               //! [fNParameters+1][fNParameters+1] Covariance matrix
     Float_t** fMrqAlpha;                                    //! [fNParameters+1][fNParameters+1] Curvature matrix
 
-    //std::map< Int_t, LOCASPMT > fFitPMTs;                   // Map of PMTs which pass the cut selection and are to be used in the fit
+    
+
+    std::map< Int_t, LOCASPMT > fFitPMTs;                   // Map of PMTs which pass the cut selection and are to be used in the fit
     std::map< Int_t, LOCASPMT >::iterator fiPMT;            //! Map iterator used when scanning through PMTs
 
     LOCASMath flMath;                                       //! Private LOCASMath object used for calculating corrections and errors
