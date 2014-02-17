@@ -53,8 +53,6 @@ int main( int argc, char** argv ){
   cout << "####################################" << endl;
   cout << "\n";
 
-  lFit.Plot1DChiSquareScan( "test_1d_chisquare.eps", 1, 1000, 200000, 1000, 20 );
-  lFit.PlotROccVals( "test_rocc_vals.eps" );
   return 0;
 
 }

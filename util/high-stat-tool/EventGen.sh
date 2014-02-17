@@ -4,6 +4,7 @@
 
 # The user directory for temporary .root files.
 export USERDIR=${LOCAS_DATA_TMP}
+export MACHNAME=${LOCAS_BATCH_MACHINE_NAME}
 # The final user directory for data
 export FINALDIR=${LOCAS_DATA}/runs/soc
 export USERNAME=${USER}
@@ -59,12 +60,12 @@ for ((i=0;i<$CYCLE;i++))
     if [ $i -eq $(($CYCLE - 1)) ] 
     then
 	chmod +x ${JOBDESC}_${i}_${JOBID}.sh  
-	qsub -q medium64 -m ea -o ${USERDIR} -e ${USERDIR}/${JOBDESC}_Run${i}_err.txt ${JOBDESC}_${i}_${JOBID}.sh
+	qsub -q ${MACHNAME} -m ea -o ${USERDIR} -e ${USERDIR}/${JOBDESC}_Run${i}_err.txt ${JOBDESC}_${i}_${JOBID}.sh
 	echo "Submitted Final Job: "${i} " containing " ${EVPERCYCLE} " events containing e-mail notification."
 
     else
 	chmod +x ${JOBDESC}_${i}_${JOBID}.sh  
-	qsub -q medium64 -o ${USERDIR} -e ${USERDIR}/${JOBDESC}_Run${i}_err.txt ${JOBDESC}_${i}_${JOBID}.sh
+	qsub -q ${MACHNAME} -o ${USERDIR} -e ${USERDIR}/${JOBDESC}_Run${i}_err.txt ${JOBDESC}_${i}_${JOBID}.sh
 	echo "Submitted Job: "${i} " containing " ${EVPERCYCLE} " events."
 
     fi

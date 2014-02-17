@@ -47,6 +47,18 @@ fi
 
 printf "\n\n"
 
+printf "If you are on your university machine, you may have access to batch computing via 'qsub'.\n\n Please specify the machine name. For example at Liverpool this is 'medium64', or at QMUL this is 'snoplusSL6'. \n\n"
+MACHINENAME=""
+printf "Enter Machine Name: "
+read -e machinename
+
+ MACHINENAME=$machinename
+ printf "\n"
+ printf "qsub machine name to be used:\n"
+ printf ${MACHINENAME}
+
+printf "\n\n"
+
 # Obtain the current directory which will be used as
 # the installation directory and the data directory where
 # files generalted by locas will be stored
@@ -62,6 +74,7 @@ export LOCAS_ROOT=$LOCASROOT
 export LOCAS_DATA=$LOCASDATA
 
 export LOCAS_DATA_TMP=$TMPDIR
+export LOCAS_BATCH_MACHINE_NAME=$MACHINENAME
 export RATENVFILE=$RATFILE
 source $RATFILE
 

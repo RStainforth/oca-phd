@@ -1,12 +1,14 @@
-# In this file the source (laserball - photonbomb) is at 0 0 0
-
 # Parameters
-/glg4debug/glg4param omit_muon_processes 1.0
-/glg4debug/glg4param omit_hadronic_processes 1.0
-/glg4debug/glg4param omit_neutron_hp 1.0
+/PhysicsList/OmitMuonicProcesses true
+/PhysicsList/OmitHadronicProcesses true
+/PhysicsList/OmitCerenkov true
 
-# Use the standard RAT SNO+ geometry
-/rat/db/set DETECTOR geo_file "geo/snoplus.geo"
+# Switch off attenuation (and scattering) and reflections and refraction
+/PhysicsList/Optical/OmitAttenuation true 
+/PhysicsList/Optical/OmitBoundaryEffects true 
+
+# Use the waterfill RAT SNO+ geometry
+/rat/db/set DETECTOR geo_file "geo/snoplus_water.geo"
 
 # The geometry switched on and off depending (AV Hold Down Ropes)
 /rat/db/set GEO[avHD] enable 1
@@ -24,17 +26,14 @@
 /rat/procset file "%{ROOTFileName}"
 # END EVENT LOOP
 
-# Switch off attenuation (and scattering for the run)
-/process/inactivate Attenuation 
-
 # Choose the photonbomb generator from fixed point, uniformly random in time
 /generator/add combo pbomb:point:uniform
-# Choose 4000 photons, each of %{Lambda} nm per pulse
-/generator/vtx/set 4000 %{Lambda} 0
+# Choose 5000 photons, each of %{Lambda} nm per pulse
+/generator/vtx/set 5000 %{Lambda} 0
 
-# Position the photonbomb at (X,Y,Z) mm
+# Position the photonbomb at (X,Y,Z)
 /generator/pos/set %{XPos} %{YPos} %{ZPos}
-/generator/rate/set 50
+/generator/rate/set 100
 
 # Run %{EventsPerCycle} events
 /rat/run/start %{EventsPerCycle}
