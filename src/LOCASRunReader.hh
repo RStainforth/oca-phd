@@ -53,12 +53,20 @@ namespace LOCAS{
     ////////     GETTERS     ////////
     /////////////////////////////////
 
+    // Returns a pointer to the current LOCASRun object on the reader
     LOCASRun* GetCurrentLOCASRun(){ return fLOCASRun; }
+
+    // Returns a pointer to the LOCASRun with run ID 'runID'
     LOCASRun* GetLOCASRun( Int_t runID );
+
+    // Returns the 'runEntry'-th entry, e.g. for 4 files on the LOCASRunReader
+    // object, GetRunEntry( 1 ) would return the SECOND run file ( 0 being the first )
     LOCASRun* GetRunEntry( Int_t runEntry ){ fLOCASRunT->GetEntry( runEntry ); return fLOCASRun; } 
 
+    // Returns the number of LOCASRuns on the reader object
     Long64_t GetNLOCASRuns(){ return fNLOCASRuns; }
 
+    // Returns a vector of runIDs
     std::vector< Int_t > GetListOfRunIDs(){ return fListOfRunIDs; }
 
     /////////////////////////////////
@@ -71,16 +79,16 @@ namespace LOCAS{
 
   protected:
 
-    TChain* fLOCASRunT;                   // TChain of the ROOT files added to the LOCASRun reader
-    LOCASRun* fLOCASRun;                  // Pointer to the current LOCASRun TTree
+    TChain* fLOCASRunT;                   //! TChain of the ROOT files added to the LOCASRun reader
+    LOCASRun* fLOCASRun;                  //! Pointer to the current LOCASRun TTree
     
-    Long64_t fNext;                       // Index of the next LOCASRun TTree in the TChain
-    Long64_t fNLOCASRuns;                 // Total number of LOCASRun TTrees in the TChain
+    Long64_t fNext;                       //! Index of the next LOCASRun TTree in the TChain
+    Long64_t fNLOCASRuns;                 //! Total number of LOCASRun TTrees in the TChain
 
-    std::vector< Int_t > fListOfRunIDs;   // Vector of RunIDs whose corresponding ROOT fies
+    std::vector< Int_t > fListOfRunIDs;   //! Vector of RunIDs whose corresponding ROOT fies
                                           // have been loaded onto the TChain
 
-    LOCASPMT* fCurrentPMT;                // Pointer to the current LOCASPMT object
+    LOCASPMT* fCurrentPMT;                //! Pointer to the current LOCASPMT object
 
     ClassDef( LOCASRunReader, 0 ) 
     

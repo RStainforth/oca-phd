@@ -12,11 +12,6 @@
 /// REVISION HISTORY:\n
 ///     02/2014 : RPFS - First Revision, new file. \n
 ///
-/// DETAIL: Utility class used to calculate mathematical formulae
-///         required in the optics fit. This currently includes
-///         calculations for the multiple photo-electron counts
-///         at the PMTs.
-///
 ////////////////////////////////////////////////////////////////////
 
 #include <TMath.h>
@@ -140,7 +135,9 @@ float** LOCASMath::LOCASMatrix( const long nStarti, const long nEndi, const long
 void LOCASMath::LOCASFree_Vector(float *v, const long nl, const long nh)
 /* free a float vector allocated with vector() */
 {
+
   free((FREE_ARG) (v+nl-NR_END));
+
 }
 
 //////////////////////////////////////
@@ -149,8 +146,10 @@ void LOCASMath::LOCASFree_Vector(float *v, const long nl, const long nh)
 void LOCASMath::LOCASFree_Matrix(float **m, const long nrl, const long nrh, const long ncl, const long nch)
 /* free a float vector allocated with vector() */
 {
+
   free((FREE_ARG) (m[nrl]+ncl-NR_END));
   free((FREE_ARG) (m+nrl-NR_END));
+
 }
 
 //////////////////////////////////////
@@ -159,5 +158,7 @@ void LOCASMath::LOCASFree_Matrix(float **m, const long nrl, const long nrh, cons
 void LOCASMath::LOCASFree_IntVector(int *v, const long nl, const long nh)
 /* free a float vector allocated with vector() */
 {
+
   free((FREE_ARG) (v+nl-NR_END));
+
 }

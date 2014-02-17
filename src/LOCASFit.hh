@@ -9,9 +9,13 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     0X/2014 : RPFS - First Revision, new file. \n
+///     02/2014 : RPFS - First Revision, new file. \n
 ///
-/// DETAIL:
+/// DETAIL: This is the class which implements the fit.
+///         The code herein is largely based on the original
+///         LOCAS code from SNO. However it has been implemented
+///         to coincide with the RAT libraries for SNO+ and
+///         consequently re-written.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -41,33 +45,35 @@ namespace LOCAS{
     /////////////////////////////////
 
     void LoadFitFile( const char* fitFile );
-    void AllocateParameters();
     void InitialiseParameters();
+    void AllocateParameters();
     void PrintInitialisationInfo();
+
     void DataScreen();                              
 
     Bool_t PMTSkip( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Float_t mean, Float_t sigma );
 
-    Float_t ModelPrediction(  const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t nA = 0, Float_t* dyda = NULL );
+    Float_t ModelAngularResponse( const LOCASPMT* iPMTPtr, Int_t& iAng, Int_t runType );
+    Float_t ModelLBDistribution( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t& iLBDist, Int_t runType );
 
     Float_t CalculatePMTChiSquare( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr );
     Float_t CalculateChiSquare();
 
     Float_t CalculatePMTSigma( const LOCASPMT* iPMTPtr );
     Float_t CalculatePMTData( const LOCASPMT* iPMTPtr );
-    Float_t ModelAngularResponse( const LOCASPMT* iPMTPtr, Int_t& iAng, Int_t runType );
-    Float_t ModelLBDistribution( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t& iLBDist, Int_t runType );
+
+    Float_t ModelPrediction(  const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t nA = 0, Float_t* dyda = NULL );
+
+    void PerformFit();
 
     void FillParameterbase();
     void FillAngIndex();
     void FillParameterPoint();
 
-    void PerformFit();
-
     void WriteFitToFile( const char* fileName );
 
     void PlotLBDistributionHistogram( const char* fileName ){}
-    void PlotAngularResponseHistogram( const char* fileName );
+    void PlotAngularResponseHistogram( const char* fileName ){};
     void PlotROccVals( const char* fileName );
     void Plot1DChiSquareScan( const char* fileName,
                               const Int_t parIndex,

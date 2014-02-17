@@ -16,7 +16,18 @@
 ///         required in the optics fit. This currently includes
 ///         calculations for the multiple photo-electron counts
 ///         at the PMTs, and the working arrays for the 
-///         Levenberg-Marquadt algorithm
+///         Levenberg-Marquardt algorithm. The functions:
+///     
+///                  LOCASVector
+///                  LOCASIntVector
+///                  LOCASMatrix
+///                  LOCASFree_Vector
+///                  LOCASFree_IntVector
+///                  LOCASFree_Matrix
+///
+///        Are based on the Numerical Recipes code which provide
+///        and allocate memory for the Levenberg-Marquardt working
+///        arrays.
 ///
 ////////////////////////////////////////////////////////////////////
 
