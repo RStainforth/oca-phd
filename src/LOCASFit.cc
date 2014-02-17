@@ -692,7 +692,7 @@ void LOCASFit::DataScreen()
   ///////////////////////////////////////////
   ///////////////////////////////////////////
 
-  cout << "Counting number of invalid bins in laserball distribution...";
+  cout << "Counting number of invalid bins in laserball distribution..." << endl;
   
   // LB Distribution
   Int_t lbBinsInvalid = 0;
@@ -749,7 +749,7 @@ void LOCASFit::DataScreen()
   ///////////////////////////////////////////
   ///////////////////////////////////////////
 
-  cout << "Removing PMTs with which don't meet minimum binning requirements...";
+  cout << "Removing PMTs with which don't meet minimum binning requirements..." << endl;
   Int_t auxAnglesValid = 0;
   if ( anglesInvalid == 0 && lbBinsInvalid == 0 ){
     cout << "All bins for the PMT Angular Response and Laserball Distribution are filled" << endl;
@@ -1264,26 +1264,12 @@ void LOCASFit::mrqcof(float x[], float y[], float sig[], int ndata, float a[],
   flMath.LOCASFree_Vector(beta2,1,ma);
 
 }
-/////////////////////////////////////
+//////////////////////////////////////
 //////////////////////////////////////
 
 void LOCASFit::mrqfuncs(Float_t x,Int_t ix,Float_t a[],Float_t *y,
                           Float_t dyda[],Int_t na)
 {
-  //Function used by mrqcof()
-  //   a[]    = parameters to be fit:
-  //              d2o, acrylic, h2o attenuation lengths,
-  //              PMT angular response,
-  //              laserball mask,
-  //              laserball distribution,
-  //              run normalizations
-  //   y      = modelled value based on input parameters = Nij expected for given PMT
-  //   dyda[] = derivative of y w.r.t. input parameters
-  //   na     = number of parameters
-  //
-  // For central runs, use the QOCARun::GetNorm() stored by QPath::Calculate(),
-  // which is just the simple average.
-  //
   
   ix = (Int_t)x;
   Int_t jpmt = ix%10000;
@@ -1301,7 +1287,7 @@ void LOCASFit::mrqfuncs(Float_t x,Int_t ix,Float_t a[],Float_t *y,
   
 }
 
-/////////////////////////////////////
+//////////////////////////////////////
 //////////////////////////////////////
 
 Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t nA, Float_t* dyda )
@@ -1364,8 +1350,10 @@ Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMT
   Float_t pmtResponseCtr = angRespCtr * intensityCtr;
 
   if( derivatives ){
+
     dyda[ GetAngularResponseParIndex() + fCiAng ] -= 1.0 / angRespCtr;
     dyda[ GetLBDistributionParIndex() + fCiLBDist ] -= 1.0 / intensityCtr;
+
   }
   Float_t modelValue = pmtResponse / pmtResponseCtr;
 
@@ -1380,7 +1368,7 @@ Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMT
 
 }
 
-/////////////////////////////////////
+//////////////////////////////////////
 //////////////////////////////////////
 
 Int_t LOCASFit::gaussj(float **a, int n, float **b, int m)
@@ -1449,7 +1437,7 @@ Int_t LOCASFit::gaussj(float **a, int n, float **b, int m)
 
 }
 
-/////////////////////////////////////
+//////////////////////////////////////
 //////////////////////////////////////
 
 void LOCASFit::PerformFit()
@@ -1471,7 +1459,7 @@ void LOCASFit::PerformFit()
 
 }
 
-/////////////////////////////////////
+//////////////////////////////////////
 //////////////////////////////////////
 
 void LOCASFit::FillParameterbase( )
@@ -1491,7 +1479,7 @@ void LOCASFit::FillParameterbase( )
 
 }
 
-/////////////////////////////////////
+//////////////////////////////////////
 //////////////////////////////////////
 
 void LOCASFit::FillAngIndex( )
@@ -1643,7 +1631,7 @@ void LOCASFit::WriteFitToFile( const char* fileName )
 
   TFile* file = TFile::Open( fileName, "RECREATE" );
   // Create the Run Tree
-  TTree* runTree = new TTree( "LOCASRunT", "LOCAS Run Tree" );
+  TTree* runTree = new TTree( fFitName.c_str(), fFitTitle.c_str() );
 
   // Declare a new branch pointing to the data stored in the lRun object
   runTree->Branch( "LOCASFit", (*this).ClassName(), &(*this), 32000, 99 );
@@ -1755,6 +1743,63 @@ void LOCASFit::PlotROccVals( const char* fileName )
   gStyle->SetOptStat(0);
 
   tHisto->Draw();
+  c1->Print( fileName );
+
+}
+
+void LOCASFit::Plot1DChiSquareScan( const char* fileName,
+                                    const Int_t parIndex,
+                                    const Float_t startVal,
+                                    const Float_t endVal,
+                                    const Float_t stepVal,
+                                    const Int_t maxPMTs )
+{
+
+  // Create the TGraph object
+  TGraph* tGraph = new TGraph();
+  Int_t pointVal = 0;
+  
+  Float_t chiSq = 0.0;
+  Int_t nPMTs, iX, jRun = 0;
+
+  // Make sure that LOCASFit::DataScreen has already ran first.
+  if ( !fDataScreen ){ cout << "LOCASFit::CalculateChiSquare: Error, run LOCASFit::DataScreen first"; }
+
+
+  else{
+
+    // Loop through the parameter values and calculate the chi-square. The value of 'maxPMTs'
+    // is to speed up the calculation by calculating the total ChiSquare for just a 'maxPMTs'
+    // number fo PMTs instead of all of those included in the fit.
+    for ( Float_t parVal = startVal; parVal <= endVal; parVal += stepVal ){
+
+      nPMTs = 0;
+      chiSq = 0.0;
+
+      // Set the parameter value. Remember, in the model the values are the reciprocals
+      SetMrqParameter( parIndex, 1.0/parVal );
+
+      // Now loop through the first 'maxPMTs' number of PMTs in the PMT fit data set
+      for ( fiPMT = fFitPMTs.begin(); nPMTs < maxPMTs && fiPMT != fFitPMTs.end(); fiPMT++ ){       
+        iX = ( fiPMT->first );
+        jRun = iX / 10000;
+        fCurrentPMT = &( fiPMT->second );
+        fCurrentRun = fRunReader.GetRunEntry( jRun );
+               
+        chiSq += CalculatePMTChiSquare( fCurrentRun, fCurrentPMT );
+        nPMTs++;
+      }
+
+      tGraph->SetPoint( pointVal++, parVal, chiSq );
+    }
+  }
+  
+  TCanvas* c1 = new TCanvas( "chisquare-scan", "ChiSquare 1D Scan", 640, 400 );
+  
+  tGraph->GetXaxis()->SetTitle("Parameter Value");
+  tGraph->GetYaxis()->SetTitle("ChiSquare");
+
+  tGraph->Draw("ALP");
   c1->Print( fileName );
 
 }

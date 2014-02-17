@@ -69,7 +69,13 @@ namespace LOCAS{
     void PlotLBDistributionHistogram( const char* fileName ){}
     void PlotAngularResponseHistogram( const char* fileName );
     void PlotROccVals( const char* fileName );
-
+    void Plot1DChiSquareScan( const char* fileName,
+                              const Int_t parIndex,
+                              const Float_t startVal,
+                              const Float_t endVal,
+                              const Float_t stepVal,
+                              const Int_t maxPMTs );
+      
     void DeAllocate();
 
     ///////////////////////////////////
