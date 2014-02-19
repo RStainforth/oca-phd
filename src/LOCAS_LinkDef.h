@@ -10,6 +10,10 @@
 #pragma link C++ class LOCAS::LOCASRunReader+;
 #pragma link C++ class LOCAS::LOCASMath+;
 #pragma link C++ class LOCAS::LOCASFit+;
+#pragma link C++ class LOCAS::LOCASRawDataPoint+;
+#pragma link C++ class LOCAS::LOCASDataPoint+;
+#pragma link C++ class LOCAS::LOCASFilter+;
+#pragma link C++ class LOCAS::LOCASRawDataStore+;
 
 #pragma link C++ global gROOT;
 
