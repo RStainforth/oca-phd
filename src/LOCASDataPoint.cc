@@ -74,4 +74,6 @@ LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
 
   SetLBIntensityNormRatio( rhs.GetLBIntensityNormRatio() );
 
+  return *this;
+
 }
