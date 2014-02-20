@@ -31,7 +31,7 @@ namespace LOCAS{
   {
   public: 
 
-    LOCASFilter(){ };
+    LOCASFilter(){ }
     LOCASFilter( std::string filterName, Float_t valLow, Float_t valHigh );
     ~LOCASFilter(){ }
 

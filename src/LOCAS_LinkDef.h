@@ -17,6 +17,7 @@
 #pragma link C++ class LOCAS::LOCASRawDataStore+;
 #pragma link C++ class LOCAS::LOCASDataStore+;
 #pragma link C++ class LOCAS::LOCASDataFiller+;
+#pragma link C++ class LOCAS::LOCASModelParameter+;
 
 #pragma link C++ global gROOT;
 
