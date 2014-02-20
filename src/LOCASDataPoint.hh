@@ -31,7 +31,7 @@ namespace LOCAS{
   {
   public:
     LOCASDataPoint(){ };
-    LOCASDataPoint( const LOCASRawDataPoint* dataPoint );
+    LOCASDataPoint( const LOCASRawDataPoint dataPoint );
     ~LOCASDataPoint(){ };
     
     LOCASDataPoint& operator=( const LOCASDataPoint& rhs );

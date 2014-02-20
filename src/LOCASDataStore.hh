@@ -19,21 +19,29 @@
 #define _LOCASDataStore_
 
 #include "LOCASDataPoint.hh"
-#include <map>
+#include "LOCASRunReader.hh"
+
+#include <string>
 
 namespace LOCAS{
 
   class LOCASDataStore : public TObject
   {
   public: 
-    LOCASDataStore( const char* storeName = NULL );
+    LOCASDataStore( std::string storeName = "" );
     ~LOCASDataStore(){ };
+
+    LOCASDataStore& operator+=( LOCASDataStore& rhs );
+    LOCASDataStore operator+( LOCASDataStore& rhs );
 
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
 
     void AddDataPoint( LOCASDataPoint dataPoint );
+    void AddDataPoint( LOCASRawDataPoint dataPoint );
+
+    void WriteToFile( const char* fileName = "LOCASDataStore.root" );
 
     /////////////////////////////////
     ////////     GETTERS     ////////
@@ -41,17 +49,14 @@ namespace LOCAS{
 
     Int_t GetNDataPoints(){ return fDataPoints.size(); }
 
-    std::map< Int_t, LOCASDataPoint >::iterator GetLOCASDataPointsIterBegin(){ return fDataPoints.begin(); }
-    std::map< Int_t, LOCASDataPoint >::iterator GetLOCASDataPointsIterEnd(){ return fDataPoints.end(); }   
+    std::vector< LOCASDataPoint >::iterator GetLOCASDataPointsIterBegin(){ return fDataPoints.begin(); }
+    std::vector< LOCASDataPoint >::iterator GetLOCASDataPointsIterEnd(){ return fDataPoints.end(); }   
 
   private:
 
-    const char* fStoreName;
+    std::string fStoreName;
 
-    Int_t fNDataPoints;
-
-    std::map< Int_t, LOCASDataPoint > fDataPoints;
-
+    std::vector< LOCASDataPoint > fDataPoints;
 
     ClassDef( LOCASDataStore, 1 );
     

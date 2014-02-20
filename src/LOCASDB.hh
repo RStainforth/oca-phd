@@ -117,21 +117,30 @@ namespace LOCAS{
     std::vector< Int_t > GetRunList(){ return fRunList; }
 
     std::string GetStringField( const std::string& tableName, 
-                                const std::string& fieldName  );
+                                const std::string& fieldName,
+                                const std::string& indexName = "" );
 
     Double_t GetDoubleField( const std::string& tableName, 
-                             const std::string& fieldName );
+                             const std::string& fieldName,
+                             const std::string& indexName = "" );
 
     Int_t GetIntField( const std::string& tableName, 
-                       const std::string& fieldName );
+                       const std::string& fieldName,
+                       const std::string& indexName = "" );
 
     Bool_t GetBoolField( const std::string& tableName, 
-                         const std::string& fieldName );
+                         const std::string& fieldName,
+                         const std::string& indexName = "" );
 
     std::vector< Int_t > GetIntVectorField( const std::string& tableName, 
-                                            const std::string& fieldName );
+                                            const std::string& fieldName,
+                                            const std::string& indexName = "" );
 
     std::vector< Double_t > GetDoubleVectorField( const std::string& tableName, 
+                                                  const std::string& fieldName, 
+                                                  const std::string& indexName = "" );
+
+    std::vector< std::string > GetStringVectorField( const std::string& tableName, 
                                                   const std::string& fieldName, 
                                                   const std::string& indexName = "" );
     

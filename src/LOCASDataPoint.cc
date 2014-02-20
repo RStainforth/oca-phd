@@ -29,25 +29,25 @@ ClassImp( LOCASDataPoint )
 //////////////////////////////////////
 //////////////////////////////////////
 
-LOCASDataPoint::LOCASDataPoint( const LOCASRawDataPoint* dataPoint )
+LOCASDataPoint::LOCASDataPoint( const LOCASRawDataPoint dataPoint )
 {
 
-  SetOccRatio( ( dataPoint->GetOccRatio() ) );
+  SetOccRatio( ( dataPoint.GetOccRatio() ) );
 
-  SetDeltaDistInScint( ( dataPoint->GetDistInScint() - dataPoint->GetCentralDistInScint() ) );
-  SetDeltaDistInAV( ( dataPoint->GetDistInAV() - dataPoint->GetCentralDistInAV() ) );
-  SetDeltaDistInWater( ( dataPoint->GetDistInWater() - dataPoint->GetCentralDistInWater() ) );
+  SetDeltaDistInScint( ( dataPoint.GetDistInScint() - dataPoint.GetCentralDistInScint() ) );
+  SetDeltaDistInAV( ( dataPoint.GetDistInAV() - dataPoint.GetCentralDistInAV() ) );
+  SetDeltaDistInWater( ( dataPoint.GetDistInWater() - dataPoint.GetCentralDistInWater() ) );
 
-  SetSolidAngleRatio( ( dataPoint->GetSolidAngle() / dataPoint->GetCentralSolidAngle() ) );
-  SetFresnelTCoeffRatio( ( dataPoint->GetFresnelTCoeff() / dataPoint->GetCentralFresnelTCoeff() ) );
+  SetSolidAngleRatio( ( dataPoint.GetSolidAngle() / dataPoint.GetCentralSolidAngle() ) );
+  SetFresnelTCoeffRatio( ( dataPoint.GetFresnelTCoeff() / dataPoint.GetCentralFresnelTCoeff() ) );
 
-  SetLBTheta( dataPoint->GetLBTheta() );
-  SetCentralLBTheta( dataPoint->GetCentralLBTheta() );
+  SetLBTheta( dataPoint.GetLBTheta() );
+  SetCentralLBTheta( dataPoint.GetCentralLBTheta() );
 
-  SetLBPhi( dataPoint->GetLBPhi() );
-  SetCentralLBPhi( dataPoint->GetCentralLBPhi() );
+  SetLBPhi( dataPoint.GetLBPhi() );
+  SetCentralLBPhi( dataPoint.GetCentralLBPhi() );
 
-  SetLBIntensityNormRatio( ( dataPoint->GetLBIntensityNorm() / dataPoint->GetCentralLBIntensityNorm() ) );
+  SetLBIntensityNormRatio( ( dataPoint.GetLBIntensityNorm() / dataPoint.GetCentralLBIntensityNorm() ) );
 
 }
 

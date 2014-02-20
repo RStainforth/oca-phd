@@ -22,6 +22,7 @@
 #define _LOCASFilter_
 
 #include "LOCASRawDataPoint.hh"
+
 #include <string>
 
 namespace LOCAS{
@@ -30,6 +31,7 @@ namespace LOCAS{
   {
   public: 
 
+    LOCASFilter(){ };
     LOCASFilter( std::string filterName, Float_t valLow, Float_t valHigh );
     ~LOCASFilter(){ }
 

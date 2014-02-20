@@ -437,9 +437,11 @@ void LOCASDB::SetFile( const char* file )
 //////////////////////////////////////
 //////////////////////////////////////
 
-std::string LOCASDB::GetStringField( const std::string& tableName, const std::string& fieldName )
+std::string LOCASDB::GetStringField( const std::string& tableName, 
+                                     const std::string& fieldName,
+                                     const std::string& indexName )
 {
-
+  
   fRATDB->Clear();
   std::string resultStr = ""; 
 
@@ -452,7 +454,7 @@ std::string LOCASDB::GetStringField( const std::string& tableName, const std::st
 
   fRATDB->LoadFile( fCurrentFile );
 
-  fRATDBPtr = fRATDB->GetLink( tableName );
+  fRATDBPtr = fRATDB->GetLink( tableName, indexName );
   assert( fRATDBPtr );
 
   //resultStr = fRATDBPtr->GetS( fieldName );
@@ -463,7 +465,9 @@ std::string LOCASDB::GetStringField( const std::string& tableName, const std::st
 //////////////////////////////////////
 //////////////////////////////////////
 
-Double_t LOCASDB::GetDoubleField( const std::string& tableName, const std::string& fieldName )
+Double_t LOCASDB::GetDoubleField( const std::string& tableName, 
+                                  const std::string& fieldName,
+                                  const std::string& indexName )
 {
 
   fRATDB->Clear();
@@ -478,7 +482,7 @@ Double_t LOCASDB::GetDoubleField( const std::string& tableName, const std::strin
 
   fRATDB->LoadFile( fCurrentFile );
 
-  fRATDBPtr = fRATDB->GetLink( tableName  );
+  fRATDBPtr = fRATDB->GetLink( tableName, indexName  );
   assert( fRATDBPtr );
 
   resultD = fRATDBPtr->GetD( fieldName );
@@ -489,7 +493,9 @@ Double_t LOCASDB::GetDoubleField( const std::string& tableName, const std::strin
 //////////////////////////////////////
 //////////////////////////////////////
 
-Int_t LOCASDB::GetIntField( const std::string& tableName, const std::string& fieldName )
+Int_t LOCASDB::GetIntField( const std::string& tableName, 
+                            const std::string& fieldName,
+                            const std::string& indexName )
 {
 
   fRATDB->Clear();
@@ -504,7 +510,7 @@ Int_t LOCASDB::GetIntField( const std::string& tableName, const std::string& fie
 
   fRATDB->LoadFile( fCurrentFile );
 
-  fRATDBPtr = fRATDB->GetLink( tableName  );
+  fRATDBPtr = fRATDB->GetLink( tableName, indexName );
   assert( fRATDBPtr );
   resultI = fRATDBPtr->GetI( fieldName );
   return resultI;
@@ -514,7 +520,9 @@ Int_t LOCASDB::GetIntField( const std::string& tableName, const std::string& fie
 //////////////////////////////////////
 //////////////////////////////////////
 
-Bool_t LOCASDB::GetBoolField( const std::string& tableName, const std::string& fieldName )
+Bool_t LOCASDB::GetBoolField( const std::string& tableName, 
+                              const std::string& fieldName,
+                              const std::string& indexName )
 {
 
   fRATDB->Clear();
@@ -528,7 +536,7 @@ Bool_t LOCASDB::GetBoolField( const std::string& tableName, const std::string& f
   }
 
   fRATDB->LoadFile( fCurrentFile );
-  fRATDBPtr = fRATDB->GetLink( tableName );
+  fRATDBPtr = fRATDB->GetLink( tableName, indexName );
   assert( fRATDBPtr );
   Int_t resultI = 0;
   resultI = fRATDBPtr->GetI( fieldName );
@@ -543,7 +551,9 @@ Bool_t LOCASDB::GetBoolField( const std::string& tableName, const std::string& f
 //////////////////////////////////////
 //////////////////////////////////////
 
-std::vector< Int_t > LOCASDB::GetIntVectorField( const std::string& tableName, const std::string& fieldName )
+std::vector< Int_t > LOCASDB::GetIntVectorField( const std::string& tableName,  
+                                                 const std::string& fieldName, 
+                                                 const std::string& indexName )
 {
   
   fRATDB->Clear();
@@ -558,7 +568,7 @@ std::vector< Int_t > LOCASDB::GetIntVectorField( const std::string& tableName, c
 
   fRATDB->LoadFile( fCurrentFile );
   
-  fRATDBPtr = fRATDB->GetLink( tableName );
+  fRATDBPtr = fRATDB->GetLink( tableName, indexName );
   assert( fRATDBPtr );
   
   intVec = fRATDBPtr->GetIArray( fieldName );
@@ -570,7 +580,9 @@ std::vector< Int_t > LOCASDB::GetIntVectorField( const std::string& tableName, c
 //////////////////////////////////////
 //////////////////////////////////////
 
-std::vector< Double_t > LOCASDB::GetDoubleVectorField( const std::string& tableName,  const std::string& fieldName, const std::string& indexName )
+std::vector< Double_t > LOCASDB::GetDoubleVectorField( const std::string& tableName,  
+                                                       const std::string& fieldName, 
+                                                       const std::string& indexName )
 {
   
   fRATDB->Clear();
@@ -590,6 +602,34 @@ std::vector< Double_t > LOCASDB::GetDoubleVectorField( const std::string& tableN
   dubVec = fRATDBPtr->GetDArray( fieldName );
   
   return dubVec;
+  
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+std::vector< std::string > LOCASDB::GetStringVectorField( const std::string& tableName,  
+                                                          const std::string& fieldName, 
+                                                          const std::string& indexName )
+{
+  
+  fRATDB->Clear();
+  std::vector< std::string > strVec;
+  
+  if ( fCurrentFile == NULL ){
+    std::cout << "LOCASDB::GetStringVectorField: Error, no current file loaded (use LOCASDB::LoadFile)" << std::endl;
+    std::cout << "LOCASDB::GetStringVectorField: Returning type empty vector" << std::endl;
+    
+    return strVec;
+  }
+
+  fRATDB->LoadFile( fCurrentFile );
+  fRATDBPtr = fRATDB->GetLink( tableName, indexName );
+  assert( fRATDBPtr );
+  
+  strVec = fRATDBPtr->GetSArray( fieldName );
+  
+  return strVec;
   
 }
 

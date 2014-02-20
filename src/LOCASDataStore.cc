@@ -17,6 +17,11 @@
 #include "LOCASDataStore.hh"
 #include "LOCASDataPoint.hh"
 
+#include "TFile.h"
+#include "TTree.h"
+
+#include <string>
+
 using namespace LOCAS;
 using namespace std;
 
@@ -25,13 +30,33 @@ ClassImp( LOCASDataStore )
 //////////////////////////////////////
 //////////////////////////////////////
 
-LOCASDataStore::LOCASDataStore( const char* storeName )
+LOCASDataStore::LOCASDataStore( std::string storeName )
 {
 
   fStoreName = storeName;
   fDataPoints.clear();
-  fNDataPoints = 0;
  
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+LOCASDataStore& LOCASDataStore::operator+=( LOCASDataStore& rhs )
+{
+
+  fDataPoints.insert( fDataPoints.end(), rhs.fDataPoints.begin(), rhs.fDataPoints.end() );
+  return *this;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+LOCASDataStore LOCASDataStore::operator+( LOCASDataStore& rhs )
+{
+  
+  return (*this)+=rhs;
+  
 }
 
 //////////////////////////////////////
@@ -40,7 +65,41 @@ LOCASDataStore::LOCASDataStore( const char* storeName )
 void LOCASDataStore::AddDataPoint( LOCASDataPoint dataPoint )
 {
 
-  LOCASDataPoint dPoint = dataPoint;
-  fDataPoints[ GetNDataPoints() + 1 ] = dPoint;
+  fDataPoints.push_back( dataPoint );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASDataStore::AddDataPoint( LOCASRawDataPoint dataPoint )
+{
+
+  LOCASDataPoint dp( dataPoint );
+  fDataPoints.push_back( dp );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASDataStore::WriteToFile( const char* fileName )
+{
+
+  TFile* file = TFile::Open( fileName, "RECREATE" );
+  // Create the Run Tree
+  TTree* runTree = new TTree( fileName, fileName );
+
+  // Declare a new branch pointing to the data stored in the lRun object
+  runTree->Branch( "LOCASDataStore", (*this).ClassName(), &(*this), 32000, 99 );
+  file->cd();
+
+  // Fill the tree and write it to the file
+  runTree->Fill();
+  runTree->Write();
+
+  // Close the file
+  file->Close();
+  delete file;
 
 }

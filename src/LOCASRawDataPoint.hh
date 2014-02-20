@@ -109,7 +109,7 @@ namespace LOCAS{
     void SetDistInWater( const Float_t val ) { fDistInWater = val; }
     void SetCentralDistInWater( const Float_t val ) { fCentralDistInWater = val; }
 
-    void SetSoldiAngle( const Float_t val ) { fSolidAngle = val; }
+    void SetSolidAngle( const Float_t val ) { fSolidAngle = val; }
     void SetCentralSolidAngle( const Float_t val ) { fCentralSolidAngle = val; }
 
     void SetFresnelTCoeff( const Float_t val ) { fFresnelTCoeff = val; }

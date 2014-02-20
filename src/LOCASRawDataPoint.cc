@@ -58,6 +58,12 @@ LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr )
   SetLBPhi( pmtPtr->GetRelLBPhi() );
   SetCentralLBPhi( pmtPtr->GetCentralRelLBPhi() );
 
+  SetSolidAngle( pmtPtr->GetSolidAngle() );
+  SetCentralSolidAngle( pmtPtr->GetCentralSolidAngle() );
+
+  SetFresnelTCoeff( pmtPtr->GetFresnelTCoeff() );
+  SetCentralFresnelTCoeff( pmtPtr->GetCentralFresnelTCoeff() );
+
   SetAVHDShadowingVal( pmtPtr->GetAVHDShadowVal() );
   SetCentralAVHDShadowingVal( pmtPtr->GetCentralAVHDShadowVal() );
 

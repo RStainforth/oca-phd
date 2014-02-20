@@ -13,8 +13,10 @@
 #pragma link C++ class LOCAS::LOCASRawDataPoint+;
 #pragma link C++ class LOCAS::LOCASDataPoint+;
 #pragma link C++ class LOCAS::LOCASFilter+;
+#pragma link C++ class LOCAS::LOCASFilterStore+;
 #pragma link C++ class LOCAS::LOCASRawDataStore+;
 #pragma link C++ class LOCAS::LOCASDataStore+;
+#pragma link C++ class LOCAS::LOCASDataFiller+;
 
 #pragma link C++ global gROOT;
 

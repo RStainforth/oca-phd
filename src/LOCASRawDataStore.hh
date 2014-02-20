@@ -19,21 +19,31 @@
 #define _LOCASRawDataStore_
 
 #include "LOCASRawDataPoint.hh"
-#include <map>
+#include "LOCASDataStore.hh"
+#include "LOCASFilterStore.hh"
+#include "LOCASFilter.hh"
+
+#include <string>
 
 namespace LOCAS{
 
   class LOCASRawDataStore : public TObject
   {
-  public: 
-    LOCASRawDataStore( const char* storeName = NULL );
+  public:
+    LOCASRawDataStore( std::string storeName = "" );
     ~LOCASRawDataStore(){ };
+
+    LOCASRawDataStore& operator+=( LOCASRawDataStore& rhs );
+    LOCASRawDataStore operator+( LOCASRawDataStore& rhs );
 
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
 
-    void AddRawDataPoint( LOCASRawDataPoint dataPoint );
+    void AddRawDataPoint( LOCASRawDataPoint dataPoint ){ fRawDataPoints.push_back( dataPoint ); }
+    void AddRawData( LOCASRunReader& runReader );
+
+    void WriteToFile( const char* fileName = "LOCASRawDataStore.root" );
 
     /////////////////////////////////
     ////////     GETTERS     ////////
@@ -41,17 +51,14 @@ namespace LOCAS{
 
     Int_t GetNRawDataPoints(){ return fRawDataPoints.size(); }
 
-    std::map< Int_t, LOCASRawDataPoint >::iterator GetLOCASRawDataPointsIterBegin(){ return fRawDataPoints.begin(); }
-    std::map< Int_t, LOCASRawDataPoint >::iterator GetLOCASRawDataPointsIterEnd(){ return fRawDataPoints.end(); }   
+    std::vector< LOCASRawDataPoint >::iterator GetLOCASRawDataPointsIterBegin(){ return fRawDataPoints.begin(); }
+    std::vector< LOCASRawDataPoint >::iterator GetLOCASRawDataPointsIterEnd(){ return fRawDataPoints.end(); }   
 
   private:
 
-    const char* fStoreName;
+    std::string fStoreName;
 
-    Int_t fNRawDataPoints;
-
-    std::map< Int_t, LOCASRawDataPoint > fRawDataPoints;
-
+    std::vector< LOCASRawDataPoint > fRawDataPoints;
 
     ClassDef( LOCASRawDataStore, 1 );
     

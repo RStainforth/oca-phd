@@ -465,9 +465,9 @@ LOCASPMT& LOCASRun::GetPMT( Int_t iPMT )
 
   // Return the LOCASPMT with LCN 'iPMT'
   
-  if( fLOCASPMTs.find( iPMT ) == fLOCASPMTs.end() ){
-    fLOCASPMTs[ iPMT ] = LOCASPMT( iPMT );
-  }
+  // if( fLOCASPMTs.find( iPMT ) == fLOCASPMTs.end() ){
+  //   fLOCASPMTs[ iPMT ] = LOCASPMT( iPMT );
+  // }
 
   return fLOCASPMTs[ iPMT ];
   

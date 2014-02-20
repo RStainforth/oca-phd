@@ -28,11 +28,23 @@ ClassImp( LOCASFilter )
 //////////////////////////////////////
 //////////////////////////////////////
 
+LOCASFilter::LOCASFilter( std::string filterName, Float_t valLow, Float_t valHigh )
+{
+
+  SetFilterName( filterName );
+  SetMinValue( valLow );
+  SetMaxValue( valHigh );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 Bool_t LOCASFilter::CheckCondition( Float_t val ) const
 {
 
   Bool_t passCondition = false;
-  if ( val < GetMaxValue() && val > GetMinValue() ){ passCondition = true; }
+  if ( ( val < GetMaxValue() ) && ( val > GetMinValue() ) ){ passCondition = true; }
   else{ passCondition = false; }
 
   return passCondition;

@@ -72,8 +72,8 @@ namespace LOCAS{
 
     void WriteFitToFile( const char* fileName );
 
-    void PlotLBDistributionHistogram( const char* fileName ){}
-    void PlotAngularResponseHistogram( const char* fileName ){};
+    void PlotLBDistributionHistogram( const char* fileName ){ }
+    void PlotAngularResponseHistogram( const char* fileName ){ }
     void PlotROccVals( const char* fileName );
     void Plot1DChiSquareScan( const char* fileName,
                               const Int_t parIndex,
@@ -84,6 +84,18 @@ namespace LOCAS{
       
     void DeAllocate();
 
+    TH1F* DebugPlotModelROcc( const Float_t scintAttVal,
+                          const Float_t avAttVal,
+                          const Float_t waterAttVal,
+                          const Float_t scintRSVal,
+                          const Float_t avRSVal,
+                          const Float_t waterRSVal,
+                          const Float_t angRespVal,
+                          const Float_t lbDistVal,
+                              const Float_t normVal );
+
+    TH1F* DebugPlotDataROcc();
+    
     ///////////////////////////////////
     /////     FITTING METHODS     /////
     ///////////////////////////////////
@@ -239,6 +251,9 @@ namespace LOCAS{
     Float_t* GetMrqY() const { Float_t* mrqY = new Float_t[ ( fNPMTsInFit + 1 ) ]; *mrqY = *fMrqY; return mrqY; }
     Float_t* GetMrqSigma() const { Float_t* mrqSigma = new Float_t[ ( fNPMTsInFit + 1 ) ]; *mrqSigma = *fMrqSigma; return mrqSigma; }
 
+    std::map< Int_t, LOCASPMT >::iterator GetFitPMTsIterBegin(){ return fFitPMTs.begin(); }
+    std::map< Int_t, LOCASPMT >::iterator GetFitPMTsIterEnd(){ return fFitPMTs.end(); }
+
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
@@ -333,6 +348,17 @@ namespace LOCAS{
     Float_t fNSigma;                                        // The number of standard deviations away from the mean occupancy for a PMT to be cut on
     Float_t fNChiSquare;
     Float_t fNOccupancy;                                    // The number of prompt counts for a PMT to be cut on (see LOCASFit::PMTSkip method)
+
+    Float_t fCosThetaMaxLimit;
+    Float_t fCosThetaMinLimit;
+    
+    Float_t fPMTDataROccMaxLimit;
+    Float_t fPMTDataROccMinLimit;
+
+    Float_t fPMTPosThetaMaxLimit;
+    Float_t fPMTPosThetaMinLimit;
+    Float_t fPMTPosPhiMaxLimit;
+    Float_t fPMTPosPhiMinLimit;
 
     Float_t fAVHDShadowingMin;                              // The minimum value of of the AV hold-down rope shadowing for the PMTs to be cut on
     Float_t fAVHDShadowingMax;                              // The maximum value of of the AV hold-down rope shadowing for the PMTs to be cut on

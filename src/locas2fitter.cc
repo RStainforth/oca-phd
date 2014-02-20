@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 ///
-/// FILENAME: locas2fit.cc
+/// FILENAME: locas2fitter.cc
 ///
-/// EXECUTABLE: locas2fit
+/// EXECUTABLE: locas2fitter
 ///
 /// BRIEF: 
 ///          
@@ -52,6 +52,9 @@ int main( int argc, char** argv ){
   cout << "######### LOCAS2FITTER End #########" << endl;
   cout << "####################################" << endl;
   cout << "\n";
+
+  lFit.Plot1DChiSquareScan( "chisquare_scan.eps",
+                       2, 5.0, 2000.0, 50.0, 10 );
 
   return 0;
 

@@ -15,7 +15,16 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "LOCASRawDataStore.hh"
-#include "LOCASRawDataPoint.hh"
+#include "LOCASRunReader.hh"
+#include "LOCASRun.hh"
+#include "LOCASPMT.hh"
+
+#include "TMath.h"
+#include "TFile.h"
+#include "TTree.h"
+
+#include <string>
+#include <map>
 
 using namespace LOCAS;
 using namespace std;
@@ -25,22 +34,82 @@ ClassImp( LOCASRawDataStore )
 //////////////////////////////////////
 //////////////////////////////////////
 
-LOCASRawDataStore::LOCASRawDataStore( const char* storeName )
+LOCASRawDataStore::LOCASRawDataStore( std::string storeName )
 {
-
+  
   fStoreName = storeName;
   fRawDataPoints.clear();
-  fNRawDataPoints = 0;
- 
+  
 }
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASRawDataStore::AddRawDataPoint( LOCASRawDataPoint dataPoint )
+LOCASRawDataStore& LOCASRawDataStore::operator+=( LOCASRawDataStore& rhs )
 {
 
-  LOCASRawDataPoint dPoint = dataPoint;
-  fRawDataPoints[ GetNRawDataPoints() + 1 ] = dPoint;
+  fRawDataPoints.insert( fRawDataPoints.end(), rhs.fRawDataPoints.begin(), rhs.fRawDataPoints.end() );
+  return *this;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+LOCASRawDataStore LOCASRawDataStore::operator+( LOCASRawDataStore& rhs )
+{
+  
+  return (*this)+=rhs;
+  
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASRawDataStore::AddRawData( LOCASRunReader& runReader )
+{
+
+  cout << "LOCASRawDataStore: Adding run data from: " << runReader.GetNLOCASRuns() << " LOCASRuns..." << endl;
+  
+  LOCASRun* lRun;
+  LOCASPMT* lPMT;
+  std::map< Int_t, LOCASPMT >::iterator iPMT;
+
+  for ( Int_t iRun = 0; iRun < runReader.GetNLOCASRuns(); iRun++ ){
+    lRun = runReader.GetRunEntry( iRun );
+    
+    for ( iPMT = lRun->GetLOCASPMTIterBegin(); iPMT != lRun->GetLOCASPMTIterEnd(); iPMT++ ){
+      lPMT = &( lRun->GetPMT( iPMT->first ) );
+      AddRawDataPoint( lPMT );
+    }
+
+    cout << "Added Run: " << lRun->GetRunID() << endl;
+  }
+  
+
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASRawDataStore::WriteToFile( const char* fileName )
+{
+
+  TFile* file = TFile::Open( fileName, "RECREATE" );
+  // Create the Run Tree
+  TTree* runTree = new TTree( fileName, fileName );
+
+  // Declare a new branch pointing to the data stored in the lRun object
+  runTree->Branch( "LOCASRawDataStore", (*this).ClassName(), &(*this), 32000, 99 );
+  file->cd();
+
+  // Fill the tree and write it to the file
+  runTree->Fill();
+  runTree->Write();
+
+  // Close the file
+  file->Close();
+  delete file;
 
 }
