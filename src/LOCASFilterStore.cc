@@ -50,7 +50,6 @@ void LOCASFilterStore::AddFilters( const char* fileName )
   Float_t maxVal, minVal = 0.0;
 
   std::vector< std::string > filterList = lDB.GetStringVectorField( "FITFILE", "filter_list" );
-  cout << "Got filter list!" << endl;
   for ( Int_t iStr = 0; iStr < filterList.size(); iStr++ ){
 
     maxVal = lDB.GetDoubleField( "FITFILE", (std::string)( filterList[ iStr ] + "_max" ) );
@@ -60,7 +59,7 @@ void LOCASFilterStore::AddFilters( const char* fileName )
     AddFilter( lFilter );
 
     cout << "Added '" << filterList[ iStr ] << "' filter." << endl;
-    cout << "Filter Range: " << maxVal << " <----> " << minVal << endl;
+    cout << "Filter Range: " << maxVal << " <--> " << minVal << endl;
     cout << " ----------------- " << endl;
 
   }

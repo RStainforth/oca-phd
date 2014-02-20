@@ -84,6 +84,7 @@ void LOCASRawDataStore::AddRawData( LOCASRunReader& runReader )
     }
 
     cout << "Added Run: " << lRun->GetRunID() << endl;
+    cout << " ----------------- " << endl;
   }
   
 
