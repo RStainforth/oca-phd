@@ -48,14 +48,13 @@ void LOCASFilterStore::AddFilters( const char* fileName )
   lDB.SetFile( fileName );
 
   Float_t maxVal, minVal = 0.0;
-
-  std::vector< std::string > filterList = lDB.GetStringVectorField( "FITFILE", "filter_list" );
+  std::vector< std::string > filterList = lDB.GetStringVectorField( "FITFILE", "filter_list", "filter_setup" );
   for ( Int_t iStr = 0; iStr < filterList.size(); iStr++ ){
 
-    maxVal = lDB.GetDoubleField( "FITFILE", (std::string)( filterList[ iStr ] + "_max" ) );
-    minVal = lDB.GetDoubleField( "FITFILE", (std::string)( filterList[ iStr ] + "_min" ) );
+    maxVal = lDB.GetDoubleField( "FITFILE", (std::string)( filterList[ iStr ] + "_max"), "filter_setup" );
+    minVal = lDB.GetDoubleField( "FITFILE", (std::string)( filterList[ iStr ] + "_min"), "filter_setup" );
 
-    LOCASFilter lFilter( (std::string)(filterList[ iStr ]), minVal, maxVal );
+    LOCASFilter lFilter( filterList[ iStr ], minVal, maxVal );
     AddFilter( lFilter );
 
     cout << "Added '" << filterList[ iStr ] << "' filter." << endl;

@@ -44,7 +44,7 @@ int main( int argc, char** argv ){
   LOCASDB lDB;
   lDB.SetFile( argv[1] );
 
-  std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids" );
+  std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" );
   
   LOCASRunReader lReader( runIDs );
   LOCASRawDataStore lRawDataStore;
