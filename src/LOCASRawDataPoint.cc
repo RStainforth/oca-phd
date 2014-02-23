@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "LOCASPMT.hh"
+#include "LOCASMath.hh"
 #include "LOCASRawDataPoint.hh"
 
 using namespace LOCAS;
@@ -33,6 +34,8 @@ LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr )
 {
 
   SetOccRatio( pmtPtr->GetMPECorrOccupancy() / pmtPtr->GetCentralMPECorrOccupancy() );
+
+  SetOccRatioErr( LOCASMath::OccRatioErr( pmtPtr ) );
 
   SetDistInScint( pmtPtr->GetDistInScint() );
   SetCentralDistInScint( pmtPtr->GetCentralDistInScint() );

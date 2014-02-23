@@ -14,10 +14,13 @@
 ///
 ////////////////////////////////////////////////////////////////////
 
-#include "LOCASModelParameter.hh"
-
 #ifndef _LOCASModel_
 #define _LOCASModel_
+
+#include "LOCASModelParameterStore.hh"
+#include "LOCASDataPoint.hh"
+
+#include <string>
 
 namespace LOCAS{
 
@@ -25,16 +28,15 @@ namespace LOCAS{
   {
   public:
     LOCASModel(){ };
+    LOCASModel( const LOCASModelParameterStore& locasParams, 
+                const std::string modelName = "" );
     ~LOCASModel(){ };
 
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
 
-    virtual void InitialiseParameters();
-    virtual void AllocateParameters();
-
-    virtual Float_t ModelPrediction( const LOCASDataPoint& dataPoint );
+    virtual Float_t ModelPrediction( const LOCASDataPoint& dataPoint ){ return 0.0; }
 
     /////////////////////////////////
     ////////     GETTERS     ////////
@@ -42,17 +44,28 @@ namespace LOCAS{
 
     std::string GetModelName() const { return fModelName; }
 
+    LOCASModelParameterStore GetModelParameterStore() const { return fModelParameterStore; }
+    Double_t* GetParameters() const { return fParameters; }
+
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
 
     void SetModelName( const std::string name ){ fModelName = name; }
 
-  private:
+    void SetModelParameterStore( const LOCASModelParameterStore& locasParams );
+    void SetParameters( const Double_t* params ) { *fParameters = *params; }
+
+  
+
+  protected:
 
     std::string fModelName;
 
-    std::vector< LOCASModelParameter > fParameters;
+    LOCASModelParameterStore  fModelParameterStore;
+    Double_t* fParameters;
+
+    ClassDef( LOCASModel, 1 );
 
   };
 

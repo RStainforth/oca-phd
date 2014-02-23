@@ -19,6 +19,8 @@
 #include "LOCASModelParameter.hh"
 #include <string>
 
+#include <iostream>
+
 using namespace LOCAS;
 using namespace std;
 
@@ -27,14 +29,39 @@ ClassImp( LOCASModelParameter )
 //////////////////////////////////////
 //////////////////////////////////////
 
-LOCASModelParameter::LOCASModelParameter( std::string parameterName, Float_t initVal, Float_t valLow, Float_t valHigh )
+LOCASModelParameter::LOCASModelParameter( std::string parameterName, 
+                                          Int_t index, Float_t initVal, 
+                                          Float_t valLow, Float_t valHigh, 
+                                          Float_t valInc, Int_t nParsInGroup )
 {
 
   SetParameterName( parameterName );
+
+  SetIndex( index );
+
+  SetNInGroup( nParsInGroup );
+
+  SetIncrementValue( valInc );
   
   SetInitialValue( initVal );
+  SetFinalValue( 0.0 );
   
   SetMinValue( valLow );
   SetMaxValue( valHigh );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASModelParameter::PrintInfo()
+{
+
+  cout << "Parameter Name: " << GetParameterName() << endl;
+  cout << "Parameter Index: " << GetIndex() << endl;
+  cout << "Parameter Initial Value: " << GetInitialValue() << endl;
+  cout << "Parameter Range: [" << GetMinValue() << ", " << GetMaxValue() << "]" << endl;
+  cout << "Parameter Increment Value: " << GetIncrementValue() << endl;
+  cout << " -------------- " << endl;
 
 }

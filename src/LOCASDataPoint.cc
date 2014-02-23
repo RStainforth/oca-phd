@@ -34,6 +34,8 @@ LOCASDataPoint::LOCASDataPoint( const LOCASRawDataPoint dataPoint )
 
   SetOccRatio( ( dataPoint.GetOccRatio() ) );
 
+  SetOccRatioErr( ( dataPoint.GetOccRatioErr() ) );
+
   SetDeltaDistInScint( ( dataPoint.GetDistInScint() - dataPoint.GetCentralDistInScint() ) );
   SetDeltaDistInAV( ( dataPoint.GetDistInAV() - dataPoint.GetCentralDistInAV() ) );
   SetDeltaDistInWater( ( dataPoint.GetDistInWater() - dataPoint.GetCentralDistInWater() ) );
@@ -47,6 +49,9 @@ LOCASDataPoint::LOCASDataPoint( const LOCASRawDataPoint dataPoint )
   SetLBPhi( dataPoint.GetLBPhi() );
   SetCentralLBPhi( dataPoint.GetCentralLBPhi() );
 
+  SetIncidentAngle( dataPoint.GetIncidentAngle() );
+  SetCentralIncidentAngle( dataPoint.GetCentralIncidentAngle() );
+
   SetLBIntensityNormRatio( ( dataPoint.GetLBIntensityNorm() / dataPoint.GetCentralLBIntensityNorm() ) );
 
 }
@@ -58,6 +63,8 @@ LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
 {
 
   SetOccRatio( rhs.GetOccRatio() );
+
+  SetOccRatioErr( rhs.GetOccRatioErr() );
 
   SetDeltaDistInScint( rhs.GetDeltaDistInScint() );
   SetDeltaDistInAV( rhs.GetDeltaDistInAV() );

@@ -43,6 +43,8 @@ namespace LOCAS{
 
     Float_t GetOccRatio() const { return fOccRatio; }
 
+    Float_t GetOccRatioErr() const { return fOccRatioErr; }
+
     Float_t GetDistInScint() const { return fDistInScint; }
     Float_t GetCentralDistInScint() const { return fCentralDistInScint; }
 
@@ -66,6 +68,9 @@ namespace LOCAS{
 
     Float_t GetMPECorrOccupancy() const { return fMPECorrOccupancy; }
     Float_t GetCentralMPECorrOccupancy() const { return fCentralMPECorrOccupancy; }
+
+    Float_t GetIncidentAngle() const { return fIncidentAngle; }
+    Float_t GetCentralIncidentAngle() const { return fCentralIncidentAngle; }
 
     Float_t GetLBTheta() const { return fLBTheta; }
     Float_t GetCentralLBTheta() const { return fCentralLBTheta; }
@@ -100,6 +105,8 @@ namespace LOCAS{
 
     void SetOccRatio( const Float_t val ) { fOccRatio = val; }
 
+    void SetOccRatioErr( const Float_t val ) { fOccRatioErr = val; }
+
     void SetDistInScint( const Float_t val ) { fDistInScint = val; }
     void SetCentralDistInScint( const Float_t val ) { fCentralDistInScint = val; }
 
@@ -123,6 +130,9 @@ namespace LOCAS{
 
     void SetMPECorrOccupancy( const Float_t val ) { fMPECorrOccupancy = val; }
     void SetCentralMPECorrOccupancy( const Float_t val ) { fCentralMPECorrOccupancy = val; }
+
+    void SetIncidentAngle( const Float_t val ){ fIncidentAngle = val; }
+    void SetCentralIncidentAngle( const Float_t val ){ fCentralIncidentAngle = val; }
 
     void SetLBTheta( const Float_t val ) { fLBTheta = val; }
     void SetCentralLBTheta( const Float_t val ) { fCentralLBTheta = val; }
@@ -155,6 +165,8 @@ namespace LOCAS{
 
     Float_t fOccRatio;
 
+    Float_t fOccRatioErr;
+
     Float_t fDistInScint;
     Float_t fCentralDistInScint;
 
@@ -178,6 +190,9 @@ namespace LOCAS{
 
     Float_t fMPECorrOccupancy;
     Float_t fCentralMPECorrOccupancy;
+
+    Float_t fIncidentAngle;
+    Float_t fCentralIncidentAngle;
 
     Float_t fLBTheta;
     Float_t fCentralLBTheta;

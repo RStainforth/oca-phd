@@ -55,7 +55,7 @@ namespace LOCAS{
     Float_t MPECorrectedNPrompt( const Float_t nPrompt, const Float_t nPulses );         // Calculate the MPE correction for the prompt counts
     Float_t MPECorrectedNPromptErr( const Float_t nPrompt, const Float_t nPulses );      // Calculate the error on the MPE corrected prompt counts
 
-    Float_t OccRatioErr( const LOCASPMT* pmt );
+    static Float_t OccRatioErr( const LOCASPMT* pmt );
 
     float* LOCASVector( const long nStart, const long nEnd );
     int* LOCASIntVector( const long nStart, const long nEnd );
