@@ -5,7 +5,7 @@
 /// CLASS: LOCAS::LOCASOpticsModel
 ///
 /// BRIEF: The class which defines the optical response model
-///        of PMTs. This class inherits from LOCASModel.hh
+///        of PMTs.
 ///                
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
@@ -26,10 +26,15 @@ namespace LOCAS{
   class LOCASOpticsModel : public LOCASModel
   {
   public:
+
+    // The constructors
     LOCASOpticsModel(){ }
     LOCASOpticsModel( const char* fileName );
+
+    // The destructor - delete the parameters
     ~LOCASOpticsModel(){ if ( fParameters != NULL ){ delete[] fParameters; } }
 
+    
     void AllocateParameters();
     void InitialiseParameterIndices();
     void InitialiseParameters();

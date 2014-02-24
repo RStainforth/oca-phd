@@ -44,6 +44,8 @@ Bool_t LOCASFilter::CheckCondition( Float_t val ) const
 {
 
   Bool_t passCondition = false;
+
+  // Check whether the 'val' is within the limits of the minimum and maximum values
   if ( ( val < GetMaxValue() ) && ( val > GetMinValue() ) ){ passCondition = true; }
   else{ passCondition = false; }
 

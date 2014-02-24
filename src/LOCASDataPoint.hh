@@ -5,10 +5,9 @@
 /// CLASS: LOCAS::LOCASDataPoint
 ///
 /// BRIEF: Data-level structure for data
-///        points. These data-points are fed
-///        into the LOCASMethod object alongside a
-///        LOCASDataFilter in order to produce a
-///        data point set
+///        points. These data points are used in a 
+///        chisquare function which is minimised over.
+///        These are the individual data points used in a fit
 ///        
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
@@ -23,6 +22,7 @@
 
 #include "LOCASPMT.hh"
 #include "LOCASRawDataPoint.hh"
+
 #include <string>
 
 namespace LOCAS{
@@ -30,10 +30,15 @@ namespace LOCAS{
   class LOCASDataPoint : public TObject
   {
   public:
+
+    // Constructors
     LOCASDataPoint(){ };
     LOCASDataPoint( const LOCASRawDataPoint dataPoint );
+
+    // Destructor - nothing to delete
     ~LOCASDataPoint(){ };
     
+    // Equality operator
     LOCASDataPoint& operator=( const LOCASDataPoint& rhs );
     
     /////////////////////////////////
@@ -56,11 +61,11 @@ namespace LOCAS{
     Float_t GetLBTheta() const { return fLBTheta; }
     Float_t GetCentralLBTheta() const { return fCentralLBTheta; }
 
-    Float_t GetIncidentAngle() const { return fIncidentAngle; }
-    Float_t GetCentralIncidentAngle() const { return fCentralIncidentAngle; }
-
     Float_t GetLBPhi() const { return fLBPhi; }
     Float_t GetCentralLBPhi() const { return fCentralLBPhi; }
+
+    Float_t GetIncidentAngle() const { return fIncidentAngle; }
+    Float_t GetCentralIncidentAngle() const { return fCentralIncidentAngle; }
 
     Float_t GetLBIntensityNormRatio() const { return fLBIntensityNormRatio; }
 
@@ -87,11 +92,11 @@ namespace LOCAS{
     void SetLBTheta( Float_t val ) { fLBTheta = val; }
     void SetCentralLBTheta( Float_t val ) { fCentralLBTheta = val; }
 
-    void SetIncidentAngle( const Float_t val ){ fIncidentAngle = val; }
-    void SetCentralIncidentAngle( const Float_t val ){ fCentralIncidentAngle = val; }
-
     void SetLBPhi( const Float_t val ) { fLBPhi = val; }
     void SetCentralLBPhi( const Float_t val ) { fCentralLBPhi = val; }
+
+    void SetIncidentAngle( const Float_t val ){ fIncidentAngle = val; }
+    void SetCentralIncidentAngle( const Float_t val ){ fCentralIncidentAngle = val; }
 
     void SetLBIntensityNormRatio( const Float_t val ) { fLBIntensityNormRatio = val; }
 
@@ -100,32 +105,32 @@ namespace LOCAS{
 
   private:
 
-    Float_t fMPEOccRatio;
-    Float_t fRawOccRatio;
+    Float_t fMPEOccRatio;         // The MPE corrected occupancy ratio
+    Float_t fRawOccRatio;         // The raw occupancy ratio
 
-    Float_t fMPEOccRatioErr;
-    Float_t fRawOccRatioErr;
+    Float_t fMPEOccRatioErr;      // The error in the MPE corrected occupancy ratio
+    Float_t fRawOccRatioErr;      // The error in the raw occupancy ratio
 
-    Float_t fDeltaDistInScint;
-    Float_t fDeltaDistInAV;
-    Float_t fDeltaDistInWater;
+    Float_t fDeltaDistInScint;    // The difference (off-axis - central) in the scintillator region distances
+    Float_t fDeltaDistInAV;       // The difference (off-axis - central) in the av region distances
+    Float_t fDeltaDistInWater;    // The difference (off-axis - central) in the water region distances
 
-    Float_t fSolidAngleRatio;
-    Float_t fFresnelTCoeffRatio;
+    Float_t fSolidAngleRatio;     // The solid angle ratio (off-axis / central)
+    Float_t fFresnelTCoeffRatio;  // The fresnel transmission ratio (off-axis / central)
 
-    Float_t fLBTheta;
-    Float_t fCentralLBTheta;
+    Float_t fLBTheta;             // The theta value of the light path leaving the source in the source coordinate system
+    Float_t fCentralLBTheta;      // The theta value of the light path leaving the source in the source coordinate system from the central run
 
-    Float_t fIncidentAngle;
-    Float_t fCentralIncidentAngle;
+    Float_t fIncidentAngle;       // The incident angle of the light path on the PMT
+    Float_t fCentralIncidentAngle;// The incident angle of the light path on the PMt from the central run
 
-    Float_t fLBPhi;
-    Float_t fCentralLBPhi;
+    Float_t fLBPhi;               // The phi value of the light path leaving the source in the source coordinate system
+    Float_t fCentralLBPhi;        // The phi value of the light path leaving the source in the source coordinate system from the central run
 
-    Float_t fLBIntensityNormRatio;
+    Float_t fLBIntensityNormRatio;// The ratio of the prompt counts from all PMTs in the off-axis run / the same from the central run
 
-    Float_t fModelCorrMPEOccRatio;
-    Float_t fModelCorrRawOccRatio;
+    Float_t fModelCorrMPEOccRatio;// The model corrected MPE occupancy ratio
+    Float_t fModelCorrRawOccRatio;// The model corrected MPE occupancy ratio
 
     ClassDef( LOCASDataPoint, 1 );
     

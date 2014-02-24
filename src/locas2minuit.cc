@@ -1,10 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 ///
-/// FILENAME: locas2dataset.cc
+/// FILENAME: locas2minuit.cc
 ///
-/// EXECUTABLE: locas2dataset
+/// EXECUTABLE: locas2minuit
 ///
-/// BRIEF: 
+/// BRIEF: This executable performs a minuit minimising routine
+///        over the data
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///

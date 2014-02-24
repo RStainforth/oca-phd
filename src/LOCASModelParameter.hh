@@ -29,30 +29,41 @@ namespace LOCAS{
   {
   public:
 
+    // The constructors
     LOCASModelParameter(){ }
     LOCASModelParameter( std::string parameterName, 
                          Int_t index, Float_t initVal, 
                          Float_t valLow, Float_t valHigh, 
                          Float_t valInc, Int_t nParsInGroup );
+
+    // The destructor - nothing to delete
     ~LOCASModelParameter(){ };
 
+    // Print all the information about the parameter
     void PrintInfo();
 
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
 
+    // Return the name of the parameter
     std::string GetParameterName() const { return fParameterName; }
 
+    // Return the parameter index for this parameter
     Int_t GetIndex() const { return fIndex; }
 
+    // If the parameter is part of a set of related parameters i.e. Laserball distribution
+    // or angular response distribution, return how many parameters are in that set
     Int_t GetNInGroup() const { return fNInGroup; }
     
+    // return the increment value of the parameter to be used in a fitting processing step
     Float_t GetIncrementValue() const { return fIncrementValue; }
 
+    // Get the inital and final (fitted/minimised) value of the parameter
     Float_t GetInitialValue() const { return fInitialValue; }
     Float_t GetFinalValue() const { return fFinalValue; }
 
+    // Get the maximum and minimum allowed values of the parameter
     Float_t GetMaxValue() const { return fMaxValue; }
     Float_t GetMinValue() const { return fMinValue; }
 

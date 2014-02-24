@@ -80,7 +80,10 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 
   Int_t nPars = 0;
 
+  // Get a list of the parameters to be included in the parameter store
   std::vector< std::string > paramList = lDB.GetStringVectorField( "FITFILE", "parameter_list", "parameter_setup" );
+
+  // Loop over each parameter set in the card file and add them/it to the store
   for ( Int_t iStr = 0; iStr < paramList.size(); iStr++ ){
 
     indexList = lDB.GetIntVectorField( "FITFILE", (std::string)( paramList[ iStr ] + "_indices" ), "parameter_setup" );
@@ -93,6 +96,10 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
     for ( Int_t iPar = indexList[0]; iPar <= indexList[1]; iPar++ ){
 
       parNum++;
+
+      // If there is only one parameter in this set, then it will have one single name
+      // otherwise, name the first entry of each parameter set with a +"_start" and the last
+      // entry of each parameter set with a +"_end"
       if ( indexList[0] == indexList[1] ){ parStr = ""; }
       else if ( ( indexList[0] != indexList[1] ) && iPar == indexList[0] ){ parStr = "_start"; }
       else if ( ( indexList[0] != indexList[1] ) && iPar == indexList[1] ){ parStr = "_end"; }
@@ -102,7 +109,10 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
         lStream >> parStr;
       }
 
+      // Get the number of parameters in the group
       Int_t nParsInGroup = ( indexList[1] - indexList[0] ) + 1;
+
+      // Create the parameter object and add it to the store
       LOCASModelParameter lParameter( (std::string)( paramList[ iStr ] + parStr ), iPar, initVal, minVal, maxVal, incVal, nParsInGroup );
       AddParameter( lParameter, iPar );
       nPars++;

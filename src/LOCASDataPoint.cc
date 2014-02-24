@@ -5,10 +5,9 @@
 /// CLASS: LOCAS::LOCASDataPoint
 ///
 /// BRIEF: Data-level structure for data
-///        points. These data-points are fed
-///        into the LOCASMethod object alongside a
-///        LOCASDataFilter in order to produce a
-///        data point set
+///        points. These data points are used in a 
+///        chisquare function which is minimised over.
+///        These are the individual data points used in a fit
 ///        
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>

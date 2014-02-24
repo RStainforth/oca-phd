@@ -5,7 +5,7 @@
 /// CLASS: LOCAS::LOCASOpticsModel
 ///
 /// BRIEF: The class which defines the optical response model
-///        of PMTs. This class inherits from LOCASModel.hh
+///        of PMTs.
 ///                
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///

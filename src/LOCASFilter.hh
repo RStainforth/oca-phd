@@ -6,7 +6,7 @@
 ///
 /// BRIEF: A simple class to test whether certain
 ///        values fall within a range of values
-///        A collection of LOCASFilters is used
+///        A collection of LOCASFilter-s (LOCASFilterStore) is used
 ///        to introduce the cut-flow to a set of
 ///        LOCASRawDataPoint objects
 ///        
@@ -31,14 +31,18 @@ namespace LOCAS{
   {
   public: 
 
+    // The constructors
     LOCASFilter(){ }
     LOCASFilter( std::string filterName, Float_t valLow, Float_t valHigh );
+
+    // The destructor - nothing to delete
     ~LOCASFilter(){ }
 
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
 
+    // Check whether a value is within the limits set by the filter
     Bool_t CheckCondition( Float_t val ) const;
 
     /////////////////////////////////
@@ -47,6 +51,7 @@ namespace LOCAS{
 
     std::string GetFilterName() const { return fFilterName; }
 
+    // The maximum and minimum values for the filter to check against
     Float_t GetMaxValue() const { return fMaxValue; }
     Float_t GetMinValue() const { return fMinValue; }
 
@@ -61,10 +66,10 @@ namespace LOCAS{
 
   private:
     
-    std::string fFilterName;
+    std::string fFilterName; // The name of the filter
 
-    Float_t fMaxValue;
-    Float_t fMinValue;
+    Float_t fMaxValue;       // The maximum value for the condition to be checked against
+    Float_t fMinValue;       // The minimum value for the condition to be checked against
 
     ClassDef( LOCASFilter, 1 );
     

@@ -29,31 +29,39 @@ namespace LOCAS{
   {
   public:
 
+    // The constructors
     LOCASFilterStore( const char* fileName, std::string storeName = "" );
     LOCASFilterStore(){ }
+
+    // The destructor - nothing to delete
     ~LOCASFilterStore(){ }
 
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
 
+    // Add a filter to the collection of filters (this object)
     void AddFilter( LOCASFilter filter ){ fFilters.push_back( filter ); }
+
+    // Add a complete set of filters from a given card file
     void AddFilters( const char* fileName );
 
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
 
+    // Get the total number of filters
     Int_t GetNFilters(){ return fFilters.size(); }
 
+    // The iterators to the beginning and end of the filter store
     std::vector< LOCASFilter >::iterator GetLOCASFiltersIterBegin(){ return fFilters.begin(); }
     std::vector< LOCASFilter >::iterator GetLOCASFiltersIterEnd(){ return fFilters.end(); } 
 
   private:
 
-    std::string fStoreName;
+    std::string fStoreName;              // The store name
 
-    std::vector< LOCASFilter > fFilters;
+    std::vector< LOCASFilter > fFilters; // The vector of LOCASFilter objects
 
     ClassDef( LOCASFilterStore, 1 )
 

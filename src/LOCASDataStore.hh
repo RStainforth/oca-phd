@@ -27,9 +27,14 @@ namespace LOCAS{
   class LOCASDataStore : public TObject
   {
   public: 
+
+    // The consturctor
     LOCASDataStore( std::string storeName = "" );
+
+    // The destructor - nothign to delete
     ~LOCASDataStore(){ };
 
+    // The self-addition and addition operators
     LOCASDataStore& operator+=( LOCASDataStore& rhs );
     LOCASDataStore operator+( LOCASDataStore& rhs );
 
@@ -37,25 +42,29 @@ namespace LOCAS{
     ////////     METHODS     ////////
     /////////////////////////////////
 
+    // Add a (raw)data point to the store
     void AddDataPoint( LOCASDataPoint dataPoint );
     void AddDataPoint( LOCASRawDataPoint dataPoint );
 
+    // Write the datastore to a .root file
     void WriteToFile( const char* fileName = "LOCASDataStore.root" );
 
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
 
+    // Get the number of data points in the store
     Int_t GetNDataPoints(){ return fDataPoints.size(); }
 
+    // Get the iterators to the beginning and end of the data store
     std::vector< LOCASDataPoint >::iterator GetLOCASDataPointsIterBegin(){ return fDataPoints.begin(); }
     std::vector< LOCASDataPoint >::iterator GetLOCASDataPointsIterEnd(){ return fDataPoints.end(); }   
 
   private:
 
-    std::string fStoreName;
+    std::string fStoreName;                     // The store name
 
-    std::vector< LOCASDataPoint > fDataPoints;
+    std::vector< LOCASDataPoint > fDataPoints;  // The vector of data point objects
 
     ClassDef( LOCASDataStore, 1 );
     

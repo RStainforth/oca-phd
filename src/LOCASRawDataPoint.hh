@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////////////
 ///
-/// FILENAME: LOCASRawDataPoint.hh
+/// FILENAME: LOCASRawDataPoint.cc
 ///
 /// CLASS: LOCAS::LOCASRawDataPoint
 ///
 /// BRIEF: Raw data-level structure for data
-///        points. These raw data-points are fed
-///        into the LOCASDataStore alongside a
-///        LOCASDataFilter in order to produce a
-///        data point set
+///        points. Many raw data points are held in
+///        a LOCASRawDataStore object in order to apply a
+///        collection of cuts/filters (LOCASFilterStore)
+///        to obtain a data set ready for use in a fit
 ///        
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
@@ -23,7 +23,9 @@
 #define _LOCASRawDataPoint_
 
 #include "LOCASPMT.hh"
+
 #include "TMath.h"
+
 #include <string>
 
 namespace LOCAS{
@@ -32,10 +34,14 @@ namespace LOCAS{
   {
   public: 
 
+    // Constructors
     LOCASRawDataPoint(){ }
     LOCASRawDataPoint( const LOCASPMT* pmt );
+
+    // Destructor - nothing to delete
     ~LOCASRawDataPoint(){ }
 
+    // Equality Operator
     LOCASRawDataPoint& operator=( const LOCASRawDataPoint& rhs );
 
     /////////////////////////////////
@@ -168,65 +174,65 @@ namespace LOCAS{
 
   private:
 
-    Float_t fMPEOccRatio;
-    Float_t fRawOccRatio;
+    Float_t fMPEOccRatio;                // The MPE corrected occupancy Ratio
+    Float_t fRawOccRatio;                // The Raw occupancy ratio
 
-    Float_t fMPEOccRatioErr;
-    Float_t fRawOccRatioErr;
+    Float_t fMPEOccRatioErr;             // The error on the MPE corrected occupancy ratio
+    Float_t fRawOccRatioErr;             // The error on the raw occupancy ratio
 
-    Float_t fDistInScint;
-    Float_t fCentralDistInScint;
+    Float_t fDistInScint;                // The distance through the scintillator region
+    Float_t fCentralDistInScint;         // The distancen through the scintillator region from the central run
 
-    Float_t fDistInAV;
-    Float_t fCentralDistInAV;
+    Float_t fDistInAV;                   // The distance through the AV region
+    Float_t fCentralDistInAV;            // The distance through the AV region from the central run
 
-    Float_t fDistInWater;
-    Float_t fCentralDistInWater;
+    Float_t fDistInWater;                // The distance through the water region
+    Float_t fCentralDistInWater;         // The distance through the water region from the central run
 
-    Float_t fSolidAngle;
-    Float_t fCentralSolidAngle;
+    Float_t fSolidAngle;                 // The solid angle
+    Float_t fCentralSolidAngle;          // The solid angle from the central run
 
-    Float_t fFresnelTCoeff;
-    Float_t fCentralFresnelTCoeff;
+    Float_t fFresnelTCoeff;              // The combined Fresnel Transmission Coefficient through the scintillator/AV and AV/water regions
+    Float_t fCentralFresnelTCoeff;       // The combined Fresnel Transmission Coefficient through the scintillator/AV and AV/water regions from the central run
 
-    Float_t fLBIntensityNorm;
-    Float_t fCentralLBIntensityNorm;
+    Float_t fLBIntensityNorm;            // The number of prompt counts (occupancy) from all PMTs from the run this data point originates from
+    Float_t fCentralLBIntensityNorm;     // The number of prompt counts (occupancy) from all PMTs from the run this data point originates from, from the central run
+ 
+    Float_t fRawOccupancy;               // The raw occupancy
+    Float_t fCentralRawOccupancy;        // The raw occupancy from the central run
 
-    Float_t fRawOccupancy;
-    Float_t fCentralRawOccupancy;
+    Float_t fMPECorrOccupancy;           // The MPE corrected occupancy
+    Float_t fCentralMPECorrOccupancy;    // The MPE corrected occupancy from the central
 
-    Float_t fMPECorrOccupancy;
-    Float_t fCentralMPECorrOccupancy;
+    Float_t fIncidentAngle;              // The Incident angle the light path makes with the PMT
+    Float_t fCentralIncidentAngle;       // The Incident angle the light path makes with the PMT from the central run
 
-    Float_t fIncidentAngle;
-    Float_t fCentralIncidentAngle;
+    Float_t fLBTheta;                    // The theta value the light path leaving the source makes in the source coordinate system
+    Float_t fCentralLBTheta;             // The theta value the light path leaving the source makes in the source coordinate system from the central run
 
-    Float_t fLBTheta;
-    Float_t fCentralLBTheta;
+    Float_t fLBPhi;                      // The phi value the light path leaving the source makes in the source coordinate system
+    Float_t fCentralLBPhi;               // The phi value the light path leaving the source makes in the source coordinate system from the central run
 
-    Float_t fLBPhi;
-    Float_t fCentralLBPhi;
+    Float_t fAVHDShadowingVal;           // The relative shadowing value for this data point due to the AVHD ropes
+    Float_t fCentralAVHDShadowingVal;    // The relative shadowing value for this data point due to the AVHD ropes from the central run
 
-    Float_t fAVHDShadowingVal;
-    Float_t fCentralAVHDShadowingVal;
+    Float_t fGeometricShadowingVal;        // The relative shadowing value for this data point due to the enveloping AV geoemtry
+    Float_t fCentralGeometricShadowingVal;  // The relative shadowing value for this data point due to the enveloping AV geoemtry from the central run
 
-    Float_t fGeometricShadowingVal;
-    Float_t fCentralGeometricShadowingVal;
+    Int_t fCHSFlag;                      // The CHS flag
+    Int_t fCentralCHSFlag;               // The CHS flag from the central run
 
-    Int_t fCHSFlag;
-    Int_t fCentralCHSFlag;
+    Int_t fCSSFlag;                      // The CSS flag
+    Int_t fCentralCSSFlag;               // The CSS flag from the central run
 
-    Int_t fCSSFlag;
-    Int_t fCentralCSSFlag;
+    Float_t fTimeOfFlight;               // Time of flight from the source to the PMT [ns]
+    Float_t fCentralTimeOfFlight;        // Time of flight from the source to the PMT [ns] from the central run  
 
-    Float_t fTimeOfFlight;
-    Float_t fCentralTimeOfFlight;
+    Int_t fBadPathFlag;                  // Bad Path flag
+    Int_t fCentralbadPathFlag;           // Bad Path flag from the central run
 
-    Int_t fBadPathFlag;
-    Int_t fCentralbadPathFlag;
-
-    Int_t fNeckFlag;
-    Int_t fCentralNeckFlag;
+    Int_t fNeckFlag;                     // Neck path flag
+    Int_t fCentralNeckFlag;              // Neck path flag from the central run
 
     ClassDef( LOCASRawDataPoint, 1 );
 

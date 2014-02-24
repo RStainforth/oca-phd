@@ -83,10 +83,12 @@ void LOCASRawDataStore::AddRawData( LOCASRunReader& runReader )
 
   cout << "LOCASRawDataStore: Adding run data from: " << runReader.GetNLOCASRuns() << " LOCASRuns..." << endl;
   
+  // Initalise pointers to the LOCASRun and LOCASPMT objects
   LOCASRun* lRun;
   LOCASPMT* lPMT;
   std::map< Int_t, LOCASPMT >::iterator iPMT;
 
+  // Loop over the runs and the associated pmts and conver them to raw data points
   for ( Int_t iRun = 0; iRun < runReader.GetNLOCASRuns(); iRun++ ){
     lRun = runReader.GetRunEntry( iRun );
     

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////
 ///
-/// FILENAME: LOCASModelParameter.hh
+/// FILENAME: LOCASModelParameter.cc
 ///
 /// CLASS: LOCAS::LOCASModelParameter
 ///

@@ -5,10 +5,10 @@
 /// CLASS: LOCAS::LOCASRawDataPoint
 ///
 /// BRIEF: Raw data-level structure for data
-///        points. These raw data-points are fed
-///        into the LOCASDataStore alongside a
-///        LOCASDataFilter in order to produce a
-///        data point set
+///        points. Many raw data points are held in
+///        a LOCASRawDataStore object in order to apply a
+///        collection of cuts/filters (LOCASFilterStore)
+///        to obtain a data set ready for use in a fit
 ///        
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
@@ -35,10 +35,10 @@ LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr )
 
   SetMPEOccRatio( pmtPtr->GetMPECorrOccupancy() / pmtPtr->GetCentralMPECorrOccupancy() );
   SetRawOccRatio( pmtPtr->GetOccupancy() / pmtPtr->GetCentralOccupancy() );
-
+  
   SetMPEOccRatioErr( LOCASMath::OccRatioErr( pmtPtr ) );
   SetRawOccRatioErr( LOCASMath::OccRatioErr( pmtPtr ) );
-
+  
   SetDistInScint( pmtPtr->GetDistInScint() );
   SetCentralDistInScint( pmtPtr->GetCentralDistInScint() );
 
@@ -67,17 +67,17 @@ LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr )
   }
   else{ SetCentralIncidentAngle( -10.0 ); }
 
-  SetLBTheta( pmtPtr->GetRelLBTheta() );
-  SetCentralLBTheta( pmtPtr->GetCentralRelLBTheta() );
-
-  SetLBPhi( pmtPtr->GetRelLBPhi() );
-  SetCentralLBPhi( pmtPtr->GetCentralRelLBPhi() );
-
   SetSolidAngle( pmtPtr->GetSolidAngle() );
   SetCentralSolidAngle( pmtPtr->GetCentralSolidAngle() );
 
   SetFresnelTCoeff( pmtPtr->GetFresnelTCoeff() );
   SetCentralFresnelTCoeff( pmtPtr->GetCentralFresnelTCoeff() );
+
+  SetLBTheta( pmtPtr->GetRelLBTheta() );
+  SetCentralLBTheta( pmtPtr->GetCentralRelLBTheta() );
+
+  SetLBPhi( pmtPtr->GetRelLBPhi() );
+  SetCentralLBPhi( pmtPtr->GetCentralRelLBPhi() );
 
   SetAVHDShadowingVal( pmtPtr->GetAVHDShadowVal() );
   SetCentralAVHDShadowingVal( pmtPtr->GetCentralAVHDShadowVal() );
@@ -124,6 +124,9 @@ LOCASRawDataPoint& LOCASRawDataPoint::operator=( const LOCASRawDataPoint& rhs )
   SetMPEOccRatio( rhs.GetMPECorrOccupancy() / rhs.GetCentralMPECorrOccupancy() );
   SetRawOccRatio( rhs.GetRawOccupancy() / rhs.GetCentralRawOccupancy() );
 
+  SetMPEOccRatioErr( rhs.GetMPEOccRatioErr() );
+  SetRawOccRatioErr( rhs.GetRawOccRatioErr() );
+
   SetDistInScint( rhs.GetDistInScint() );
   SetCentralDistInScint( rhs.GetCentralDistInScint() );
 
@@ -133,6 +136,12 @@ LOCASRawDataPoint& LOCASRawDataPoint::operator=( const LOCASRawDataPoint& rhs )
   SetDistInWater( rhs.GetDistInWater() );
   SetCentralDistInWater( rhs.GetCentralDistInWater() );
 
+  SetSolidAngle( rhs.GetSolidAngle() );
+  SetCentralSolidAngle( rhs.GetCentralSolidAngle() );
+
+  SetFresnelTCoeff( rhs.GetFresnelTCoeff() );
+  SetCentralFresnelTCoeff( rhs.GetCentralFresnelTCoeff() );
+
   SetLBIntensityNorm( rhs.GetLBIntensityNorm() );
   SetCentralLBIntensityNorm( rhs.GetCentralLBIntensityNorm() );
 
@@ -141,6 +150,9 @@ LOCASRawDataPoint& LOCASRawDataPoint::operator=( const LOCASRawDataPoint& rhs )
 
   SetMPECorrOccupancy( rhs.GetMPECorrOccupancy() );
   SetCentralMPECorrOccupancy( rhs.GetCentralMPECorrOccupancy() );
+
+  SetIncidentAngle( rhs.GetIncidentAngle() );
+  SetCentralIncidentAngle( rhs.GetCentralIncidentAngle() );
 
   SetLBTheta( rhs.GetLBTheta() );
   SetCentralLBTheta( rhs.GetCentralLBTheta() );
