@@ -27,11 +27,21 @@ using namespace std;
 
 ClassImp( LOCASDataFiller )
 
+//////////////////////////////////////
+//////////////////////////////////////
+
+LOCASDataFiller::LOCASDataFiller( LOCASRawDataStore& dataSt, LOCASFilterStore& filterSt )
+{
+
+  AddData( dataSt, filterSt );
+
+}
+
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASDataFiller::AddData( LOCASRawDataStore* dataSt, LOCASFilterStore* filterSt )
+void LOCASDataFiller::AddData( LOCASRawDataStore& dataSt, LOCASFilterStore& filterSt )
 {
   
   std::vector< LOCASRawDataPoint >::iterator iD;
@@ -39,13 +49,13 @@ void LOCASDataFiller::AddData( LOCASRawDataStore* dataSt, LOCASFilterStore* filt
   Bool_t validPoint = true;
   std::string filterName = "";
 
-  for ( iD = dataSt->GetLOCASRawDataPointsIterBegin();
-        iD != dataSt->GetLOCASRawDataPointsIterEnd();
+  for ( iD = dataSt.GetLOCASRawDataPointsIterBegin();
+        iD != dataSt.GetLOCASRawDataPointsIterEnd();
         iD++ ){
 
     validPoint = true;
-    for ( iF = filterSt->GetLOCASFiltersIterBegin();
-          iF != filterSt->GetLOCASFiltersIterEnd();
+    for ( iF = filterSt.GetLOCASFiltersIterBegin();
+          iF != filterSt.GetLOCASFiltersIterEnd();
           iF++ ){
 
       filterName = iF->GetFilterName();
@@ -53,19 +63,25 @@ void LOCASDataFiller::AddData( LOCASRawDataStore* dataSt, LOCASFilterStore* filt
       // Filters to check the occupancy ratio, raw occupancy and MPE corrected
       // occupancy
       
-      if ( filterName == "filter_occratio" ){ 
-        if ( !iF->CheckCondition( iD->GetOccRatio() ) ){ 
+      if ( filterName == "filter_mpe_occratio" ){ 
+        if ( !iF->CheckCondition( iD->GetMPEOccRatio() ) ){ 
+          validPoint = false; 
+        } 
+      }
+
+      if ( filterName == "filter_raw_occratio" ){ 
+        if ( !iF->CheckCondition( iD->GetRawOccRatio() ) ){ 
           validPoint = false; 
         } 
       }
       
-      if ( filterName == "filter_raw_occupancy" ){ 
+      else if ( filterName == "filter_raw_occupancy" ){ 
         if ( !iF->CheckCondition( iD->GetRawOccupancy() ) || !iF->CheckCondition( iD->GetCentralRawOccupancy() ) ){ 
           validPoint = false; 
         }
       }
       
-      if ( filterName == "filter_mpe_occupancy" ){ 
+      else if ( filterName == "filter_mpe_occupancy" ){ 
         if ( !iF->CheckCondition( iD->GetMPECorrOccupancy() ) || !iF->CheckCondition( iD->GetCentralMPECorrOccupancy() ) ){ 
           validPoint = false; 
         }
@@ -76,21 +92,21 @@ void LOCASDataFiller::AddData( LOCASRawDataStore* dataSt, LOCASFilterStore* filt
       // region in terms of the 'Delta' differences i.e. the modulus difference between
       // the central and off-axis runs
       
-      if ( filterName == "filter_deltascint" ){
+      else if ( filterName == "filter_deltascint" ){
         Float_t deltaScint = TMath::Abs( iD->GetDistInScint() - iD->GetCentralDistInScint() );
         if ( !iF->CheckCondition( deltaScint ) ){ 
           validPoint = false; 
         }
       }
       
-      if ( filterName == "filter_deltaav" ){
+      else if ( filterName == "filter_deltaav" ){
         Float_t deltaAV = TMath::Abs( iD->GetDistInAV() - iD->GetCentralDistInAV() );
         if ( !iF->CheckCondition( deltaAV ) ){ 
           validPoint = false; 
         }
       }
       
-      if ( filterName == "filter_deltawater" ){
+      else if ( filterName == "filter_deltawater" ){
         Float_t deltaWater = TMath::Abs( iD->GetDistInWater() - iD->GetCentralDistInWater() );
         if ( !iF->CheckCondition( deltaWater ) ){ 
           validPoint = false;  
@@ -98,31 +114,57 @@ void LOCASDataFiller::AddData( LOCASRawDataStore* dataSt, LOCASFilterStore* filt
       }
       
       // Filters to check against various flags (CSHS, CSS) as well as neck light paths and
-      // 'bad' paths
+      // 'bad' paths and incident angles
+
+      else if ( filterName == "filter_pmt_angle" ){ 
+        if ( !iF->CheckCondition( iD->GetIncidentAngle() ) || !iF->CheckCondition( iD->GetCentralIncidentAngle() ) ){ 
+          validPoint = false;
+        }
+      }
+
+      else if ( filterName == "filter_solid_angle_ratio" ){ 
+        if ( !iF->CheckCondition( iD->GetSolidAngle() / iD->GetCentralSolidAngle() ) ){ 
+          validPoint = false;
+        }
+      }
       
-      if ( filterName == "filter_chs" ){ 
+      else if ( filterName == "filter_chs" ){ 
         if ( !iF->CheckCondition( iD->GetCHSFlag() ) || !iF->CheckCondition( iD->GetCentralCHSFlag() ) ){ 
           validPoint = false;
         }
       }
       
-      if ( filterName == "filter_css" ){ 
+      else if ( filterName == "filter_css" ){ 
         if ( !iF->CheckCondition( iD->GetCSSFlag() ) || !iF->CheckCondition( iD->GetCentralCSSFlag() ) ){ 
           validPoint = false;  
         }
       }
       
-      if ( filterName == "filter_bad_path" ){ 
+      else if ( filterName == "filter_bad_path" ){ 
         if ( !iF->CheckCondition( iD->GetBadPathFlag() ) || !iF->CheckCondition( iD->GetCentralBadPathFlag() ) ){ 
           validPoint = false;  
         }
       }
       
-      if ( filterName == "filter_neck_path" ){ 
+      else if ( filterName == "filter_neck_path" ){ 
         if ( !iF->CheckCondition( iD->GetNeckFlag() ) || !iF->CheckCondition( iD->GetCentralNeckFlag() ) ){ 
           validPoint = false;  
         }
-      }  
+      }
+
+      // Filter the shadowing values
+
+      else if ( filterName == "filter_avhd_shadow" ){ 
+        if ( !iF->CheckCondition( iD->GetAVHDShadowingVal() ) || !iF->CheckCondition( iD->GetCentralAVHDShadowingVal() ) ){ 
+          validPoint = false;  
+        }
+      }
+
+      else if ( filterName == "filter_geo_shadow" ){ 
+        if ( !iF->CheckCondition( iD->GetGeometricShadowingVal() ) || !iF->CheckCondition( iD->GetCentralGeometricShadowingVal() ) ){ 
+          validPoint = false;  
+        }
+      }
       
     }
     

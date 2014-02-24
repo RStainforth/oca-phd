@@ -40,9 +40,11 @@ namespace LOCAS{
     ////////     GETTERS     ////////
     /////////////////////////////////
     
-    Float_t GetOccRatio() const { return fOccRatio; }
+    Float_t GetMPEOccRatio() const { return fMPEOccRatio; }
+    Float_t GetRawOccRatio() const { return fRawOccRatio; }
 
-    Float_t GetOccRatioErr() const { return fOccRatioErr; }
+    Float_t GetMPEOccRatioErr() const { return fMPEOccRatioErr; }
+    Float_t GetRawOccRatioErr() const { return fRawOccRatioErr; }
     
     Float_t GetDeltaDistInScint() const { return fDeltaDistInScint; }
     Float_t GetDeltaDistInAV() const { return fDeltaDistInAV; }
@@ -62,13 +64,18 @@ namespace LOCAS{
 
     Float_t GetLBIntensityNormRatio() const { return fLBIntensityNormRatio; }
 
+    Float_t GetModelCorrMPEOccRatio() const { return fModelCorrMPEOccRatio; }
+    Float_t GetModelCorrRawOccRatio() const { return fModelCorrRawOccRatio; }
+
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
 
-    void SetOccRatio( Float_t val ) { fOccRatio = val; }
+    void SetMPEOccRatio( const Float_t val ) { fMPEOccRatio = val; }
+    void SetRawOccRatio( const Float_t val ) { fRawOccRatio = val; }
 
-    void SetOccRatioErr( const Float_t val ) { fOccRatioErr = val; }
+    void SetMPEOccRatioErr( const Float_t val ) { fMPEOccRatioErr = val; }
+    void SetRawOccRatioErr( const Float_t val ) { fRawOccRatioErr = val; }
     
     void SetDeltaDistInScint( Float_t val ) { fDeltaDistInScint = val; }
     void SetDeltaDistInAV( Float_t val ) { fDeltaDistInAV = val; }
@@ -83,16 +90,21 @@ namespace LOCAS{
     void SetIncidentAngle( const Float_t val ){ fIncidentAngle = val; }
     void SetCentralIncidentAngle( const Float_t val ){ fCentralIncidentAngle = val; }
 
-    void SetLBPhi( Float_t val ) { fLBPhi = val; }
-    void SetCentralLBPhi( Float_t val ) { fCentralLBPhi = val; }
+    void SetLBPhi( const Float_t val ) { fLBPhi = val; }
+    void SetCentralLBPhi( const Float_t val ) { fCentralLBPhi = val; }
 
-    void SetLBIntensityNormRatio( Float_t val ) { fLBIntensityNormRatio = val; }
+    void SetLBIntensityNormRatio( const Float_t val ) { fLBIntensityNormRatio = val; }
+
+    void SetModelCorrMPEOccRatio( const Float_t val ){ fModelCorrMPEOccRatio = val; }
+    void SetModelCorrRawOccRatio( const Float_t val ){ fModelCorrRawOccRatio = val; }
 
   private:
 
-    Float_t fOccRatio;
+    Float_t fMPEOccRatio;
+    Float_t fRawOccRatio;
 
-    Float_t fOccRatioErr;
+    Float_t fMPEOccRatioErr;
+    Float_t fRawOccRatioErr;
 
     Float_t fDeltaDistInScint;
     Float_t fDeltaDistInAV;
@@ -111,6 +123,9 @@ namespace LOCAS{
     Float_t fCentralLBPhi;
 
     Float_t fLBIntensityNormRatio;
+
+    Float_t fModelCorrMPEOccRatio;
+    Float_t fModelCorrRawOccRatio;
 
     ClassDef( LOCASDataPoint, 1 );
     

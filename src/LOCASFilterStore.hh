@@ -29,8 +29,9 @@ namespace LOCAS{
   {
   public:
 
-    LOCASFilterStore( std::string storeName = "" );
-    ~LOCASFilterStore(){ };
+    LOCASFilterStore( const char* fileName, std::string storeName = "" );
+    LOCASFilterStore(){ }
+    ~LOCASFilterStore(){ }
 
     /////////////////////////////////
     ////////     METHODS     ////////

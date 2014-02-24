@@ -20,6 +20,8 @@
 #include "LOCASModelParameterStore.hh"
 #include "LOCASDataPoint.hh"
 
+#include <iostream>
+
 #include <string>
 
 namespace LOCAS{
@@ -28,9 +30,8 @@ namespace LOCAS{
   {
   public:
     LOCASModel(){ };
-    LOCASModel( const LOCASModelParameterStore& locasParams, 
-                const std::string modelName = "" );
-    ~LOCASModel(){ };
+    LOCASModel( const char* fileName );
+    ~LOCASModel(){ if ( fParameters != NULL ) { delete[] fParameters; } }
 
     /////////////////////////////////
     ////////     METHODS     ////////
@@ -45,7 +46,7 @@ namespace LOCAS{
     std::string GetModelName() const { return fModelName; }
 
     LOCASModelParameterStore GetModelParameterStore() const { return fModelParameterStore; }
-    Double_t* GetParameters() const { return fParameters; }
+    //Double_t* GetParameters() const { return fParameters; }
 
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -54,7 +55,7 @@ namespace LOCAS{
     void SetModelName( const std::string name ){ fModelName = name; }
 
     void SetModelParameterStore( const LOCASModelParameterStore& locasParams );
-    void SetParameters( const Double_t* params ) { *fParameters = *params; }
+    //void SetParameters( const Double_t* params ) { *fParameters = *params; }
 
   
 
@@ -62,7 +63,7 @@ namespace LOCAS{
 
     std::string fModelName;
 
-    LOCASModelParameterStore  fModelParameterStore;
+    LOCASModelParameterStore fModelParameterStore;
     Double_t* fParameters;
 
     ClassDef( LOCASModel, 1 );

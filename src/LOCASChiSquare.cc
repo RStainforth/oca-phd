@@ -29,7 +29,7 @@ ClassImp( LOCASChiSquare )
 //////////////////////////////////////
 //////////////////////////////////////
 
-LOCASChiSquare::LOCASChiSquare( const LOCASModel& locasModel, 
+LOCASChiSquare::LOCASChiSquare( const LOCASOpticsModel& locasModel, 
                                 const LOCASDataStore& locasData )
 {
 
@@ -44,11 +44,11 @@ LOCASChiSquare::LOCASChiSquare( const LOCASModel& locasModel,
 Float_t LOCASChiSquare::EvaluateChiSquare( const LOCASDataPoint& dPoint )
 {
 
-  Float_t dataVal = dPoint.GetOccRatio();
+  Float_t dataVal = dPoint.GetMPEOccRatio();
   Float_t modelVal = fModel.ModelPrediction( dPoint );
   Float_t res = ( dataVal - modelVal ) * ( dataVal - modelVal );
 
-  Float_t error = dPoint.GetOccRatioErr();
+  Float_t error = dPoint.GetMPEOccRatioErr();
 
   return ( res / ( error * error ) );
 }

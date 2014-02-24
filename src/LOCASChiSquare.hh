@@ -19,6 +19,7 @@
 #define _LOCASChiSquare_
 
 #include "LOCASModel.hh"
+#include "LOCASOpticsModel.hh"
 #include "LOCASModelParameterStore.hh"
 #include "LOCASDataPoint.hh"
 #include "LOCASDataStore.hh"
@@ -29,7 +30,7 @@ namespace LOCAS{
   {
   public:
     LOCASChiSquare(){ };
-    LOCASChiSquare( const LOCASModel& locasModel, const LOCASDataStore& locasData );
+    LOCASChiSquare( const LOCASOpticsModel& locasModel, const LOCASDataStore& locasData );
     ~LOCASChiSquare(){ };
 
     /////////////////////////////////
@@ -40,11 +41,14 @@ namespace LOCAS{
     Float_t EvaluateGlobalChiSquare();
     Float_t EvaluateGlobalChiSquare( const Double_t* params );
 
+    void AddModel( const LOCASOpticsModel& locasModel ){ fModel = locasModel; }
+    void AddData( const LOCASDataStore& locasData ){ fDataStore = locasData; }
+
   private:
 
     LOCASDataStore fDataStore;
     
-    LOCASModel fModel;
+    LOCASOpticsModel fModel;
 
     ClassDef( LOCASChiSquare, 0 );
 

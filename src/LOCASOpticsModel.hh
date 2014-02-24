@@ -27,24 +27,38 @@ namespace LOCAS{
   {
   public:
     LOCASOpticsModel(){ }
-    LOCASOpticsModel( LOCASModelParameterStore& locasParams, 
-                      const std::string modelName = "" );
-    ~LOCASOpticsModel(){ delete fParameters; }
+    LOCASOpticsModel( const char* fileName );
+    ~LOCASOpticsModel(){ if ( fParameters != NULL ){ delete[] fParameters; } }
 
-    void InitialiseParameters(){ }
+    void AllocateParameters();
+    void InitialiseParameterIndices();
+    void InitialiseParameters();
 
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
 
-    Float_t ModelPrediction( const LOCASDataPoint& dataPoint );
+    virtual Float_t ModelPrediction( const LOCASDataPoint& dataPoint );
 
-    Float_t ModelLBDistribution( const LOCASDataPoint& dataPoint );
-    Float_t ModelAngularResponse( const LOCASDataPoint& dataPoint );
+    Float_t ModelLBDistribution( const LOCASDataPoint& dataPoint, Int_t runType );
+    Float_t ModelAngularResponse( const LOCASDataPoint& dataPoint, Int_t runType );
 
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
+
+    Float_t GetPar( const Int_t index ) { return fParameters[ index ]; }
+
+    Int_t GetScintPar() { return fParameters[ fScintParIndex ]; }
+    Int_t GetAVPar() { return fParameters[ fAVParIndex ]; }
+    Int_t GetWaterPar() { return fParameters[ fWaterParIndex ]; }
+
+    Int_t GetScintRSPar() { return fParameters[ fScintRSParIndex ]; }
+    Int_t GetAVRSPar() { return fParameters[ fAVRSParIndex ]; }
+    Int_t GetWaterRSPar() { return fParameters[ fWaterRSParIndex ]; }
+
+    Int_t GetAngularResponsePar( const Int_t index ) { return fParameters[ GetAngularResponseParIndex() + index ]; }
+    Int_t GetLBDistributionPar( const Int_t index ) { return fParameters[ GetLBDistributionParIndex() + index ]; }
 
     Int_t GetScintParIndex() const { return fScintParIndex; }
     Int_t GetAVParIndex() const { return fAVParIndex; }
@@ -59,11 +73,29 @@ namespace LOCAS{
 
     Int_t GetNAngularResponseBins() const { return fNAngularResponseBins; }
     Int_t GetNLBDistributionBins() const { return fNLBDistributionBins; }
+    Int_t GetNLBDistributionThetaBins() const { return fNLBDistributionThetaBins; }
+    Int_t GetNLBDistributionPhiBins() const { return fNLBDistributionPhiBins; }
+
+    Double_t* GetParameters() const { return fParameters; }
+    Int_t GetNParameters() const { return fNParameters; }
+
+    std::vector< LOCASModelParameter >::iterator GetParametersIterBegin(){ return fModelParameterStore.GetLOCASModelParametersIterBegin(); }
+    std::vector< LOCASModelParameter >::iterator GetParametersIterEnd(){ return fModelParameterStore.GetLOCASModelParametersIterEnd(); }
     
     
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
+
+    void SetPar( const Int_t index, const Float_t val ) { fParameters[ index ] = val; }
+
+    void SetScintPar( const Float_t val ) { fParameters[ fScintParIndex ] = val; }
+    void SetAVPar( const Float_t val ) { fParameters[ fAVParIndex ] = val; }
+    void SetWaterPar( const Float_t val ) { fParameters[ fWaterParIndex ] = val; }
+
+    void SetScintRSPar( const Float_t val ) { fParameters[ fScintRSParIndex ] = val; }
+    void SetAVRSPar( const Float_t val ) { fParameters[ fAVRSParIndex ] = val; }
+    void SetWaterRSPar( const Float_t val ) { fParameters[ fWaterRSParIndex ] = val; }
     
     void SetScintParIndex( const Int_t nIndex ){ fScintParIndex = nIndex; }
     void SetAVParIndex( const Int_t nIndex ){ fAVParIndex = nIndex; }
@@ -78,6 +110,11 @@ namespace LOCAS{
     
     void SetNAngularResponseBins( const Int_t val ){ fNAngularResponseBins = val; }
     void SetNLBDistributionBins( const Int_t val ){ fNLBDistributionBins = val; }
+    void SetNLBDistributionThetaBins( const Int_t val ){ fNLBDistributionThetaBins = val; }
+    void SetNLBDistributionPhiBins( const Int_t val ){ fNLBDistributionPhiBins = val; }
+
+    void SetParameters( const Double_t* params ) { *fParameters = *params; }
+    void SetNParameters( const Int_t npars ){ fNParameters = npars; }
     
   private:
     
@@ -94,6 +131,13 @@ namespace LOCAS{
     
     Int_t fNAngularResponseBins;
     Int_t fNLBDistributionBins;
+    Int_t fNLBDistributionThetaBins;
+    Int_t fNLBDistributionPhiBins;
+
+    std::string fModelName;
+    Double_t* fParameters;
+    Int_t fNParameters;
+    LOCASModelParameterStore fModelParameterStore;
     
     ClassDef( LOCASOpticsModel, 1 );
     

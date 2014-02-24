@@ -532,7 +532,7 @@ void LOCASPMT::ProcessLightPath( LOCASLightPath& lPath )
     lPath.CalculateFresnelTRCoeff();
     SetFresnelTCoeff( lPath.GetFresnelTCoeff() );
 
-    if ( ( lPath.GetStartPos() ).Mag() < 4500.0 ){
+    if ( ( lPath.GetStartPos() ).Mag() < 0.0 ){
       lPath.CalculateSolidAngle( fNorm, 0 );
       SetSolidAngle( lPath.GetSolidAngle() );
       SetCosTheta( lPath.GetCosThetaAvg() );

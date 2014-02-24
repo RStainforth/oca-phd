@@ -28,12 +28,11 @@ ClassImp( LOCASModel )
 //////////////////////////////////////
 //////////////////////////////////////
 
-LOCASModel::LOCASModel( const LOCASModelParameterStore& locasParams, 
-                        const std::string modelName )
+LOCASModel::LOCASModel( const char* fileName )
 {
 
-  SetModelParameterStore( locasParams );
-  SetModelName( modelName );
+  fParameters = NULL;
+  fModelParameterStore.AddParameters( fileName );
 
 }
 

@@ -1,0 +1,107 @@
+{
+name : "FITFILE",
+index: "run_setup",
+
+valid_begin: [0, 0],
+valid_end: [0, 0],
+
+run_ids: [ 3511220, 3512220, 3511440, 3512440, 3521220, 3522220, 3522440 ],
+}
+
+{
+name: "FITFILE",
+index: "filter_setup",
+
+valid_begin: [0, 0],
+valid_end: [0, 0],
+
+filter_list: [ "filter_mpe_occratio", "filter_raw_occratio", "filter_raw_occupancy", "filter_deltascint", "filter_deltaav", "filter_deltawater", "filter_pmt_angle", "filter_solid_angle_ratio", "filter_avhd_shadow", "filter_geo_shadow" ],
+
+filter_pmt_angle_min: 0.0,
+filter_pmt_angle_max: 45.0,
+
+filter_solid_angle_ratio_min: 0.1,
+filter_solid_angle_ratio_max: 10.0,
+
+filter_avhd_shadow_min: 0.98,
+filter_avhd_shadow_max: 1.02,
+
+filter_geo_shadow_min: 0.98,
+filter_geo_shadow_max: 1.02,
+
+filter_mpe_occratio_min: 0.5,
+filter_mpe_occratio_max: 1.8,
+
+filter_raw_occratio_min: 0.5,
+filter_raw_occratio_max: 1.8,
+
+filter_raw_occupancy_min: 1000.0,
+filter_raw_occupancy_max: 100000000.0,
+
+filter_deltascint_min: 100.0,
+filter_deltascint_max: 10000000.0,
+
+filter_deltaav_min: 5.0,
+filter_deltaav_max: 100000000.0,
+
+filter_deltawater_min: 50.0,
+filter_deltawater_max: 1000000000.0,
+}
+
+{
+name: "FITFILE",
+index: "parameter_setup",
+
+valid_begin: [0, 0],
+valid_end: [0, 0],
+
+parameter_list: [ "par_scint", "par_av", "par_water" ],
+
+par_scint_indices: [ 0, 0 ],
+par_scint_init: 32000.0,
+par_scint_min: 30000.0,
+par_scint_max: 40000.0,
+par_scint_inc: 500.0,
+
+par_av_indices: [ 1, 1 ],
+par_av_init: 1000.0,
+par_av_min: 10.0,
+par_av_max: 2000.0,
+par_av_inc: 50.0,
+
+par_water_indices: [ 2, 2 ],
+par_water_init: 35000.0,
+par_water_min: 3000.0,
+par_water_max: 40000.0,
+par_water_inc: 500.0,
+
+par_scint_rs_indices: [ 3, 3 ],
+par_scint_rs_init: 1500000.0,
+par_scint_rs_min: 1000000.0,
+par_scint_rs_max: 2000000.0,
+par_scint_rs_inc: 1000.0,
+
+par_av_rs_indices: [ 4, 4 ],
+par_av_rs_init: 1500000.0,
+par_av_rs_min: 1000000.0,
+par_av_rs_max: 2000000.0,
+par_av_rs_inc: 1000.0,
+
+par_water_rs_indices: [ 5, 5 ],
+par_water_rs_init: 1500000.0,
+par_water_rs_min: 1000000.0,
+par_water_rs_max: 2000000.0,
+par_water_rs_inc: 1000.0,
+
+par_ang_resp_indices: [ 6, 95 ],
+par_ang_resp_init: 1.0,
+par_ang_resp_min: 0.8,
+par_ang_resp_max: 1.2,
+par_ang_resp_inc: 0.1,
+
+par_lb_dist_indices: [ 96, 527 ],
+par_lb_dist_init: 1.0,
+par_lb_dist_min: 0.8,
+par_lb_dist_max: 1.2,
+par_lb_dist_inc: 0.1,
+}

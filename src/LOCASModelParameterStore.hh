@@ -31,7 +31,7 @@ namespace LOCAS{
   public:
 
     LOCASModelParameterStore ( std::string storeName = "" );
-    ~LOCASModelParameterStore(){ };
+    ~LOCASModelParameterStore(){ }
 
     /////////////////////////////////
     ////////     METHODS     ////////

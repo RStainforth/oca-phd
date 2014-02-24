@@ -33,9 +33,11 @@ ClassImp( LOCASRawDataPoint )
 LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr )
 {
 
-  SetOccRatio( pmtPtr->GetMPECorrOccupancy() / pmtPtr->GetCentralMPECorrOccupancy() );
+  SetMPEOccRatio( pmtPtr->GetMPECorrOccupancy() / pmtPtr->GetCentralMPECorrOccupancy() );
+  SetRawOccRatio( pmtPtr->GetOccupancy() / pmtPtr->GetCentralOccupancy() );
 
-  SetOccRatioErr( LOCASMath::OccRatioErr( pmtPtr ) );
+  SetMPEOccRatioErr( LOCASMath::OccRatioErr( pmtPtr ) );
+  SetRawOccRatioErr( LOCASMath::OccRatioErr( pmtPtr ) );
 
   SetDistInScint( pmtPtr->GetDistInScint() );
   SetCentralDistInScint( pmtPtr->GetCentralDistInScint() );
@@ -54,6 +56,16 @@ LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr )
 
   SetMPECorrOccupancy( pmtPtr->GetMPECorrOccupancy() );
   SetCentralMPECorrOccupancy( pmtPtr->GetCentralMPECorrOccupancy() );
+
+  if ( ( pmtPtr->GetCosTheta() <= 1.0 ) && ( pmtPtr->GetCosTheta() >= 0.0 ) ){
+    SetIncidentAngle( TMath::ACos( pmtPtr->GetCosTheta() ) * ( 180.0 / TMath::Pi() ) );
+  }
+  else{ SetIncidentAngle( -10.0 ); }
+
+  if ( ( pmtPtr->GetCentralCosTheta() <= 1.0 ) && ( pmtPtr->GetCentralCosTheta() >= 0.0 ) ){
+    SetCentralIncidentAngle( TMath::ACos( pmtPtr->GetCentralCosTheta() ) * ( 180.0 / TMath::Pi() ) );
+  }
+  else{ SetCentralIncidentAngle( -10.0 ); }
 
   SetLBTheta( pmtPtr->GetRelLBTheta() );
   SetCentralLBTheta( pmtPtr->GetCentralRelLBTheta() );
@@ -109,7 +121,8 @@ LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr )
 LOCASRawDataPoint& LOCASRawDataPoint::operator=( const LOCASRawDataPoint& rhs )
 {
 
-  SetOccRatio( rhs.GetMPECorrOccupancy() / rhs.GetCentralMPECorrOccupancy() );
+  SetMPEOccRatio( rhs.GetMPECorrOccupancy() / rhs.GetCentralMPECorrOccupancy() );
+  SetRawOccRatio( rhs.GetRawOccupancy() / rhs.GetCentralRawOccupancy() );
 
   SetDistInScint( rhs.GetDistInScint() );
   SetCentralDistInScint( rhs.GetCentralDistInScint() );

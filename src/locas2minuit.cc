@@ -101,7 +101,6 @@ int main( int argc, char** argv ){
     gMinuit->mnparm( iPar->GetIndex(), iPar->GetParameterName(), iPar->GetInitialValue(), iPar->GetIncrementValue(), iPar->GetMinValue(), iPar->GetMaxValue(), ierflg );
   }
 
-
   arglist[0] = 500;
   arglist[1] = 1.0;
 

@@ -23,6 +23,7 @@
 #define _LOCASRawDataPoint_
 
 #include "LOCASPMT.hh"
+#include "TMath.h"
 #include <string>
 
 namespace LOCAS{
@@ -41,9 +42,11 @@ namespace LOCAS{
     ////////     GETTERS     ////////
     /////////////////////////////////
 
-    Float_t GetOccRatio() const { return fOccRatio; }
+    Float_t GetMPEOccRatio() const { return fMPEOccRatio; }
+    Float_t GetRawOccRatio() const { return fRawOccRatio; }
 
-    Float_t GetOccRatioErr() const { return fOccRatioErr; }
+    Float_t GetMPEOccRatioErr() const { return fMPEOccRatioErr; }
+    Float_t GetRawOccRatioErr() const { return fRawOccRatioErr; }
 
     Float_t GetDistInScint() const { return fDistInScint; }
     Float_t GetCentralDistInScint() const { return fCentralDistInScint; }
@@ -103,9 +106,11 @@ namespace LOCAS{
     ////////     SETTERS     ////////
     /////////////////////////////////
 
-    void SetOccRatio( const Float_t val ) { fOccRatio = val; }
+    void SetMPEOccRatio( const Float_t val ) { fMPEOccRatio = val; }
+    void SetRawOccRatio( const Float_t val ) { fRawOccRatio = val; }
 
-    void SetOccRatioErr( const Float_t val ) { fOccRatioErr = val; }
+    void SetMPEOccRatioErr( const Float_t val ) { fMPEOccRatioErr = val; }
+    void SetRawOccRatioErr( const Float_t val ) { fRawOccRatioErr = val; }
 
     void SetDistInScint( const Float_t val ) { fDistInScint = val; }
     void SetCentralDistInScint( const Float_t val ) { fCentralDistInScint = val; }
@@ -163,9 +168,11 @@ namespace LOCAS{
 
   private:
 
-    Float_t fOccRatio;
+    Float_t fMPEOccRatio;
+    Float_t fRawOccRatio;
 
-    Float_t fOccRatioErr;
+    Float_t fMPEOccRatioErr;
+    Float_t fRawOccRatioErr;
 
     Float_t fDistInScint;
     Float_t fCentralDistInScint;

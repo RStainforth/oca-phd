@@ -30,11 +30,12 @@ ClassImp( LOCASFilterStore )
 //////////////////////////////////////
 //////////////////////////////////////
 
-LOCASFilterStore::LOCASFilterStore( std::string storeName )
+LOCASFilterStore::LOCASFilterStore( const char* fileName, std::string storeName )
 {
 
   fStoreName = storeName;
   fFilters.clear();
+  AddFilters( fileName );
  
 }
 

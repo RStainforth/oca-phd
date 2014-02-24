@@ -34,6 +34,18 @@ ClassImp( LOCASRawDataStore )
 //////////////////////////////////////
 //////////////////////////////////////
 
+LOCASRawDataStore::LOCASRawDataStore( LOCASRunReader& runReader, std::string storeName )
+{
+  
+  fStoreName = storeName;
+  fRawDataPoints.clear();
+  AddRawData( runReader );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 LOCASRawDataStore::LOCASRawDataStore( std::string storeName )
 {
   

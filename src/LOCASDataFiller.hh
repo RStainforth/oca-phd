@@ -26,14 +26,15 @@ namespace LOCAS{
   class LOCASDataFiller : public TObject
   {
   public:
-    LOCASDataFiller(){ };
-    ~LOCASDataFiller(){ };
+    LOCASDataFiller( LOCASRawDataStore& dataSt, LOCASFilterStore& filterSt );
+    LOCASDataFiller(){ }
+    ~LOCASDataFiller(){ }
 
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
 
-    void AddData( LOCASRawDataStore* dataSt, LOCASFilterStore* filterSt );
+    void AddData( LOCASRawDataStore& dataSt, LOCASFilterStore& filterSt );
 
     /////////////////////////////////
     ////////     GETTERS     ////////

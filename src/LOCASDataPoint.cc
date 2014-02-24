@@ -32,9 +32,11 @@ ClassImp( LOCASDataPoint )
 LOCASDataPoint::LOCASDataPoint( const LOCASRawDataPoint dataPoint )
 {
 
-  SetOccRatio( ( dataPoint.GetOccRatio() ) );
+  SetMPEOccRatio( ( dataPoint.GetMPEOccRatio() ) );
+  SetRawOccRatio( ( dataPoint.GetRawOccRatio() ) );
 
-  SetOccRatioErr( ( dataPoint.GetOccRatioErr() ) );
+  SetMPEOccRatioErr( ( dataPoint.GetMPEOccRatioErr() ) );
+  SetRawOccRatioErr( ( dataPoint.GetRawOccRatioErr() ) );
 
   SetDeltaDistInScint( ( dataPoint.GetDistInScint() - dataPoint.GetCentralDistInScint() ) );
   SetDeltaDistInAV( ( dataPoint.GetDistInAV() - dataPoint.GetCentralDistInAV() ) );
@@ -43,16 +45,19 @@ LOCASDataPoint::LOCASDataPoint( const LOCASRawDataPoint dataPoint )
   SetSolidAngleRatio( ( dataPoint.GetSolidAngle() / dataPoint.GetCentralSolidAngle() ) );
   SetFresnelTCoeffRatio( ( dataPoint.GetFresnelTCoeff() / dataPoint.GetCentralFresnelTCoeff() ) );
 
+  SetIncidentAngle( dataPoint.GetIncidentAngle() );
+  SetCentralIncidentAngle( dataPoint.GetCentralIncidentAngle() );
+
   SetLBTheta( dataPoint.GetLBTheta() );
   SetCentralLBTheta( dataPoint.GetCentralLBTheta() );
 
   SetLBPhi( dataPoint.GetLBPhi() );
   SetCentralLBPhi( dataPoint.GetCentralLBPhi() );
 
-  SetIncidentAngle( dataPoint.GetIncidentAngle() );
-  SetCentralIncidentAngle( dataPoint.GetCentralIncidentAngle() );
-
   SetLBIntensityNormRatio( ( dataPoint.GetLBIntensityNorm() / dataPoint.GetCentralLBIntensityNorm() ) );
+
+  SetModelCorrMPEOccRatio( GetMPEOccRatio() * ( 1.0 / GetSolidAngleRatio() ) * ( 1.0 / GetFresnelTCoeffRatio() ) );
+  SetModelCorrRawOccRatio( GetRawOccRatio() * ( 1.0 / GetSolidAngleRatio() ) * ( 1.0 / GetFresnelTCoeffRatio() ) );
 
 }
 
@@ -62,9 +67,11 @@ LOCASDataPoint::LOCASDataPoint( const LOCASRawDataPoint dataPoint )
 LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
 {
 
-  SetOccRatio( rhs.GetOccRatio() );
+  SetMPEOccRatio( rhs.GetMPEOccRatio() );
+  SetRawOccRatio( rhs.GetRawOccRatio() );
 
-  SetOccRatioErr( rhs.GetOccRatioErr() );
+  SetMPEOccRatioErr( rhs.GetMPEOccRatioErr() );
+  SetRawOccRatioErr( rhs.GetRawOccRatioErr() );
 
   SetDeltaDistInScint( rhs.GetDeltaDistInScint() );
   SetDeltaDistInAV( rhs.GetDeltaDistInAV() );
@@ -79,7 +86,13 @@ LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
   SetLBPhi( rhs.GetLBPhi() );
   SetCentralLBPhi( rhs.GetCentralLBPhi() );
 
+  SetIncidentAngle( rhs.GetIncidentAngle() );
+  SetCentralIncidentAngle( rhs.GetCentralIncidentAngle() );
+
   SetLBIntensityNormRatio( rhs.GetLBIntensityNormRatio() );
+
+  SetModelCorrMPEOccRatio( rhs.GetModelCorrMPEOccRatio() );
+  SetModelCorrRawOccRatio( rhs.GetModelCorrRawOccRatio() );
 
   return *this;
 

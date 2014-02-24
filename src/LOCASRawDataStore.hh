@@ -30,6 +30,7 @@ namespace LOCAS{
   class LOCASRawDataStore : public TObject
   {
   public:
+    LOCASRawDataStore( LOCASRunReader& runReader, std::string storeName = "" );
     LOCASRawDataStore( std::string storeName = "" );
     ~LOCASRawDataStore(){ };
 
