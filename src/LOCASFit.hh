@@ -4,14 +4,14 @@
 ///
 /// CLASS: LOCAS::LOCASFit
 ///
-/// BRIEF: 
+/// BRIEF: Levenberg-Marquardt fitter for the data (original locas)
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
 ///     02/2014 : RPFS - First Revision, new file. \n
 ///
-/// DETAIL: This is the class which implements the fit.
+/// DETAIL: This is the class which implements the Levenberg-Marquardt fit 'a la SNO'
 ///         The code herein is largely based on the original
 ///         LOCAS code from SNO. However it has been implemented
 ///         to coincide with the RAT libraries for SNO+ and
@@ -37,98 +37,104 @@ namespace LOCAS{
   class LOCASFit : public TObject
   {
   public:
+    // The constructors
     LOCASFit();
+    
+    // The destructors - See LOCASFit.cc file
     ~LOCASFit();
 
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
 
+    // Load the cardfile
     void LoadFitFile( const char* fitFile );
+
+    // Initialise the parameters
     void InitialiseParameters();
+
+    // Allocate space for the parameters
     void AllocateParameters();
+
+    // Print information about all the parameters
     void PrintInitialisationInfo();
 
+    // Screen the data and remove PMTs based on certain selection criteria
     void DataScreen();                              
 
+    // Check whether a PMT should be skipped over
     Bool_t PMTSkip( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Float_t mean, Float_t sigma );
 
+    // Return the model Angular Response value and Laserball Distribution value
     Float_t ModelAngularResponse( const LOCASPMT* iPMTPtr, Int_t& iAng, Int_t runType );
     Float_t ModelLBDistribution( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t& iLBDist, Int_t runType );
 
+    // Calculate the individual PMT chisquare and global chisquare
     Float_t CalculatePMTChiSquare( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr );
     Float_t CalculateChiSquare();
 
+    // Calculate the error on an individual PMT
     Float_t CalculatePMTSigma( const LOCASPMT* iPMTPtr );
+
+    // Calculate the occupancy ratio (data) value
     Float_t CalculatePMTData( const LOCASPMT* iPMTPtr );
 
+    // Calculate the occupancy ratio (model) value
     Float_t ModelPrediction(  const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t nA = 0, Float_t* dyda = NULL );
 
+    // Perform the fit using the Levenberg-Marquardt algorithm
     void PerformFit();
 
+    // Fill information about the base parameters relevent to ALL PMTs
     void FillParameterbase();
+
+    // Fill the angular response loop-up array
     void FillAngIndex();
+
+    // Fill information about the parameters specific to a particualr PMT (i.e. Angular response and laserball distribution intensity)
     void FillParameterPoint();
 
+    // Write the fit to a .root file
     void WriteFitToFile( const char* fileName );
 
-    void PlotLBDistributionHistogram( const char* fileName ){ }
-    void PlotAngularResponseHistogram( const char* fileName ){ }
-    void PlotROccVals( const char* fileName );
-    void Plot1DChiSquareScan( const char* fileName,
-                              const Int_t parIndex,
-                              const Float_t startVal,
-                              const Float_t endVal,
-                              const Float_t stepVal,
-                              const Int_t maxPMTs );
-      
+    // Deallocate all data declared on the stack - this is called by the LOCASFit destructor
     void DeAllocate();
-
-    TH1F* DebugPlotModelROcc( const Float_t scintAttVal,
-                          const Float_t avAttVal,
-                          const Float_t waterAttVal,
-                          const Float_t scintRSVal,
-                          const Float_t avRSVal,
-                          const Float_t waterRSVal,
-                          const Float_t angRespVal,
-                          const Float_t lbDistVal,
-                              const Float_t normVal );
-
-    TH1F* DebugPlotDataROcc();
     
     ///////////////////////////////////
     /////     FITTING METHODS     /////
     ///////////////////////////////////
 
+    // All fitting methods included here are the original numerical recipes methods
+    // as featured in the original LOCAS code (SNO)
     
     Int_t MrqFit( float x[], float y[], 
-		 float sig[], int ndata, 
-		 float a[], int ia[], 
-		 int ma, float **covar, 
-		 float **alpha, float *chisq );
-
+                  float sig[], int ndata, 
+                  float a[], int ia[], 
+                  int ma, float **covar, 
+                  float **alpha, float *chisq );
+    
     Int_t  mrqmin( float x[], float y[], 
-		  float sig[], int ndata, 
-		  float a[], int ia[], 
-		  int ma, float **covar, 
-		  float **alpha, float *chisq,
-    		  float *alambda );
+                   float sig[], int ndata, 
+                   float a[], int ia[], 
+                   int ma, float **covar, 
+                   float **alpha, float *chisq,
+                   float *alambda );
     
     void covsrt( float **covar, int ma, 
-		int ia[], int mfit );
+                 int ia[], int mfit );
     
     Int_t gaussj( float **a, int n, 
-		 float **b, int m );
+                  float **b, int m );
     
     void mrqcof( float x[], float y[], 
-			float sig[], int ndata, 
-			float a[], int ia[], 
-			int ma, float **alpha, 
-			float beta[], float *chisq );
+                 float sig[], int ndata, 
+                 float a[], int ia[], 
+                 int ma, float **alpha, 
+                 float beta[], float *chisq );
     
     void mrqfuncs( Float_t x,Int_t ix,
-		   Float_t a[],Float_t *y,
-		   Float_t dyda[],Int_t na );
+                   Float_t a[],Float_t *y,
+                   Float_t dyda[],Int_t na );
     
 
     /////////////////////////////////
@@ -349,16 +355,16 @@ namespace LOCAS{
     Float_t fNChiSquare;
     Float_t fNOccupancy;                                    // The number of prompt counts for a PMT to be cut on (see LOCASFit::PMTSkip method)
 
-    Float_t fCosThetaMaxLimit;
-    Float_t fCosThetaMinLimit;
+    Float_t fCosThetaMaxLimit;                              // The maximum costheta value for a PMT allowed in the fit
+    Float_t fCosThetaMinLimit;                              // The minimum costheta value for a PMT allowed in the fit
     
-    Float_t fPMTDataROccMaxLimit;
-    Float_t fPMTDataROccMinLimit;
+    Float_t fPMTDataROccMaxLimit;                           // The maximum data relative occupancy for a PMT allowed in the fit
+    Float_t fPMTDataROccMinLimit;                           // The minimum data relative occupancy for a PMT allowed in the fit
 
-    Float_t fPMTPosThetaMaxLimit;
-    Float_t fPMTPosThetaMinLimit;
-    Float_t fPMTPosPhiMaxLimit;
-    Float_t fPMTPosPhiMinLimit;
+    Float_t fPMTPosThetaMaxLimit;                           // The maximum PMT position theta value for a PMT allowed in the fit
+    Float_t fPMTPosThetaMinLimit;                           // The minimum PMT position theta value for a PMT allowed in the fit
+    Float_t fPMTPosPhiMaxLimit;                             // The maximum PMT position phi value for a PMT allowed in the fit
+    Float_t fPMTPosPhiMinLimit;                             // The minimum PMT position phi value for a PMT allowed in the fit
 
     Float_t fAVHDShadowingMin;                              // The minimum value of of the AV hold-down rope shadowing for the PMTs to be cut on
     Float_t fAVHDShadowingMax;                              // The maximum value of of the AV hold-down rope shadowing for the PMTs to be cut on

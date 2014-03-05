@@ -20,6 +20,8 @@
 #include "LOCASRawDataPoint.hh"
 #include "LOCASDataPoint.hh"
 
+#include "TVector3.h"
+
 using namespace LOCAS;
 using namespace std;
 
@@ -32,14 +34,16 @@ LOCASDataPoint::LOCASDataPoint( const LOCASRawDataPoint dataPoint )
 {
 
   SetMPEOccRatio( ( dataPoint.GetMPEOccRatio() ) );
-  SetRawOccRatio( ( dataPoint.GetRawOccRatio() ) );
-
   SetMPEOccRatioErr( ( dataPoint.GetMPEOccRatioErr() ) );
-  SetRawOccRatioErr( ( dataPoint.GetRawOccRatioErr() ) );
+
+  SetMPECorrOccupancy( ( dataPoint.GetMPECorrOccupancy() ) );
+  SetCentralMPECorrOccupancy( ( dataPoint.GetCentralMPECorrOccupancy() ) );
 
   SetDeltaDistInScint( ( dataPoint.GetDistInScint() - dataPoint.GetCentralDistInScint() ) );
   SetDeltaDistInAV( ( dataPoint.GetDistInAV() - dataPoint.GetCentralDistInAV() ) );
   SetDeltaDistInWater( ( dataPoint.GetDistInWater() - dataPoint.GetCentralDistInWater() ) );
+  SetTotalDist( dataPoint.GetTotalDist() );
+  SetCentralTotalDist( dataPoint.GetCentralTotalDist() );
 
   SetSolidAngleRatio( ( dataPoint.GetSolidAngle() / dataPoint.GetCentralSolidAngle() ) );
   SetFresnelTCoeffRatio( ( dataPoint.GetFresnelTCoeff() / dataPoint.GetCentralFresnelTCoeff() ) );
@@ -55,8 +59,8 @@ LOCASDataPoint::LOCASDataPoint( const LOCASRawDataPoint dataPoint )
 
   SetLBIntensityNormRatio( ( dataPoint.GetLBIntensityNorm() / dataPoint.GetCentralLBIntensityNorm() ) );
 
-  SetModelCorrMPEOccRatio( GetMPEOccRatio() * ( 1.0 / GetSolidAngleRatio() ) * ( 1.0 / GetFresnelTCoeffRatio() ) );
-  SetModelCorrRawOccRatio( GetRawOccRatio() * ( 1.0 / GetSolidAngleRatio() ) * ( 1.0 / GetFresnelTCoeffRatio() ) );
+  SetPMTPos( dataPoint.GetPMTPos() );
+  SetLBPos( dataPoint.GetLBPos() );
 
 }
 
@@ -67,14 +71,16 @@ LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
 {
 
   SetMPEOccRatio( rhs.GetMPEOccRatio() );
-  SetRawOccRatio( rhs.GetRawOccRatio() );
-
   SetMPEOccRatioErr( rhs.GetMPEOccRatioErr() );
-  SetRawOccRatioErr( rhs.GetRawOccRatioErr() );
+
+  SetMPECorrOccupancy( rhs.GetMPECorrOccupancy() );
+  SetCentralMPECorrOccupancy( rhs.GetCentralMPECorrOccupancy() );
 
   SetDeltaDistInScint( rhs.GetDeltaDistInScint() );
   SetDeltaDistInAV( rhs.GetDeltaDistInAV() );
   SetDeltaDistInWater( rhs.GetDeltaDistInWater() );
+  SetTotalDist( rhs.GetTotalDist() );
+  SetCentralTotalDist( rhs.GetCentralTotalDist() );
 
   SetSolidAngleRatio( rhs.GetSolidAngleRatio() );
   SetFresnelTCoeffRatio( rhs.GetFresnelTCoeffRatio() );
@@ -90,8 +96,12 @@ LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
 
   SetLBIntensityNormRatio( rhs.GetLBIntensityNormRatio() );
 
-  SetModelCorrMPEOccRatio( rhs.GetModelCorrMPEOccRatio() );
-  SetModelCorrRawOccRatio( rhs.GetModelCorrRawOccRatio() );
+  SetModelOccRatio( rhs.GetModelOccRatio() );
+
+  SetChiSq( rhs.GetChiSq() );
+
+  SetPMTPos( rhs.GetPMTPos() );
+  SetLBPos( rhs.GetLBPos() );
 
   return *this;
 

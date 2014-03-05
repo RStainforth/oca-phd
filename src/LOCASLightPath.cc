@@ -36,6 +36,7 @@ LOCASLightPath& LOCASLightPath::operator=( const LOCASLightPath& rhs )
   fTIR = rhs.fTIR;
   fResvHit = rhs.fResvHit;
   fXAVNeck = rhs.fXAVNeck;
+  fStraightLine = rhs.fStraightLine;
 
   fLoopCeiling = rhs.fLoopCeiling;
   fFinalLoopValue = rhs.fFinalLoopValue;
@@ -96,6 +97,7 @@ void LOCASLightPath::Initialise()
   fTIR = false;
   fResvHit = false;
   fXAVNeck = false;
+  fStraightLine = false;
 
   fLoopCeiling = -1;
   fFinalLoopValue = -1;
@@ -165,9 +167,9 @@ void LOCASLightPath::Initialise()
 
   lDB.Clear();
   lDB.LoadRefractiveIndices( "lightwater_sno",
-			     "acrylic_sno",
-			     "lightwater_sno" ); 
- 
+                             "acrylic_sno",
+                             "lightwater_sno" ); 
+  
   fScintRI = lDB.GetScintRI();
   fLowerTargetRI = fScintRI;
   fLowerTargetRI = fScintRI;
@@ -190,6 +192,7 @@ void LOCASLightPath::Clear()
   fTIR = false;
   fResvHit = false;
   fXAVNeck = false;
+  fStraightLine = false;
 
   fLoopCeiling = -1;
   fFinalLoopValue = -1;
@@ -253,13 +256,48 @@ void LOCASLightPath::Clear()
 //////////////////////////////////////
 //////////////////////////////////////
 
+LOCASLightPath::LOCASLightPath( const TVector3& eventPos,
+                                const TVector3& pmtPos )
+  
+{
+  SetStraightLine( true );
+  CalculatePath( eventPos, pmtPos );
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+LOCASLightPath::LOCASLightPath( const TVector3& eventPos,
+                                const TVector3& pmtPos,
+                                const Double_t localityVal )
+  
+{
+  SetStraightLine( false );
+  CalculatePath( eventPos, pmtPos, localityVal );
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+LOCASLightPath::LOCASLightPath( const TVector3& eventPos,
+                                const TVector3& pmtPos,
+                                const Double_t localityVal,
+                                const Double_t lambda )
+  
+{
+  SetStraightLine( false );
+  CalculatePath( eventPos, pmtPos, localityVal, lambda );
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 void LOCASLightPath::CalculatePath( const TVector3& eventPos,
                                     const TVector3& pmtPos )
   
 {
-  Double_t localityVal = 0.0;
-  Double_t wavelength = 400.0;
-  CalculatePath( eventPos, pmtPos, localityVal, wavelength );
+  SetStraightLine( true );
+  CalculatePath( eventPos, pmtPos, 0.0, 400.0 );
 }
 
 //////////////////////////////////////
@@ -269,8 +307,8 @@ void LOCASLightPath::CalculatePath( const TVector3& eventPos,
                                     const TVector3& pmtPos,
                                     const Double_t& localityVal )
 {
-  Double_t wavelength = 400.0;
-  CalculatePath( eventPos, pmtPos, localityVal, wavelength );
+  SetStraightLine( false );
+  CalculatePath( eventPos, pmtPos, localityVal, 400.0 );
 }
 
 //////////////////////////////////////
@@ -279,9 +317,8 @@ void LOCASLightPath::CalculatePath( const TVector3& eventPos,
 void LOCASLightPath::CalculatePathPartial( const TVector3& eventPos,
                                            const TVector3& pmtPos )
 {
-  Double_t localityVal = 0.0;
-  Double_t wavelength = 400.0;
-  CalculatePathPartial( eventPos, pmtPos, localityVal, wavelength );
+  SetStraightLine( true );
+  CalculatePathPartial( eventPos, pmtPos, 0.0, 400.0 );
 }
 
 //////////////////////////////////////
@@ -291,8 +328,8 @@ void LOCASLightPath::CalculatePathPartial( const TVector3& eventPos,
                                            const TVector3& pmtPos,
                                            const Double_t& localityVal )
 {
-  Double_t wavelength = 400.0;
-  CalculatePathPartial( eventPos, pmtPos, localityVal, wavelength );
+  SetStraightLine( false );
+  CalculatePathPartial( eventPos, pmtPos, localityVal, 400.0 );
 }
 
 //////////////////////////////////////
@@ -304,17 +341,13 @@ void LOCASLightPath::CalculatePath( const TVector3& eventPos,
                                     const Double_t& lambda )
 {
 
-  fStartPos = eventPos;
-  fEndPos = pmtPos;
-  fPathPrecision = localityVal;
-  fLambda = lambda;
+  SetStartPos( eventPos );
+  SetEndPos( pmtPos );
+  SetPathPrecision( localityVal );
+  SetLambda( lambda );
   
-  // If locality Value is 0.0, use the straight path calculation
-  if ( fPathPrecision <= 0.0 ){
-    
-    fLightPathEndPos = pmtPos ;
-    fIncidentVecOnPMT = ( pmtPos - eventPos ).Unit();
-    fInitialLightVec = ( pmtPos - eventPos ).Unit();
+  // Check if straight line path required
+  if ( GetStraightLine() ){
 
     CalculateStraightPath( eventPos, pmtPos );
 
@@ -322,9 +355,10 @@ void LOCASLightPath::CalculatePath( const TVector3& eventPos,
   }
   
   // Ensure all Bool_tean variables are set to false to begin with
-  fTIR = false;
-  fResvHit = false;
-  fXAVNeck = false;
+  SetTIR( false );
+  SetResvHit( false );
+  SetXAVNeck( false );
+  SetStraightLine( false );
   
   // The vectors to be used in the calculation. These are the vectors
   // for part of the light paths heading OUT OF the detector  
@@ -341,7 +375,7 @@ void LOCASLightPath::CalculatePath( const TVector3& eventPos,
   TVector3 incidentVecOnPMT;
   
   // Check the size of the loop, if not declared set to 20
-  if ( fLoopCeiling <= 0 ){
+  if ( GetLoopCeiling() <= 0 ){
     fLoopCeiling = 20;
   }
   
@@ -382,9 +416,9 @@ void LOCASLightPath::CalculatePath( const TVector3& eventPos,
 //////////////////////////////////////
 
 TVector3 LOCASLightPath::PathRefraction( const TVector3& incidentVec,
-					 const TVector3& incidentSurfVec,
-					 const Double_t& incRIndex,
-					 const Double_t& refRIndex )
+                                         const TVector3& incidentSurfVec,
+                                         const Double_t& incRIndex,
+                                         const Double_t& refRIndex )
 {
   const Double_t ratioRI = incRIndex / refRIndex;
   const Double_t cosTheta1 = incidentSurfVec.Dot( -1.0 * incidentVec );
@@ -396,13 +430,13 @@ TVector3 LOCASLightPath::PathRefraction( const TVector3& incidentVec,
   }
   
   // The refracted photon vector
-  TVector3 refractedVec;
+  TVector3 refractedVec( 0.0, 0.0, 0.0 );
   
   if ( cosTheta1 >= 0.0 ){
-    refractedVec = ratioRI * incidentVec + ( ratioRI * cosTheta1 - cosTheta2 ) * incidentSurfVec;
+    refractedVec = ( ratioRI * incidentVec ) + ( ( ratioRI * cosTheta1 ) - cosTheta2 ) * incidentSurfVec;
   }
   else {
-    refractedVec = ratioRI * incidentVec - ( ratioRI * cosTheta1 - cosTheta2 ) * incidentSurfVec;
+    refractedVec = ( ratioRI * incidentVec ) - ( ( ratioRI * cosTheta1 ) - cosTheta2 ) * incidentSurfVec;
   }
   
   // Ensure the refracted vector is unit normalised
@@ -414,15 +448,15 @@ TVector3 LOCASLightPath::PathRefraction( const TVector3& incidentVec,
 //////////////////////////////////////
 
 void LOCASLightPath::PathCalculation( const TVector3& eventPos,
-				      const TVector3& pmtPos,
-				      const TVector3& initOffset,
-				      TVector3& distScint,
-				      TVector3& distAV,
-				      TVector3& distAVXDet,
-				      TVector3& distWater,
-				      TVector3& distWaterXDet,
-				      TVector3& incidentVecOnPMT,
-				      const Double_t& lambda )
+                                      const TVector3& pmtPos,
+                                      const TVector3& initOffset,
+                                      TVector3& distScint,
+                                      TVector3& distAV,
+                                      TVector3& distAVXDet,
+                                      TVector3& distWater,
+                                      TVector3& distWaterXDet,
+                                      TVector3& incidentVecOnPMT,
+                                      const Double_t& lambda )
 {
   
   // The refractive indices of the scintillator, av and water
@@ -592,8 +626,8 @@ void LOCASLightPath::PathCalculation( const TVector3& eventPos,
 //////////////////////////////////////
 
 Bool_t LOCASLightPath::LocalityCheck( const TVector3& pmtPos,
-				      const TVector3& hypEndPos,
-				      const Int_t i )
+                                      const TVector3& hypEndPos,
+                                      const Int_t i )
   
 {
   
@@ -619,17 +653,17 @@ Bool_t LOCASLightPath::LocalityCheck( const TVector3& pmtPos,
 //////////////////////////////////////
 
 void LOCASLightPath::CalculatePathPartial( const TVector3& eventPos,
-					   const TVector3& pmtPos,
-					   const Double_t& localityVal,
-					   const Double_t& lambda )
+                                           const TVector3& pmtPos,
+                                           const Double_t& localityVal,
+                                           const Double_t& lambda )
 {
 
-  fStartPos = eventPos;
-  fEndPos = pmtPos;
-  fPathPrecision = localityVal;
-  fLambda = lambda;
+  SetStartPos( eventPos );
+  SetEndPos( pmtPos );
+  SetPathPrecision( localityVal );
+  SetLambda( lambda );
   
-  if ( fPathPrecision == 0.0 ){
+  if ( fPathPrecision <= 0.0 ){
 
     fLightPathEndPos = pmtPos ;
     fIncidentVecOnPMT = ( pmtPos - eventPos ).Unit();
@@ -692,14 +726,14 @@ void LOCASLightPath::CalculatePathPartial( const TVector3& eventPos,
 //////////////////////////////////////
 
 void LOCASLightPath::DefineDistances( const TVector3& eventPos,
-				      const TVector3& pmtPos,
-				      const TVector3& distScint,
-				      const TVector3& distAV,
-				      const TVector3& distAVXDet,
-				      const TVector3& distWater,
-				      const TVector3& distWaterXDet,
-				      const TVector3& incidentVecOnPMT,
-				      const Int_t iVal )
+                                      const TVector3& pmtPos,
+                                      const TVector3& distScint,
+                                      const TVector3& distAV,
+                                      const TVector3& distAVXDet,
+                                      const TVector3& distWater,
+                                      const TVector3& distWaterXDet,
+                                      const TVector3& incidentVecOnPMT,
+                                      const Int_t iVal )
 {
   
   // For events that originate within the scintillator
@@ -707,37 +741,25 @@ void LOCASLightPath::DefineDistances( const TVector3& eventPos,
     
     // IF: total internal reflection is detected, or the calculation
     // was difficult to resolve use straight line path calculation
-    if ( fTIR || fResvHit ){
-
-      CalculateStraightPath( eventPos, pmtPos );
-
-      fLightPathEndPos = pmtPos;
-      fIncidentVecOnPMT = ( pmtPos - eventPos ).Unit();
-      fInitialLightVec = ( pmtPos - eventPos ).Unit();
-
-      fFinalLoopValue = iVal;
-
-      fLightPathType = 0;
-
-    }
+    if ( fTIR || fResvHit ){ CalculateStraightPath( eventPos, pmtPos ); }
     
     // ELSE: Declare refracted path values.
     else{
 
-      fDistInScint = ( distScint - eventPos ).Mag();
-      fDistInAV = ( distAV - distScint ).Mag();
-      fDistInWater = ( distWater - distAV ).Mag();
+      SetDistInScint( ( distScint - eventPos ).Mag() );
+      SetDistInAV( ( distAV - distScint ).Mag() );
+      SetDistInWater( ( distWater - distAV ).Mag() );
 
-      fLightPathEndPos = distWater;
-      fIncidentVecOnPMT = incidentVecOnPMT;
-      fInitialLightVec = ( distScint - eventPos ).Unit();
+      SetLightPathEndPos( distWater );
+      SetIncidentVecOnPMT( incidentVecOnPMT );
+      SetInitialLightVec( ( distScint - eventPos ).Unit() );
 
-      fFinalLoopValue = iVal;
+      SetFinalLoopValue( iVal );
 
-      fPointOnAV1st = distScint;
-      fPointOnAV2nd = distAV;
+      SetPointOnAV1st( distScint );
+      SetPointOnAV2nd( distAV );
 
-      fLightPathType = 1;
+      SetLightPathType( 1 );
       
     }
   }
@@ -745,19 +767,7 @@ void LOCASLightPath::DefineDistances( const TVector3& eventPos,
   // For events that originate within the AV
   else if ( ( eventPos.Mag() > fAVInnerRadius ) && ( eventPos.Mag() < fAVOuterRadius ) ){
     
-    if ( fTIR || fResvHit ){
-
-      CalculateStraightPath( eventPos, pmtPos );
-
-      fLightPathEndPos = pmtPos;
-      fIncidentVecOnPMT = ( pmtPos - eventPos ).Unit();
-      fInitialLightVec = ( pmtPos - eventPos ).Unit();
-
-      fFinalLoopValue = iVal;
-
-      fLightPathType = 0;
-
-    }
+    if ( fTIR || fResvHit ){ CalculateStraightPath( eventPos, pmtPos ); }
     
     else{
       
@@ -765,39 +775,39 @@ void LOCASLightPath::DefineDistances( const TVector3& eventPos,
       
       if ( approachAngleInner > ( -1.0 * eventPos ).Angle( pmtPos - eventPos ) ){
 
-        fDistInScint = ( distAVXDet - distScint ).Mag();
-        fDistInAV = ( eventPos - distAVXDet ).Mag() + ( distAV - distScint ).Mag();
-        fDistInWater = ( distWater - distAV ).Mag();
+        SetDistInScint( ( distAVXDet - distScint ).Mag() );
+        SetDistInAV( ( eventPos - distAVXDet ).Mag() + ( distAV - distScint ).Mag() );
+        SetDistInWater( ( distWater - distAV ).Mag() );
 
-        fFinalLoopValue = iVal;
+        SetFinalLoopValue( iVal );
 
-        fLightPathEndPos = distWater;
-        fIncidentVecOnPMT = incidentVecOnPMT;
-        fInitialLightVec = ( distAVXDet - eventPos ).Unit();
-
-	fPointOnAV1st = distAVXDet;
-	fPointOnAV2nd = distScint;
-	fPointOnAV3rd = distAV;
-
-	fLightPathType = 3;
-
+        SetLightPathEndPos( distWater );
+        SetIncidentVecOnPMT( incidentVecOnPMT );
+        SetInitialLightVec( ( distAVXDet - eventPos ).Unit() );
+        
+        SetPointOnAV1st( distAVXDet );
+        SetPointOnAV2nd( distScint );
+        SetPointOnAV3rd( distAV );
+        
+        SetLightPathType( 3 );
+        
       }
       
       else{
 
-        fDistInScint = 0.0;
-        fDistInAV = ( eventPos - distAV ).Mag();
-        fDistInWater = ( distWater - distAV ).Mag();
+        SetDistInScint( 0.0 );
+        SetDistInAV( ( eventPos - distAV ).Mag() );
+        SetDistInWater( ( distWater - distAV ).Mag() );
 
-        fFinalLoopValue = iVal;
+        SetFinalLoopValue( iVal );
 
-	fLightPathEndPos = distWater;
-        fIncidentVecOnPMT = incidentVecOnPMT;
-        fInitialLightVec = ( distAV - eventPos ).Unit();
-
-	fPointOnAV1st = distAV;
-
-	fLightPathType = 2;
+        SetLightPathEndPos( distWater );
+        SetIncidentVecOnPMT( incidentVecOnPMT );
+        SetInitialLightVec( ( distAV - eventPos ).Unit() );
+        
+        SetPointOnAV1st( distAV );
+        
+        SetLightPathType( 2 );
 
       }
     }
@@ -805,20 +815,7 @@ void LOCASLightPath::DefineDistances( const TVector3& eventPos,
   
   // For events that originate outside of the AV
   else {
-    if ( GetTIR() || GetResvHit() ){
-
-      CalculateStraightPath( eventPos, pmtPos );
-
-      fFinalLoopValue = iVal;
-
-      fLightPathEndPos = pmtPos;
-      fIncidentVecOnPMT = ( pmtPos - eventPos ).Unit();
-      fInitialLightVec = ( pmtPos - eventPos ).Unit();
-
-      fLightPathType = 0;
-      
-    }
-    
+    if ( GetTIR() || GetResvHit() ){ CalculateStraightPath( eventPos, pmtPos ); }
     
     else{
       Double_t approachAngleInner = ClosestAngle( eventPos, fAVInnerRadius );
@@ -826,61 +823,59 @@ void LOCASLightPath::DefineDistances( const TVector3& eventPos,
       
       if ( approachAngleInner > ( -1 * eventPos ).Angle( pmtPos - eventPos ) ){
         
-        fDistInScint = ( distAVXDet - distScint ).Mag();
-        fDistInAV = ( distWaterXDet - distAVXDet ).Mag() + ( distAV - distScint ).Mag();
-        fDistInWater = ( eventPos - distWaterXDet ).Mag() + ( distWater - distAV ).Mag();
+        SetDistInScint( ( distAVXDet - distScint ).Mag() );
+        SetDistInAV( ( distWaterXDet - distAVXDet ).Mag() + ( distAV - distScint ).Mag() );
+        SetDistInWater( ( eventPos - distWaterXDet ).Mag() + ( distWater - distAV ).Mag() );
 
-        fFinalLoopValue = iVal;
+        SetFinalLoopValue( iVal );
 
-        fLightPathEndPos = distWater;
-        fIncidentVecOnPMT = incidentVecOnPMT;
-        fInitialLightVec = ( distWaterXDet - eventPos ).Unit();
+        SetLightPathEndPos( distWater );
+        SetIncidentVecOnPMT( incidentVecOnPMT );
+        SetInitialLightVec( ( distWaterXDet - eventPos ).Unit() );
 
-	fPointOnAV1st = distWaterXDet;
-	fPointOnAV2nd = distAVXDet;
-	fPointOnAV3rd = distScint;
-	fPointOnAV4th = distAV;
-
-	fLightPathType = 4;
-
+        SetPointOnAV1st( distWaterXDet );
+        SetPointOnAV2nd( distAVXDet );
+        SetPointOnAV3rd( distScint );
+        SetPointOnAV4th( distAV );
+        
+        fLightPathType = 4;
+        
       }
       
       else if ( ( approachAngleInner < ( -1.0 * eventPos ).Angle( pmtPos - eventPos ) )
                &&
                ( approachAngleOuter > ( -1.0 * eventPos ).Angle( pmtPos - eventPos ) ) ){
         
-        fDistInScint = 0.0;
-        fDistInAV = ( distWaterXDet - distAV ).Mag();
-        fDistInWater = ( eventPos - distWaterXDet ).Mag() + ( distWater - distAV ).Mag();
+        SetDistInScint( 0.0 );
+        SetDistInAV( ( distWaterXDet - distAV ).Mag() );
+        SetDistInWater( ( eventPos - distWaterXDet ).Mag() + ( distWater - distAV ).Mag() );
 
-        fFinalLoopValue = iVal;
+        SetFinalLoopValue( iVal );
 
-        fLightPathEndPos = distWater;
-        fIncidentVecOnPMT = incidentVecOnPMT;
-        fInitialLightVec = ( distWaterXDet - eventPos ).Unit();
+        SetLightPathEndPos( distWater );
+        SetIncidentVecOnPMT( incidentVecOnPMT );
+        SetInitialLightVec( ( distWaterXDet - eventPos ).Unit() );
 
-	fPointOnAV1st = distWaterXDet;
-	fPointOnAV2nd = distAV;
-
-	fLightPathType = 5;
-
-	
+        SetPointOnAV1st( distWaterXDet );
+        SetPointOnAV2nd( distAV );
+        
+        SetLightPathType( 5 );
 
       }
       
       else{
 
-        fDistInScint = 0.0;
-        fDistInAV = 0.0;
-        fDistInWater = ( eventPos - pmtPos ).Mag();
+        SetDistInScint( 0.0 );
+        SetDistInAV( 0.0 );
+        SetDistInWater( ( eventPos - pmtPos ).Mag() );
 
-        fFinalLoopValue = iVal;
+        SetFinalLoopValue( iVal );
 
-        fLightPathEndPos = distWater;
-        fIncidentVecOnPMT = incidentVecOnPMT;
-        fInitialLightVec = ( pmtPos - eventPos ).Unit();
+        SetLightPathEndPos( distWater );
+        SetIncidentVecOnPMT( incidentVecOnPMT );
+        SetInitialLightVec( ( pmtPos - eventPos ).Unit() );
 
-	fLightPathType = 6;
+        SetLightPathType( 6 );
 
       }
     }
@@ -891,31 +886,31 @@ void LOCASLightPath::DefineDistances( const TVector3& eventPos,
 //////////////////////////////////////
 
 void LOCASLightPath::ReadjustOffset( const TVector3& eventPos,
-				     const TVector3& pmtPos,
-				     const TVector3& distWater,
-				     TVector3& initOffset )
+                                     const TVector3& pmtPos,
+                                     const TVector3& distWater,
+                                     TVector3& initOffset )
   
 {
   
   Double_t scale = eventPos.Mag() / ( 10000.0 );
   
   if ( distWater.Theta() > pmtPos.Theta() ){
-    Double_t thetaAdj =  initOffset.Theta() - scale * ( TMath::Abs( distWater.Theta() - pmtPos.Theta() ) );
+    Double_t thetaAdj =  ( initOffset.Theta() ) - scale * ( TMath::Abs( distWater.Theta() - pmtPos.Theta() ) );
     initOffset.SetTheta( thetaAdj );
   }
   
   else{
-    Double_t thetaAdj =  initOffset.Theta() + scale * ( TMath::Abs( distWater.Theta() - pmtPos.Theta() ) );
+    Double_t thetaAdj =  ( initOffset.Theta() ) + scale * ( TMath::Abs( distWater.Theta() - pmtPos.Theta() ) );
     initOffset.SetTheta( thetaAdj );
   }
   
   if ( distWater.Phi() > pmtPos.Phi() ){
-    Double_t phiAdj =  initOffset.Phi() - scale * ( TMath::Abs(distWater.Phi() - pmtPos.Phi() ) );
+    Double_t phiAdj =  ( initOffset.Phi() ) - scale * ( TMath::Abs(distWater.Phi() - pmtPos.Phi() ) );
     initOffset.SetPhi( phiAdj );
   }
   
   else{
-    Double_t phiAdj =  initOffset.Phi() + scale * ( TMath::Abs( distWater.Phi() - pmtPos.Phi() ) );
+    Double_t phiAdj =  ( initOffset.Phi() ) + scale * ( TMath::Abs( distWater.Phi() - pmtPos.Phi() ) );
     initOffset.SetPhi( phiAdj );
   }
 }
@@ -924,7 +919,7 @@ void LOCASLightPath::ReadjustOffset( const TVector3& eventPos,
 //////////////////////////////////////
 
 Double_t LOCASLightPath::ClosestAngle( const TVector3& eventPos,
-				       const Double_t& edgeRadius )
+                                       const Double_t& edgeRadius )
 {
   Double_t edgeSide;
   edgeSide = TMath::Sqrt( ( TMath::Power( eventPos.Mag(),2 )
@@ -938,27 +933,65 @@ Double_t LOCASLightPath::ClosestAngle( const TVector3& eventPos,
 //////////////////////////////////////
 
 void LOCASLightPath::CalculateStraightPath( const TVector3& eventPos,
-					    const TVector3& pmtPos )
+                                            const TVector3& pmtPos )
 { 
   if( std::isnan( eventPos.Mag() ) )
 	{
-	  fDistInScint = eventPos.Mag();
-	  fDistInAV = eventPos.Mag();
-	  fDistInWater = eventPos.Mag();
+	  SetDistInScint( eventPos.Mag() );
+	  SetDistInAV( eventPos.Mag() );
+	  SetDistInWater( eventPos.Mag() );
 	  return;
 	}
 
-  fDistInScint = CalcDistInSphere( eventPos, pmtPos, fAVInnerRadius );
-  fDistInAV = CalcDistInSphere( eventPos, pmtPos, fAVOuterRadius ) - fDistInScint;
-  fDistInWater = ( pmtPos - eventPos ).Mag() - fDistInAV - fDistInScint;
-}
+  SetDistInScint( CalcDistInSphere( eventPos, pmtPos, fAVInnerRadius ) );
+  SetDistInAV( CalcDistInSphere( eventPos, pmtPos, fAVOuterRadius ) - fDistInScint );
+  SetDistInWater( ( pmtPos - eventPos ).Mag() - fDistInAV - fDistInScint );
 
+  SetLightPathEndPos( pmtPos );
+  SetIncidentVecOnPMT( ( pmtPos - eventPos ).Unit() );
+  SetInitialLightVec( ( pmtPos - eventPos ).Unit() );
+
+  SetFinalLoopValue( 0 );
+  
+  if ( eventPos.Mag() < fAVInnerRadius ){
+
+    SetLightPathType( 1 );
+    SetPointOnAV1st( eventPos + ( fDistInScint * ( ( pmtPos - eventPos ).Unit() ) ) );
+    SetPointOnAV2nd( eventPos + ( fDistInAV * ( ( pmtPos - eventPos ).Unit() ) ) );
+    
+  }
+  
+  else if ( ( eventPos.Mag() > fAVInnerRadius ) && ( eventPos.Mag() < fAVOuterRadius ) ){
+    
+    Double_t approachAngleInner = ClosestAngle(eventPos, fAVInnerRadius);
+    
+    if ( approachAngleInner > ( -1.0 * eventPos ).Angle( pmtPos - eventPos ) ){ SetLightPathType( 3 ); }
+    else { SetLightPathType( 2 ); }
+    
+  }
+
+  else{
+
+    Double_t approachAngleInner = ClosestAngle( eventPos, fAVInnerRadius );
+    Double_t approachAngleOuter = ClosestAngle( eventPos, fAVOuterRadius );
+    
+    if ( approachAngleInner > ( -1 * eventPos ).Angle( pmtPos - eventPos ) ){ SetLightPathType( 4 ); }
+    else if ( ( approachAngleInner < ( -1.0 * eventPos ).Angle( pmtPos - eventPos ) )
+              &&
+              ( approachAngleOuter > ( -1.0 * eventPos ).Angle( pmtPos - eventPos ) ) ){ SetLightPathType( 5 ); }
+
+    else{ SetLightPathType( 6 ); }
+
+  }
+
+}
+      
 //////////////////////////////////////
 //////////////////////////////////////
 
 Double_t LOCASLightPath::CalcDistInSphere( const TVector3& eventPos,
-					   const TVector3& pmtPos,
-					   const Double_t sphereRadius )
+                                           const TVector3& pmtPos,
+                                           const Double_t sphereRadius )
 {
   const TVector3 vectorToPMT = ( pmtPos - eventPos ).Unit();
   const Double_t xCosTheta = vectorToPMT.Dot( eventPos );
@@ -995,9 +1028,9 @@ Double_t LOCASLightPath::CalcDistInSphere( const TVector3& eventPos,
 //////////////////////////////////////
 
 TVector3 LOCASLightPath::VectorToSphereEdge( const TVector3& startPos,
-					     const TVector3& startDir,
-					     const Double_t radiusFromCentre,
-					     const Bool_t outside )
+                                             const TVector3& startDir,
+                                             const Double_t radiusFromCentre,
+                                             const Bool_t outside )
 {
   
   // The a, b, and c coefficients of a typical quadratic equation
@@ -1037,9 +1070,9 @@ TVector3 LOCASLightPath::VectorToSphereEdge( const TVector3& startPos,
 //////////////////////////////////////
 
 void LOCASLightPath::PathThroughTarget( const TVector3& enterPos,
-					const TVector3& enterDir,
-					TVector3& exitPos,
-					TVector3& exitDir)
+                                        const TVector3& enterDir,
+                                        TVector3& exitPos,
+                                        TVector3& exitDir)
 {
   Double_t fillZ = fAVInnerRadius - 2.0 * fAVInnerRadius * fFillFraction;
   Double_t firstRI, secondRI;
@@ -1366,22 +1399,24 @@ void LOCASLightPath::SetAVNeckInformation( const TVector3& pointOnAV,
 //////////////////////////////////////
 
 void LOCASLightPath::CalculateSolidAngle( const TVector3& pmtNorm,
-					  const Int_t nVal )
+                                          const Int_t nVal )
 {
-
+  
   if ( nVal != 0 ){
     CalculateSolidAnglePolygon( pmtNorm, nVal );
     return;
   }
 
-  /// Angles across the PMT surface
-  //double sinAlpha = 0.0, sinBeta = 0.0;
   const Double_t constPi = TMath::Pi();
   Double_t cosThetaAvg = 0.0;
 
-  TVector3 av1, av2, av3, av4;
+  TVector3 av1(0.0, 0.0, 0.0);
+  TVector3 av2(0.0, 0.0, 0.0);
+  TVector3 av3(0.0, 0.0, 0.0);
+  TVector3 av4(0.0, 0.0, 0.0);
 
-  CalculatePath( fStartPos, fEndPos, 10.0, fLambda );
+  if ( GetStraightLine() ){ CalculatePath( fStartPos, fEndPos ); }
+  else{ CalculatePath( fStartPos, fEndPos, 10.0, fLambda ); }
   LOCASLightPath tmpStore = *this;
 
   TVector3 av = fAVInnerRadius * fInitialLightVec;
@@ -1390,39 +1425,59 @@ void LOCASLightPath::CalculateSolidAngle( const TVector3& pmtNorm,
   TVector3 yPrime = ( zPrime.Orthogonal() ).Unit();
   TVector3 xPrime = ( yPrime.Cross( zPrime ) ).Unit();
 
-  TVector3 pmtVec1 = fEndPos + fPMTRadius * xPrime;
-  TVector3 pmtVec2 = fEndPos - fPMTRadius * xPrime;
-  TVector3 pmtVec3 = fEndPos + fPMTRadius * yPrime;
-  TVector3 pmtVec4 = fEndPos - fPMTRadius * yPrime;
+  TVector3 pmtVec1 = fEndPos + ( fPMTRadius * xPrime );
+  TVector3 pmtVec2 = fEndPos - ( fPMTRadius * xPrime );
+  TVector3 pmtVec3 = fEndPos + ( fPMTRadius * yPrime );
+  TVector3 pmtVec4 = fEndPos - ( fPMTRadius * yPrime );
 
-  if( !fTIR && !fResvHit ){
+  if( !GetStraightLine() ){
 
-    CalculatePath( fStartPos, pmtVec1, fPathPrecision, fLambda );
-    if ( !fTIR && !fResvHit ) {av1 = fPointOnAV1st; cosThetaAvg += fIncidentVecOnPMT.Dot( -1.0 * pmtNorm.Unit() );}
-    else {av1 = av;}
-
-    CalculatePath( fStartPos, pmtVec2, fPathPrecision, fLambda );
-    if ( !fTIR && !fResvHit ) {av2 = fPointOnAV1st; cosThetaAvg += fIncidentVecOnPMT.Dot( -1.0 * pmtNorm.Unit() );}
-    else {av2 = av;}
-
-    CalculatePath( fStartPos, pmtVec3, fPathPrecision, fLambda );
-    if ( !fTIR && !fResvHit ) {av3 = fPointOnAV1st; cosThetaAvg += fIncidentVecOnPMT.Dot( -1.0 * pmtNorm.Unit() );}
-    else {av3 = av;}
-
-    CalculatePath( fStartPos, pmtVec4, fPathPrecision, fLambda );
-    if ( !fTIR && !fResvHit ) {av4 = fPointOnAV1st; cosThetaAvg += fIncidentVecOnPMT.Dot( -1.0 * pmtNorm.Unit() );}
-    else {av4 = av;}
+    if( !GetTIR() && !GetResvHit() ){
+      
+      CalculatePath( fStartPos, pmtVec1, fPathPrecision, fLambda );
+      if ( !fTIR && !fResvHit ) {av1 = fPointOnAV1st; cosThetaAvg += fIncidentVecOnPMT.Dot( -1.0 * pmtNorm.Unit() );}
+      else {av1 = av;}
+      
+      CalculatePath( fStartPos, pmtVec2, fPathPrecision, fLambda );
+      if ( !fTIR && !fResvHit ) {av2 = fPointOnAV1st; cosThetaAvg += fIncidentVecOnPMT.Dot( -1.0 * pmtNorm.Unit() );}
+      else {av2 = av;}
+      
+      CalculatePath( fStartPos, pmtVec3, fPathPrecision, fLambda );
+      if ( !fTIR && !fResvHit ) {av3 = fPointOnAV1st; cosThetaAvg += fIncidentVecOnPMT.Dot( -1.0 * pmtNorm.Unit() );}
+      else {av3 = av;}
+      
+      CalculatePath( fStartPos, pmtVec4, fPathPrecision, fLambda );
+      if ( !fTIR && !fResvHit ) {av4 = fPointOnAV1st; cosThetaAvg += fIncidentVecOnPMT.Dot( -1.0 * pmtNorm.Unit() );}
+      else {av4 = av;}
+      
+    }
+    
+    else{
+      
+      av1 = pmtVec1;
+      av2 = pmtVec2;
+      av3 = pmtVec3;
+      av4 = pmtVec4;
+      cosThetaAvg = ( pmtVec1.Unit() * zPrime + pmtVec2.Unit() * zPrime +
+                      pmtVec3.Unit() * zPrime + pmtVec4.Unit() * zPrime );
+      
+    }
 
   }
 
   else{
 
-    av1 = pmtVec1;
-    av2 = pmtVec2;
-    av3 = pmtVec3;
-    av4 = pmtVec4;
-    cosThetaAvg = ( pmtVec1.Unit() * zPrime + pmtVec2.Unit() * zPrime +
-                    pmtVec3.Unit() * zPrime + pmtVec4.Unit() * zPrime );
+      CalculatePath( fStartPos, pmtVec1 );
+      av1 = fPointOnAV1st; cosThetaAvg += fIncidentVecOnPMT.Dot( -1.0 * pmtNorm.Unit() );
+
+      CalculatePath( fStartPos, pmtVec2 );
+      av2 = fPointOnAV1st; cosThetaAvg += fIncidentVecOnPMT.Dot( -1.0 * pmtNorm.Unit() );
+
+      CalculatePath( fStartPos, pmtVec3 );
+      av3 = fPointOnAV1st; cosThetaAvg += fIncidentVecOnPMT.Dot( -1.0 * pmtNorm.Unit() );
+      
+      CalculatePath( fStartPos, pmtVec4 );
+      av4 = fPointOnAV1st; cosThetaAvg += fIncidentVecOnPMT.Dot( -1.0 * pmtNorm.Unit() );
 
   }
 
@@ -1431,16 +1486,16 @@ void LOCASLightPath::CalculateSolidAngle( const TVector3& pmtNorm,
   fCosThetaAvg = cosThetaAvg;
   fCosThetaAvg /= 4.0;
 
-  double angAlpha = ( ( av1 - fStartPos ).Unit() ).Angle( ( ( av2 - fStartPos ).Unit() ) )/2;
-  double angBeta = ( ( av3 - fStartPos ).Unit() ).Angle( ( ( av4 - fStartPos ).Unit() ) )/2;
+  double angAlpha = ( ( av1 - fStartPos ).Unit() ).Angle( ( ( av2 - fStartPos ).Unit() ) )/2.0;
+  double angBeta = ( ( av3 - fStartPos ).Unit() ).Angle( ( ( av4 - fStartPos ).Unit() ) )/2.0;
 
-  fSolidAngle = ( constPi * TMath::Sin( angAlpha ) * TMath::Sin( angBeta ) );
+  SetSolidAngle( constPi * TMath::Sin( angAlpha ) * TMath::Sin( angBeta ) );
 
 
-  if ( fSolidAngle < 0 || fSolidAngle > 4 * constPi ){
+  if ( GetSolidAngle() < 0 || GetSolidAngle() > 4.0 * constPi ){
 
     std::cout << "LOCAS::LOCASLightPath: Solid Angle is out of range!" << std::endl;
-    fSolidAngle = -1.0;
+    SetSolidAngle( -10.0 );
 
   }
 
@@ -1450,9 +1505,9 @@ void LOCASLightPath::CalculateSolidAngle( const TVector3& pmtNorm,
 //////////////////////////////////////
 
 void LOCASLightPath::CalculateSolidAnglePolygon( const TVector3& pmtNorm,
-						 const Int_t nVal )
+                                                 const Int_t nVal )
 {
-
+  
   const Double_t constPi = TMath::Pi();
   Double_t cosThetaAvg = 0.0;
 
@@ -1528,20 +1583,20 @@ void LOCASLightPath::CalculateSolidAnglePolygon( const TVector3& pmtNorm,
 //////////////////////////////////////
 
 void LOCASLightPath::FresnelTRCoeff( const TVector3& dir,
-				     const TVector3& norm,
-				     const Double_t n1,
-				     const Double_t n2,
-				     Double_t& T,
-				     Double_t& R )
+                                     const TVector3& norm,
+                                     const Double_t n1,
+                                     const Double_t n2,
+                                     Double_t& T,
+                                     Double_t& R )
 {
 
   double cos1 = dir.Dot( norm );
-  if ( cos1 < 0.0 ){ cos1 = -cos1; }
+  if ( cos1 < 0.0 ){ cos1 = -1.0 * cos1; }
 
-  const double sin1_2 = 1.0 - cos1 * cos1;
+  const double sin1_2 = 1.0 - ( cos1 * cos1 );
   const std::complex<double> n12 = n1 / n2;
   const std::complex<double> cos2 = std::sqrt( std::complex<double>( 1.0, 0.0 ) - ( n12 * n12 ) * sin1_2 );
-
+  
   const std::complex<double> Ds = ( n2 * cos2 + n1 * cos1 );
   const std::complex<double> Dp = ( n2 * cos1 + n1 * cos2 );
 
@@ -1576,12 +1631,12 @@ void LOCASLightPath::CalculateFresnelTRCoeff()
 
   // Type 0 - Straight Line Path
   if ( fLightPathType == 0 ){
-    fFresnelTCoeff = -1.0;
-    fFresnelRCoeff = -1.0;
+    fFresnelTCoeff = 1.0;
+    fFresnelRCoeff = 1.0;
   }
 
   // Type 1 - Scint -> AV -> Water -> PMT
-  if ( fLightPathType == 1 ){
+  else if ( fLightPathType == 1 ){
     Double_t T1 = 0.0;
     Double_t R1 = 0.0;
 
@@ -1589,137 +1644,137 @@ void LOCASLightPath::CalculateFresnelTRCoeff()
     Double_t R2 = 0.0;
     
     FresnelTRCoeff( GetIncidentVecOn1stSurf(),
-		    -1.0 * ( GetPointOnAV1st().Unit() ),
-		    GetScintRI( fLambda ),
-		    GetAVRI( fLambda ),
-		    T1, R1 );
-
+                    -1.0 * ( GetPointOnAV1st().Unit() ),
+                    GetScintRI( fLambda ),
+                    GetAVRI( fLambda ),
+                    T1, R1 );
+    
     FresnelTRCoeff( GetIncidentVecOn2ndSurf(),
-		    -1.0 * ( GetPointOnAV2nd().Unit() ),
-		    GetScintRI( fLambda ),
-		    GetWaterRI( fLambda ),
-		    T2, R2 );
-
+                    -1.0 * ( GetPointOnAV2nd().Unit() ),
+                    GetScintRI( fLambda ),
+                    GetWaterRI( fLambda ),
+                    T2, R2 );
+    
     fFresnelTCoeff = T1 * T2;
     fFresnelRCoeff = R1 * R2;
   }
-
+  
   // Type 2 - AV -> Water -> PMT
-  if ( fLightPathType == 2 ){
+  else if ( fLightPathType == 2 ){
     Double_t T1 = 0.0;
     Double_t R1 = 0.0;
     
     FresnelTRCoeff( GetIncidentVecOn1stSurf(),
-		    -1.0 * ( GetPointOnAV1st().Unit() ),
-		    GetScintRI( fLambda ),
-		    GetAVRI( fLambda ),
-		    T1, R1 );
-
+                    -1.0 * ( GetPointOnAV1st().Unit() ),
+                    GetScintRI( fLambda ),
+                    GetAVRI( fLambda ),
+                    T1, R1 );
+    
     fFresnelTCoeff = T1;
     fFresnelRCoeff = R1;
   }
-
+  
   // Type 3 - AV -> Scint -> AV -> Water -> PMT
-  if ( fLightPathType == 3 ){
+  else if ( fLightPathType == 3 ){
     Double_t T1 = 0.0;
     Double_t R1 = 0.0;
-
+    
     Double_t T2 = 0.0;
     Double_t R2 = 0.0;
-
+    
     Double_t T3 = 0.0;
     Double_t R3 = 0.0;
     
     FresnelTRCoeff( GetIncidentVecOn1stSurf(),
-		    ( GetPointOnAV1st().Unit() ),
-		    GetAVRI( fLambda ),
-		    GetScintRI( fLambda ),
-		    T1, R1 );
-
+                    ( GetPointOnAV1st().Unit() ),
+                    GetAVRI( fLambda ),
+                    GetScintRI( fLambda ),
+                    T1, R1 );
+    
     FresnelTRCoeff( GetIncidentVecOn2ndSurf(),
-		    -1.0 * ( GetPointOnAV2nd().Unit() ),
-		    GetScintRI( fLambda ),
-		    GetAVRI( fLambda ),
-		    T2, R2 );
-
+                    -1.0 * ( GetPointOnAV2nd().Unit() ),
+                    GetScintRI( fLambda ),
+                    GetAVRI( fLambda ),
+                    T2, R2 );
+    
     FresnelTRCoeff( GetIncidentVecOn3rdSurf(),
-		    -1.0 * ( GetPointOnAV3rd().Unit() ),
-		    GetAVRI( fLambda ),
-		    GetWaterRI( fLambda ),
-		    T3, R3 );
-
+                    -1.0 * ( GetPointOnAV3rd().Unit() ),
+                    GetAVRI( fLambda ),
+                    GetWaterRI( fLambda ),
+                    T3, R3 );
+    
     fFresnelTCoeff = T1 * T2 * T3;
     fFresnelRCoeff = R1 * R2 * R3;
   }
-
-  // Type 3 - Water -> AV -> Scint -> AV -> Water -> PMT
-  if ( fLightPathType == 4 ){
+  
+  // Type 4 - Water -> AV -> Scint -> AV -> Water -> PMT
+  else if ( fLightPathType == 4 ){
     Double_t T1 = 0.0;
     Double_t R1 = 0.0;
-
+    
     Double_t T2 = 0.0;
     Double_t R2 = 0.0;
-
+    
     Double_t T3 = 0.0;
     Double_t R3 = 0.0;
-
+    
     Double_t T4 = 0.0;
     Double_t R4 = 0.0;
-
+    
     FresnelTRCoeff( GetIncidentVecOn1stSurf(),
-		    ( GetPointOnAV1st().Unit() ),
-		    GetWaterRI( fLambda ),
-		    GetAVRI( fLambda ),
-		    T1, R1 );
+                    ( GetPointOnAV1st().Unit() ),
+                    GetWaterRI( fLambda ),
+                    GetAVRI( fLambda ),
+                    T1, R1 );
     
     FresnelTRCoeff( GetIncidentVecOn2ndSurf(),
-		    ( GetPointOnAV2nd().Unit() ),
-		    GetAVRI( fLambda ),
-		    GetScintRI( fLambda ),
-		    T2, R2 );
-
+                    ( GetPointOnAV2nd().Unit() ),
+                    GetAVRI( fLambda ),
+                    GetScintRI( fLambda ),
+                    T2, R2 );
+    
     FresnelTRCoeff( GetIncidentVecOn3rdSurf(),
-		    -1.0 * ( GetPointOnAV3rd().Unit() ),
-		    GetScintRI( fLambda ),
-		    GetAVRI( fLambda ),
-		    T3, R3 );
-
+                    -1.0 * ( GetPointOnAV3rd().Unit() ),
+                    GetScintRI( fLambda ),
+                    GetAVRI( fLambda ),
+                    T3, R3 );
+    
     FresnelTRCoeff( GetIncidentVecOn4thSurf(),
-		    -1.0 * ( GetPointOnAV4th().Unit() ),
-		    GetAVRI( fLambda ),
-		    GetWaterRI( fLambda ),
-		    T4, R4 );
-
+                    -1.0 * ( GetPointOnAV4th().Unit() ),
+                    GetAVRI( fLambda ),
+                    GetWaterRI( fLambda ),
+                    T4, R4 );
+    
     fFresnelTCoeff = T1 * T2 * T3 * T4;
     fFresnelRCoeff = R1 * R2 * R3 * R4;
   }
 
   // Type 5 - Water -> AV -> Water -> PMT
-  if ( fLightPathType == 5 ){
+  else if ( fLightPathType == 5 ){
     Double_t T1 = 0.0;
     Double_t R1 = 0.0;
-
+    
     Double_t T2 = 0.0;
     Double_t R2 = 0.0;
     
     FresnelTRCoeff( GetIncidentVecOn1stSurf(),
-		    ( GetPointOnAV1st().Unit() ),
-		    GetWaterRI( fLambda ),
-		    GetAVRI( fLambda ),
-		    T1, R1 );
-
+                    ( GetPointOnAV1st().Unit() ),
+                    GetWaterRI( fLambda ),
+                    GetAVRI( fLambda ),
+                    T1, R1 );
+    
     FresnelTRCoeff( GetIncidentVecOn2ndSurf(),
-		    -1.0 * ( GetPointOnAV2nd().Unit() ),
-		    GetAVRI( fLambda ),
-		    GetWaterRI( fLambda ),
-		    T2, R2 );
-
+                    -1.0 * ( GetPointOnAV2nd().Unit() ),
+                    GetAVRI( fLambda ),
+                    GetWaterRI( fLambda ),
+                    T2, R2 );
+    
     fFresnelTCoeff = T1 * T2;
     fFresnelRCoeff = R1 * R2;
   }
-
+  
   // Type 6 - Water -> PMT
-  if ( fLightPathType == 6 ){
+  else if ( fLightPathType == 6 ){
     fFresnelTCoeff = 1.0;
     fFresnelRCoeff = 0.0;
   }			     

@@ -22,6 +22,7 @@
 #pragma link C++ class LOCAS::LOCASModelParameterStore+;
 #pragma link C++ class LOCAS::LOCASOpticsModel+;
 #pragma link C++ class LOCAS::LOCASChiSquare+;
+#pragma link C++ class LOCAS::LOCASDataStoreStore+;
 
 
 #pragma link C++ global gROOT;

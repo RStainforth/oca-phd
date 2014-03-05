@@ -33,6 +33,14 @@ ClassImp( LOCASDataStore )
 LOCASDataStore::LOCASDataStore( std::string storeName )
 {
 
+  fScintPar = -10.0;
+  fAVPar = -10.0;
+  fWaterPar = -10.0;
+
+  fScintRSPar = -10.0;
+  fAVRSPar = -10.0;
+  fWaterRSPar = -10.0;
+
   fStoreName = storeName;
   fDataPoints.clear();
  
@@ -90,7 +98,7 @@ void LOCASDataStore::WriteToFile( const char* fileName )
   // Create the Run Tree
   TTree* runTree = new TTree( fileName, fileName );
 
-  // Declare a new branch pointing to the data stored in the lRun object
+  // Declare a new branch pointing to the data store object
   runTree->Branch( "LOCASDataStore", (*this).ClassName(), &(*this), 32000, 99 );
   file->cd();
 

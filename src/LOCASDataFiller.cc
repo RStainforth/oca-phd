@@ -5,7 +5,7 @@
 /// CLASS: LOCAS::LOCASDataFiller.cc
 ///
 /// BRIEF: A class used to take raw data points and a set
-///        of filters and return a final data set.
+///        of filters and return a 'filtered' data set.
 ///                
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
@@ -44,6 +44,10 @@ LOCASDataFiller::LOCASDataFiller( LOCASRawDataStore& dataSt, LOCASFilterStore& f
 void LOCASDataFiller::AddData( LOCASRawDataStore& dataSt, LOCASFilterStore& filterSt )
 {
   
+  // Iterate through each raw datapoint and each filter to check if the conditions of each
+  // filter for each data point are met. If the conditions are met, the raw datapoint is converted to
+  // a standard data point to be used in fitting and is added to the private datastore; 'fDataStore'
+
   std::vector< LOCASRawDataPoint >::iterator iD;
   std::vector< LOCASFilter >::iterator iF;
   Bool_t validPoint = true;
@@ -60,29 +64,23 @@ void LOCASDataFiller::AddData( LOCASRawDataStore& dataSt, LOCASFilterStore& filt
 
       filterName = iF->GetFilterName();
 
-      // Filters to check the occupancy ratio, raw occupancy and MPE corrected
-      // occupancy
+      // Filters to check the occupancy ratio and MPE corrected
+      // occupancy from the off-axis and central runs
       
       if ( filterName == "filter_mpe_occratio" ){ 
         if ( !iF->CheckCondition( iD->GetMPEOccRatio() ) ){ 
           validPoint = false; 
         } 
       }
-
-      if ( filterName == "filter_raw_occratio" ){ 
-        if ( !iF->CheckCondition( iD->GetRawOccRatio() ) ){ 
-          validPoint = false; 
-        } 
-      }
       
-      else if ( filterName == "filter_raw_occupancy" ){ 
-        if ( !iF->CheckCondition( iD->GetRawOccupancy() ) || !iF->CheckCondition( iD->GetCentralRawOccupancy() ) ){ 
+      else if ( filterName == "filter_mpe_occupancy" ){ 
+        if ( !iF->CheckCondition( iD->GetMPECorrOccupancy() ) ){ 
           validPoint = false; 
         }
       }
-      
-      else if ( filterName == "filter_mpe_occupancy" ){ 
-        if ( !iF->CheckCondition( iD->GetMPECorrOccupancy() ) || !iF->CheckCondition( iD->GetCentralMPECorrOccupancy() ) ){ 
+
+      else if ( filterName == "filter_mpe_ctr_occupancy" ){ 
+        if ( !iF->CheckCondition( iD->GetCentralMPECorrOccupancy() ) ){ 
           validPoint = false; 
         }
       }
@@ -90,7 +88,7 @@ void LOCASDataFiller::AddData( LOCASRawDataStore& dataSt, LOCASFilterStore& filt
       
       // Filters to check the various distances in the scintillator region, AV and water
       // region in terms of the 'Delta' differences i.e. the modulus difference between
-      // the central and off-axis runs
+      // the central and off-axis runs. Also checks the total distance of each light path
       
       else if ( filterName == "filter_deltascint" ){
         Float_t deltaScint = TMath::Abs( iD->GetDistInScint() - iD->GetCentralDistInScint() );
@@ -109,6 +107,12 @@ void LOCASDataFiller::AddData( LOCASRawDataStore& dataSt, LOCASFilterStore& filt
       else if ( filterName == "filter_deltawater" ){
         Float_t deltaWater = TMath::Abs( iD->GetDistInWater() - iD->GetCentralDistInWater() );
         if ( !iF->CheckCondition( deltaWater ) ){ 
+          validPoint = false;  
+        }
+      }
+
+      else if ( filterName == "filter_total_dist" ){
+        if ( !iF->CheckCondition( iD->GetTotalDist() ) ){ 
           validPoint = false;  
         }
       }

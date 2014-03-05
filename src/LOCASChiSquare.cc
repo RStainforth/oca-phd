@@ -5,7 +5,7 @@
 /// CLASS: LOCAS::LOCASChiSquare
 ///
 /// BRIEF: A simple class to compute the global chi-square
-///        of an entire data set given a LOCASModel object and
+///        of an entire dataset given a LOCASModel object and
 ///        LOCASModelParameterStore object
 ///                
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
@@ -33,6 +33,7 @@ LOCASChiSquare::LOCASChiSquare( const LOCASOpticsModel& locasModel,
                                 const LOCASDataStore& locasData )
 {
 
+  // Set the model and the dataset for the chisquare to be calculated
   fModel = locasModel;
   fDataStore = locasData;
 
@@ -41,16 +42,22 @@ LOCASChiSquare::LOCASChiSquare( const LOCASOpticsModel& locasModel,
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t LOCASChiSquare::EvaluateChiSquare( const LOCASDataPoint& dPoint )
+Float_t LOCASChiSquare::EvaluateChiSquare( LOCASDataPoint& dPoint )
 {
 
+  // Calculate the chisquare for a single datapoint (PMT) in the dataset
   Float_t dataVal = dPoint.GetMPEOccRatio();
   Float_t modelVal = fModel.ModelPrediction( dPoint );
-  Float_t res = ( dataVal - modelVal ) * ( dataVal - modelVal );
+  dPoint.SetModelOccRatio( modelVal );
 
+  Float_t res = ( dataVal - modelVal );
   Float_t error = dPoint.GetMPEOccRatioErr();
 
-  return ( res / ( error * error ) );
+  Float_t chiSq =  ( res * res ) / ( error * error );
+  dPoint.SetChiSq( chiSq );
+
+  return chiSq;
+
 }
 
 //////////////////////////////////////
@@ -59,6 +66,7 @@ Float_t LOCASChiSquare::EvaluateChiSquare( const LOCASDataPoint& dPoint )
 Float_t LOCASChiSquare::EvaluateGlobalChiSquare()
 {
   
+  // Calculate the total chisquare over all datapoints (PMTs) in the dataset
   Float_t chiSq = 0.0;
   std::vector< LOCASDataPoint >::iterator iD;
 
@@ -66,7 +74,28 @@ Float_t LOCASChiSquare::EvaluateGlobalChiSquare()
         iD != fDataStore.GetLOCASDataPointsIterEnd();
         iD++ ){
 
-    chiSq += EvaluateChiSquare( *(iD) );
+      chiSq += EvaluateChiSquare( *(iD) );
+  }
+
+  return chiSq;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASChiSquare::EvaluateGlobalChiSquare( LOCASDataStore& lStore )
+{
+
+  // Calculate the total chisquare over all datapoints (PMTs) in the dataset  
+  Float_t chiSq = 0.0;
+  std::vector< LOCASDataPoint >::iterator iD;
+
+  for ( iD = lStore.GetLOCASDataPointsIterBegin();
+        iD != lStore.GetLOCASDataPointsIterEnd();
+        iD++ ){
+
+      chiSq += EvaluateChiSquare( *(iD) );
 
   }
 

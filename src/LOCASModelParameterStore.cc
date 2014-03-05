@@ -143,7 +143,7 @@ void LOCASModelParameterStore::WriteToFile( const char* fileName )
   // Create the Run Tree
   TTree* runTree = new TTree( fileName, fileName );
 
-  // Declare a new branch pointing to the data stored in the lRun object
+  // Declare a new branch pointing to the parameter store
   runTree->Branch( "LOCASModelParameterStore", (*this).ClassName(), &(*this), 32000, 99 );
   file->cd();
 

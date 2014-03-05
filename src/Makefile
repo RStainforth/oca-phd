@@ -73,7 +73,7 @@ DICT_C	:= LOCAS_Dict.C
 DICT_O	:= $(patsubst %.C,%.o,$(DICT_C))
 
 
-LOCAS_EXE	:= soc2locas db2soc soc2soc locas2fitter locas2debug locas2dataset locas2minuit
+LOCAS_EXE	:= soc2locas db2soc soc2soc locas2debug locas2dataset locas2minuit locas2marquardt
 
 # N. Barros - 22-11-2011 : Removed from the targets as the source file seems to be missing. Maybe a missing commit?
 # sjmptest
@@ -160,7 +160,7 @@ db2soc: db2soc.o $(LOCASL)
 	$(CXX) $(CXXFLAGS) -o $@ \
 	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB}
 
-locas2fitter: locas2fitter.o $(LOCASL)
+locas2marquardt: locas2marquardt.o $(LOCASL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
 	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB}

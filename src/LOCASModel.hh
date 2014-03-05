@@ -29,14 +29,19 @@ namespace LOCAS{
   class LOCASModel : public TObject
   {
   public:
+    
+    // The constructors
     LOCASModel(){ };
     LOCASModel( const char* fileName );
+
+    // The destructor - delete the parameters in the model
     ~LOCASModel(){ if ( fParameters != NULL ) { delete[] fParameters; } }
 
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
 
+    // Model prediction for the occupancy ratio for a datapoint
     virtual Float_t ModelPrediction( const LOCASDataPoint& dataPoint ){ return 0.0; }
 
     /////////////////////////////////
@@ -45,8 +50,8 @@ namespace LOCAS{
 
     std::string GetModelName() const { return fModelName; }
 
+    // Return the store of parameters used in the model
     LOCASModelParameterStore GetModelParameterStore() const { return fModelParameterStore; }
-    //Double_t* GetParameters() const { return fParameters; }
 
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -55,16 +60,15 @@ namespace LOCAS{
     void SetModelName( const std::string name ){ fModelName = name; }
 
     void SetModelParameterStore( const LOCASModelParameterStore& locasParams );
-    //void SetParameters( const Double_t* params ) { *fParameters = *params; }
 
   
 
   protected:
 
-    std::string fModelName;
+    std::string fModelName;                          // The model name
 
-    LOCASModelParameterStore fModelParameterStore;
-    Double_t* fParameters;
+    LOCASModelParameterStore fModelParameterStore;   // The colleciton of parameters used in the model
+    Double_t* fParameters;                           // The parameter values stored in an array
 
     ClassDef( LOCASModel, 1 );
 

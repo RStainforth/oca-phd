@@ -69,7 +69,7 @@ void LOCASFilterStore::AddFilters( const char* fileName )
 
     // Print the information about the filter to the screen
     cout << "Added '" << filterList[ iStr ] << "' filter." << endl;
-    cout << "Filter Range (exclusive): (" << maxVal << ", " << minVal << ")" << endl;
+    cout << "Filter Range (exclusive): (" << minVal << ", " << maxVal << ")" << endl;
     cout << " ----------------- " << endl;
 
   }

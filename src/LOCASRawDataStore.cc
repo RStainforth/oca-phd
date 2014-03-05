@@ -88,13 +88,14 @@ void LOCASRawDataStore::AddRawData( LOCASRunReader& runReader )
   LOCASPMT* lPMT;
   std::map< Int_t, LOCASPMT >::iterator iPMT;
 
-  // Loop over the runs and the associated pmts and conver them to raw data points
+  // Loop over the runs and the associated pmts and convert them to raw data points
   for ( Int_t iRun = 0; iRun < runReader.GetNLOCASRuns(); iRun++ ){
     lRun = runReader.GetRunEntry( iRun );
     
     for ( iPMT = lRun->GetLOCASPMTIterBegin(); iPMT != lRun->GetLOCASPMTIterEnd(); iPMT++ ){
       lPMT = &( lRun->GetPMT( iPMT->first ) );
-      AddRawDataPoint( lPMT );
+      LOCASRawDataPoint dPoint( lPMT, lRun );
+      AddRawDataPoint( dPoint );
     }
 
     cout << "Added Run: " << lRun->GetRunID() << endl;

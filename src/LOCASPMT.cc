@@ -539,7 +539,7 @@ void LOCASPMT::ProcessLightPath( LOCASLightPath& lPath )
     }
 
     else{
-      lPath.CalculateSolidAngle( GetNorm(), 80 );
+      lPath.CalculateSolidAngle( GetNorm(), 0 );
       SetSolidAngle( lPath.GetSolidAngle() );
       SetCosTheta( lPath.GetCosThetaAvg() );
     }
@@ -556,7 +556,7 @@ void LOCASPMT::VerifyPMT( const TVector3& sourcePos )
   fIsVerified = true;
 
   if ( fID < 0 || fID > 10000 ){ SetIsVerified( false ); }
-  if ( fType != 1 ){ fIsVerified == false; }
+  if ( fType != 1 ){ SetIsVerified( false ); }
   
   if ( fPos.Mag() < 8000.0 || fPos.Mag() > 9000.0  ){ SetIsVerified( false ); }
   if ( fNorm.Mag() < 0.9 || fNorm.Mag() > 1.1 ){ SetIsVerified( false ); }

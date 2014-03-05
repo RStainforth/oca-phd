@@ -6,7 +6,7 @@
 ///
 /// BRIEF: A simple class to hold a set of filters which are
 ///        used to apply cuts to a set of data held in a 
-///        LOCASRawDataStore object.
+///        LOCASDataFiller object.
 ///        
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>

@@ -31,8 +31,14 @@ namespace LOCAS{
   class LOCASLightPath : public TObject
   {
   public:
-    
+
+    // The constructors
     LOCASLightPath(){ Initialise(); }
+    LOCASLightPath( const TVector3& startPos, const TVector3& endPos );
+    LOCASLightPath( const TVector3& startPos, const TVector3& endPos, const Double_t localityVal );
+    LOCASLightPath( const TVector3& startPos, const TVector3& endPos, const Double_t localityVal, const Double_t lambda );
+
+    // The destructors - nothing to delete
     virtual ~LOCASLightPath(){ }
     
     LOCASLightPath& operator=( const LOCASLightPath & rhs );
@@ -100,7 +106,45 @@ namespace LOCAS{
     ////////     SETTERS     ////////
     /////////////////////////////////
     
+    void SetTIR( const Bool_t val ){ fTIR = val; }
+    void SetResvHit( const Bool_t val ){ fResvHit = val; }
+    void SetXAVNeck( const Bool_t val ){ fXAVNeck = val; }
+    void SetStraightLine( const Bool_t val ){ fStraightLine = val; }
+
     void SetLoopCeiling( const Int_t loopCeil ){ fLoopCeiling = loopCeil; }
+    void SetFinalLoopValue( const Int_t val ){ fFinalLoopValue = val; }
+
+    void SetFillFraction( const Double_t val ){ fFillFraction = val; }
+    void SetPathPrecision( const Double_t val ){ fPathPrecision = val; }
+    void SetLambda( const Double_t val ){ fLambda = val; }
+
+    void SetDistInNeck( const Double_t val ){ fDistInNeck = val; }
+
+    void SetDistInUpperTarget( const Double_t val ){ fDistInUpperTarget = val; }
+    void SetDistInLowerTarget( const Double_t val ){ fDistInUpperTarget = val; }
+    void SetDistInScint( const Double_t val ){ fDistInScint = val; }
+    void SetDistInAV( const Double_t val ){ fDistInAV = val; }
+    void SetDistInWater( const Double_t val ){ fDistInWater = val; }
+
+    void SetSolidAngle( const Double_t val ){ fSolidAngle = val; }
+    void SetCosThetaAvg( const Double_t val ){ fCosThetaAvg = val; }
+
+    void SetFresnelTCoeff( const Double_t val ){ fFresnelTCoeff = val; }
+    void SetFresnelRCoeff( const Double_t val ){ fFresnelRCoeff = val; }
+
+    void SetStartPos( const TVector3& startPos ){ fStartPos = startPos; }
+    void SetEndPos( const TVector3& endPos ){ fEndPos = endPos; }
+    void SetLightPathEndPos( const TVector3& lpEndPos ){ fLightPathEndPos = lpEndPos; }
+
+    void SetIncidentVecOnPMT( const TVector3& val ){ fIncidentVecOnPMT = val; }
+    void SetInitialLightVec( const TVector3& val ){ fInitialLightVec = val; }
+
+    void SetPointOnAV1st( const TVector3& val ){ fPointOnAV1st = val; }
+    void SetPointOnAV2nd( const TVector3& val ){ fPointOnAV2nd = val; }
+    void SetPointOnAV3rd( const TVector3& val ){ fPointOnAV3rd = val; }
+    void SetPointOnAV4th( const TVector3& val ){ fPointOnAV4th = val; }
+
+    void SetLightPathType( const Int_t val ){ fLightPathType = val; }
     
     /////////////////////////////////
     ////////     GETTERS     ////////
@@ -109,6 +153,7 @@ namespace LOCAS{
     Bool_t GetTIR() const { return fTIR; }  
     Bool_t GetResvHit() const { return fResvHit; }
     Bool_t GetXAVNeck() const { return fXAVNeck; }
+    Bool_t GetStraightLine() const { return fStraightLine; }
     
     Double_t GetLoopCeiling() const { return fLoopCeiling; }  
     Double_t GetFinalLoopValue() const { return fFinalLoopValue; }
@@ -138,6 +183,7 @@ namespace LOCAS{
     TVector3 GetLightPathEndPos() const { return fLightPathEndPos; }
     TVector3 GetIncidentVecOnPMT() const { return fIncidentVecOnPMT; }
     TVector3 GetInitialLightVec() const { return fInitialLightVec; }
+
     TVector3 GetPointOnAV1st() const { return fPointOnAV1st; }
     TVector3 GetPointOnAV2nd() const { return fPointOnAV2nd; }
     TVector3 GetPointOnAV3rd() const { return fPointOnAV3rd; }
@@ -292,6 +338,9 @@ namespace LOCAS{
     
     Bool_t fXAVNeck;                      // TRUE: Light path entered the AV Neck region
                                           // FALSE: It didn't
+
+    Bool_t fStraightLine;                 // TRUE: Calculated Path is a straight line
+                                          // FALSE: Calculated Path is a refracted path
     
     Int_t fLoopCeiling;                   // Iteration Ceiling for algortithm loop
     Int_t fFinalLoopValue;                // Final loop value which meets locality conditions
@@ -328,12 +377,11 @@ namespace LOCAS{
     // ...or four times
     TVector3 fPointOnAV1st;               // Point on AV where light path first hits the AV
     TVector3 fPointOnAV2nd;               // Point on AV where light path hits the AV a second time
-    TVector3 fPointOnAV3rd;               // Point on AV where light path hits the AV a thirs time
+    TVector3 fPointOnAV3rd;               // Point on AV where light path hits the AV a third time
     TVector3 fPointOnAV4th;               // Point on AV where light path hits the AV a fourth time
     
     
     // Light Path types
-    // Type 0 - Straight Line Path
     // Type 1 - Scint -> AV -> Water -> PMT
     // Type 2 - AV -> Water -> PMT
     // Type 3 - AV -> Scint -> AV -> Water -> PMT

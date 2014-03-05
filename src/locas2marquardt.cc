@@ -1,10 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 ///
-/// FILENAME: locas2fitter.cc
+/// FILENAME: locas2marquardt.cc
 ///
-/// EXECUTABLE: locas2fitter
+/// EXECUTABLE: locas2mardquardt
 ///
-/// BRIEF: 
+/// BRIEF: Fit the data using the original Levenberg-Marquardt algorithm 
+///        from the SNO code 
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
@@ -16,12 +17,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include "LOCASFit.hh"
-
-#include "TGraph.h"
-#include "TCanvas.h"
-#include "TAxis.h"
-#include "TH1F.h"
-#include "TMath.h"
 
 #include <iostream>
 
@@ -36,9 +31,9 @@ int main( int argc, char** argv );
 int main( int argc, char** argv ){
 
   cout << "\n";
-  cout << "#####################################" << endl;
-  cout << "######### LOCAS2FITTER Start ########" << endl;
-  cout << "#####################################" << endl;
+  cout << "#######################################" << endl;
+  cout << "######## LOCAS2MARQUARDT Start ########" << endl;
+  cout << "#######################################" << endl;
   cout << "\n";
 
 
@@ -48,13 +43,10 @@ int main( int argc, char** argv ){
   lFit.PerformFit();
 
   cout << "\n";
-  cout << "####################################" << endl;
-  cout << "######### LOCAS2FITTER End #########" << endl;
-  cout << "####################################" << endl;
+  cout << "#######################################" << endl;
+  cout << "######### LOCAS2MARQUARDT End #########" << endl;
+  cout << "#######################################" << endl;
   cout << "\n";
-
-  lFit.Plot1DChiSquareScan( "chisquare_scan.eps",
-                       2, 5.0, 2000.0, 50.0, 10 );
 
   return 0;
 

@@ -20,7 +20,10 @@
 
 #include "LOCASPMT.hh"
 #include "LOCASMath.hh"
+#include "LOCASRun.hh"
 #include "LOCASRawDataPoint.hh"
+
+#include "TVector3.h"
 
 using namespace LOCAS;
 using namespace std;
@@ -30,32 +33,26 @@ ClassImp( LOCASRawDataPoint )
 //////////////////////////////////////
 //////////////////////////////////////
 
-LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr )
+LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr, const LOCASRun* runPtr )
 {
 
-  SetMPEOccRatio( pmtPtr->GetMPECorrOccupancy() / pmtPtr->GetCentralMPECorrOccupancy() );
-  SetRawOccRatio( pmtPtr->GetOccupancy() / pmtPtr->GetCentralOccupancy() );
-  
+  SetMPEOccRatio( pmtPtr->GetMPECorrOccupancy() / pmtPtr->GetCentralMPECorrOccupancy() ); 
   SetMPEOccRatioErr( LOCASMath::OccRatioErr( pmtPtr ) );
-  SetRawOccRatioErr( LOCASMath::OccRatioErr( pmtPtr ) );
-  
-  SetDistInScint( pmtPtr->GetDistInScint() );
-  SetCentralDistInScint( pmtPtr->GetCentralDistInScint() );
-
-  SetDistInAV( pmtPtr->GetDistInAV() );
-  SetCentralDistInAV( pmtPtr->GetCentralDistInAV() );
-
-  SetDistInWater( pmtPtr->GetDistInWater() );
-  SetCentralDistInWater( pmtPtr->GetCentralDistInWater() );
-
-  SetLBIntensityNorm( pmtPtr->GetLBIntensityNorm() );
-  SetCentralLBIntensityNorm( pmtPtr->GetCentralLBIntensityNorm() );
-
-  SetRawOccupancy( pmtPtr->GetOccupancy() );
-  SetCentralRawOccupancy( pmtPtr->GetCentralOccupancy() );
 
   SetMPECorrOccupancy( pmtPtr->GetMPECorrOccupancy() );
   SetCentralMPECorrOccupancy( pmtPtr->GetCentralMPECorrOccupancy() );
+  
+  SetDistInScint( pmtPtr->GetDistInScint() );
+  SetCentralDistInScint( pmtPtr->GetCentralDistInScint() );
+  SetDistInAV( pmtPtr->GetDistInAV() );
+  SetCentralDistInAV( pmtPtr->GetCentralDistInAV() );
+  SetDistInWater( pmtPtr->GetDistInWater() );
+  SetCentralDistInWater( pmtPtr->GetCentralDistInWater() );
+  SetTotalDist( pmtPtr->GetTotalDist() );
+  SetCentralTotalDist( pmtPtr->GetCentralTotalDist() );
+
+  SetLBIntensityNorm( pmtPtr->GetLBIntensityNorm() );
+  SetCentralLBIntensityNorm( pmtPtr->GetCentralLBIntensityNorm() );
 
   if ( ( pmtPtr->GetCosTheta() <= 1.0 ) && ( pmtPtr->GetCosTheta() >= 0.0 ) ){
     SetIncidentAngle( TMath::ACos( pmtPtr->GetCosTheta() ) * ( 180.0 / TMath::Pi() ) );
@@ -111,6 +108,10 @@ LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr )
 
   if ( pmtPtr->GetCentralNeckFlag() ){ SetCentralNeckFlag( 1 ); }
   else{ SetCentralNeckFlag( 0 ); }
+
+  SetPMTPos( pmtPtr->GetPos() );
+
+  SetLBPos( runPtr->GetLBPos() );
   
 }
 
@@ -122,19 +123,19 @@ LOCASRawDataPoint& LOCASRawDataPoint::operator=( const LOCASRawDataPoint& rhs )
 {
 
   SetMPEOccRatio( rhs.GetMPECorrOccupancy() / rhs.GetCentralMPECorrOccupancy() );
-  SetRawOccRatio( rhs.GetRawOccupancy() / rhs.GetCentralRawOccupancy() );
-
   SetMPEOccRatioErr( rhs.GetMPEOccRatioErr() );
-  SetRawOccRatioErr( rhs.GetRawOccRatioErr() );
+
+  SetMPECorrOccupancy( rhs.GetMPECorrOccupancy() );
+  SetCentralMPECorrOccupancy( rhs.GetCentralMPECorrOccupancy() );
 
   SetDistInScint( rhs.GetDistInScint() );
   SetCentralDistInScint( rhs.GetCentralDistInScint() );
-
   SetDistInAV( rhs.GetDistInAV() );
   SetCentralDistInAV( rhs.GetCentralDistInAV() );
-
   SetDistInWater( rhs.GetDistInWater() );
   SetCentralDistInWater( rhs.GetCentralDistInWater() );
+  SetTotalDist( rhs.GetTotalDist() );
+  SetCentralTotalDist( rhs.GetCentralTotalDist() );
 
   SetSolidAngle( rhs.GetSolidAngle() );
   SetCentralSolidAngle( rhs.GetCentralSolidAngle() );
@@ -144,12 +145,6 @@ LOCASRawDataPoint& LOCASRawDataPoint::operator=( const LOCASRawDataPoint& rhs )
 
   SetLBIntensityNorm( rhs.GetLBIntensityNorm() );
   SetCentralLBIntensityNorm( rhs.GetCentralLBIntensityNorm() );
-
-  SetRawOccupancy( rhs.GetRawOccupancy() );
-  SetCentralRawOccupancy( rhs.GetCentralRawOccupancy() );
-
-  SetMPECorrOccupancy( rhs.GetMPECorrOccupancy() );
-  SetCentralMPECorrOccupancy( rhs.GetCentralMPECorrOccupancy() );
 
   SetIncidentAngle( rhs.GetIncidentAngle() );
   SetCentralIncidentAngle( rhs.GetCentralIncidentAngle() );
@@ -180,6 +175,10 @@ LOCASRawDataPoint& LOCASRawDataPoint::operator=( const LOCASRawDataPoint& rhs )
 
   SetNeckFlag( rhs.GetNeckFlag() );
   SetCentralNeckFlag( rhs.GetCentralNeckFlag() );
+
+  SetPMTPos( rhs.GetPMTPos() );
+
+  SetLBPos( rhs.GetLBPos() );
 
   return *this;
 

@@ -87,19 +87,19 @@ namespace LOCAS{
 
   private:
 
-    std::string fParameterName;
+    std::string fParameterName;         // The parameter name
 
-    Int_t fIndex;
+    Int_t fIndex;                       // The index of the parameter in the model parameter array
 
-    Int_t fNInGroup;
+    Int_t fNInGroup;                    // The number of associated parameters (i.e. if this was part of a distribution)
 
-    Float_t fIncrementValue;
+    Float_t fIncrementValue;            // Increment value used by minimiser
 
-    Float_t fInitialValue;
-    Float_t fFinalValue;
+    Float_t fInitialValue;              // Initial value used by minimiser
+    Float_t fFinalValue;                // Final fitted value of the parameter
 
-    Float_t fMinValue;
-    Float_t fMaxValue;
+    Float_t fMinValue;                  // Minimum allowed value of parameter to be used by minimiser
+    Float_t fMaxValue;                  // Maximum allowed value of parameter to be used by minimiser
 
     ClassDef( LOCASModelParameter, 1 );
 

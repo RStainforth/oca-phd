@@ -4,7 +4,7 @@
 ///
 /// CLASS: LOCAS::LOCASFit
 ///
-/// BRIEF: 
+/// BRIEF: Levenberg-Marquardt fitter for the data (original locas)
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
@@ -283,18 +283,20 @@ void LOCASFit::LoadFitFile( const char* fitFile )
   // Whether to cut on CSS flag
   fCSSFlag = lDB.GetBoolField( "FITFILE", "cut_css_flag" );
 
+  // The limits on the PMT costheta values
   fCosThetaMaxLimit = lDB.GetDoubleField( "FITFILE", "cut_costheta_max" );
   fCosThetaMinLimit = lDB.GetDoubleField( "FITFILE", "cut_costheta_min" );
 
+  // The limits on the occupancy ratio
   fPMTDataROccMaxLimit = lDB.GetDoubleField( "FITFILE", "cut_pmtrocc_max" );
   fPMTDataROccMinLimit = lDB.GetDoubleField( "FITFILE", "cut_pmtrocc_min" );
 
+  // The limits on the PMT positions (theta and phi limits)
   fPMTPosThetaMaxLimit = lDB.GetDoubleField( "FITFILE", "cut_pmttheta_max" );
   fPMTPosThetaMinLimit = lDB.GetDoubleField( "FITFILE", "cut_pmttheta_min" );
   fPMTPosPhiMaxLimit = lDB.GetDoubleField( "FITFILE", "cut_pmtphi_max" );
   fPMTPosPhiMinLimit = lDB.GetDoubleField( "FITFILE", "cut_pmtphi_min" );
 
-  
 
   // Number of PMTs to skip over in the final PMT data set when fitting
   // this is purely to speed things up.
@@ -614,7 +616,7 @@ void LOCASFit::DataScreen()
   cout << "Removing dud data values...";
   Int_t jVar = 0;
   for ( Int_t iK = 1; iK < fNPMTsInFit; iK++ ){
-
+    
     if ( !isnan( fMrqX[ iK ] ) 
 	 && !isnan( fMrqY[ iK ] ) 
          && !isnan( fMrqSigma[ iK ] )
@@ -874,13 +876,6 @@ Bool_t LOCASFit::PMTSkip( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Floa
        || pmtPos.Phi() < fPMTPosPhiMinLimit){ 
     pmtSkip = true; 
   }
-
-  if ( ( fabs(( iPMTPtr->GetDistInScint() - iPMTPtr->GetCentralDistInScint() ))
-         + fabs(( iPMTPtr->GetDistInAV() - iPMTPtr->GetCentralDistInAV() ))
-         + fabs(( iPMTPtr->GetDistInWater() - iPMTPtr->GetCentralDistInWater() )) ) <= 1000.0 ){
-    pmtSkip = true;
-    cout << "Low Diff:" << endl;
-  }
        
   return pmtSkip;
     
@@ -1039,9 +1034,7 @@ Float_t LOCASFit::CalculatePMTSigma( const LOCASPMT* iPMTPtr )
 Float_t LOCASFit::CalculatePMTData( const LOCASPMT* iPMTPtr )
 {
 
-  //Float_t pmtData = ( iPMTPtr->GetCentralFresnelTCoeff() / iPMTPtr->GetFresnelTCoeff() ) 
-  Float_t pmtData = ( iPMTPtr->GetOccupancy() / iPMTPtr->GetCentralOccupancy() ) 
-    * ( iPMTPtr->GetCentralSolidAngle() / iPMTPtr->GetSolidAngle() );
+  Float_t pmtData = ( iPMTPtr->GetMPECorrOccupancy() / iPMTPtr->GetCentralMPECorrOccupancy() );
   return pmtData;
 
 }
@@ -1070,6 +1063,10 @@ Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMT
  
   Float_t normVal = GetLBNormalisationPar( fiNorm );
 
+  Float_t solidARatio = ( iPMTPtr->GetSolidAngle() / iPMTPtr->GetCentralSolidAngle() );
+
+  Float_t fresnelTRatio = ( iPMTPtr->GetFresnelTCoeff() / iPMTPtr->GetCentralFresnelTCoeff() );
+
   Float_t dScint = ( iPMTPtr->GetDistInScint() ) - ( iPMTPtr->GetCentralDistInScint() );
   Float_t dAV = ( iPMTPtr->GetDistInAV() ) - ( iPMTPtr->GetCentralDistInAV() );
   Float_t dWater = ( iPMTPtr->GetDistInWater() ) - ( iPMTPtr->GetCentralDistInWater() );
@@ -1077,16 +1074,11 @@ Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMT
   Float_t angResp = ModelAngularResponse( iPMTPtr, fiAng, 0 );
   Float_t intensity = ModelLBDistribution( iRunPtr, iPMTPtr, fiLBDist, 0 );
 
-  Float_t pmtResponse = normVal * angResp * intensity 
+  Float_t pmtResponse = normVal * angResp * intensity * solidARatio * fresnelTRatio 
     * TMath::Exp( - ( dScint * ( GetScintPar() + GetScintRSPar() ) )
                   - ( dAV * ( GetAVPar() + GetAVRSPar() ) )
                   - ( dWater * ( GetWaterPar() + GetWaterRSPar() ) ) );
-  
-  // cout << "dScint: " << dScint << " | dAV: " << dAV << " | dWater: " << dWater << endl;
-  // cout << "angResp: " << angResp << " | intensity: " << intensity << " | normVal: " << normVal << " | pmtResponse: " << pmtResponse << endl;
-  // cout << "ScintAtt: " << GetScintPar() << " | AVAtt: " << GetAVPar() << " | WaterAtt: " << GetWaterPar() << endl;
-  // cout << "ScintRS: " << GetScintRSPar() << " | AVRS: " << GetAVRSPar() << " | WaterRS: " << GetWaterRSPar() << endl;
-  
+
   if( derivatives ){
 
     dyda[ GetLBNormalisationParIndex() + fiNorm ] = +1.0 / normVal;
@@ -1108,11 +1100,7 @@ Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMT
   Float_t angRespCtr = ModelAngularResponse( iPMTPtr, fCiAng, 1 );
   Float_t intensityCtr = ModelLBDistribution( iRunPtr, iPMTPtr, fCiLBDist, 1 );
 
-  Float_t pmtResponseCtr = 1.0;//angRespCtr * intensityCtr;
-
-  // cout << "angRespCtr: " << angRespCtr << " | intensityCtr: " << intensityCtr << " | pmtRespCtr: " << pmtResponseCtr << endl;
-  // cout << "MODELROCC: " << ( pmtResponse / pmtResponseCtr ) << endl;
-  // cout << "---------------------" << endl;
+  Float_t pmtResponseCtr = angRespCtr * intensityCtr;
 
   if ( angRespCtr != angResp ){ cout << "Different Incident Angles" << endl; }
 
@@ -1295,90 +1283,6 @@ void LOCASFit::WriteFitToFile( const char* fileName )
   // Close the file
   file->Close();
   delete file;
-
-}
-
-/////////////////////////////////////
-//////////////////////////////////////
-
-void LOCASFit::PlotROccVals( const char* fileName )
-{
-
-  TH1F* tHisto = new TH1F("","",102, -0.05, 2.05);
-
-  for ( fiPMT = fFitPMTs.begin(); fiPMT != fFitPMTs.end(); fiPMT++ ){
-    tHisto->Fill( CalculatePMTData( &(fiPMT->second) ) );
-  }
-
-  TCanvas* c1 = new TCanvas( "c-ROcc-Vals", "Relative PMT Occupancy", 640, 400 );
-
-  tHisto->GetXaxis()->SetTitle("Relative PMT Occupancy");
-  tHisto->GetYaxis()->SetTitle("Frquency");
-
-  tHisto->SetLineColor( 1 );
-  tHisto->SetLineWidth( 2 );
-
-  gStyle->SetOptStat(0);
-
-  tHisto->Draw();
-  c1->Print( fileName );
-
-}
-
-void LOCASFit::Plot1DChiSquareScan( const char* fileName,
-                                    const Int_t parIndex,
-                                    const Float_t startVal,
-                                    const Float_t endVal,
-                                    const Float_t stepVal,
-                                    const Int_t maxPMTs )
-{
-
-  // Create the TGraph object
-  TGraph* tGraph = new TGraph();
-  Int_t pointVal = 0;
-  
-  Float_t chiSq = 0.0;
-  Int_t nPMTs, iX, jRun = 0;
-
-  // Make sure that LOCASFit::DataScreen has already ran first.
-  if ( !fDataScreen ){ cout << "LOCASFit::CalculateChiSquare: Error, run LOCASFit::DataScreen first"; }
-
-
-  else{
-
-    // Loop through the parameter values and calculate the chi-square. The value of 'maxPMTs'
-    // is to speed up the calculation by calculating the total ChiSquare for just a 'maxPMTs'
-    // number fo PMTs instead of all of those included in the fit.
-    for ( Float_t parVal = startVal; parVal <= endVal; parVal += stepVal ){
-
-      nPMTs = 0;
-      chiSq = 0.0;
-
-      // Set the parameter value. Remember, in the model the values are the reciprocals
-      SetMrqParameter( parIndex, 1.0/parVal );
-
-      // Now loop through the first 'maxPMTs' number of PMTs in the PMT fit data set
-      for ( fiPMT = fFitPMTs.begin(); nPMTs < maxPMTs && fiPMT != fFitPMTs.end(); fiPMT++ ){       
-        iX = ( fiPMT->first );
-        jRun = iX / 10000;
-        fCurrentPMT = &( fiPMT->second );
-        fCurrentRun = fRunReader.GetRunEntry( jRun );
-               
-        chiSq += CalculatePMTChiSquare( fCurrentRun, fCurrentPMT );
-        nPMTs++;
-      }
-
-      tGraph->SetPoint( pointVal++, parVal, chiSq );
-    }
-  }
-  
-  TCanvas* c1 = new TCanvas( "chisquare-scan", "ChiSquare 1D Scan", 640, 400 );
-  
-  tGraph->GetXaxis()->SetTitle("Parameter Value");
-  tGraph->GetYaxis()->SetTitle("ChiSquare");
-
-  tGraph->Draw("ALP");
-  c1->Print( fileName );
 
 }
 
@@ -1593,6 +1497,7 @@ Int_t LOCASFit::mrqmin(float x[], float y[], float sig[], int ndata, float a[],
 
 //////////////////////////////////////
 //////////////////////////////////////
+
 void LOCASFit::covsrt(float **covar, int ma, int ia[], int mfit)
 {
   // Covariance matrix sorting.  Helper routine for mrqmin()
@@ -1842,141 +1747,6 @@ Int_t LOCASFit::GetRunIndex( const Int_t runID )
     }
   }
   return 0;
-
-}
-
-//////////////////////////////////////
-//////////////////////////////////////
-
-TH1F* LOCASFit::DebugPlotModelROcc( const Float_t scintAttVal,
-                                    const Float_t avAttVal,
-                                    const Float_t waterAttVal,
-                                    const Float_t scintRSVal,
-                                    const Float_t avRSVal,
-                                    const Float_t waterRSVal,
-                                    const Float_t angRespVal,
-                                    const Float_t lbDistVal,
-                                    const Float_t normVal )
-{
-
-  cout << " ------------- " << endl;
-  cout << "------DEBUG------" << endl;
-  cout << "Now Plotting all PMTs across all runs..." << endl;
-  cout << " ------------- " << endl;
-
-  SetMrqParameter( 1, 1.0/scintAttVal );
-  SetMrqParameter( 2, 1.0/avAttVal );
-  SetMrqParameter( 3, 1.0/waterAttVal );
-  SetMrqParameter( 4, 1.0/scintRSVal );
-  SetMrqParameter( 5, 1.0/avRSVal );
-  SetMrqParameter( 6, 1.0/waterRSVal );
-
-  if ( angRespVal == 0.0 ){}
-  else{ 
-    for ( Int_t iT = 0; iT < fNAngularResponseBins; iT++ ){
-      SetMrqParameter( GetAngularResponseParIndex() + iT, angRespVal );
-    }
-  }
-
-  if ( lbDistVal == 0.0 ){}
-  else{ 
-    for ( Int_t iT = 0; iT < ( fNLBDistributionPhiBins * fNLBDistributionThetaBins ); iT++ ){
-      SetMrqParameter( GetLBDistributionParIndex() + iT, lbDistVal );
-    }
-  }
-
-  if ( normVal == 0.0 ){}
-  else{
-    for ( Int_t iT = 0; iT < fNRuns; iT++ ){
-      SetMrqParameter( GetLBNormalisationParIndex() + iT, normVal );
-    }
-  }
-
-  TH1F* tHistoModel = new TH1F( "", "", 51, -0.05, 2.05 );
-
-  Int_t nPMTs1 = 0;
-  Int_t nPMTs, iX, tmpPMT, tmpRun = 0;
-  Float_t modelVal, dataVal, sigma = 0.0;
-
-  LOCASDB lDB;
-  lDB.LoadPMTTypes();
-
-  Int_t counter = 0;
-  for ( Int_t iRun = 0; iRun < fNRuns; iRun++ ){
-
-    cout << "Checking Run: " << iRun + 1 << " of " << fNRuns << endl;
-    fCurrentRun = fRunReader.GetRunEntry( iRun );
-    nPMTs = fCurrentRun->GetNPMTs();
-    cout << "Run ID is: " << fCurrentRun->GetRunID() << endl;
-    cout << " ------------- " << endl;
-
-    std::map< Int_t, LOCASPMT >::iterator iterPMT;
-    std::vector< Int_t > pmtIds;
-    for ( iterPMT = fCurrentRun->GetLOCASPMTIterBegin(); iterPMT != fCurrentRun->GetLOCASPMTIterEnd(); iterPMT++ ){
-      pmtIds.push_back( iterPMT->first );
-    }
-
-    counter = 0;
-    for ( Int_t iPMT = 0; iPMT < nPMTs; iPMT++){
-        fCurrentPMT = &( fCurrentRun->GetPMT( pmtIds[ iPMT ] ) );
-        
-        if ( !PMTSkip( fCurrentRun, fCurrentPMT, 0.0, 0.0 ) ){
-          nPMTs1++;
-          modelVal = ModelPrediction( fCurrentRun, fCurrentPMT );
-          tHistoModel->Fill( modelVal );
-        }
-    }
-  }
-  cout << "Number of PMTs is: " << nPMTs1 << endl;
-  return tHistoModel;
-
-}
-
-//////////////////////////////////////
-//////////////////////////////////////
-
-TH1F* LOCASFit::DebugPlotDataROcc()
-{
-
-  cout << " ------------- " << endl;
-  cout << "------DEBUG------" << endl;
-  cout << "Now Plotting all PMTs across all runs..." << endl;
-  cout << " ------------- " << endl;
-
-  TH1F* tHistoData = new TH1F( "", "", 75, -0.05, 2.05 );
-
-  
-  Int_t nPMTs, iX, tmpPMT, tmpRun, nPMTs1 = 0;
-  Float_t modelVal, dataVal, sigma = 0.0;
-
-  Int_t counter = 0;
-  for ( Int_t iRun = 0; iRun < fNRuns; iRun++ ){
-
-    cout << "Checking Run: " << iRun + 1 << " of " << fNRuns << endl;
-    fCurrentRun = fRunReader.GetRunEntry( iRun );
-    nPMTs = fCurrentRun->GetNPMTs();
-    cout << "Run ID is: " << fCurrentRun->GetRunID() << endl;
-    cout << " ------------- " << endl;
-
-    std::map< Int_t, LOCASPMT >::iterator iterPMT;
-    std::vector< Int_t > pmtIds;
-    for ( iterPMT = fCurrentRun->GetLOCASPMTIterBegin(); iterPMT != fCurrentRun->GetLOCASPMTIterEnd(); iterPMT++ ){
-      pmtIds.push_back( iterPMT->first );
-    }
-
-    counter = 0;
-    for ( Int_t iPMT = 0; iPMT < fCurrentRun->GetNPMTs(); iPMT++){
-      fCurrentPMT = &( fCurrentRun->GetPMT( pmtIds[ iPMT ] ) );
-
-      if ( !PMTSkip( fCurrentRun, fCurrentPMT, 0.0, 0.0 ) ){
-        nPMTs1++;
-        dataVal = CalculatePMTData( fCurrentPMT );
-        tHistoData->Fill( dataVal );
-      }
-    }
-  }
-  cout << "Number of PMTs is: " << nPMTs1 << endl;
-  return tHistoData;
 
 }
 

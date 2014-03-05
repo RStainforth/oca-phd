@@ -37,12 +37,14 @@ namespace LOCAS{
     ////////     METHODS     ////////
     /////////////////////////////////
 
-    Float_t EvaluateChiSquare( const LOCASDataPoint& dPoint );
+    Float_t EvaluateChiSquare( LOCASDataPoint& dPoint );
     Float_t EvaluateGlobalChiSquare();
+    Float_t EvaluateGlobalChiSquare( LOCASDataStore& lStore );
     Float_t EvaluateGlobalChiSquare( const Double_t* params );
 
     void AddModel( const LOCASOpticsModel& locasModel ){ fModel = locasModel; }
     void AddData( const LOCASDataStore& locasData ){ fDataStore = locasData; }
+    void ClearData(){ fDataStore.ClearData(); }
 
   private:
 

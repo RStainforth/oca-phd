@@ -30,15 +30,17 @@ namespace LOCAS{
   {
   public:
 
-    // The constructors
+    // The constructor
     LOCASModelParameterStore ( std::string storeName = "" );
+
+    // The destructor - nothing to delete
     ~LOCASModelParameterStore(){ }
 
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
 
-    // Add a paramete to the store
+    // Add a parameter to the store
     void AddParameter( LOCASModelParameter parameter, Int_t index ){ fParameters.push_back( parameter ); }
 
     // Add a complete set of parameters from a cardfile
