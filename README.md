@@ -5,7 +5,7 @@ About
 ==========
 This is an in-development version of LOCAS for SNO+. LOCAS is designed to process SOC data files and perform a statistical fit which characterises the optical response of the SNO+ detector.
 
-SOC files are ROOT files with a specific data structure designed for use by the SNO+ optics group. Optical calibration is sought through laserball runs; periods of time for which pulses of laser light is emitted (near) isotropically throughout the detector. A single SOC file will represent a single laserball run and will contain information pertaining to the run itself; e.g. the run ID, the laser wavelength used, the position of the laserball in the detector as well as the relevant PMT information for that run. 
+SOC files are ROOT files with a specific data structure designed for use by the SNO+ optics group. Optical calibration is, in part, sought through laserball runs; periods of time for which pulses of laser light is emitted (near) isotropically throughout the detector. A single SOC file will represent a single laserball run and will contain information pertaining to the run itself; e.g. the run ID, the laser wavelength used, the position of the laserball in the detector as well as the relevant PMT information for that run. 
 
 LOCAS is intended to perform the following tasks:
 
@@ -14,7 +14,7 @@ LOCAS is intended to perform the following tasks:
     3) Using various LOCASRun files as input - perform the optical fit of the detector response.
 Current Capability
 ==========
-LOCAS is currently able to perform tasks 1), 2) and 3)(?) in the list above. LOCAS interfaces both with RAT and the SOC file format and outputs this information to LOCASRun files. These LOCASRun files are intended to hold the relevant run specific information held by the original SOC file (run ID, laserball position, PMT information etc.) as well additional information for the individual PMTs; such as the corrected occupancy, time of flight, solid angle and Fresnel transmission coefficient. It is these LOCASRun files which are used as input to the optics fit (task 3 in the above list).
+LOCAS is currently able to perform tasks 1), 2) and 3) in the list above. LOCAS interfaces both with RAT and the SOC file format and outputs this information to LOCASRun files. These LOCASRun files are intended to hold the relevant run specific information held by the original SOC file (run ID, laserball position, PMT information etc.) as well additional information for the individual PMTs; such as the corrected occupancy, time of flight, solid angle and Fresnel transmission coefficient. It is these LOCASRun files which are used as input to the optics fit (task 3 in the above list).
 
 Prerequisites
 ==========
@@ -38,7 +38,13 @@ Installation
 To install LOCAS, first, in the top directory of locas-plus ('locas-plus/') type: 
 
     ./configure 
-at the command line. The script will ask you for the full system path to your newly created RAT envrionment file (see last section) as well as the full system path to a directory you would like LOCAS utilities to temporarily store data (this is used for AV hold-down rope shadowing calculations). This temporary directory should be a 'scratch' disk with plenty of space. The configure script will create a new LOCAS environment file 'env_locas.sh' in the top directory. When you source this new file, i.e.:
+at the command line. The script will ask you for three pieces of information:
+
+   1)  The full system path to your newly created RAT environment file (see last section).
+   2) The full system path to a directory you would like LOCAS utilities to temporarily store data (this is used for AV hold-down rope shadowing calculations). This temporary directory should be a 'scratch' disk with plenty of space.
+   3) The machine names of the computers on your local computer cluster. For example, at Liverpool this could be 'medium64', 'all64', 'short64' or at QMUL it is 'snoplusSL6'.
+
+The configure script will create a new LOCAS environment file 'env_locas.sh' in the top directory. When you source this new file, i.e.:
 
     source env_locas.sh
 
@@ -49,9 +55,11 @@ at the command line, it will also source your RAT envrionment file automatically
     make install 
 respectively to compile LOCAS and the library shared object file 'libLOCAS.so'.
 
+Finally, replace the 'rootInit.C' file provided here with the one featured in your RAT installation top directory. This file merely ensures that RAT AND LOCAS libraries are loaded into ROOT.
+
 Usage
 ==========
-LOCAS currently compiles four executables 'soc2soc', 'db2soc', 'soc2locas' and 'locas2fit'.
+LOCAS currently compiles four executables 'soc2soc', 'db2soc', 'soc2locas', 'locas2marquart', 'locas2minuit' and 'locas2debug'.
 
 soc2soc
 ==========
@@ -62,15 +70,15 @@ where 'final_soc.root' is the name of the single SOC file you would like to crea
 
 On each SOC file, each of the single SOCPMT objects and their respective fields are summed over as follows:
 
-   TACs - Every TAC from the same channel across all files are added together
-   QHSs and QHLs - Every QHS and QHL from the same channel across all files are added together
-   Prompt Counts - Every prompt count on the same channel across all files are added together
-   Calculated TAC and RMS - These are summed over all files for the same channel and averaged
-   Time of Flight (TOF) - These are all summed and averaged 
+   1) TACs - Every TAC from the same channel across all files are added together.
+   2) QHSs and QHLs - Every QHS and QHL from the same channel across all files are added together.
+   3) Prompt Counts - Every prompt count on the same channel across all files are added together.
+   4) Calculated TAC and RMS - These are summed over all files for the same channel and averaged.
+   5) Time of Flight (TOF) - These are all summed and averaged.
 
 'soc2soc' was created because 'hadd' includes each PMT from a SOC file as an individual entry. For example, in the above scenario, instead of approximately 9,000 PMT entries on the SOC file (representing the 9000 individual PMTs), there would actually be 5 x 9,000 entries. This was the main problem with 'hadd' and the motivation for writing this executable.
 
-Note: The final SOC file will have a dummy RAT::DS::Run object written to a TTree, but it will be empty. This is to avoid conflict with the pre-existing SOC file format for .root files.
+Note: It is intended that the final SOC file will have a dummy RAT::DS::Run object written to a TTree, but it will be empty. This is to avoid conflict with the pre-existing SOC file format for .root files. For now this is not included - so ignore any ROOT errors about a 'runT' object not existing when using RAT methods.
 
 
 db2soc 
@@ -98,44 +106,30 @@ Once entries on the SOC file have been filled, 'soc2locas' will then process inf
 Example usage at the command line: 
 
     soc2locas -r 123456 -c 654321 -w 987654
-Here, the '-r' argument is the main-run (SOC) file to be processed ("123456_Run.root"), '-c' is the associated central-run ("654321_Run.root") and '-w' an optional associated run at a different wavelength (in SNO, this was usually at 500 nm). The central- and wavelength- runs provide information which can be used to calculate the corrections to some of the optical parameters required for the main run file. 'soc2locas' writes a LOCASRun file, "123456_LOCASRun.root" to the 'locas-plus/data/runs/locasrun' directory. The -w option is optional
+Here, the '-r' argument is the main-run (SOC) file to be processed ("123456_Run.root"), '-c' is the associated central-run ("654321_Run.root") and '-w' an optional associated run at a different wavelength (in SNO, this was usually at 500 nm). The central- and wavelength-runs provide information which can be used to calculate the corrections to some of the optical parameters required for the main run file. 'soc2locas' writes a LOCASRun file, "123456_LOCASRun.root" to the 'locas-plus/data/runs/locasrun' directory. The -w option is optional.
 
-locas2fitter
+locas2marquardt & locas2minuit
 ==========
-The 'locas2fitter' executable is responsible for processing the LOCASRun files and implementing them into a fit of the optical response of the detector. To perform the fit, all the parameters and cut crieria are specified by a 'fitfile' which are found in 'locas-plus/data/fitfiles'. For information on the format of the fitfiles, see the README.md file in the 'locas-plus/data/fitfiles' directory.
+The 'locas2marquardt' and 'locas2minuit' executables are responsible for processing the LOCASRun files and implementing them into a fit of the optical response of the detector. either by using the Levenberg-Marquardt algorithm (a-la SNO) or by using ROOT's implementation of Minuit. To perform the fit, all the parameters and cut crieria are specified by a 'fitfile' which are found in 'locas-plus/data/fitfiles'. The format of the fitfiles is currently different depending on whether 'locas2mardquardt' or 'locas2minuit' is being used. For information on the format of these fitfiles, see the README.md file in the 'locas-plus/data/fitfiles' directory.
 
-    locas2fitter /path/to/fit_file.ratdb
-The format of the run_list.ratdb file should follow that as shown in the example fitfile included in this installation of LOCAS ('locas-plus/data/fitfiles/example_fit.ratdb'). 
+Example usage of these fitting executables at the command line is as follows:
 
-Note: This executable is currently in development, if you are reading this note then it is not quite yet complete!
+    locas2marquardt /path/to/marquardt_fit_file.ratdb
+    locas2minuit /path/to/minuit_fit_file.ratdb
+
+Note: This executable is currently in development, if you are reading this note then it is not quite yet complete and it is likely you don't have appropriate data to fit to.
+
+locas2debug
+==========
+Whilst LOCAS remains in development, the 'locas2debug' can be edited by more adventurous folk by modifiying locas2debug.cc and recompiling LOCAS using 'make clean', 'make' and 'make install'. This is useful for testing the functionality of specific aspects of the LOCAS class files.
 
 LOCAS Utilities
 ==========
-
-The 'locas-plus/util/' directory stores various scripts which could be useful for LOCAS.
-
-Shadowing Utility
-==========
-Currently there are scripts in 'locas-plus/util/shadowing-tool' which produce the shadowing values due to the AV hold-down ropes and the enveloping AV geometry. This tool requires the current system to be connected to a batch-node system which makes use of 'qsub' - the job submission executable. To use this tool, first ensure "env_locas.sh" has been sourced.
-
-Example usage at the command line: 
-
-    ./ShadowingEvGen.sh 0 1000 3000 420 30 1000 123456
-
-The ShadowingEvGen.sh script will then perform 4 simulations of photon bombs at a position (0,1000,3000) mm (1st, 2nd and 3rd arguments) in the detector with a wavelength of 420 nm (4th argument). The 4 simulations are:
-
-	1 Run WITH the AV Hold-Down Ropes
-	1 Run WITHOUT the AV Hold-Down Ropes
-	1 Run WITH the enveloping AV geometry
-	1 Run WITHOUT the enveloping AV geometry
-
-Each run will consist of 30 x 1000 (=30,000) Events (5th argument x 6th argument) split up into 30 RAT runs of 1000 events each simulated on 30 batch node systems. The run specification passed at the command line will coincide with the same run whose ID is '123456' (7th argument) and whose associated SOC file is "123456_Run.root" stored in 'locas-plus/data/runs/soc'. Two files will be written with the relative shadowing values "avhd_123456.ratdb" and "geo_123456.ratdb" which will be written to 'locas-plus/data/shadowing/avhd' and 'locas-plus/data/shadowing/geo' respectively. These are the .ratdb files used by the 'db2soc' executable to insert values into the SOC file.
+The 'locas-plus/util/' directory stores various scripts which could be useful for LOCAS. See the individual README.md files in each of the aforementioned subdirectories for more information.
 
 
 NOTES
 ==========
 
 1) Currently, by default LOCAS will search for SOC files in the 'locas-plus/data/runs/soc' directory. The SOC files should be named by run ID, i.e. for the laserball run with run id '123456', the associated SOC file should be named '123456_Run.root' and located in the 'locas-plus/data/runs/soc' directory. Once processed, LOCAS will output the LOCASRun files to 'locas-plus/data/runs/locasrun' and will write filenames of the form '123456_LOCASRun.root'.
-
-2) In the 'locas-plus/data/shadowing/avhd' and 'locas-plus/data/shadowing/geo' directories - there are example shadowing value files.
 

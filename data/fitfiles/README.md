@@ -1,6 +1,11 @@
 The Fit Configuration File are Stored in this Directory
 ==========
 
+There are currently two fitting methods; 'locas2marquardt' and 'locas2minuit'. Their fit files are slightly different. See below.
+
+locas2marquardt fitfile
+==========
+
 When fitting data, the options for the fit are provided in the fit files contained here. The entries on the fit file are as follows:
 
      fit_name - Name of the Fit
@@ -61,3 +66,22 @@ When fitting data, the options for the fit are provided in the fit files contain
 
      run_norm_vary - Whether the individual run normalisations should in the fit
      run_norm_init - The initial values for all normalisations
+
+locas2minuit fitfile
+==========
+The fields on the 'locas2minuit' file are as follows:
+
+    run_ids - The list of run ids whose data is to be used in the fit.
+
+    filter_list - The list of filters/cuts to be used on the data.
+
+    filter_*_min - The minimum value of a cut to be used on the data.
+    filter_*_max - The maximum value of a cut to be used on the data.
+
+    parameter_list - The list of parameters to include in the model.
+
+    par_*_init - The initial value to be used of a parameter.
+    par_*_min - The minimum allowed value for a parameter.
+    par_*_max - The maximum allowed value for a parameter.
+    par_*_indices - The indices for the parameter, if they are the same, it is a single parameter, if there is a collection of parameters the indices specify the range.
+    par_*_inc - The increment value the parameter is allowed to vary by in Minuit.
