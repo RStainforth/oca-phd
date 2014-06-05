@@ -41,7 +41,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include "RAT/getopt.h"
-#include "RAT/SOCReader.hh"
+#include "RAT/DU/SOCReader.hh"
 #include "RAT/DS/SOC.hh"
 #include "RAT/DS/SOCPMT.hh"
 
@@ -51,6 +51,7 @@
 #include "LOCASLightPath.hh"
 
 #include "TFile.h"
+#include "TTree.h"
 
 #include <iostream>
 #include <fstream>
@@ -205,7 +206,7 @@ int main( int argc, char** argv ){
   cout << rIDStr + (string)"_Run.root" << endl;
   cout << "--------------------------" << endl;
   // Add the main-run to the SOC reader first
-  RAT::SOCReader soc( ( socRunDir + rIDStr + (string)"_Run.root" ).c_str() );
+  RAT::DU::SOCReader soc( ( socRunDir + rIDStr + (string)"_Run.root" ).c_str() );
 
   // If a central-run has been specified, add it to the SOCReader
   if ( crBool ){

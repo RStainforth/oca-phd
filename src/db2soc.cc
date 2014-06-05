@@ -72,6 +72,7 @@
 #include "LOCASDB.hh"
 
 #include "TFile.h"
+#include "TTree.h"
 
 #include <iostream>
 #include <string>
@@ -90,15 +91,15 @@ class LOCASCmdOptions
 {
 public:
   LOCASCmdOptions( ) : fRID( -1 ), fRIDStr( "" ),
-		       fSrcID( -1 ), fSrcRunID( -1 ),
+		       fSrcID( "" ), fSrcRunID( -1 ),
 		       fSrcPosX( -1 ), fSrcPosY( -1 ),
 		       fSrcPosZ( -1 ), fSrcWL( -1 ),
                        fSrcGTO( -1 ), fSrcFill( -1 ) { }
   Long64_t fRID;
-  Int_t fSrcID, fSrcRunID, fSrcWL, fSrcFill;
+  Int_t fSrcRunID, fSrcWL, fSrcFill;
   Double_t fSrcPosX, fSrcPosY, fSrcPosZ;
   Float_t fSrcGTO;
-  std::string fRIDStr;
+  std::string fRIDStr, fSrcID;
 };
 
 // Declare the three function prototypes used
@@ -119,7 +120,7 @@ int main( int argc, char** argv ){
   Long64_t rID = Opts.fRID;
   string rIDStr = Opts.fRIDStr;
 
-  Int_t srcID = Opts.fSrcID;
+  std::string srcID = Opts.fSrcID;
   Int_t srcRunID = Opts.fSrcRunID;
   Int_t srcWL = Opts.fSrcWL;
   Int_t srcFill = Opts.fSrcFill;
@@ -165,29 +166,30 @@ int main( int argc, char** argv ){
     lDB.LoadGeoPMTShadowingVals( srcFill );
   }
 
-  if ( srcID > 0 ){ socBr->SetSourceID( srcID ); }
+  if ( srcID != "" ){ socBr->SetSourceID( srcID ); }
   if ( srcRunID > 0 ){ socBr->SetRunID( srcRunID ); }
-  if ( srcPos.Mag() >= 0.0 ){ socBr->SetSourcePosManip( srcPos ); }
-  if ( srcWL > 0 ){ socBr->SetLaserWavelength( srcWL ); }
-  if ( srcGTO > 0.0 ){ socBr->SetGlobalTimeOffset( srcGTO ); }
+  //if ( srcPos.Mag() >= 0.0 ){ socBr->SetSourcePosManip( srcPos ); }
+  //if ( srcWL > 0 ){ socBr->SetLaserWavelength( srcWL ); }
+  //if ( srcGTO > 0.0 ){ socBr->SetGlobalTimeOffset( srcGTO ); }
 
   // Create an iterator to loop over the PMTs stored
   // in the SOC object.
   std::map<Int_t, DS::SOCPMT>::iterator iPMT;
+  std::vector< UInt_t > pmtIDs = socBr->GetSOCPMTIDs();
 
   if ( srcFill > 0 ){
-    for ( iPMT = socBr->GetSOCPMTIterBegin(); iPMT != socBr->GetSOCPMTIterEnd(); ++iPMT ){
+    for ( Int_t iPMT = 0; iPMT < pmtIDs.size(); iPMT++ ){
       
       // Obtain the PMT ID
-      Int_t pmtID = iPMT->first;
+      Int_t pmtID = pmtIDs[ iPMT ];
       
       // Obtain the shadowing values for the specified PMT ID
       Double_t avhdRelOcc = lDB.GetAVHDRopePMTShadowingVal( pmtID );
       Double_t geoRelOcc = lDB.GetGeoPMTShadowingVal( pmtID );
       
       // Set them in the SOCPMT objects contained in the SOC object
-      ( socBr->GetSOCPMT( iPMT->first ) ).SetRelOccSim_fullShadow( geoRelOcc );
-      ( socBr->GetSOCPMT( iPMT->first ) ).SetRelOccSim_hdRopeShadow( avhdRelOcc );
+      ( socBr->GetSOCPMT( pmtID ) ).SetShadowRelativeOccupancy( geoRelOcc );
+      ( socBr->GetSOCPMT( pmtID ) ).SetRopeShadowRelativeOccupancy( avhdRelOcc );
       
     }
   }

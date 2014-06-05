@@ -28,7 +28,7 @@
 
 #include "RAT/DS/SOCPMT.hh"
 #include "RAT/DS/SOC.hh"
-#include "RAT/SOCReader.hh"
+#include "RAT/DU/SOCReader.hh"
 
 using namespace LOCAS;
 using namespace std;
@@ -195,9 +195,9 @@ void LOCASRun::Initialise()
   SetCentralRunID( -1 );
   SetWavelengthRunID( -1 );
 
-  SetSourceID( -1 );
-  SetCentralSourceID( -1 );
-  SetWavelengthSourceID( -1 );
+  SetSourceID( "" );
+  SetCentralSourceID( "" );
+  SetWavelengthSourceID( "" );
 
   SetIsMainRun( false );
   SetIsCentralRun( false );
@@ -259,18 +259,17 @@ void LOCASRun::Clear( Option_t* option )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
+void LOCASRun::Fill( RAT::DU::SOCReader& socR, Int_t runID )
 {
 
-  RAT::DS::SOC* socPtr = NULL;
-
+  RAT::DS::SOC socPtr;
   // First check that a SOC file with the specified runID exists in the SOCReader
-  for ( Int_t iSOC = 0; iSOC < socR.GetNSOC(); iSOC++ ){
+  for ( Int_t iSOC = 0; iSOC < socR.GetSOCCount(); iSOC++ ){
     socPtr = socR.GetSOC( iSOC );
-    if ( socPtr->GetRunID() == runID ){ break; }
+    if ( socPtr.GetRunID() == runID ){ break; }
     else{ continue; }
     
-    if ( iSOC == ( socR.GetNSOC() - 1 ) ){
+    if ( iSOC == ( socR.GetSOCCount() - 1 ) ){
       cout << "LOCASRun::Fill: Error: No SOC file with specified run-ID found" << endl;
     }
   }
@@ -351,31 +350,32 @@ void LOCASRun::Fill( RAT::SOCReader& socR, Int_t runID )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASRun::CopySOCRunInfo( RAT::DS::SOC* socRun )
+void LOCASRun::CopySOCRunInfo( RAT::DS::SOC& socRun )
 {
 
   // Copies all the Run-level information from a SOC file
   // and puts it into (this) LOCASRun object
 
-  SetRunID( socRun->GetRunID() );
-  SetSourceID( socRun->GetSourceID() );
-  SetLambda( socRun->GetLaserWavelength() );
-  SetLBPos( socRun->GetSourcePosManip() ); 
+  SetRunID( socRun.GetRunID() );
+  SetSourceID( socRun.GetSourceID() );
+  //SetLambda( socRun.GetLaserWavelength() );
+  //SetLBPos( socRun.GetSourcePosManip() ); 
 
 }
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASRun::CopySOCPMTInfo( RAT::DS::SOC* socRun )
+void LOCASRun::CopySOCPMTInfo( RAT::DS::SOC& socRun )
 {
 
   // Copies all the SOCPMTs information from from a SOC
   // file and copies them into LOCASPMT objects
 
-  std::map<Int_t, RAT::DS::SOCPMT>::iterator iSOCPMT;
-  for ( iSOCPMT = socRun->GetSOCPMTIterBegin(); iSOCPMT != socRun->GetSOCPMTIterEnd(); ++iSOCPMT ){
-    AddSOCPMT( iSOCPMT->second );
+  std::vector< UInt_t > pmtIDs = socRun.GetSOCPMTIDs();
+
+  for ( Int_t iPMT = 0; iPMT < pmtIDs.size(); iPMT++ ){
+    AddSOCPMT( socRun.GetSOCPMT( pmtIDs[ iPMT ] ) );
   }
 
 }
