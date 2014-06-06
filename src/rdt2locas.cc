@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 ///
-/// FILENAME: qrdt2locas.cc
+/// FILENAME: rdt2locas.cc
 ///
-/// EXECUTABLE: qrdt2locas
+/// EXECUTABLE: rdt2locas
 ///
 /// BRIEF: This executable processes SOC run files and outputs
 ///        LOCASRun (.root) files. These LOCASRun files are
@@ -49,17 +49,21 @@
 #include "RAT/DS/SOC.hh"
 #include "RAT/DS/SOCPMT.hh"
 #include "RAT/DU/Utility.hh"
+#include "RAT/DU/LightPathCalculator.hh"
+#include "RAT/DU/PMTInfo.hh"
 #include "RAT/Log.hh"
 
 #include "LOCASRun.hh"
 #include "LOCASPMT.hh"
 #include "LOCASDB.hh"
 #include "LOCASLightPath.hh"
+#include "LOCASMath.hh"
 
 #include "QRdt.hh"
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TMath.h"
 
 #include <iostream>
 #include <fstream>
@@ -105,7 +109,10 @@ int main( int argc, char** argv ){
 
   RAT::DU::Utility::Get()->BeginOfRun();
   PMTInfo pmtInfo = Utility::Get()->GetPMTInfo();
+  LightPathCalculator lightPath = Utility::Get()->GetLightPathCalculator();
   //////////////////////////////////////////////////////////////
+
+  cout << "Number of PMT is: " << pmtInfo.GetCount() << endl;
 
   // Parse arguments passed to the command line
   LOCASCmdOptions Opts = ParseArguments( argc, argv );
@@ -128,11 +135,172 @@ int main( int argc, char** argv ){
   cout << wavelengthRunFile << endl;
 
   // Load the QRdt file
-  QRdt myrQRdt( mainRunFile.c_str() );
-  QRdt mycrQRdt( centralRunFile.c_str() );
-  QRdt mywrQRdt( wavelengthRunFile.c_str() );
+  QRdt rQRdt( mainRunFile.c_str() );
+  QRdt crQRdt( centralRunFile.c_str() );
+  QRdt wrQRdt( wavelengthRunFile.c_str() );
+
+  // Create the LOCASRun object
+  LOCASRun* lRunPtr = new LOCASRun();
+
+  // Set the run IDs for the main, central and wavelength runs
+  lRunPtr->SetRunID( Opts.fRID );
+  lRunPtr->SetCentralRunID( Opts.fCRID );
+  lRunPtr->SetWavelengthRunID( Opts.fWRID );
 
 
+  // Set the source ID as a string object
+  std::string sourceIDStr = "laserball";
+  lRunPtr->SetSourceID( sourceIDStr );
+  lRunPtr->SetCentralSourceID( sourceIDStr );
+  lRunPtr->SetWavelengthSourceID( sourceIDStr );
+
+  // Set the number of pulses from each run as well as the wavelength used for each laser
+  lRunPtr->SetLambda( rQRdt.GetLambda() );
+  lRunPtr->SetNLBPulses( rQRdt.GetNpulses() );
+  lRunPtr->SetCentralLambda( crQRdt.GetLambda() );
+  lRunPtr->SetCentralNLBPulses( crQRdt.GetNpulses() );
+  lRunPtr->SetWavelengthLambda( wrQRdt.GetLambda() );
+  lRunPtr->SetWavelengthNLBPulses( wrQRdt.GetNpulses() );
+
+  // Set the position of the laserball in each of the main, central and wavelength runs
+  lRunPtr->SetLBPos( 10.0 * (*rQRdt.GetFullFitPos()) );
+  lRunPtr->SetCentralLBPos( 10.0 * (*crQRdt.GetFullFitPos()) );
+  lRunPtr->SetWavelengthLBPos( 10.0 * (*wrQRdt.GetFullFitPos()) );
+
+  // Set the laserball Theta,Phi (i.e. the orientation)
+  lRunPtr->SetLBTheta( 0.0 );
+  lRunPtr->SetLBPhi( rQRdt.GetOrientation() );
+  lRunPtr->SetCentralLBTheta( 0.0 );
+  lRunPtr->SetCentralLBPhi( crQRdt.GetOrientation() );
+  lRunPtr->SetWavelengthLBTheta( 0.0 );
+  lRunPtr->SetWavelengthLBPhi( wrQRdt.GetOrientation() );
+
+  /// The possible PMT types in SNO+
+  //enum PMTInfo::EPMTType  { NORMAL = 1, OWL = 2, LOWGAIN = 3, BUTT = 4, NECK = 5, CALIB = 6, SPARE = 10, INVALID = 11, BLOWN75 = 12 };
+
+  // The following assumes that the data on the RDT files is indexed by PMT ID.
+  for ( Int_t iPMT = 0; iPMT < pmtInfo.GetCount(); iPMT++ ){
+
+    enum PMTInfo::EPMTType pmtEnum = pmtInfo.GetType( iPMT );
+
+    if( pmtEnum == 1 ){
+      
+      LOCASPMT lPMT( iPMT );
+      lPMT.SetID( iPMT );
+
+      // Run IDs
+      lPMT.SetRunID( Opts.fRID );
+      lPMT.SetCentralRunID( Opts.fCRID );
+      lPMT.SetWavelengthRunID( Opts.fWRID );
+
+      // PMT Type
+      lPMT.SetType( 1 );
+
+      // Is PMT Verified
+      lPMT.SetIsVerified( false );
+      lPMT.SetCentralIsVerified( false );
+      lPMT.SetWavelengthIsVerified( false );
+
+      // PMT Position and Normal Vector
+      lPMT.SetPos( pmtInfo.GetPosition( iPMT ) );
+      lPMT.SetNorm( -1.0 * pmtInfo.GetDirection( iPMT ) );
+
+      // PMT Prompt Peak Times and widths
+      lPMT.SetPromptPeakTime( rQRdt.GetTimePeak( iPMT ) );
+      lPMT.SetPromptPeakWidth( rQRdt.GetTimeWidth( iPMT ) );
+      lPMT.SetCentralPromptPeakTime( crQRdt.GetTimePeak( iPMT ) );
+      lPMT.SetCentralPromptPeakWidth( crQRdt.GetTimeWidth( iPMT ) );
+      lPMT.SetWavelengthPromptPeakTime( wrQRdt.GetTimePeak( iPMT ) );
+      lPMT.SetWavelengthPromptPeakWidth( wrQRdt.GetTimeWidth( iPMT ) );
+
+      // ToF from Manipulator
+      lPMT.SetTimeOfFlight( rQRdt.GetToF( iPMT ) );
+      lPMT.SetCentralTimeOfFlight( crQRdt.GetToF( iPMT ) );
+      lPMT.SetWavelengthTimeOfFlight( wrQRdt.GetToF( iPMT ) );
+      
+      // PMT Prompt Occupancies
+      lPMT.SetOccupancy( rQRdt.GetOccupancy( iPMT ) );
+      lPMT.SetOccupancyErr( TMath::Sqrt( lPMT.GetOccupancy() ) );
+      lPMT.SetCentralOccupancy( crQRdt.GetOccupancy( iPMT ) );
+      lPMT.SetCentralOccupancyErr( TMath::Sqrt( lPMT.GetCentralOccupancy() ) ); 
+      lPMT.SetWavelengthOccupancy( wrQRdt.GetOccupancy( iPMT ) );
+      lPMT.SetWavelengthOccupancyErr( TMath::Sqrt( lPMT.GetWavelengthOccupancy() ) );
+
+      // Number of laserball pulses
+      lPMT.SetNLBPulses( rQRdt.GetNpulses() );
+      lPMT.SetCentralNLBPulses( crQRdt.GetNpulses() );
+      lPMT.SetWavelengthNLBPulses( wrQRdt.GetNpulses() );
+
+      // MPE corrected occupancies
+      lPMT.SetMPECorrOccupancy( LOCASMath::MPECorrectedNPrompt( lPMT.GetOccupancy(), lPMT.GetNLBPulses() ) );
+      lPMT.SetMPECorrOccupancyErr( LOCASMath::MPECorrectedNPromptErr( lPMT.GetOccupancy(), lPMT.GetNLBPulses() ) );
+      lPMT.SetCentralMPECorrOccupancy( LOCASMath::MPECorrectedNPrompt( lPMT.GetCentralOccupancy(), lPMT.GetCentralNLBPulses() ) );
+      lPMT.SetCentralMPECorrOccupancyErr( LOCASMath::MPECorrectedNPromptErr( lPMT.GetCentralOccupancy(), lPMT.GetCentralNLBPulses() ) );
+      lPMT.SetWavelengthMPECorrOccupancy( LOCASMath::MPECorrectedNPrompt( lPMT.GetWavelengthOccupancy(), lPMT.GetWavelengthNLBPulses() ) );
+      lPMT.SetWavelengthMPECorrOccupancyErr( LOCASMath::MPECorrectedNPromptErr( lPMT.GetWavelengthOccupancy(), lPMT.GetWavelengthNLBPulses() ) );
+
+      // Distances through the heavy water, acrylic and water regions
+      lightPath.CalcByPosition( lRunPtr->GetLBPos(), lPMT.GetPos() );
+      
+      lPMT.SetDistInScint( lightPath.GetDistInScint() );
+      lPMT.SetDistInAV( lightPath.GetDistInAV() );
+      lPMT.SetDistInWater( lightPath.GetDistInWater() );
+
+      lPMT.SetNeckFlag( lightPath.GetXAVNeck() );
+      lPMT.SetDistInNeck( lightPath.GetDistInNeckScint() 
+                          + lightPath.GetDistInNeckAV() 
+                          + lightPath.GetDistInNeckWater() );
+
+      lPMT.SetInitialLBVec( lightPath.GetInitialLightVec() );
+      lPMT.SetIncidentLBVec( lightPath.GetIncidentVecOnPMT() );
+
+      lightPath.CalculateFresnelTRCoeff();
+      lPMT.SetFresnelTCoeff( lightPath.GetFresnelTCoeff() );
+
+      lightPath.CalculateSolidAngle( lPMT.GetNorm(), 0 );
+      lPMT.SetSolidAngle( lightPath.GetSolidAngle() );
+
+      lightPath.CalculateCosThetaPMT( lPMT.GetID() );
+      lPMT.SetCosTheta( lightPath.GetCosThetaAvg() );
+      
+      cout << "PMT ID is: " << iPMT << endl;
+      cout << "Main Occ: " << lPMT.GetOccupancy() << " | Central Occ: " << lPMT.GetCentralOccupancy() << " | Wavelength Occ: " << lPMT.GetWavelengthOccupancy() << endl;
+      cout << "----------------------" << endl;
+
+      lRunPtr->AddLOCASPMT( lPMT );
+
+    }
+
+  }
+
+  // Now create a LOCASRun (.root) file to store the information of the main-run
+
+  // Get the directory to where the LOCASRun file will be written
+  // Currently this is ${LOCAS_DATA}/runs/locasrun
+  std::string locasRunDir = lDB.GetLOCASRunDir();
+  TFile* file = TFile::Open( ( locasRunDir + rIDStr + (string)"_LOCASRun.root" ).c_str(), "RECREATE" );
+
+  // Create the Run Tree
+  TTree* runTree = new TTree( "LOCASRunT", "LOCAS Run Tree" );
+
+  // Declare a new branch pointing to the data stored in the lRun object
+  runTree->Branch( "LOCASRun", lRunPtr->ClassName(), &(*lRunPtr), 32000, 99 );
+  file->cd();
+
+  // Fill the tree and write it to the file
+  runTree->Fill();
+  runTree->Write();
+
+  // Close the file
+  file->Close();
+  delete file;
+
+  cout << "LOCASRun file: " << endl;
+  cout << ( locasRunDir + rIDStr + (string)"_LOCASRun.root" ).c_str() << endl;
+  cout << "has been created." << endl;
+  cout << "\n";
+
+  
 }
 
 ///////////////////////////
