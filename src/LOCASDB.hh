@@ -113,6 +113,7 @@ namespace LOCAS{
     
     std::string GetSOCRunDir(){ return fSOCRunDir; }
     std::string GetLOCASRunDir(){ return fLOCASRunDir; }
+    std::string GetRDTRunDir( const std::string& month = "oct03" ){ return fRDTRunDir + month + "/"; }
 
     std::vector< Int_t > GetRunList(){ return fRunList; }
 
@@ -197,6 +198,7 @@ namespace LOCAS{
     
     std::string fSOCRunDir;                                  // The full system path of the directory where the SOC Run files are held
     std::string fLOCASRunDir;                                // The full system path of the directory where the LOCASRun files are held
+    std::string fRDTRunDir;                                  // The fill system path of the directory where the LOCASRun files are held
 
     std::vector< Int_t > fRunList;                           // The list of RunIDs loaded from a runlist file
 

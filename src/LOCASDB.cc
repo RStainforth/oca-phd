@@ -88,6 +88,7 @@ void LOCASDB::Initialise()
 
   fSOCRunDir = getenv( "LOCAS_DATA" ) + (std::string)"/runs/soc/";
   fLOCASRunDir = getenv( "LOCAS_DATA" ) + (std::string)"/runs/locasrun/";
+  fRDTRunDir = getenv( "LOCAS_DATA" ) + (std::string)"/runs/rdt/";
 
 }
 
