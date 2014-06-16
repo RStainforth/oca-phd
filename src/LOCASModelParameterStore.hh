@@ -52,6 +52,9 @@ namespace LOCAS{
     // Write the parameters to a .root file
     void WriteToFile( const char* fileName = "LOCASModelParameterStore.root" );
 
+    // Reinitialise the initial values of the parameters based on the values in the array; 'pars'
+    void ReInitialiseParameters( const Double_t* par );
+
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
@@ -78,6 +81,7 @@ namespace LOCAS{
     Int_t fNParameters;                              // The number of parameters in the store
 
     std::vector< LOCASModelParameter > fParameters;  // The vector of parameter objects i.e. the store
+    Double_t* fParametersPtr;                        // The pointer of parameter values
 
     ClassDef( LOCASModelParameterStore, 1 )
 

@@ -18,7 +18,6 @@
 #ifndef _LOCASChiSquare_
 #define _LOCASChiSquare_
 
-#include "LOCASModel.hh"
 #include "LOCASOpticsModel.hh"
 #include "LOCASModelParameterStore.hh"
 #include "LOCASDataPoint.hh"
@@ -41,6 +40,8 @@ namespace LOCAS{
     Float_t EvaluateGlobalChiSquare();
     Float_t EvaluateGlobalChiSquare( LOCASDataStore& lStore );
     Float_t EvaluateGlobalChiSquare( const Double_t* params );
+
+    void ReInitialiseModelParameters(){ fModel.ReInitialiseParameters(); }
 
     void AddModel( const LOCASOpticsModel& locasModel ){ fModel = locasModel; }
     void AddData( const LOCASDataStore& locasData ){ fDataStore = locasData; }

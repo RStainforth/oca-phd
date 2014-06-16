@@ -94,7 +94,7 @@ int main( int argc, char** argv ){
 
   LOCASDataStoreStore lStoreStore;
 
-  for ( Float_t par = 5000.0; par <= 20000.0; par += 100.0 ){
+  for ( Float_t par = 20000.0; par <= 60000.0; par += 100.0 ){
 
     LOCASDataStore lParStore;
     lParStore = lDataStore;

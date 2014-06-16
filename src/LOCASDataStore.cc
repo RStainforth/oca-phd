@@ -66,6 +66,18 @@ LOCASDataStore LOCASDataStore::operator+( LOCASDataStore& rhs )
   return (*this)+=rhs;
   
 }
+//////////////////////////////////////
+//////////////////////////////////////
+
+LOCASDataStore& LOCASDataStore::operator=( const LOCASDataStore& rhs )
+{
+
+  fStoreName = rhs.fStoreName;
+  fDataPoints = rhs.fDataPoints;
+
+  return *this;
+}
+
 
 //////////////////////////////////////
 //////////////////////////////////////

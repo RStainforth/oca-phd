@@ -110,9 +110,10 @@ int main( int argc, char** argv ){
   RAT::DU::Utility::Get()->BeginOfRun();
   PMTInfo pmtInfo = Utility::Get()->GetPMTInfo();
   LightPathCalculator lightPath = Utility::Get()->GetLightPathCalculator();
+  lightPath.LoadShadowingGeometryInfo();
   //////////////////////////////////////////////////////////////
 
-  cout << "Number of PMT is: " << pmtInfo.GetCount() << endl;
+  //cout << "Number of PMT is: " << pmtInfo.GetCount() << endl;
 
   // Parse arguments passed to the command line
   LOCASCmdOptions Opts = ParseArguments( argc, argv );
@@ -240,6 +241,8 @@ int main( int argc, char** argv ){
       lPMT.SetWavelengthMPECorrOccupancyErr( LOCASMath::MPECorrectedNPromptErr( lPMT.GetWavelengthOccupancy(), lPMT.GetWavelengthNLBPulses() ) );
 
       // Distances through the heavy water, acrylic and water regions
+
+      ///////////// OFF AXIS /////////////
       lightPath.CalcByPosition( lRunPtr->GetLBPos(), lPMT.GetPos() );
       
       lPMT.SetDistInScint( lightPath.GetDistInScint() );
@@ -262,10 +265,64 @@ int main( int argc, char** argv ){
 
       lightPath.CalculateCosThetaPMT( lPMT.GetID() );
       lPMT.SetCosTheta( lightPath.GetCosThetaAvg() );
+
+      if ( lightPath.CheckForShadowing() == true ){ lPMT.SetBadPath( true ); }
+      else{ lPMT.SetBadPath( false ); }
+
+      ///////////// CENTRAL /////////////
+      TVector3 origin( 0.0, 0.0, 0.0 );
+      lightPath.CalcByPosition( origin, lPMT.GetPos() );
       
-      cout << "PMT ID is: " << iPMT << endl;
-      cout << "Main Occ: " << lPMT.GetOccupancy() << " | Central Occ: " << lPMT.GetCentralOccupancy() << " | Wavelength Occ: " << lPMT.GetWavelengthOccupancy() << endl;
-      cout << "----------------------" << endl;
+      lPMT.SetCentralDistInScint( lightPath.GetDistInScint() );
+      lPMT.SetCentralDistInAV( lightPath.GetDistInAV() );
+      lPMT.SetCentralDistInWater( lightPath.GetDistInWater() );
+
+      lPMT.SetCentralNeckFlag( lightPath.GetXAVNeck() );
+      lPMT.SetCentralDistInNeck( lightPath.GetDistInNeckScint() 
+                          + lightPath.GetDistInNeckAV() 
+                          + lightPath.GetDistInNeckWater() );
+
+      lPMT.SetCentralInitialLBVec( lightPath.GetInitialLightVec() );
+      lPMT.SetCentralIncidentLBVec( lightPath.GetIncidentVecOnPMT() );
+
+      lightPath.CalculateFresnelTRCoeff();
+      lPMT.SetCentralFresnelTCoeff( lightPath.GetFresnelTCoeff() );
+
+      lightPath.CalculateSolidAngle( lPMT.GetNorm(), 0 );
+      lPMT.SetCentralSolidAngle( lightPath.GetSolidAngle() );
+
+      lightPath.CalculateCosThetaPMT( lPMT.GetID() );
+      lPMT.SetCentralCosTheta( lightPath.GetCosThetaAvg() );
+
+      if ( lightPath.CheckForShadowing() == true ){ lPMT.SetCentralBadPath( true ); }
+      else{ lPMT.SetCentralBadPath( false ); }
+
+      ///////////// WAVELENGTH /////////////
+      lightPath.CalcByPosition( lRunPtr->GetLBPos(), lPMT.GetPos() );
+      
+      lPMT.SetWavelengthDistInScint( lightPath.GetDistInScint() );
+      lPMT.SetWavelengthDistInAV( lightPath.GetDistInAV() );
+      lPMT.SetWavelengthDistInWater( lightPath.GetDistInWater() );
+
+      lPMT.SetWavelengthNeckFlag( lightPath.GetXAVNeck() );
+      lPMT.SetWavelengthDistInNeck( lightPath.GetDistInNeckScint() 
+                          + lightPath.GetDistInNeckAV() 
+                          + lightPath.GetDistInNeckWater() );
+
+      lPMT.SetWavelengthInitialLBVec( lightPath.GetInitialLightVec() );
+      lPMT.SetWavelengthIncidentLBVec( lightPath.GetIncidentVecOnPMT() );
+
+      lightPath.CalculateFresnelTRCoeff();
+      lPMT.SetWavelengthFresnelTCoeff( lightPath.GetFresnelTCoeff() );
+
+      lightPath.CalculateSolidAngle( lPMT.GetNorm(), 0 );
+      lPMT.SetWavelengthSolidAngle( lightPath.GetSolidAngle() );
+
+      lightPath.CalculateCosThetaPMT( lPMT.GetID() );
+      lPMT.SetWavelengthCosTheta( lightPath.GetCosThetaAvg() );
+
+      if ( lightPath.CheckForShadowing() == true ){ lPMT.SetWavelengthBadPath( true ); }
+      else{ lPMT.SetWavelengthBadPath( false ); }
 
       lRunPtr->AddLOCASPMT( lPMT );
 

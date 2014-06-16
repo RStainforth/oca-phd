@@ -19,11 +19,10 @@
 
 #include "LOCASDataPoint.hh"
 #include "LOCASModelParameterStore.hh"
-#include "LOCASModel.hh"
 
 namespace LOCAS{
 
-  class LOCASOpticsModel : public LOCASModel
+  class LOCASOpticsModel : public TObject
   {
   public:
 
@@ -38,6 +37,8 @@ namespace LOCAS{
     void AllocateParameters();
     void InitialiseParameterIndices();
     void InitialiseParameters();
+
+    void ReInitialiseParameters() { fModelParameterStore.ReInitialiseParameters( fParameters ); }
 
     /////////////////////////////////
     ////////     METHODS     ////////
@@ -92,6 +93,7 @@ namespace LOCAS{
     ////////     SETTERS     ////////
     /////////////////////////////////
 
+    void SetParameters( const Double_t* pars ) { *fParameters = *pars; }
     void SetPar( const Int_t index, const Float_t val ) { fParameters[ index ] = val; }
 
     void SetScintPar( const Float_t val ) { fParameters[ fScintParIndex ] = val; }
@@ -118,7 +120,6 @@ namespace LOCAS{
     void SetNLBDistributionThetaBins( const Int_t val ){ fNLBDistributionThetaBins = val; }
     void SetNLBDistributionPhiBins( const Int_t val ){ fNLBDistributionPhiBins = val; }
 
-    void SetParameters( const Double_t* params ) { *fParameters = *params; }
     void SetNParameters( const Int_t npars ){ fNParameters = npars; }
     
   private:

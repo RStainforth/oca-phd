@@ -54,6 +54,7 @@ Float_t LOCASChiSquare::EvaluateChiSquare( LOCASDataPoint& dPoint )
   Float_t error = dPoint.GetMPEOccRatioErr();
 
   Float_t chiSq =  ( res * res ) / ( error * error );
+  cout << "ModelOcc: " << modelVal << " | DataOcc: " << dataVal << " | ChiSquare: " << chiSq << endl;
   dPoint.SetChiSq( chiSq );
 
   return chiSq;

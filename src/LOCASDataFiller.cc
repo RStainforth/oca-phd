@@ -21,6 +21,7 @@
 #include "LOCASDataPoint.hh"
 #include "LOCASFilter.hh"
 #include "LOCASFilterStore.hh"
+#include "LOCASChiSquare.hh"
 
 using namespace LOCAS;
 using namespace std;
@@ -58,8 +59,8 @@ void LOCASDataFiller::AddData( LOCASRawDataStore& dataSt, LOCASFilterStore& filt
         iD++ ){
 
     validPoint = true;
-    for ( iF = filterSt.GetLOCASFiltersIterBegin();
-          iF != filterSt.GetLOCASFiltersIterEnd();
+    for ( iF = filterSt.GetLOCASTopLevelFiltersIterBegin();
+          iF != filterSt.GetLOCASTopLevelFiltersIterEnd();
           iF++ ){
 
       filterName = iF->GetFilterName();
@@ -180,11 +181,47 @@ void LOCASDataFiller::AddData( LOCASRawDataStore& dataSt, LOCASFilterStore& filt
 
 
 //////////////////////////////////////
-//////////////////////////////////////
+/////////////////////////////////////
 
-LOCASDataStore LOCASDataFiller::GetData()
+LOCASDataStore LOCASDataFiller::ReFilterData( LOCASFilterStore& filterSt, LOCASChiSquare& chiSq )
 {
 
-  return fDataStore;
+  LOCASDataStore newStore;
 
+  // Iterate through each raw datapoint and each filter to check if the conditions of each
+  // filter for each data point are met. If the conditions are met, the raw datapoint is converted to
+  // a standard data point to be used in fitting and is added to the private datastore; 'fDataStore'
+
+  std::vector< LOCASDataPoint >::iterator iD;
+  std::vector< LOCASFilter >::iterator iF;
+  Bool_t validPoint = true;
+  std::string filterName = "";
+
+  for ( iD = fDataStore.GetLOCASDataPointsIterBegin();
+        iD != fDataStore.GetLOCASDataPointsIterEnd();
+        iD++ ){
+
+    validPoint = true;
+    for ( iF = filterSt.GetLOCASFitLevelFiltersIterBegin();
+          iF != filterSt.GetLOCASFitLevelFiltersIterEnd();
+          iF++ ){
+
+      filterName = iF->GetFilterName();
+
+      // Filter to check the initial Chi-Square value
+      
+      if ( filterName == "filter_chi_square" ){        
+        Double_t dataPointChiSquare = chiSq.EvaluateChiSquare( *(iD) );
+        if ( !iF->CheckCondition( dataPointChiSquare ) ){ 
+          validPoint = false; 
+        } 
+      }
+
+    }
+
+    if ( validPoint == true ){ newStore.AddDataPoint( *iD ); cout << "HELLO" << endl; }
+
+  }
+
+  return newStore;
 }

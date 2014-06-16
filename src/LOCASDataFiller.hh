@@ -20,6 +20,7 @@
 #include "LOCASRawDataStore.hh"
 #include "LOCASDataStore.hh"
 #include "LOCASFilterStore.hh"
+#include "LOCASChiSquare.hh"
 
 namespace LOCAS{
 
@@ -41,12 +42,16 @@ namespace LOCAS{
     // Add data and a set of filters to filtrate the data
     void AddData( LOCASRawDataStore& dataSt, LOCASFilterStore& filterSt );
 
+    // Re-Filter the current data, requires a chisq object if 
+    // one of the filters is a chi square elimination cut
+    LOCASDataStore ReFilterData( LOCASFilterStore& filterSt, LOCASChiSquare& lChiSq );
+
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
 
     // Return the 'filtered' data
-    LOCASDataStore GetData();
+    LOCASDataStore GetData(){ return fDataStore; }
 
   private:
 

@@ -5,17 +5,17 @@ index: "run_setup",
 valid_begin: [0, 0],
 valid_end: [0, 0],
 
-run_ids: [ 11200901, 12200901, 11256901, 12256901 ],
+run_ids: [ 34786, 34788, 34812, 34814, 34830, 34867, 34881, 34883, 34905, 34907, 34930, 34934, 34982, 34984, 35003, 35019 ],
 }
 
 {
 name: "FITFILE",
-index: "filter_setup",
+index: "top_level_filter_setup",
 
 valid_begin: [0, 0],
 valid_end: [0, 0],
 
-filter_list: [ "filter_mpe_occratio","filter_solid_angle_ratio", "filter_avhd_shadow", "filter_geo_shadow", "filter_deltascint", "filter_deltaav", "filter_pmt_angle", "filter_total_dist", "filter_mpe_ctr_occupancy", "filter_mpe_occupancy" ],
+filter_list: [ "filter_mpe_occratio" ],
 
 filter_pmt_angle_min: 0.0,
 filter_pmt_angle_max: 100000.0,
@@ -53,12 +53,25 @@ filter_deltawater_max: 10000000.0,
 
 {
 name: "FITFILE",
+index: "fit_level_filter_setup",
+
+valid_begin: [0, 0],
+valid_end: [0, 0],
+
+filter_list: [ "filter_chi_square" ],
+
+filter_chi_square_min: 0.9,
+filter_chi_square_max: 100.0,
+}
+
+{
+name: "FITFILE",
 index: "parameter_setup",
 
 valid_begin: [0, 0],
 valid_end: [0, 0],
 
-parameter_list: [ "par_scint", "par_av", "par_water", "par_scint_rs", "par_av_rs", "par_water_rs", "par_ang_resp" ],
+parameter_list: [ "par_scint", "par_av", "par_water", "par_scint_rs", "par_av_rs", "par_water_rs", "par_ang_resp", "par_lb_dist" ],
 
 par_scint_indices: [ 0, 0 ],
 par_scint_init: 7000.0,
@@ -108,3 +121,14 @@ par_lb_dist_min: 0.8,
 par_lb_dist_max: 1.2,
 par_lb_dist_inc: 0.1,
 }
+
+{
+name : "FITFILE",
+index: "fit_procedure",
+
+valid_begin: [0, 0],
+valid_end: [0, 0],
+
+chisq_lims: [ 100.0, 100.0, 25.0, 25.0, 25.0 ],
+}
+

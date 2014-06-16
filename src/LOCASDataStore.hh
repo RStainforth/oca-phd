@@ -37,6 +37,7 @@ namespace LOCAS{
     // The self-addition and addition operators
     LOCASDataStore& operator+=( LOCASDataStore& rhs );
     LOCASDataStore operator+( LOCASDataStore& rhs );
+    LOCASDataStore& operator=( const LOCASDataStore& rhs );
 
     /////////////////////////////////
     ////////     METHODS     ////////
@@ -51,6 +52,7 @@ namespace LOCAS{
     
     // Remove all the datapoints from the current store
     void ClearData(){ fDataPoints.clear(); }
+    void EraseDataPoint( std::vector< LOCASDataPoint >::iterator iDataPoint ){ fDataPoints.erase( iDataPoint ); }
 
     /////////////////////////////////
     ////////     GETTERS     ////////

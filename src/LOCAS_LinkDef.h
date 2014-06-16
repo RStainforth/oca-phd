@@ -5,7 +5,6 @@
 
 #pragma link C++ class QRdt+;
 
-#pragma link C++ class LOCAS::LOCASModel+;
 #pragma link C++ class LOCAS::LOCASPMT+;
 #pragma link C++ class LOCAS::LOCASRun+;
 #pragma link C++ class LOCAS::LOCASDB+;

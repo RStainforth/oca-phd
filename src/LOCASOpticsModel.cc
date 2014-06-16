@@ -226,9 +226,12 @@ Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint )
     Float_t intensityCtr = ModelLBDistribution( dataPoint, 1 );
     intensityRatio = intensity / intensityCtr;
   }
+  cout << "instensityRatio: " << intensityRatio << endl;
 
   Float_t solidAngleRatio = dataPoint.GetSolidAngleRatio();
+  cout << "solidAngleRatio: " << solidAngleRatio << endl;
   Float_t fresnelRatio = dataPoint.GetFresnelTCoeffRatio();
+  cout << "fresnelRatio: " << fresnelRatio << endl;
 
   Float_t modelPrediction = solidAngleRatio * fresnelRatio * normVal * angRespRatio * intensityRatio * 
     TMath::Exp( - ( ( dScintAtt + dScintRS )

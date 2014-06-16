@@ -26,6 +26,7 @@
 
 #include <string>
 #include <sstream>
+#include <map>
 
 using namespace LOCAS;
 using namespace std;
@@ -156,4 +157,16 @@ void LOCASModelParameterStore::WriteToFile( const char* fileName )
   file->Close();
   delete file;
 
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASModelParameterStore::ReInitialiseParameters( const Double_t* pars )
+{
+
+  for ( Int_t iPar = 0; iPar < fParameters.size(); iPar++ ){
+    ( fParameters[ iPar ] ).SetInitialValue( pars[ fParameters[ iPar ].GetIndex() ] );
+  } 
+  
 }
