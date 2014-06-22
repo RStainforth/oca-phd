@@ -47,6 +47,7 @@ namespace LOCAS{
     virtual Float_t ModelPrediction( const LOCASDataPoint& dataPoint );
 
     Float_t ModelLBDistribution( const LOCASDataPoint& dataPoint, Int_t runType );
+    Float_t ModelLBPolynomialMask( const LOCASDataPoint& dataPoint, Int_t runType );
     Float_t ModelAngularResponse( const LOCASDataPoint& dataPoint, Int_t runType );
 
     /////////////////////////////////
@@ -76,11 +77,13 @@ namespace LOCAS{
 
     Int_t GetAngularResponseParIndex() const { return fAngularResponseParIndex; }
     Int_t GetLBDistributionParIndex() const { return fLBDistributionParIndex; }
+    Int_t GetLBPolynomialParIndex() const { return fLBPolynomialParIndex; }
 
     Int_t GetNAngularResponseBins() const { return fNAngularResponseBins; }
     Int_t GetNLBDistributionBins() const { return fNLBDistributionBins; }
     Int_t GetNLBDistributionThetaBins() const { return fNLBDistributionThetaBins; }
     Int_t GetNLBDistributionPhiBins() const { return fNLBDistributionPhiBins; }
+    Int_t GetNLBPolynomialParameters() const { return fNLBPolynomialParameters; }
 
     Double_t* GetParameters() const { return fParameters; }
     Int_t GetNParameters() const { return fNParameters; }
@@ -114,11 +117,13 @@ namespace LOCAS{
     
     void SetAngularResponseParIndex( const Int_t nIndex ){ fAngularResponseParIndex = nIndex; }
     void SetLBDistributionParIndex( const Int_t nIndex ){ fLBDistributionParIndex = nIndex; }
+    void SetLBPolynomialParIndex( const Int_t nIndex ){ fLBPolynomialParIndex = nIndex; }
     
     void SetNAngularResponseBins( const Int_t val ){ fNAngularResponseBins = val; }
     void SetNLBDistributionBins( const Int_t val ){ fNLBDistributionBins = val; }
     void SetNLBDistributionThetaBins( const Int_t val ){ fNLBDistributionThetaBins = val; }
     void SetNLBDistributionPhiBins( const Int_t val ){ fNLBDistributionPhiBins = val; }
+    void SetNLBPolynomialParameters( const Int_t val ){ fNLBPolynomialParameters = val; }
 
     void SetNParameters( const Int_t npars ){ fNParameters = npars; }
     
@@ -134,11 +139,13 @@ namespace LOCAS{
     
     Int_t fAngularResponseParIndex;       // The first index of the angular response distribution parameters
     Int_t fLBDistributionParIndex;        // The first index of the laserball distribution parameters
+    Int_t fLBPolynomialParIndex;          // The first index of the laserball polynomial mask function
     
     Int_t fNAngularResponseBins;          // The number of angular response bins
     Int_t fNLBDistributionBins;           // The number of laserball distribution bins
     Int_t fNLBDistributionThetaBins;      // The number of Theta bins in the laserball distribution
     Int_t fNLBDistributionPhiBins;        // The number of Phi bins in the laserball distribution
+    Int_t fNLBPolynomialParameters;        // The number of laserball polynomial mask function parameters
 
     std::string fModelName;               // The model name
     Double_t* fParameters;                // The parameter array

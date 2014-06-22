@@ -51,11 +51,13 @@ LOCASOpticsModel::LOCASOpticsModel( const char* fileName )
 
   fAngularResponseParIndex = -10;
   fLBDistributionParIndex = -10;
+  fLBPolynomialParIndex = -10;
 
   fNAngularResponseBins = -10;
   fNLBDistributionBins = -10;
   fNLBDistributionThetaBins = -10;
   fNLBDistributionPhiBins = -10;
+  fNLBPolynomialParameters = -10;
 
   fModelParameterStore.AddParameters( fileName );
 
@@ -128,6 +130,17 @@ void LOCASOpticsModel::InitialiseParameterIndices()
       SetNLBDistributionBins( iPar->GetNInGroup() );
     }
 
+    else if ( iPar->GetParameterName() == "par_lb_dist_poly_start" ){ 
+      SetLBPolynomialParIndex( iPar->GetIndex() );
+      SetNAngularResponseBins( iPar->GetNInGroup() );
+    }
+
+    else if ( iPar->GetParameterName() == "par_lb_dist_poly" ){ 
+      SetLBPolynomialParIndex( iPar->GetIndex() );
+      SetNAngularResponseBins( iPar->GetNInGroup() );
+    }
+    
+
   }
 
 }
@@ -178,9 +191,8 @@ void LOCASOpticsModel::InitialiseParameters()
     for ( Int_t iT = 0; iT < GetNLBDistributionBins(); iT++ ){ SetPar( GetLBDistributionParIndex() + iT, 1.0 ); }
   }
 
-  // Debugging purposes - print out all the initial parameter values
-  for ( Int_t i = 0; i < fModelParameterStore.GetNParameters(); i++ ){
-    cout << "Parameter Value: " << i << " is: " << fParameters[ i ] << endl;
+  if ( GetLBPolynomialParIndex() >= 0 ){
+    for ( Int_t iPoly = 0; iPoly < GetNLBPolynomialParameters(); iPoly++ ){ SetPar( GetLBPolynomialParIndex() + iPoly, 1.0 ); }
   }
 
 }
@@ -201,7 +213,7 @@ Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint )
   Float_t dWaterRS = 0.0;
 
   // This is currently set to 1.0 until the normalisation ratio is better understood
-  Float_t normVal = 1.0;//dataPoint.GetLBIntensityNormRatio();
+  Float_t normVal = dataPoint.GetLBIntensityNormRatio();
 
   Float_t dScint = dataPoint.GetDeltaDistInScint();
   if ( GetScintParIndex() >= 0 ){ dScintAtt = dScint / GetScintPar(); }
@@ -225,15 +237,14 @@ Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint )
     Float_t intensity = ModelLBDistribution( dataPoint, 0 );
     Float_t intensityCtr = ModelLBDistribution( dataPoint, 1 );
     intensityRatio = intensity / intensityCtr;
+    if ( GetLBPolynomialParIndex() >= 0 ){
+      Float_t intensityPoly = ModelLBPolynomialMask( dataPoint, 0 );
+      Float_t intensityCtrPoly = ModelLBPolynomialMask( dataPoint, 1 );
+      intensityRatio *= ( intensityPoly / intensityCtrPoly );
+    }
   }
-  cout << "instensityRatio: " << intensityRatio << endl;
 
-  Float_t solidAngleRatio = dataPoint.GetSolidAngleRatio();
-  cout << "solidAngleRatio: " << solidAngleRatio << endl;
-  Float_t fresnelRatio = dataPoint.GetFresnelTCoeffRatio();
-  cout << "fresnelRatio: " << fresnelRatio << endl;
-
-  Float_t modelPrediction = solidAngleRatio * fresnelRatio * normVal * angRespRatio * intensityRatio * 
+  Float_t modelPrediction = normVal * angRespRatio * intensityRatio * 
     TMath::Exp( - ( ( dScintAtt + dScintRS )
                     + ( dAVAtt + dScintRS )
                     + ( dWaterAtt + dWaterRS ) ) );
@@ -292,6 +303,30 @@ Float_t LOCASOpticsModel::ModelLBDistribution( const LOCASDataPoint& dataPoint, 
   Float_t laserlight = GetLBDistributionPar( iLBDist );
   
   return laserlight;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+ 
+Float_t LOCASOpticsModel::ModelLBPolynomialMask( const LOCASDataPoint& dataPoint, Int_t runType )
+{
+
+  Float_t lbRelTheta = 0.0;
+  
+  if ( runType == 0 ){ lbRelTheta = dataPoint.GetLBTheta(); }
+  else if ( runType == 1 ){ lbRelTheta = dataPoint.GetCentralLBTheta(); }
+  
+  Float_t polynomialVal = 1.0;
+
+  for ( Int_t iPar = 0; iPar < fNLBPolynomialParameters; iPar++ ){
+
+    polynomialVal += ( ( fParameters[ GetLBPolynomialParIndex() + iPar ] )
+                       * ( TMath::Power( ( 1 + TMath::Cos( lbRelTheta ) ), ( iPar + 1 ) ) ) );
+    
+  }
+
+  return polynomialVal;
 
 }
 

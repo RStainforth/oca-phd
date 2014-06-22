@@ -336,6 +336,9 @@ namespace LOCAS{
     TH2F* fLBDistribution;                                  // Pointer to the laserball distribution 2D histogram
     Int_t fNLBDistributionThetaBins;                        // Number of theta bins in the laserball distribution histogram
     Int_t fNLBDistributionPhiBins;                          // Number of phi bins in the laserball distribution histogram
+    Int_t fNLBMaskParameters;                               // Mask parameters of the laserbal distribution polynomial
+    Int_t fNLBThetaWaveBins;                                // Number of parameters defining the sine wave
+    Int_t fNLBDistWave;                                     // Distance of the laserball theta wave distribution
     Int_t fNPMTsPerLBDistributionBinMin;                    // Minimum required number of PMTs per bin in the laserball distribution histogram
 
     TH1F* fAngularResponse;                                 // Pointer to the PMT angular response 1D histogram

@@ -338,7 +338,7 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR, Int_t runID )
     // Reset the light path object
     lLP.Clear();
     
-    ( iLP->second ).VerifyPMT( fLBPos );
+    ( iLP->second ).VerifyPMT();
     
   }
 
@@ -555,9 +555,6 @@ void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
       ( fLOCASPMTs[ pmtID ] ).SetCentralRelLBTheta( ( iCPMT->second ).GetRelLBTheta() );
       ( fLOCASPMTs[ pmtID ] ).SetCentralRelLBPhi( ( iCPMT->second ).GetRelLBPhi() );
       
-      ( fLOCASPMTs[ pmtID ] ).SetCentralAVHDShadowVal( ( iCPMT->second ).GetAVHDShadowVal() );
-      ( fLOCASPMTs[ pmtID ] ).SetCentralGeometricShadowVal( ( iCPMT->second ).GetGeometricShadowVal() );
-      
       ( fLOCASPMTs[ pmtID ] ).SetCentralCHSFlag( ( iCPMT->second ).GetCHSFlag() );
       ( fLOCASPMTs[ pmtID ] ).SetCentralCSSFlag( ( iCPMT->second ).GetCSSFlag() );
       
@@ -604,9 +601,6 @@ void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
       
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthRelLBTheta( ( iWPMT->second ).GetRelLBTheta() );
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthRelLBPhi( ( iWPMT->second ).GetRelLBPhi() );
-      
-      ( fLOCASPMTs[ pmtID ] ).SetWavelengthAVHDShadowVal( ( iWPMT->second ).GetAVHDShadowVal() );
-      ( fLOCASPMTs[ pmtID ] ).SetWavelengthGeometricShadowVal( ( iWPMT->second ).GetGeometricShadowVal() );
       
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthCHSFlag( ( iWPMT->second ).GetCHSFlag() );
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthCSSFlag( ( iWPMT->second ).GetCSSFlag() );

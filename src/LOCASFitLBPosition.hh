@@ -1,0 +1,126 @@
+////////////////////////////////////////////////////////////////////
+///
+/// FILENAME: LOCASFitLBPosition.hh
+///
+/// CLASS: LOCAS::LOCASFitLBPosition
+///
+/// BRIEF: Object to fit the laserball position for a specific run
+///          
+/// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
+///
+/// REVISION HISTORY:\n
+///     02/2014 : RPFS - First Revision, new file. \n
+///
+/// DETAIL: To be written
+///
+////////////////////////////////////////////////////////////////////
+
+#ifndef _LOCASFITLBPOSITION_
+#define _LOCASFITLBPOSITION_
+
+#include "LOCASPMT.hh"
+#include "LOCASRun.hh"
+#include "LOCASMath.hh"
+
+#include "RAT/DU/LightPathCalculator.hh"
+#include "RAT/DU/GroupVelocity.hh"
+#include "RAT/DU/Utility.hh"
+#include "RAT/DU/PMTInfo.hh"
+#include "RAT/Log.hh"
+
+#include <TVector3.h>
+#include <TObject.h>
+
+#include <string>
+
+namespace LOCAS{
+  
+  class LOCASFitLBPosition : public TObject, LOCASMath
+  {
+  public:
+    LOCASFitLBPosition(){ }
+    ~LOCASFitLBPosition();
+
+    LOCASFitLBPosition( const LOCASRunReader& lRunReader, const std::string& geoFile );
+
+    /////////////////////////////////
+    ////////     METHODS     ////////
+    /////////////////////////////////
+
+    void InitialiseArrays();
+    void ClearArrays();
+
+    void FitLBPosition( const Int_t runID );
+
+    Bool_t SkipPMT( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr );
+
+    // Levenberg-Marquardt Fitting Routines
+
+    Int_t MrqFit(float x[], float y[], float sig[], int ndata, float a[],
+                 int ia[], int ma, float **covar, float **alpha, float *chisq );
+
+    Int_t  mrqmin(float x[], float y[], float sig[], int ndata, float a[],
+                  int ia[], int ma, float **covar, float **alpha, float *chisq,
+                  float *alambda );
+
+    void covsrt(float **covar, int ma, int ia[], int mfit);
+
+    Int_t gaussj(float **a, int n, float **b, int m);
+
+    void mrqcof(float x[], float y[], float sig[], int ndata, float a[],
+                int ia[], int ma, float **alpha, float beta[],
+                float *chisq);
+
+    void mrqfuncs(Float_t x,Int_t ix,Float_t a[],Float_t *y,
+                  Float_t dyda[],Int_t na);
+
+    /////////////////////////////////
+    ////////     SETTERS     ////////
+    /////////////////////////////////
+
+    void SetGeometryFile( std::string geoFile ){ fGeometryFile = geoFile; }
+
+
+  private:
+
+    LOCASRunReader fRunReader;                  // Private LOCASRunReader object 
+    LOCASRun* fCurrentRun;                      // Pointer to the current LOCASRun object
+    LOCASPMT* fCurrentPMT;                      // Pointer to the current LOCASPMT object
+
+    std::string fGeometryFile;                  // The name of the goemetry file
+                                                // from which the optical media materials were found
+    Bool_t fArraysInitialised;                  // TRUE: Arrays initialised ready for fitting FALSE: Not ready
+
+    RAT::DB* fRATDB;                                 // Pointer to the RAT Database     
+    RAT::DU::PMTInfo fPMTInfo;                       // PMT Information Object
+    RAT::DU::LightPathCalculator fLightPath;         // LightPath Calculator Object
+    RAT::DU::LightPathCalculator fLightPathX;        // LightPath Calculator Object - X coordinate
+    RAT::DU::LightPathCalculator fLightPathY;        // LightPath Calculator Object - Y coordinate
+    RAT::DU::LightPathCalculator fLightPathZ;        // LightPath Calculator Object - Z coordinate
+    RAT::DU::GroupVelocity fGVelocity;               // Group Velocity Object
+
+    // The Levenberg-Marquardt working arrays;
+
+    Int_t fNPMTs;                               // Number of PMts int the Run/Fit
+    Float_t* fMrqX;                             // Index into array of PMT IDs
+    Float_t* fMrqY;                             // T_i + ( D_direct / V_light ) for each PMT i.e. Initial Time plus ToF
+    Float_t* fMrqSigma;                         // Error on each of the PMTs timing
+    Float_t* fMrqParameters;                    // Parameters for the model, in this case the laser ball
+    Int_t* fMrqVary;                          // Flag of which parameters are to vary in the minimising routines
+    Float_t** fMrqCovariance;                   // Covariance matrix of the parameters
+    Float_t** fMrqCurvature;                    // Curvative matrix (i.e. derivative matrix) of the parameters
+    Float_t fChiSquare;                         // The current value of the chi square in the current fit
+
+    Float_t* fChiArray;
+    Float_t* fResArray;
+
+    TVector3 fCurrentLBPos;
+    Int_t fNElements;
+
+    ClassDef(LOCASFitLBPosition,1)
+
+  };
+
+}
+
+#endif

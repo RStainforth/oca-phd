@@ -36,6 +36,8 @@ ClassImp( LOCASRawDataPoint )
 LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr, const LOCASRun* runPtr )
 {
 
+  SetRunID( runPtr->GetRunID() );
+
   SetMPEOccRatio( pmtPtr->GetMPECorrOccupancy() / pmtPtr->GetCentralMPECorrOccupancy() ); 
   SetMPEOccRatioErr( LOCASMath::OccRatioErr( pmtPtr ) );
 
@@ -76,12 +78,6 @@ LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr, const LOCASRun* ru
   SetLBPhi( pmtPtr->GetRelLBPhi() );
   SetCentralLBPhi( pmtPtr->GetCentralRelLBPhi() );
 
-  SetAVHDShadowingVal( pmtPtr->GetAVHDShadowVal() );
-  SetCentralAVHDShadowingVal( pmtPtr->GetCentralAVHDShadowVal() );
-
-  SetGeometricShadowingVal( pmtPtr->GetGeometricShadowVal() );
-  SetCentralGeometricShadowingVal( pmtPtr->GetCentralGeometricShadowVal() );
-
   if ( pmtPtr->GetCHSFlag() ){ SetCHSFlag( 1 ); }
   else{ SetCHSFlag( 0 ); }
 
@@ -112,6 +108,10 @@ LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr, const LOCASRun* ru
   SetPMTPos( pmtPtr->GetPos() );
 
   SetLBPos( runPtr->GetLBPos() );
+
+  SetModelCorrOccRatio( ( ( GetCentralSolidAngle() * GetCentralFresnelTCoeff() ) /
+                          ( GetSolidAngle() * GetFresnelTCoeff() ) )
+                        * ( GetMPEOccRatio() ) );
   
 }
 
@@ -122,11 +122,15 @@ LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr, const LOCASRun* ru
 LOCASRawDataPoint& LOCASRawDataPoint::operator=( const LOCASRawDataPoint& rhs )
 {
 
+  SetRunID( rhs.GetRunID() );
+
   SetMPEOccRatio( rhs.GetMPECorrOccupancy() / rhs.GetCentralMPECorrOccupancy() );
   SetMPEOccRatioErr( rhs.GetMPEOccRatioErr() );
 
   SetMPECorrOccupancy( rhs.GetMPECorrOccupancy() );
   SetCentralMPECorrOccupancy( rhs.GetCentralMPECorrOccupancy() );
+
+  SetModelCorrOccRatio( rhs.GetModelCorrOccRatio() );
 
   SetDistInScint( rhs.GetDistInScint() );
   SetCentralDistInScint( rhs.GetCentralDistInScint() );

@@ -75,9 +75,6 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
   fRelLBTheta = rhs.fRelLBTheta;
   fRelLBPhi = rhs.fRelLBPhi;
 
-  fAVHDShadowVal = rhs.fAVHDShadowVal;
-  fGeometricShadowVal = rhs.fGeometricShadowVal;
-
   fCHSFlag = rhs.fCHSFlag;
   fCSSFlag = rhs.fCSSFlag;
 
@@ -117,9 +114,6 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
   fCentralRelLBTheta = rhs.fCentralRelLBTheta;
   fCentralRelLBPhi = rhs.fCentralRelLBPhi;
 
-  fCentralAVHDShadowVal = rhs.fCentralAVHDShadowVal;
-  fCentralGeometricShadowVal = rhs.fCentralGeometricShadowVal;
-
   fCentralCHSFlag = rhs.fCentralCHSFlag;
   fCentralCSSFlag = rhs.fCentralCSSFlag;
 
@@ -158,9 +152,6 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
 
   fWavelengthRelLBTheta = rhs.fWavelengthRelLBTheta;
   fWavelengthRelLBPhi = rhs.fWavelengthRelLBPhi;
-
-  fWavelengthAVHDShadowVal = rhs.fWavelengthAVHDShadowVal;
-  fWavelengthGeometricShadowVal = rhs.fWavelengthGeometricShadowVal;
 
   fWavelengthCHSFlag = rhs.fWavelengthCHSFlag;
   fWavelengthCSSFlag = rhs.fWavelengthCSSFlag;
@@ -222,9 +213,6 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
   fRelLBTheta = rhs.fRelLBTheta;
   fRelLBPhi = rhs.fRelLBPhi;
 
-  fAVHDShadowVal = rhs.fAVHDShadowVal;
-  fGeometricShadowVal = rhs.fGeometricShadowVal;
-
   fCHSFlag = rhs.fCHSFlag;
   fCSSFlag = rhs.fCSSFlag;
 
@@ -264,9 +252,6 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
   fCentralRelLBTheta = rhs.fCentralRelLBTheta;
   fCentralRelLBPhi = rhs.fCentralRelLBPhi;
 
-  fCentralAVHDShadowVal = rhs.fCentralAVHDShadowVal;
-  fCentralGeometricShadowVal = rhs.fCentralGeometricShadowVal;
-
   fCentralCHSFlag = rhs.fCentralCHSFlag;
   fCentralCSSFlag = rhs.fCentralCSSFlag;
 
@@ -305,9 +290,6 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
 
   fWavelengthRelLBTheta = rhs.fWavelengthRelLBTheta;
   fWavelengthRelLBPhi = rhs.fWavelengthRelLBPhi;
-
-  fWavelengthAVHDShadowVal = rhs.fWavelengthAVHDShadowVal;
-  fWavelengthGeometricShadowVal = rhs.fWavelengthGeometricShadowVal;
 
   fWavelengthCHSFlag = rhs.fWavelengthCHSFlag;
   fWavelengthCSSFlag = rhs.fWavelengthCSSFlag;
@@ -372,9 +354,6 @@ void LOCASPMT::Initialise()
   SetRelLBTheta( -10.0 );
   SetRelLBPhi( -10.0 );
 
-  SetAVHDShadowVal( -10.0 );
-  SetGeometricShadowVal( -10.0 );
-
   SetCHSFlag( false );
   SetCSSFlag( false );
   SetBadPath( false );
@@ -412,9 +391,6 @@ void LOCASPMT::Initialise()
 
   SetCentralRelLBTheta( -10.0 );
   SetCentralRelLBPhi( -10.0 );
-
-  SetCentralAVHDShadowVal( -10.0 );
-  SetCentralGeometricShadowVal( -10.0 );
 
   SetCentralCHSFlag( false );
   SetCentralCSSFlag( false );
@@ -454,9 +430,6 @@ void LOCASPMT::Initialise()
   SetWavelengthRelLBTheta( -10.0 );
   SetWavelengthRelLBPhi( -10.0 );
 
-  SetWavelengthAVHDShadowVal( -10.0 );
-  SetWavelengthGeometricShadowVal( -10.0 );
-
   SetWavelengthCHSFlag( false );
   SetWavelengthCSSFlag( false );
   SetWavelengthBadPath( false );
@@ -492,9 +465,6 @@ void LOCASPMT::AddSOCPMTData( RAT::DS::SOCPMT& socPMT )
   SetOccupancy( socPMT.GetPromptOccupancy() );
   SetOccupancyErr( TMath::Sqrt( fOccupancy ) );
   SetOccupancyCorr( ( fOccupancy ) / ( ( socPMT.GetTimes() ).size() ) );
-
-  SetGeometricShadowVal( socPMT.GetShadowRelativeOccupancy() );
-  SetAVHDShadowVal( socPMT.GetRopeShadowRelativeOccupancy() );
 
 
 }
@@ -548,7 +518,7 @@ void LOCASPMT::ProcessLightPath( LOCASLightPath& lPath )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASPMT::VerifyPMT( const TVector3& sourcePos )
+void LOCASPMT::VerifyPMT()
 {
   fIsVerified = true;
 
@@ -572,9 +542,6 @@ void LOCASPMT::VerifyPMT( const TVector3& sourcePos )
   
   if ( fSolidAngle == 0.0 ){ SetIsVerified( false ); }
   if ( fCosTheta < 0.0 || fCosTheta > 1.0 ){ SetIsVerified( false ); }
-
-  if ( fAVHDShadowVal < 0.0 || fAVHDShadowVal > 3.0 ){ SetIsVerified( false ); }
-  if ( fGeometricShadowVal < 0.0 || fGeometricShadowVal > 3.0 ){ SetIsVerified( false ); }
   
 }
 

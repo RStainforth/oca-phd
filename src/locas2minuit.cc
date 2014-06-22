@@ -7,7 +7,7 @@
 /// BRIEF: This executable performs a minuit minimising routine
 ///        over the data
 ///          
-/// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
+/// AUTQHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:
 ///     0X/2014 : RPFS - First Revision, new file.
@@ -90,6 +90,7 @@ int main( int argc, char** argv ){
 
   // Obtain the data to be used in the fitting process
   LOCASDataStore lDataStore = lDataFiller.GetData();
+  lDataStore.WriteToFile();
   cout << "Number of Data Points is: " << lDataStore.GetNDataPoints() << endl;
 
   // Add the model and data to the chisquare object
@@ -108,8 +109,6 @@ int main( int argc, char** argv ){
   // After the first loop, the chisquare limits are checked again, seeded by the parameters obtained
   // at the end of the previous fit.
 
-  // We add now a new filters according to the required low level cuts
-  // Create a new filter for the chisquare
   for ( Int_t iFit = 0; iFit < chiSqLims.size(); iFit++ ){
 
     // Update the chisquare filter

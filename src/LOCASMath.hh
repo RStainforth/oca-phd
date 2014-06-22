@@ -42,7 +42,7 @@
 
 namespace LOCAS{
 
-  class LOCASMath : public TObject
+  class LOCASMath
   {
   public:
     LOCASMath(){ }
@@ -57,13 +57,13 @@ namespace LOCAS{
 
     static Float_t OccRatioErr( const LOCASPMT* pmt );
 
-    float* LOCASVector( const long nStart, const long nEnd );
-    int* LOCASIntVector( const long nStart, const long nEnd );
-    float** LOCASMatrix( const long nStarti, const long nEndi, const long nStartj, const long nEndj );
+    static float* LOCASVector( const long nStart, const long nEnd );
+    static int* LOCASIntVector( const long nStart, const long nEnd );
+    static float** LOCASMatrix( const long nStarti, const long nEndi, const long nStartj, const long nEndj );
 
-    void LOCASFree_Matrix(float **m, const long nrl, const long nrh, const long ncl, const long nch);
-    void LOCASFree_Vector(float *v, const long nl, const long nh);
-    void LOCASFree_IntVector(int *v, const long nl, const long nh);
+    static void LOCASFree_Matrix(float **m, const long nrl, const long nrh, const long ncl, const long nch);
+    static void LOCASFree_Vector(float *v, const long nl, const long nh);
+    static void LOCASFree_IntVector(int *v, const long nl, const long nh);
     
     ClassDef( LOCASMath, 0 );
 

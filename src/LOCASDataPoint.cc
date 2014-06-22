@@ -33,7 +33,7 @@ ClassImp( LOCASDataPoint )
 LOCASDataPoint::LOCASDataPoint( const LOCASRawDataPoint dataPoint )
 {
 
-  SetMPEOccRatio( ( dataPoint.GetMPEOccRatio() ) );
+  SetMPEOccRatio( ( dataPoint.GetModelCorrOccRatio() ) );
   SetMPEOccRatioErr( ( dataPoint.GetMPEOccRatioErr() ) );
 
   SetMPECorrOccupancy( ( dataPoint.GetMPECorrOccupancy() ) );

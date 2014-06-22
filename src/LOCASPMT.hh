@@ -51,7 +51,7 @@ namespace LOCAS{
     void Clear( Option_t* option="");
     void AddSOCPMTData( RAT::DS::SOCPMT& socPMT );                    // Add information from a SOCPMT object to this LOCASPMT object
     void ProcessLightPath( LOCASLightPath& lPath );                   // Process a light path to calculate the distances, solidangle etc.
-    void VerifyPMT( const TVector3& sourcePos );                            // Verify that the fields of the PMT are complete and have 'reasonable' values
+    void VerifyPMT();                            // Verify that the fields of the PMT are complete and have 'reasonable' values
     
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -99,12 +99,10 @@ namespace LOCAS{
     
     void SetRelLBTheta( const Float_t theta ){ fRelLBTheta = theta; }
     void SetRelLBPhi( const Float_t phi ){ fRelLBPhi = phi; }
-    
-    void SetAVHDShadowVal( const Float_t avhdShadow ){ fAVHDShadowVal = avhdShadow; }
-    void SetGeometricShadowVal( const Float_t geomShadow ){ fGeometricShadowVal = geomShadow; }
-    
-    void SetCHSFlag( const Bool_t chsFlag ){ fCHSFlag = chsFlag; }
-    void SetCSSFlag( const Bool_t cssFlag ){ fCSSFlag = cssFlag; }
+
+    void SetCHSFlag( const Bool_t boolVal ){ fCHSFlag = boolVal; }
+    void SetCSSFlag( const Bool_t boolVal ){ fCSSFlag = boolVal; }
+
     void SetBadPath( const Bool_t badPath ){ fBadPath = badPath; }
     void SetNeckFlag( const Bool_t neckFlag ){ fNeckFlag = neckFlag; }
 
@@ -142,12 +140,10 @@ namespace LOCAS{
     
     void SetCentralRelLBTheta( const  Float_t theta ){ fCentralRelLBTheta = theta; }
     void SetCentralRelLBPhi( const  Float_t phi ){ fCentralRelLBPhi = phi; }
+
+    void SetCentralCHSFlag( const Bool_t boolVal ){ fCentralCHSFlag = boolVal; }
+    void SetCentralCSSFlag( const Bool_t boolVal ){ fCentralCSSFlag = boolVal; }
     
-    void SetCentralAVHDShadowVal( const  Float_t avhdShadow ){ fCentralAVHDShadowVal = avhdShadow; }
-    void SetCentralGeometricShadowVal( const  Float_t geomShadow ){ fCentralGeometricShadowVal = geomShadow; }
-    
-    void SetCentralCHSFlag( const  Bool_t chsFlag ){ fCentralCHSFlag = chsFlag; }
-    void SetCentralCSSFlag( const  Bool_t cssFlag ){ fCentralCSSFlag = cssFlag; }
     void SetCentralBadPath( const  Bool_t badPath ){ fCentralBadPath = badPath; }
     void SetCentralNeckFlag( const  Bool_t neckFlag ){ fCentralNeckFlag = neckFlag; }
 
@@ -185,12 +181,10 @@ namespace LOCAS{
     
     void SetWavelengthRelLBTheta( const  Float_t theta ){ fWavelengthRelLBTheta = theta; }
     void SetWavelengthRelLBPhi( const  Float_t phi ){ fWavelengthRelLBPhi = phi; }
+
+    void SetWavelengthCHSFlag( const Bool_t boolVal ){ fWavelengthCHSFlag = boolVal; }
+    void SetWavelengthCSSFlag( const Bool_t boolVal ){ fWavelengthCSSFlag = boolVal; }
     
-    void SetWavelengthAVHDShadowVal( const  Float_t avhdShadow ){ fWavelengthAVHDShadowVal = avhdShadow; }
-    void SetWavelengthGeometricShadowVal( const  Float_t geomShadow ){ fWavelengthGeometricShadowVal = geomShadow; }
-    
-    void SetWavelengthCHSFlag( const  Bool_t chsFlag ){ fWavelengthCHSFlag = chsFlag; }
-    void SetWavelengthCSSFlag( const  Bool_t cssFlag ){ fWavelengthCSSFlag = cssFlag; }
     void SetWavelengthBadPath( const  Bool_t badPath ){ fWavelengthBadPath = badPath; }
     void SetWavelengthNeckFlag( const  Bool_t neckFlag ){ fWavelengthNeckFlag = neckFlag; }
 
@@ -244,9 +238,6 @@ namespace LOCAS{
     Float_t GetRelLBTheta() const { return fRelLBTheta; }
     Float_t GetRelLBPhi() const { return fRelLBPhi; }
     
-    Float_t GetAVHDShadowVal() const { return fAVHDShadowVal; }
-    Float_t GetGeometricShadowVal() const { return fGeometricShadowVal; }
-    
     Bool_t GetCHSFlag() const { return fCHSFlag; }
     Bool_t GetCSSFlag() const { return fCSSFlag; }
 
@@ -289,9 +280,6 @@ namespace LOCAS{
     Float_t GetCentralRelLBTheta() const { return fCentralRelLBTheta; }
     Float_t GetCentralRelLBPhi() const { return fCentralRelLBPhi; }
     
-    Float_t GetCentralAVHDShadowVal() const { return fCentralAVHDShadowVal; }
-    Float_t GetCentralGeometricShadowVal() const { return fCentralGeometricShadowVal; }
-    
     Bool_t GetCentralCHSFlag() const { return fCentralCHSFlag; }
     Bool_t GetCentralCSSFlag() const { return fCentralCSSFlag; }
 
@@ -332,9 +320,6 @@ namespace LOCAS{
     
     Float_t GetWavelengthRelLBTheta() const { return fWavelengthRelLBTheta; }
     Float_t GetWavelengthRelLBPhi() const { return fWavelengthRelLBPhi; }
-    
-    Float_t GetWavelengthAVHDShadowVal() const { return fWavelengthAVHDShadowVal; }
-    Float_t GetWavelengthGeometricShadowVal() const { return fWavelengthGeometricShadowVal; }
     
     Bool_t GetWavelengthCHSFlag() const { return fWavelengthCHSFlag; }
     Bool_t GetWavelengthCSSFlag() const { return fWavelengthCSSFlag; }
@@ -403,9 +388,6 @@ namespace LOCAS{
     Float_t fRelLBTheta;                // LaserBall Theta value for this PMT from the Laserball position
     Float_t fRelLBPhi;                  // LaserBall Phi value for this PMT from the LaserBall position
     
-    Float_t fAVHDShadowVal;             // Relative shadowing value due to the AV HD ropes
-    Float_t fGeometricShadowVal;        // Relative shadowing value due to the enveloping AV geometry
-    
     Bool_t fCHSFlag;                    // (DQXX Flag) TRUE: Bad Channel FALSE: Good Channel
     Bool_t fCSSFlag;                    // (ANXX Flag) TRUE: Bad Channel FALSE: Good Channel
 
@@ -448,9 +430,6 @@ namespace LOCAS{
     Float_t fCentralRelLBTheta;                // LaserBall Theta value for this PMT from the Laserball position - From the central run
     Float_t fCentralRelLBPhi;                  // LaserBall Phi value for this PMT from the LaserBall position - From the central run
     
-    Float_t fCentralAVHDShadowVal;             // Relative shadowing value due to the AV HD ropes - From the central run
-    Float_t fCentralGeometricShadowVal;        // Relative shadowing value due to the enveloping AV geometry - From the central run
-    
     Bool_t fCentralCHSFlag;                    // (DQXX Flag) TRUE: Bad Channel FALSE: Good Channel - From the central run
     Bool_t fCentralCSSFlag;                    // (ANXX Flag) TRUE: Bad Channel FALSE: Good Channel - From the central run
 
@@ -491,9 +470,6 @@ namespace LOCAS{
 
     Float_t fWavelengthRelLBTheta;                // LaserBall Theta value for this PMT from the Laserball position- From the wavelength run
     Float_t fWavelengthRelLBPhi;                  // LaserBall Phi value for this PMT from the LaserBall position- From the wavelength run
-    
-    Float_t fWavelengthAVHDShadowVal;             // Relative shadowing value due to the AV HD ropes- From the wavelength run
-    Float_t fWavelengthGeometricShadowVal;        // Relative shadowing value due to the enveloping AV geometry- From the wavelength run
     
     Bool_t fWavelengthCHSFlag;                    // (DQXX Flag) TRUE: Bad Channel FALSE: Good Channel- From the wavelength run
     Bool_t fWavelengthCSSFlag;                    // (ANXX Flag) TRUE: Bad Channel FALSE: Good Channel- From the wavelength run

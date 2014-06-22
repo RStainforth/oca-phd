@@ -110,7 +110,7 @@ int main( int argc, char** argv ){
   RAT::DU::Utility::Get()->BeginOfRun();
   PMTInfo pmtInfo = Utility::Get()->GetPMTInfo();
   LightPathCalculator lightPath = Utility::Get()->GetLightPathCalculator();
-  lightPath.LoadShadowingGeometryInfo();
+  lightPath.LoadShadowingGeometryInfo( "geo/sno_d2o.geo" );
   //////////////////////////////////////////////////////////////
 
   //cout << "Number of PMT is: " << pmtInfo.GetCount() << endl;
@@ -170,11 +170,11 @@ int main( int argc, char** argv ){
 
   // Set the laserball Theta,Phi (i.e. the orientation)
   lRunPtr->SetLBTheta( 0.0 );
-  lRunPtr->SetLBPhi( rQRdt.GetOrientation() );
+  lRunPtr->SetLBPhi( ( TMath::Pi() / 2.0 ) * rQRdt.GetOrientation() );
   lRunPtr->SetCentralLBTheta( 0.0 );
-  lRunPtr->SetCentralLBPhi( crQRdt.GetOrientation() );
+  lRunPtr->SetCentralLBPhi( ( TMath::Pi() / 2.0 ) * crQRdt.GetOrientation() );
   lRunPtr->SetWavelengthLBTheta( 0.0 );
-  lRunPtr->SetWavelengthLBPhi( wrQRdt.GetOrientation() );
+  lRunPtr->SetWavelengthLBPhi( ( TMath::Pi() / 2.0 ) * wrQRdt.GetOrientation() );
 
   /// The possible PMT types in SNO+
   //enum PMTInfo::EPMTType  { NORMAL = 1, OWL = 2, LOWGAIN = 3, BUTT = 4, NECK = 5, CALIB = 6, SPARE = 10, INVALID = 11, BLOWN75 = 12 };
@@ -240,6 +240,44 @@ int main( int argc, char** argv ){
       lPMT.SetWavelengthMPECorrOccupancy( LOCASMath::MPECorrectedNPrompt( lPMT.GetWavelengthOccupancy(), lPMT.GetWavelengthNLBPulses() ) );
       lPMT.SetWavelengthMPECorrOccupancyErr( LOCASMath::MPECorrectedNPromptErr( lPMT.GetWavelengthOccupancy(), lPMT.GetWavelengthNLBPulses() ) );
 
+      // Theta, Phi values of the PMT relative to the Laserball Position
+      TVector3 lbRelToPMT = ( lPMT.GetPos() - ( lRunPtr->GetLBPos() ) ).Unit();
+      TVector3 lbRelToPMTWvl = ( lPMT.GetPos() - ( lRunPtr->GetWavelengthLBPos() ) ).Unit();
+      TVector3 lbRelToPMTCtr = ( lPMT.GetPos() - ( lRunPtr->GetCentralLBPos() ) ).Unit();
+
+      ///////// Off-Axis Laserball Theta and Phi Angles //////////
+
+      TVector3 lbAxis( 0.0, 0.0, 1.0 );
+      lbAxis.SetPhi( lRunPtr->GetLBPhi() );
+      lbAxis.SetTheta( lRunPtr->GetLBTheta() );
+
+      lPMT.SetRelLBTheta( lbRelToPMT.Angle( lbAxis ) );
+      Float_t laserPhi = lbRelToPMT.Phi();
+      Float_t relLBPhi = fmod( (Float_t)( laserPhi + lbAxis.Phi() ), 2.0 * TMath::Pi() ); 
+      lPMT.SetRelLBPhi( relLBPhi );
+
+      ///////// Central Laserball Theta and Phi Angles //////////
+
+      TVector3 lbAxisCtr( 0.0, 0.0, 1.0 );
+      lbAxisCtr.SetPhi( lRunPtr->GetCentralLBPhi() );
+      lbAxisCtr.SetTheta( lRunPtr->GetCentralLBTheta() );
+
+      lPMT.SetCentralRelLBTheta( lbRelToPMTCtr.Angle( lbAxisCtr ) );
+      Float_t laserPhiCtr = lbRelToPMTCtr.Phi();
+      Float_t relLBPhiCtr = fmod( (Float_t)( laserPhiCtr + lbAxisCtr.Phi() ), 2.0 * TMath::Pi() ); 
+      lPMT.SetCentralRelLBPhi( relLBPhiCtr );
+
+      ///////// Wavelength Laserball Theta and Phi Angles //////////
+
+      TVector3 lbAxisWvl( 0.0, 0.0, 1.0 );
+      lbAxisWvl.SetPhi( lRunPtr->GetWavelengthLBPhi() );
+      lbAxisWvl.SetTheta( lRunPtr->GetWavelengthLBTheta() );
+
+      lPMT.SetWavelengthRelLBTheta( lbRelToPMTWvl.Angle( lbAxisWvl ) );
+      Float_t laserPhiWvl = lbRelToPMTWvl.Phi();
+      Float_t relLBPhiWvl = fmod( (Float_t)( laserPhiWvl + lbAxisWvl.Phi() ), 2.0 * TMath::Pi() ); 
+      lPMT.SetWavelengthRelLBPhi( relLBPhiWvl );
+
       // Distances through the heavy water, acrylic and water regions
 
       ///////////// OFF AXIS /////////////
@@ -270,8 +308,7 @@ int main( int argc, char** argv ){
       else{ lPMT.SetBadPath( false ); }
 
       ///////////// CENTRAL /////////////
-      TVector3 origin( 0.0, 0.0, 0.0 );
-      lightPath.CalcByPosition( origin, lPMT.GetPos() );
+      lightPath.CalcByPosition( lRunPtr->GetCentralLBPos(), lPMT.GetPos() );
       
       lPMT.SetCentralDistInScint( lightPath.GetDistInScint() );
       lPMT.SetCentralDistInAV( lightPath.GetDistInAV() );
@@ -298,7 +335,7 @@ int main( int argc, char** argv ){
       else{ lPMT.SetCentralBadPath( false ); }
 
       ///////////// WAVELENGTH /////////////
-      lightPath.CalcByPosition( lRunPtr->GetLBPos(), lPMT.GetPos() );
+      lightPath.CalcByPosition( lRunPtr->GetWavelengthLBPos(), lPMT.GetPos() );
       
       lPMT.SetWavelengthDistInScint( lightPath.GetDistInScint() );
       lPMT.SetWavelengthDistInAV( lightPath.GetDistInAV() );
@@ -323,6 +360,8 @@ int main( int argc, char** argv ){
 
       if ( lightPath.CheckForShadowing() == true ){ lPMT.SetWavelengthBadPath( true ); }
       else{ lPMT.SetWavelengthBadPath( false ); }
+
+      lPMT.VerifyPMT();
 
       lRunPtr->AddLOCASPMT( lPMT );
 

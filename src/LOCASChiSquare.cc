@@ -46,7 +46,8 @@ Float_t LOCASChiSquare::EvaluateChiSquare( LOCASDataPoint& dPoint )
 {
 
   // Calculate the chisquare for a single datapoint (PMT) in the dataset
-  Float_t dataVal = dPoint.GetMPEOccRatio();
+  Float_t dataVal = ( 1 / ( dPoint.GetFresnelTCoeffRatio() * dPoint.GetSolidAngleRatio() ) )
+    * dPoint.GetMPEOccRatio();
   Float_t modelVal = fModel.ModelPrediction( dPoint );
   dPoint.SetModelOccRatio( modelVal );
 
@@ -54,7 +55,6 @@ Float_t LOCASChiSquare::EvaluateChiSquare( LOCASDataPoint& dPoint )
   Float_t error = dPoint.GetMPEOccRatioErr();
 
   Float_t chiSq =  ( res * res ) / ( error * error );
-  cout << "ModelOcc: " << modelVal << " | DataOcc: " << dataVal << " | ChiSquare: " << chiSq << endl;
   dPoint.SetChiSq( chiSq );
 
   return chiSq;

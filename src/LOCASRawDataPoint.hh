@@ -51,11 +51,15 @@ namespace LOCAS{
     ////////     GETTERS     ////////
     /////////////////////////////////
 
+    Int_t GetRunID() const { return fRunID; }
+
     Float_t GetMPEOccRatio() const { return fMPEOccRatio; }
     Float_t GetMPEOccRatioErr() const { return fMPEOccRatioErr; }
 
     Float_t GetMPECorrOccupancy() const { return fMPECorrOccupancy; }
     Float_t GetCentralMPECorrOccupancy() const { return fCentralMPECorrOccupancy; }
+
+    Float_t GetModelCorrOccRatio() const { return fModelCorrOccRatio; }
 
     Float_t GetDistInScint() const { return fDistInScint; }
     Float_t GetCentralDistInScint() const { return fCentralDistInScint; }
@@ -112,11 +116,15 @@ namespace LOCAS{
     ////////     SETTERS     ////////
     /////////////////////////////////
 
+    void SetRunID( const Int_t runID ) { fRunID = runID; }
+
     void SetMPEOccRatio( const Float_t val ) { fMPEOccRatio = val; }
     void SetMPEOccRatioErr( const Float_t val ) { fMPEOccRatioErr = val; }
 
     void SetMPECorrOccupancy( const Float_t val ) { fMPECorrOccupancy = val; }
     void SetCentralMPECorrOccupancy( const Float_t val ) { fCentralMPECorrOccupancy = val; }
+
+    void SetModelCorrOccRatio( const Float_t val ) { fModelCorrOccRatio = val; }
 
     void SetDistInScint( const Float_t val ) { fDistInScint = val; }
     void SetCentralDistInScint( const Float_t val ) { fCentralDistInScint = val; }
@@ -172,11 +180,15 @@ namespace LOCAS{
 
   private:
 
+    Int_t fRunID;                        // The Off-Axis runID
+
     Float_t fMPEOccRatio;                // The MPE corrected occupancy Ratio
     Float_t fMPEOccRatioErr;             // The error on the MPE corrected occupancy ratio
 
     Float_t fMPECorrOccupancy;           // The MPE corrected occupancy
     Float_t fCentralMPECorrOccupancy;    // The MPE corrected occupancy from the central
+
+    Float_t fModelCorrOccRatio;          // The model corrected Occ (MPE) ratio, with solidangle and Fresnel corrections
 
     Float_t fDistInScint;                // The distance through the scintillator region
     Float_t fCentralDistInScint;         // The distancen through the scintillator region from the central run
@@ -227,7 +239,6 @@ namespace LOCAS{
     Int_t fCentralNeckFlag;              // Neck path flag from the central run
 
     TVector3 fPMTPos;                    // The PMT Position
-
     TVector3 fLBPos;                     // The Source Position
 
     ClassDef( LOCASRawDataPoint, 1 );

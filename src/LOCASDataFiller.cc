@@ -67,9 +67,9 @@ void LOCASDataFiller::AddData( LOCASRawDataStore& dataSt, LOCASFilterStore& filt
 
       // Filters to check the occupancy ratio and MPE corrected
       // occupancy from the off-axis and central runs
-      
+
       if ( filterName == "filter_mpe_occratio" ){ 
-        if ( !iF->CheckCondition( iD->GetMPEOccRatio() ) ){ 
+        if ( !iF->CheckCondition( iD->GetModelCorrOccRatio() ) ){ 
           validPoint = false; 
         } 
       }
@@ -82,6 +82,12 @@ void LOCASDataFiller::AddData( LOCASRawDataStore& dataSt, LOCASFilterStore& filt
 
       else if ( filterName == "filter_mpe_ctr_occupancy" ){ 
         if ( !iF->CheckCondition( iD->GetCentralMPECorrOccupancy() ) ){ 
+          validPoint = false; 
+        }
+      }
+
+      else if ( filterName == "filter_rel_occ_err" ){
+        if ( !iF->CheckCondition( iD->GetMPEOccRatioErr() / iD->GetModelCorrOccRatio() ) ){ 
           validPoint = false; 
         }
       }
@@ -219,7 +225,7 @@ LOCASDataStore LOCASDataFiller::ReFilterData( LOCASFilterStore& filterSt, LOCASC
 
     }
 
-    if ( validPoint == true ){ newStore.AddDataPoint( *iD ); cout << "HELLO" << endl; }
+    if ( validPoint == true ){ newStore.AddDataPoint( *iD );}
 
   }
 
