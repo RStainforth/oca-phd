@@ -13,9 +13,10 @@ ROOTLIB     := $(shell root-config --libs) -lMinuit
 GEANT4CFLAGS  := $(shell geant4-config --cflags)
 GEANT4LLIB    := $(shell geant4-config --libs)
 
+# CLHEP Isn't installed by default, so we don't need to use the below just yet.
 # Compile and link flags imported from CLHEP 
-CLHEPCFLAGS := $(shell clhep-config --include)
-CLHEPLIB    := $(shell clhep-config --libs)
+# CLHEPCFLAGS := $(shell clhep-config --include)
+# CLHEPLIB    := $(shell clhep-config --libs)
 
 # Compile and link flags imported from CURL 
 CURLCFLAGS  := $(shell curl-config --cflags)
@@ -29,8 +30,17 @@ DEPLIBS     := ${ROOTLIB} ${GEANT4LIB} ${CLHEPLIB} ${CURLLIB}
 RATCFLAGS   := -I$(RATROOT)/include -I$(RATROOT)/include/RAT -I$(RATROOT)/include/RAT/DS
 RATLIB		:= -L$(RATROOT)/lib -lRATEvent_$(RATSYSTEM) -lrat_$(RATSYSTEM)
 
-# Compile and link flags for LOCAS
+QLOCASCFLAGS  := -I$(QLOCAS_ROOT)/include
+QLOCASLIB     := -L$(QLOCAS_ROOT)/lib -lQLOCAS
+QBANK         := $(QLOCAS_ROOT)/include/QBank.h
+QDBHDR         := $(QLOCAS_ROOT)/include/QDBHDR.h
+QSNO         := $(QLOCAS_ROOT)/include/QSNO.h
+QDQXX        := $(QLOCAS_ROOT)/include/QDQXX.h
+QSNOO        := $(pathsubst %.h, %.o, $($(QBANK) $(QDBHDR) $(QDQXX) $(QSNO)))
+QLOCASH       := $(addprefix $(QLOCAS_ROOT)/include/, $(notdir $(shell find $(QLOCAS_ROOT)/include -name "*.h")))
+QLOCASHNODIR  := $(notdir $(QLOCASH))
 
+# Compile and link flags for LOCAS
 LOCASCFLAGS := -I./
 LOCASLIB    := -L. -lLOCAS
 
@@ -66,12 +76,12 @@ LOCAS_LIB	:= $(LOCAS_ROOT)/lib
 LOCAS_SRC	:= $(LOCAS_ROOT)/src
 LOCAS_INC	:= $(LOCAS_ROOT)/include
 LOCAS_BIN	:= $(LOCAS_ROOT)/bin
+LOCAS_OBJ   := $(LOCAS_ROOT)/obj
 
 # Dictionary
 DICT_H	:= LOCAS_LinkDef.h
 DICT_C	:= LOCAS_Dict.C
 DICT_O	:= $(patsubst %.C,%.o,$(DICT_C))
-
 
 LOCAS_EXE	:= soc2locas rdt2locas db2soc locas2debug locas2minuit locas2marquardt locas2marquardt2 locas2positionfit
 
@@ -82,7 +92,6 @@ LOCAS_EXE	:= soc2locas rdt2locas db2soc locas2debug locas2minuit locas2marquardt
 # defined by the values of $DICT_H, and $DICT_C but with the .C extension replaced by .h
 # i.e. Not the files LOCAS_LinkDef.h and LOCAS_Dict.C
 LOCASH		:= $(filter-out $(DICT_H) $(patsubst %.C,%.h,$(DICT_C)),$(notdir $(shell find $(LOCAS_SRC) -name "*.hh")))
-
 # Creates a list of all of the *.cc files in the current directory (same directory as the Makefile) EXCEPT the filenames
 # defined by the values of $LOCAS_EXE, with .cc attached i.e. Not locas.cc
 LOCASC		:= $(filter-out $(addsuffix .cc,$(LOCAS_EXE)),$(notdir $(shell find $(LOCAS_SRC) -name "*.cc")))
@@ -104,14 +113,16 @@ dirs:
 	@mkdir -p $(LOCAS_LIB)
 	@mkdir -p $(LOCAS_BIN)
 	@mkdir -p $(LOCAS_INC)
+	@mkdir -p $(LOCAS_OBJ)
 
 show:
 	@echo "Build options:"
 	@echo " * ARCH  	: $(ARCH)"
 	@echo " * LDOPT 	: $(LDOPTS)"
+	@echo " * QLOCASH   : $(QLOCASH)"
 
 headers: $(LOCASH)
-	@echo " == Executing $@ =="
+	@echo " == Executing $@ =="	
 
 libraries: $(LOCASL)
 		@echo " == Executing $@ =="
@@ -131,6 +142,7 @@ install_libraries: libraries dirs
 		@echo " == Executing $@ =="
 		@echo "copying $(LOCASL) to $(LOCAS_LIB)"
 		@cp $(LOCASL) $(LOCAS_LIB)
+		@cp $(LOCASO) $(LOCAS_OBJ)
 		@echo "Done."
 
 install_executables: executables dirs
@@ -140,6 +152,8 @@ install_executables: executables dirs
 		@cp $(LOCAS_EXE) $(LOCAS_ROOT)/bin
 		@cd $(LOCAS_ROOT)
 		@echo "Done"
+
+
 
 clean:
 	@echo " == Executing $@ =="
@@ -158,7 +172,7 @@ soc2locas: soc2locas.o $(LOCASL)
 rdt2locas: rdt2locas.o $(LOCASL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB}
+	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB} ${QLOCASLIB}
 
 db2soc: db2soc.o $(LOCASL)
 	@echo " == Executing $@ =="
@@ -188,34 +202,36 @@ locas2minuit: locas2minuit.o $(LOCASL)
 locas2positionfit: locas2positionfit.o $(LOCASL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB}
+	 $< ${DEPLIBS} ${RATLIB} ${QLOCASLIB} ${LOCASLIB}
 
 $(LOCASL): $(LOCASO) $(DICT_O)
 	@echo " == Executing $@ =="
 	@echo "linking $(LOCASL)"
 	$(CXX) $(LDFLAGS) $(LDOPTS) \
-	-o $@ $(LOCASO) ${DEPLIBS} ${RATLIB} $(DICT_O) $(LINKCMD)
+	-o $@ ${DEPLIBS} ${RATLIB} ${QLOCASLIB} $(LOCASO) $(DICT_O) $(LINKCMD)
+
+# not sure if we really need ${DEPLIBS} up above here, we're only linking all the LOCAS object files
 
 $(DICT_C): $(DICT_H) $(LOCASO) $(LOCASH)
 	@echo " == Executing $@ =="
 	@rm -f $@
 	@echo "Generating $@ dictionary"
-	rootcint -f $@ -c -p $(RATCFLAGS) $(LOCASH) $<
+	rootcint -f $@ -c -p $(RATCFLAGS) $(QLOCASCFLAGS) $(LOCASH) $<
 	@echo "Done with $@ ..."
 
 
 %.o:	%.cc %.hh
 #	@echo Special rule for .cc files with headers
-	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} -DCOMPILED_ROOT -c $<
+	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} ${QLOCASCFLAGS} -DCOMPILED_ROOT -c $<
 
 %.o:	%.C %.h
 #	@echo Special rule for .C files with headers
-	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} -DCOMPILED_ROOT -c $<
+	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} ${QLOCASCFLAGS} -DCOMPILED_ROOT -c $<
 
 %.o:	%.C
 #	@echo Rule for .C files
-	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} -DCOMPILED_ROOT -c $<
+	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} ${QLOCASCFLAGS} -DCOMPILED_ROOT -c $<
 
 %.o:	%.cc
 #	@echo Rule for .cc files
-	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} -DCOMPILED_ROOT -c $<
+	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} ${QLOCASCFLAGS} -DCOMPILED_ROOT -c $<

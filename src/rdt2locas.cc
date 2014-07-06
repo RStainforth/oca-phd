@@ -59,7 +59,7 @@
 #include "LOCASLightPath.hh"
 #include "LOCASMath.hh"
 
-#include "QRdt.hh"
+#include "QRdt.h"
 
 #include "TFile.h"
 #include "TTree.h"
@@ -164,9 +164,9 @@ int main( int argc, char** argv ){
   lRunPtr->SetWavelengthNLBPulses( wrQRdt.GetNpulses() );
 
   // Set the position of the laserball in each of the main, central and wavelength runs
-  lRunPtr->SetLBPos( 10.0 * (*rQRdt.GetFullFitPos()) );
-  lRunPtr->SetCentralLBPos( 10.0 * (*crQRdt.GetFullFitPos()) );
-  lRunPtr->SetWavelengthLBPos( 10.0 * (*wrQRdt.GetFullFitPos()) );
+  lRunPtr->SetLBPos( 10.0 * (*rQRdt.GetManipPos()) );
+  lRunPtr->SetCentralLBPos( 10.0 * (*crQRdt.GetManipPos()) );
+  lRunPtr->SetWavelengthLBPos( 10.0 * (*wrQRdt.GetManipPos()) );
 
   // Set the laserball Theta,Phi (i.e. the orientation)
   lRunPtr->SetLBTheta( 0.0 );
@@ -179,7 +179,7 @@ int main( int argc, char** argv ){
   /// The possible PMT types in SNO+
   //enum PMTInfo::EPMTType  { NORMAL = 1, OWL = 2, LOWGAIN = 3, BUTT = 4, NECK = 5, CALIB = 6, SPARE = 10, INVALID = 11, BLOWN75 = 12 };
 
-  // The following assumes that the data on the RDT files is indexed by PMT ID.
+  // // The following assumes that the data on the RDT files is indexed by PMT ID.
   for ( Int_t iPMT = 0; iPMT < pmtInfo.GetCount(); iPMT++ ){
 
     enum PMTInfo::EPMTType pmtEnum = pmtInfo.GetType( iPMT );
@@ -207,24 +207,24 @@ int main( int argc, char** argv ){
       lPMT.SetNorm( -1.0 * pmtInfo.GetDirection( iPMT ) );
 
       // PMT Prompt Peak Times and widths
-      lPMT.SetPromptPeakTime( rQRdt.GetTimePeak( iPMT ) );
-      lPMT.SetPromptPeakWidth( rQRdt.GetTimeWidth( iPMT ) );
-      lPMT.SetCentralPromptPeakTime( crQRdt.GetTimePeak( iPMT ) );
-      lPMT.SetCentralPromptPeakWidth( crQRdt.GetTimeWidth( iPMT ) );
-      lPMT.SetWavelengthPromptPeakTime( wrQRdt.GetTimePeak( iPMT ) );
-      lPMT.SetWavelengthPromptPeakWidth( wrQRdt.GetTimeWidth( iPMT ) );
+      lPMT.SetPromptPeakTime( rQRdt.GetTimePeak( (Float_t)iPMT ) );
+      lPMT.SetPromptPeakWidth( rQRdt.GetTimeWidth( (Float_t)iPMT ) );
+      lPMT.SetCentralPromptPeakTime( crQRdt.GetTimePeak( (Float_t)iPMT ) );
+      lPMT.SetCentralPromptPeakWidth( crQRdt.GetTimeWidth( (Float_t)iPMT ) );
+      lPMT.SetWavelengthPromptPeakTime( wrQRdt.GetTimePeak( (Float_t)iPMT ) );
+      lPMT.SetWavelengthPromptPeakWidth( wrQRdt.GetTimeWidth( (Float_t)iPMT ) );
 
       // ToF from Manipulator
-      lPMT.SetTimeOfFlight( rQRdt.GetToF( iPMT ) );
-      lPMT.SetCentralTimeOfFlight( crQRdt.GetToF( iPMT ) );
-      lPMT.SetWavelengthTimeOfFlight( wrQRdt.GetToF( iPMT ) );
+      lPMT.SetTimeOfFlight( rQRdt.GetRchToF( (Float_t)iPMT ) );
+      lPMT.SetCentralTimeOfFlight( crQRdt.GetRchToF( (Float_t)iPMT ) );
+      lPMT.SetWavelengthTimeOfFlight( wrQRdt.GetRchToF( (Float_t)iPMT ) );
       
       // PMT Prompt Occupancies
-      lPMT.SetOccupancy( rQRdt.GetOccupancy( iPMT ) );
+      lPMT.SetOccupancy( rQRdt.GetOccupancy( (Float_t)iPMT ) );
       lPMT.SetOccupancyErr( TMath::Sqrt( lPMT.GetOccupancy() ) );
-      lPMT.SetCentralOccupancy( crQRdt.GetOccupancy( iPMT ) );
+      lPMT.SetCentralOccupancy( crQRdt.GetOccupancy( (Float_t)iPMT ) );
       lPMT.SetCentralOccupancyErr( TMath::Sqrt( lPMT.GetCentralOccupancy() ) ); 
-      lPMT.SetWavelengthOccupancy( wrQRdt.GetOccupancy( iPMT ) );
+      lPMT.SetWavelengthOccupancy( wrQRdt.GetOccupancy( (Float_t)iPMT ) );
       lPMT.SetWavelengthOccupancyErr( TMath::Sqrt( lPMT.GetWavelengthOccupancy() ) );
 
       // Number of laserball pulses
@@ -235,10 +235,13 @@ int main( int argc, char** argv ){
       // MPE corrected occupancies
       lPMT.SetMPECorrOccupancy( LOCASMath::MPECorrectedNPrompt( lPMT.GetOccupancy(), lPMT.GetNLBPulses() ) );
       lPMT.SetMPECorrOccupancyErr( LOCASMath::MPECorrectedNPromptErr( lPMT.GetOccupancy(), lPMT.GetNLBPulses() ) );
+      lPMT.SetMPECorrOccupancyCorr( LOCASMath::MPECorrectedNPromptCorr( lPMT.GetMPECorrOccupancy(), lPMT.GetOccupancy(), lPMT.GetNLBPulses() ) );
       lPMT.SetCentralMPECorrOccupancy( LOCASMath::MPECorrectedNPrompt( lPMT.GetCentralOccupancy(), lPMT.GetCentralNLBPulses() ) );
       lPMT.SetCentralMPECorrOccupancyErr( LOCASMath::MPECorrectedNPromptErr( lPMT.GetCentralOccupancy(), lPMT.GetCentralNLBPulses() ) );
+      lPMT.SetMPECorrOccupancyCorr( LOCASMath::MPECorrectedNPromptCorr( lPMT.GetCentralMPECorrOccupancy(), lPMT.GetCentralOccupancy(), lPMT.GetCentralNLBPulses() ) );
       lPMT.SetWavelengthMPECorrOccupancy( LOCASMath::MPECorrectedNPrompt( lPMT.GetWavelengthOccupancy(), lPMT.GetWavelengthNLBPulses() ) );
       lPMT.SetWavelengthMPECorrOccupancyErr( LOCASMath::MPECorrectedNPromptErr( lPMT.GetWavelengthOccupancy(), lPMT.GetWavelengthNLBPulses() ) );
+      lPMT.SetWavelengthMPECorrOccupancyCorr( LOCASMath::MPECorrectedNPromptCorr( lPMT.GetWavelengthMPECorrOccupancy(), lPMT.GetWavelengthOccupancy(), lPMT.GetWavelengthNLBPulses() ) );
 
       // Theta, Phi values of the PMT relative to the Laserball Position
       TVector3 lbRelToPMT = ( lPMT.GetPos() - ( lRunPtr->GetLBPos() ) ).Unit();
@@ -396,6 +399,7 @@ int main( int argc, char** argv ){
   cout << "has been created." << endl;
   cout << "\n";
 
+  return 0;
   
 }
 

@@ -41,7 +41,7 @@ Float_t LOCASMath::MPECorrectedNPrompt( const Float_t nPrompt, const Float_t nPu
 {
 
   // This is the equation as featured in eqn 4.13, page 77 of B.Moffat's PhD thesis
-  Float_t mpePrompt = -1.0 * nPulses * TMath::Log( ( 1.0 - ( nPrompt / nPulses ) ) );
+  Float_t mpePrompt = -1.0 * TMath::Log( ( 1.0 - ( nPrompt / nPulses ) ) );
   return mpePrompt;
 
 }
@@ -53,8 +53,20 @@ Float_t LOCASMath::MPECorrectedNPromptErr( const Float_t nPrompt, const Float_t 
 {
 
   // This is the equation as featured in eqn 4.14, page 77 of B.Moffat's PhD thesis
-  Float_t mpePromptErr = ( TMath::Sqrt( nPrompt ) ) / ( 1.0 - ( nPrompt / nPulses ) );
+  Float_t mpePromptErr = ( TMath::Sqrt( nPrompt ) ) / ( nPulses - nPrompt );
   return mpePromptErr;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASMath::MPECorrectedNPromptCorr( const Float_t mpeOcc, const Float_t nPrompt, const Float_t nPulses )
+{
+
+  // This is the equation as featured in eqn 4.14, page 77 of B.Moffat's PhD thesis
+  Float_t mpePromptCorr = ( (Float_t)( mpeOcc * nPulses / nPrompt ) );
+  return mpePromptCorr;
 
 }
 

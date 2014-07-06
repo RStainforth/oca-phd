@@ -33,6 +33,9 @@
 
 #include <string>
 
+#include "QDQXX.h"
+#include "QOptics.h"
+
 namespace LOCAS{
   
   class LOCASFitLBPosition : public TObject, LOCASMath
@@ -89,6 +92,14 @@ namespace LOCAS{
 
     std::string fGeometryFile;                  // The name of the goemetry file
                                                 // from which the optical media materials were found
+    std::string fScintVolMat;                   // The material of the medium inside the AV
+    std::string fAVVolMat;                      // The material of the medium of the acrylic vessel
+    std::string fCavityVolMat;                  // The material of the medium inside the cavity
+
+    Float_t fVgScint;                           // The group velocity of the scintillator material
+    Float_t fVgAV;                              // The group velocity of the acrylic material
+    Float_t fVgWater;                           // The group velocity of the water material
+
     Bool_t fArraysInitialised;                  // TRUE: Arrays initialised ready for fitting FALSE: Not ready
 
     RAT::DB* fRATDB;                                 // Pointer to the RAT Database     
@@ -116,6 +127,15 @@ namespace LOCAS{
 
     TVector3 fCurrentLBPos;
     Int_t fNElements;
+    Float_t fDelPos;
+
+    QDQXX fDQXX;
+    QOptics fQOptics;
+    QOptics fQOpticsX;
+    QOptics fQOpticsY;
+    QOptics fQOpticsZ;
+
+    std::string fDQXXDirPrefix;
 
     ClassDef(LOCASFitLBPosition,1)
 

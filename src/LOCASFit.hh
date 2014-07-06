@@ -404,6 +404,8 @@ namespace LOCAS{
     Float_t** fMrqCovariance;                               //! [fNParameters+1][fNParameters+1] Covariance matrix
     Float_t** fMrqAlpha;                                    //! [fNParameters+1][fNParameters+1] Curvature matrix
 
+    Int_t fCurrentRunIndex;
+
     
 
     std::map< Int_t, LOCASPMT > fFitPMTs;                   // Map of PMTs which pass the cut selection and are to be used in the fit

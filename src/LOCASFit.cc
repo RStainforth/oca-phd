@@ -140,6 +140,8 @@ LOCASFit::LOCASFit()
   fMrqCovariance = NULL;
   fMrqAlpha = NULL;
 
+  fCurrentRunIndex = 0;
+
 }
 
 //////////////////////////////////////
@@ -199,11 +201,11 @@ void LOCASFit::LoadFitFile( const char* fitFile )
 
   // Set the values of the LM working arrays to zero.
   for ( Int_t iK = 1; iK <= fNDataPointsInFit; iK++ ){
-    fMrqX[ iK ] = 0.0;
-    fMrqY[ iK ] = 0.0;
-    fMrqSigma[ iK ] = 0.0;
-    fChiArray[ iK ] = 0.0;
-    fResArray[ iK ] = 0.0;
+    fMrqX[ iK ] = 1.0;
+    fMrqY[ iK ] = 1.0;
+    fMrqSigma[ iK ] = 1.0;
+    fChiArray[ iK ] = 1.0;
+    fResArray[ iK ] = 1.0;
   }
   
 
@@ -377,9 +379,9 @@ void LOCASFit::InitialiseParameters()
   for ( Int_t iT = 0; iT < fNRuns; iT++ ){
     fCurrentRun = fRunReader.GetRunEntry( iT );
    
-    runNorm = TMath::Power(fCurrentRun->GetLBIntensityNorm(),1.0);
+    runNorm = TMath::Power(fCurrentRun->GetNLBPulses(),1.0);
     cout << "runNorm: " << runNorm << endl;
-    cenNorm = TMath::Power(fCurrentRun->GetCentralLBIntensityNorm(),1.0);
+    cenNorm = TMath::Power(fCurrentRun->GetCentralNLBPulses(),1.0);
     cout << "cenNorm: " << cenNorm << endl;
 
     if ( cenNorm != 0.0 ){ normPar = ( runNorm / cenNorm ); }
@@ -507,6 +509,7 @@ void LOCASFit::PrintInitialisationInfo( )
   }
   cout << "Number of parameters potentially allowed to vary in the fit: " << nParVary << endl;
   cout << "Number of parameters fixed in the fit: " << nParFixed << endl;
+  cout << "Number of parameters in the fit: " << fNParametersInFit << endl;
   cout << " ------------- " << endl;
   
   cout << "When fitting, fit will skip every " << fNPMTSkip << " pmts in the data set." << endl;
@@ -631,7 +634,12 @@ void LOCASFit::DataScreen()
 	 && !isnan( fMrqY[ iK ] ) 
          && !isnan( fMrqSigma[ iK ] )
          && !isnan( fChiArray[ iK ] )
-         && !isnan( fResArray[ iK ] )){
+         && !isnan( fResArray[ iK ] )
+         && fMrqX[ iK ] != 0.0
+         && fMrqY[ iK ] != 0.0
+         && fMrqSigma[ iK ] != 0.0
+         && fChiArray[ iK ] != 0.0
+         && fResArray[ iK ] != 0.0){
       
       fMrqX[ jVar + 1 ] = fMrqX[ iK ];
       fMrqY[ jVar + 1 ] = fMrqY[ iK ];
@@ -694,20 +702,25 @@ void LOCASFit::DataScreen()
 
   cout << "Current number of PMTs in Fit is: " << fNPMTsInFit << endl;
   cout << "Counting entries in each parameter distribution histogram...";
-  
+
+  Int_t oldTmpRun = 0;
   for ( Int_t iPMT = 1; iPMT <= fNPMTsInFit; iPMT++ ){
     iX = (Int_t)fMrqX[ iPMT ];
     tmpRun = (Int_t)( iX / 10000 );
     tmpPMT = (Int_t)( iX % 10000 );
     
-    fCurrentRun = fRunReader.GetRunEntry( tmpRun );
+    if ( tmpRun != oldTmpRun ){
+      fCurrentRun = fRunReader.GetRunEntry( tmpRun );
+    }
     fCurrentPMT = &( fCurrentRun->GetPMT( tmpPMT ) );
     
     pmtR = ModelAngularResponse( fCurrentPMT, iAngValid, 0 );
     pmtAngleValid[ iAngValid ]++;
     
     pmtLB = ModelLBDistribution( fCurrentRun, fCurrentPMT, iLBValid, 0 );
-    lbValid[ iLBValid ]++;    
+    lbValid[ iLBValid ]++; 
+    
+    oldTmpRun = tmpRun;
   }
 
   cout << "done." << endl;
@@ -780,12 +793,16 @@ void LOCASFit::DataScreen()
   }
   else{
     jVar = 0;
+
+    Int_t oldTmpRun1 = 0;
     for ( Int_t iPMT = 1; iPMT <= fNPMTsInFit; iPMT++ ){
       iX = (Int_t)fMrqX[ iPMT ];
       tmpRun = (Int_t)( iX / 10000 );
       tmpPMT = (Int_t)( iX % 10000 );
       
-      fCurrentRun = fRunReader.GetRunEntry( tmpRun );
+      if ( tmpRun != oldTmpRun1 ){
+        fCurrentRun = fRunReader.GetRunEntry( tmpRun );
+      }
       fCurrentPMT = &( fCurrentRun->GetPMT( tmpPMT ) );
       
       pmtR = ModelAngularResponse( fCurrentPMT, iAngValid, 0 );     
@@ -801,12 +818,40 @@ void LOCASFit::DataScreen()
         
         jVar++;
       }
-    }   
+      oldTmpRun1 = tmpRun;
+    }
+ 
     fNPMTsInFit = jVar;
   }
   
   cout << "done." << endl;
   cout << " ------------- " << endl;
+
+  cout << "Removing zero entry values...";
+  Int_t tVar = 0;
+  for ( Int_t iK = 1; iK < fNPMTsInFit; iK++ ){
+    
+    if ( fMrqX[ iK ] != 0.0
+         && fMrqY[ iK ] != 0.0
+         && fMrqSigma[ iK ] != 0.0
+         && fChiArray[ iK ] != 0.0
+         && fResArray[ iK ] != 0.0){
+      
+      fMrqX[ tVar + 1 ] = fMrqX[ iK ];
+      fMrqY[ tVar + 1 ] = fMrqY[ iK ];
+      fMrqSigma[ tVar + 1 ] = fMrqSigma[ iK ];
+      
+      fChiArray[ tVar + 1 ] = fChiArray[ iK ];
+      fChiSquare += fChiArray[ iK ];
+      fResArray[ tVar + 1 ] = fResArray[ iK ];
+      
+      tVar++;
+      
+    }
+  }
+  cout << "done." << endl;
+  cout << " ------------- " << endl;
+  fNPMTsInFit = tVar;
   
   ///////////////////////////////////////////
   ///////////////////////////////////////////
@@ -823,14 +868,19 @@ void LOCASFit::DataScreen()
 
   // All the PMTs which are to be used in the fit are then stored
   // in a std::map< Int_t, LOCASPMT > map (fFitPMTs)
+  Int_t oldTmpRun2 = 0;
   for ( Int_t iPM = 1; iPM <= fNPMTsInFit; iPM++ ){
 
     Int_t iX = fMrqX[ iPM ];
     Int_t pmtID = iX % 10000;
     Int_t runN = iX / 10000;
-    fCurrentRun = fRunReader.GetRunEntry( runN );
+    if ( runN != oldTmpRun2 ){
+      fCurrentRun = fRunReader.GetRunEntry( runN );
+    }
     LOCASPMT lPMT = fCurrentRun->GetPMT( pmtID );
     fFitPMTs[ iX ] = lPMT;
+
+    oldTmpRun2 = runN;
 
   }
 
@@ -993,15 +1043,21 @@ Float_t LOCASFit::CalculateChiSquare()
   if ( !fDataScreen ){ cout << "LOCASFit::CalculateChiSquare: Error, run LOCASFit::DataScreen first"; }
   else{
 
+    Int_t nPMTsHere = fFitPMTs.size();
+    Int_t oldRunN = 0;
     for ( fiPMT = fFitPMTs.begin(); fiPMT != fFitPMTs.end(); fiPMT++ ){
 
       iX = ( fiPMT->first );
       jRun = iX / 10000;
       fCurrentPMT = &( fiPMT->second );
-      fCurrentRun = fRunReader.GetRunEntry( jRun );
+      if ( jRun != oldRunN ){
+        fCurrentRun = fRunReader.GetRunEntry( jRun );
+      }
 
   
       chiSquare += CalculatePMTChiSquare( fCurrentRun, fCurrentPMT );
+
+      oldRunN = jRun;
     }
   }
 
@@ -1053,7 +1109,7 @@ Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMT
 
   }
  
-  Float_t normVal = ( iPMTPtr->GetNLBPulses() / iPMTPtr->GetCentralNLBPulses() ) * GetLBNormalisationPar( fiNorm );
+  Float_t normVal = GetLBNormalisationPar( fiNorm );
   //cout << "normVal is: " << normVal << endl;
 
   Float_t solidARatio = ( iPMTPtr->GetSolidAngle() / iPMTPtr->GetCentralSolidAngle() );
@@ -1079,16 +1135,22 @@ Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMT
   if( derivatives ){
 
     dyda[ GetLBNormalisationParIndex() + fiNorm ] = +1.0 / normVal;
+    //cout << 1.0 / normVal << endl;
     dyda[ GetScintParIndex() ] = -dScint;
+    //cout << -dScint << endl;
     dyda[ GetAVParIndex() ] = -dAV;
+    //cout << -dAV << endl;
     dyda[ GetWaterParIndex() ] = -dWater;
+    //cout << -dWater << endl;
 
     dyda[ GetScintRSParIndex() ] = -dScint;
     dyda[ GetAVRSParIndex() ] = -dAV;
     dyda[ GetWaterRSParIndex() ] = -dWater;
 
     dyda[ GetAngularResponseParIndex() + fiAng ] = +1.0 / angResp;
+    //cout << +1.0 / angResp << endl;
     dyda[ GetLBDistributionParIndex() + fiLBDist ] = +1.0 / intensity;
+    //cout << +1.0/intensity << endl;
 
   }
 
@@ -1102,7 +1164,9 @@ Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMT
   if( derivatives ){
 
     dyda[ GetAngularResponseParIndex() + fCiAng ] -= 1.0 / angRespCtr;
+    //cout << 1.0 / angRespCtr << endl;
     dyda[ GetLBDistributionParIndex() + fCiLBDist ] -= 1.0 / intensityCtr;
+    //cout << 1.0 / intensityCtr << endl;
 
   }
   Float_t modelValue = pmtResponse / pmtResponseCtr;
@@ -1437,6 +1501,7 @@ Int_t LOCASFit::mrqmin(float x[], float y[], float sig[], int ndata, float a[],
 	    if(covar[j][j] == 0.0) {
 	      printf("*** Zero covariance diagonal element at j %d (l %d)\n",j,l);
 	      printf("*** Bad parameter %d\n",l);
+          covar[j][j] = 1.0;
 	    } else {
 	      printf("*** Negative covariance diagonal element at j %d (l %d)\n",j,l);
 	    }
@@ -1542,7 +1607,7 @@ void LOCASFit::mrqcof(float x[], float y[], float sig[], int ndata, float a[],
     beta2[j]=0.0;
   }
   *chisq=0.0;
-  for (i=1;i<=ndata;i+=fNPMTSkip) {  // Skip some tubes to increase speed...
+  for (i=1;i<=ndata;i++) {  // Skip some tubes to increase speed...
     mrqfuncs( x[i],i,a,&ymod,dyda,ma );
     sig2i=1.0/(sig[i]*sig[i]);
     dy=y[i]-ymod;
@@ -1594,13 +1659,16 @@ void LOCASFit::mrqfuncs(Float_t x,Int_t ix,Float_t a[],Float_t *y,
                           Float_t dyda[],Int_t na)
 {
   
+  
   ix = (Int_t)x;
   Int_t jpmt = ix%10000;
   Int_t irun = ix/10000;
-
-  fCurrentRun = fRunReader.GetRunEntry( irun );
+  if ( irun != fCurrentRunIndex ){
+    fCurrentRun = fRunReader.GetRunEntry( irun );
+  }
   fCurrentPMT = &fCurrentRun->GetPMT( jpmt );
 
+  fCurrentRunIndex = irun;
   Float_t *mrqparsave = fMrqParameters; // Save parameters and use the ones just passed
   fMrqParameters = a;
 
@@ -1615,69 +1683,78 @@ void LOCASFit::mrqfuncs(Float_t x,Int_t ix,Float_t a[],Float_t *y,
 
 Int_t LOCASFit::gaussj(float **a, int n, float **b, int m)
 {
-  // Gauss-Jordan matrix solution helper routine for mrqmin.
 
-  int *indxc,*indxr,*ipiv;
-  int i,icol,irow,j,k,l,ll;
-  float big,dum,pivinv,swap;
-  Int_t retval = 0;
-  indxc=flMath.LOCASIntVector(1,n);
-  indxr=flMath.LOCASIntVector(1,n);
-  ipiv=flMath.LOCASIntVector(1,n);
-  for (j=1;j<=n;j++) ipiv[j]=0;
-  for (i=1;i<=n;i++) {
-    big=0.0;
-    for (j=1;j<=n;j++)
-      if (ipiv[j] != 1)
-        for (k=1;k<=n;k++) {
-          if (ipiv[k] == 0) {
-            if (fabs(a[j][k]) >= big) {
-              big=fabs(a[j][k]);
-              irow=j;
-              icol=k;
-            }
-          } else if (ipiv[k] > 1) 
-            {
-              cout << "gaussj: Singular Matrix-1" << endl;
-              retval = -1;
-            }
-        }
-    ++(ipiv[icol]);
-    if (irow != icol) {
-      for (l=1;l<=n;l++) { SWAP(a[irow][l],a[icol][l]) }
-      for (l=1;l<=m;l++) { SWAP(b[irow][l],b[icol][l]) }
-    }
-    indxr[i]=irow;
-    indxc[i]=icol;
-    if (a[icol][icol] == 0.0) 
-      {
-        cout << "gaussj: Singular Matrix-2" << endl;;
-        retval = -2;
-      }
-    pivinv=1.0/a[icol][icol];
-    a[icol][icol]=1.0;
-    for (l=1;l<=n;l++) a[icol][l] *= pivinv;
-    for (l=1;l<=m;l++) b[icol][l] *= pivinv;
-    for (ll=1;ll<=n;ll++)
-      if (ll != icol) {
-        dum=a[ll][icol];
-        a[ll][icol]=0.0;
-        for (l=1;l<=n;l++) a[ll][l] -= a[icol][l]*dum;
-        for (l=1;l<=m;l++) b[ll][l] -= b[icol][l]*dum;
-      }
-  }
-  for (l=n;l>=1;l--) {
-    if (indxr[l] != indxc[l])
-      for (k=1;k<=n;k++)
-        SWAP(a[k][indxr[l]],a[k][indxc[l]]);
-  }
+//
+	// Linear equation solution by Gauss-Jordan elimination. a[1..n][1..n] is the input matrix.
+	// b[1..n][1..n] is input containing the m right-hand side vectors. On output, a is
+	// replaced by its matrix inverse, and b is replaced by the corresponding set of solution
+	// vectors.
+	
+	int *indxc,*indxr,*ipiv;
+	int i,icol,irow,j,k,l,ll;
+	float big,dum,pivinv,swap;
+	Int_t retval = 0;
+	indxc=flMath.LOCASIntVector(1,n);
+	indxr=flMath.LOCASIntVector(1,n);
+	ipiv=flMath.LOCASIntVector(1,n);
+	for (j=1;j<=n;j++) ipiv[j]=0;
+	for (i=1;i<=n;i++) {
+		big=0.0;
+		for (j=1;j<=n;j++)
+			if (ipiv[j] != 1)
+				for (k=1;k<=n;k++) {
+					if (ipiv[k] == 0) {
+						if (fabs(a[j][k]) >= big) {
+							big=fabs(a[j][k]);
+							irow=j;
+							icol=k;
+						}
+					} else if (ipiv[k] > 1) 
+					  {
+					    //nrerror("gaussj: Singular Matrix-1");
+					    //gSNO->Warning("gaussj","Singular Matrix-1");
+                        cout << "gaussj - Singular Matrix-1" << endl;
+					    retval = -1;
+					  }
+				}
+		++(ipiv[icol]);
+		if (irow != icol) {
+			for (l=1;l<=n;l++) SWAP(a[irow][l],a[icol][l])
+			for (l=1;l<=m;l++) SWAP(b[irow][l],b[icol][l])
+		}
+		indxr[i]=irow;
+		indxc[i]=icol;
+		if (a[icol][icol] == 0.0) 
+		  {
+		    //nrerror("gaussj: Singular Matrix-2");
+		    //gSNO->Warning("gaussj","Singular Matrix-2");
+            cout << "gaussj - Singular Matrix-2" << endl;
+		    retval = -2;
+		  }
+		pivinv=1.0/a[icol][icol];
+		a[icol][icol]=1.0;
+		for (l=1;l<=n;l++) a[icol][l] *= pivinv;
+		for (l=1;l<=m;l++) b[icol][l] *= pivinv;
+		for (ll=1;ll<=n;ll++)
+			if (ll != icol) {
+				dum=a[ll][icol];
+				a[ll][icol]=0.0;
+				for (l=1;l<=n;l++) a[ll][l] -= a[icol][l]*dum;
+				for (l=1;l<=m;l++) b[ll][l] -= b[icol][l]*dum;
+			}
+	}
+	for (l=n;l>=1;l--) {
+		if (indxr[l] != indxc[l])
+			for (k=1;k<=n;k++)
+				SWAP(a[k][indxr[l]],a[k][indxc[l]]);
+	}
+	flMath.LOCASFree_IntVector(ipiv,1,n);
+	flMath.LOCASFree_IntVector(indxr,1,n);
+	flMath.LOCASFree_IntVector(indxc,1,n);
+	return retval;
   
-  flMath.LOCASFree_IntVector(ipiv,1,n);
-  flMath.LOCASFree_IntVector(indxr,1,n);
-  flMath.LOCASFree_IntVector(indxc,1,n);
-  return retval;
-
 }
+
 
 /////////////////////////////////////
 //////////////////////////////////////

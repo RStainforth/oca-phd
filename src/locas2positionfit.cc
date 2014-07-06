@@ -39,14 +39,18 @@ int main( int argc, char** argv ){
   lDB.SetFile( argv[1] );
 
   // Add all the run files to the LOCASRunReader object
-  std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" ); 
+  std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids" );
   LOCASRunReader lReader( runIDs );
+  //LOCASFitLBPosition* fitLB = new LOCASFitLBPosition( lReader, "geo/sno_d2o.geo" );
+  std::vector< LOCASFitLBPosition* > fitLBs;
 
-  std::vector< Int_t > runIDsList = lReader.GetListOfRunIDs();
-
-  Int_t firstID = runIDsList[ 0 ];
-  LOCASFitLBPosition* lbFitter = new LOCASFitLBPosition( lReader, "geo/sno_d2o.geo" );
-  lbFitter->FitLBPosition( firstID );
+  printf( "Number of runs is: %i \n", (Int_t)runIDs.size() );
+  for ( Int_t iRun = 0; iRun < runIDs.size(); iRun++ ){
+    LOCASFitLBPosition* tmpLBFit = new LOCASFitLBPosition( lReader, "geo/sno_d2o.geo" );
+    printf( "Run Number: %i || Run ID: %i \n", iRun, (Int_t)runIDs[ iRun ] );
+    tmpLBFit->FitLBPosition( runIDs[ iRun ] );
+    fitLBs.push_back( tmpLBFit );
+  }
 
   return 0;
 
