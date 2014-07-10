@@ -57,6 +57,8 @@ namespace LOCAS{
 
     Bool_t SkipPMT( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr );
 
+    void PrintFitInfo();
+
     // Levenberg-Marquardt Fitting Routines
 
     Int_t MrqFit(float x[], float y[], float sig[], int ndata, float a[],
@@ -130,10 +132,6 @@ namespace LOCAS{
     Float_t fDelPos;
 
     QDQXX fDQXX;
-    QOptics fQOptics;
-    QOptics fQOpticsX;
-    QOptics fQOpticsY;
-    QOptics fQOpticsZ;
 
     std::string fDQXXDirPrefix;
 

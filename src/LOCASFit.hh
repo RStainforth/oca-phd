@@ -32,6 +32,8 @@
 #include "TH1F.h"
 #include "TH2F.h"
 
+#include "QDQXX.h"
+
 namespace LOCAS{
 
   class LOCASFit : public TObject
@@ -63,11 +65,20 @@ namespace LOCAS{
     void DataScreen();                              
 
     // Check whether a PMT should be skipped over
-    Bool_t PMTSkip( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Float_t mean, Float_t sigma );
+    Bool_t PMTSkip( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Float_t mean = -1.0e6, Float_t sigma = -1.0e6 );
 
     // Return the model Angular Response value and Laserball Distribution value
     Float_t ModelAngularResponse( const LOCASPMT* iPMTPtr, Int_t& iAng, Int_t runType );
     Float_t ModelLBDistribution( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t& iLBDist, Int_t runType );
+    Float_t ModelLBDistribution( const Float_t cosTheta, const Float_t phi, Int_t& iLBDist );
+
+    Float_t ModelLBDistributionMask( const LOCASPMT* iPMTPtr, const Int_t runType );
+    Float_t ModelLBDistributionMask( const Float_t cosTheta );
+    
+    Float_t SLBDistributionMask( Double_t* aPtr, Double_t* parPtr );
+    Float_t DLBDistributionMask( Double_t* aPtr, Double_t* parPtr );
+    Float_t SLBDistributionWave( Double_t* aPtr, Double_t* parPtr );
+    Float_t DLBDistributionWave( Double_t* aPtr, Double_t* parPtr );
 
     // Calculate the individual PMT chisquare and global chisquare
     Float_t CalculatePMTChiSquare( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr );
@@ -221,7 +232,11 @@ namespace LOCAS{
     Int_t GetWaterRSParIndex() const { return 6; }
 
     Int_t GetAngularResponseParIndex();
+    Int_t GetAngularResponse2ParIndex();
+
     Int_t GetLBDistributionParIndex();
+    Int_t GetLBDistributionMaskParIndex();
+    Int_t GetLBDistributionWaveParIndex();
     
     Int_t GetLBNormalisationParIndex();
 
@@ -234,7 +249,13 @@ namespace LOCAS{
     Float_t GetWaterRSPar() const { return fMrqParameters[ GetWaterRSParIndex() ]; }
 
     Float_t GetAngularResponsePar( Int_t n ){ return fMrqParameters[ GetAngularResponseParIndex() + n ]; }
+    Float_t GetAngularResponse2Par( Int_t n ){ return fMrqParameters[ GetAngularResponse2ParIndex() + n ]; }
+
     Float_t GetLBDistributionPar( Int_t n ){ return fMrqParameters[ GetLBDistributionParIndex() + n ]; }
+    Float_t GetLBDistributionMaskPar( Int_t n ){ return fMrqParameters[ GetLBDistributionMaskParIndex() + n ]; }
+    Float_t GetLBDistributionWavePar( Int_t n ){ return fMrqParameters[ GetLBDistributionWaveParIndex() + n ]; }
+    Float_t* GetLBDistributionMask(){ return &fMrqParameters[ GetLBDistributionMaskParIndex() ]; }
+    Float_t* GetLBDistributionWave(){ return &fMrqParameters[ GetLBDistributionWaveParIndex() ]; }
 
     Float_t GetLBNormalisationPar( Int_t n ){ return fMrqParameters[ GetLBNormalisationParIndex() + n ]; }
 
@@ -264,18 +285,22 @@ namespace LOCAS{
     ////////     SETTERS     ////////
     /////////////////////////////////
 
-    void SetScintVary( Bool_t varyBool ){ fScintVary = varyBool; }
-    void SetAVVary( Bool_t varyBool ){ fAVVary = varyBool; }
-    void SetWaterVary( Bool_t varyBool ){ fWaterVary = varyBool; }
+    void SetScintVary( Bool_t varyBool ){ fMrqVary[ GetScintParIndex() ] = varyBool; }
+    void SetAVVary( Bool_t varyBool ){ fMrqVary[ GetAVParIndex() ] = varyBool; }
+    void SetWaterVary( Bool_t varyBool ){ fMrqVary[ GetWaterParIndex() ] = varyBool; }
 
-    void SetScintRSVary( Bool_t varyBool ){ fScintRSVary = varyBool; }
-    void SetAVRSVary( Bool_t varyBool ){ fAVRSVary = varyBool; }
-    void SetWaterRSVary( Bool_t varyBool ){ fWaterRSVary = varyBool; }
+    void SetScintRSVary( Bool_t varyBool ){ fMrqVary[ GetScintRSParIndex() ] = varyBool; }
+    void SetAVRSVary( Bool_t varyBool ){ fMrqVary[ GetAVRSParIndex() ] = varyBool; }
+    void SetWaterRSVary( Bool_t varyBool ){ fMrqVary[ GetWaterRSParIndex() ] = varyBool; }
 
-    void SetAngularResponseVary( Bool_t varyBool ){ fAngularResponseVary = varyBool; }
-    void SetLBDistributionVary( Bool_t varyBool ){ fLBDistributionVary = varyBool; }
+    void SetAngularResponseVary( Bool_t varyBool );
+    void SetAngularResponse2Vary( Bool_t varyBool );
 
-    void SetLBNormalisationVary( Bool_t varyBool ){ fLBNormalisationVary = varyBool; }
+    void SetLBDistributionVary( Bool_t varyBool );
+    void SetLBDistributionMaskVary( Bool_t varyBool );
+    void SetLBDistributionWaveVary( Bool_t varyBool );
+
+    void SetLBNormalisationVary( Bool_t varyBool );
 
     void SetScintPar( Float_t parVal ){ fMrqParameters[ GetScintParIndex() ] = parVal; }
     void SetAVPar( Float_t parVal ){ fMrqParameters[ GetAVParIndex() ] = parVal; }
@@ -284,6 +309,15 @@ namespace LOCAS{
     void SetScintRSPar( Float_t parVal ){ fMrqParameters[ GetScintRSParIndex() ] = parVal; }
     void SetAVRSPar( Float_t parVal ){ fMrqParameters[ GetAVRSParIndex() ] = parVal; }
     void SetWaterRSPar( Float_t parVal ){ fMrqParameters[ GetWaterRSParIndex() ] = parVal; }
+
+    void SetAngularResponsePar( Int_t n, Float_t val ){ fMrqParameters[ GetAngularResponseParIndex() + n ] = val; }
+    void SetAngularResponse2Par( Int_t n, Float_t val ){ fMrqParameters[ GetAngularResponse2ParIndex() + n ] = val; }
+
+    void SetLBDistributionPar( Int_t n, Float_t val ){ fMrqParameters[ GetLBDistributionParIndex() + n ] = val; }
+    void SetLBDistributionMaskPar( Int_t n, Float_t val ){ fMrqParameters[ GetLBDistributionMaskParIndex() + n ] = val; }
+    void SetLBDistributionWavePar( Int_t n, Float_t val ){ fMrqParameters[ GetLBDistributionWaveParIndex() + n ] = val; }
+
+    void SetLBNormalisationPar( Int_t n, Float_t val ){ fMrqParameters[ GetLBNormalisationParIndex() + n ] = val; }
 
     void SetMrqParameter( Int_t n, Float_t val ){ if ( n == 0 ){ return; } else{ fMrqParameters[ n ] = val; } }
     void SetMrqParameters( Double_t* pars ){ *fMrqParameters = *pars; }
@@ -314,7 +348,8 @@ namespace LOCAS{
     Bool_t fAVRSVary;                                        // Whether the acrylic (AV) rayleigh scattering length was varied
     Bool_t fWaterVary;                                       // Whether the water rayleigh scattering length was varied
 
-    Bool_t fAngularResponseVary;                             // Whether the angular response was varied 
+    Bool_t fAngularResponseVary;                             // Whether the angular response was varied
+    Bool_t fAngularResponse2Vary;                            // Whether the (2nd)angular response was varied 
     Bool_t fLBDistributionVary;                              // Whether the laserball distribution was varied
 
     Bool_t fLBNormalisationVary;                             // Whether the run normalisations was varied
@@ -336,9 +371,9 @@ namespace LOCAS{
     TH2F* fLBDistribution;                                  // Pointer to the laserball distribution 2D histogram
     Int_t fNLBDistributionThetaBins;                        // Number of theta bins in the laserball distribution histogram
     Int_t fNLBDistributionPhiBins;                          // Number of phi bins in the laserball distribution histogram
-    Int_t fNLBMaskParameters;                               // Mask parameters of the laserbal distribution polynomial
-    Int_t fNLBThetaWaveBins;                                // Number of parameters defining the sine wave
-    Int_t fNLBDistWave;                                     // Distance of the laserball theta wave distribution
+    Int_t fNLBDistributionMaskParameters;                   // Mask parameters of the laserbal distribution polynomial
+    Int_t fNLBDistributionThetaWaveBins;                    // Number of parameters defining the sine wave
+    Int_t fNLBDistributionWave;                             // Distance of the laserball theta wave distribution
     Int_t fNPMTsPerLBDistributionBinMin;                    // Minimum required number of PMTs per bin in the laserball distribution histogram
 
     TH1F* fAngularResponse;                                 // Pointer to the PMT angular response 1D histogram
@@ -381,6 +416,7 @@ namespace LOCAS{
     Float_t* fChiArray;                                     //! [fNElements] Array of chisquared for mrqcof() calls
     Float_t* fResArray;                                     //! [fNElements] Array of residuals for mrqcof() calls
 
+    Int_t fLBDistributionType;
     Int_t fiAng;                                            //! Index for PMT angular response to be re-zeroed
     Int_t fCiAng;                                           //! Index for PMT angular response in the central run to be re-zeroed
     Int_t fiLBDist;                                         //! Index for laserball distribution to be re-zeroed
@@ -404,8 +440,9 @@ namespace LOCAS{
     Float_t** fMrqCovariance;                               //! [fNParameters+1][fNParameters+1] Covariance matrix
     Float_t** fMrqAlpha;                                    //! [fNParameters+1][fNParameters+1] Curvature matrix
 
-    Int_t fCurrentRunIndex;
-
+    Int_t fCurrentRunIndex;                                 //! Current run index in the LOCASRun Reader Object
+    QDQXX fQDXX;                                           //! Private DQXX accessor (for old SNO data)
+    std::string fDQXXDirPrefix ;                            //! Full system path to the DQXX files (for old SNO data)
     
 
     std::map< Int_t, LOCASPMT > fFitPMTs;                   // Map of PMTs which pass the cut selection and are to be used in the fit

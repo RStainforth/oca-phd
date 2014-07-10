@@ -18,5 +18,12 @@
 	cout << "LOCAS: Libraries loaded." << endl;
 	gSystem->AddIncludePath(" -I$LOCAS_ROOT/include");
   }
+
+  char *QLOCASROOT = getenv("QLOCAS_ROOT");
+  if (QLOCASROOT != NULL) {
+	gSystem->Load("libQLOCAS.so");
+	cout << "QLOCAS: Libraries loaded." << endl;
+	gSystem->AddIncludePath(" -I$QLOCAS_ROOT/include");
+  }
 }
 

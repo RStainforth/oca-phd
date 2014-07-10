@@ -61,8 +61,8 @@ LOCASFitLBPosition::LOCASFitLBPosition( const LOCASRunReader& lRunReader, const 
   fDQXXDirPrefix = getenv("DQXXDIR");
   fDQXXDirPrefix += "/DQXX_00000";
   
-  printf( "Initialising Laserball Position Manager\n" );
-  printf( "-----------------------------------------\n \n" );
+  //printf( "Initialising Laserball Position Manager\n" );
+  //printf( "-----------------------------------------\n \n" );
   ////////////////////////////////////////////////////////////////////////////////////////////
   // First load all the PMT, LightPath and Group Velocity information from the RAT database //
   ////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,9 +78,9 @@ LOCASFitLBPosition::LOCASFitLBPosition( const LOCASRunReader& lRunReader, const 
   fAVVolMat = fRATDB->GetLink( "GEO", "av" )->GetS( "material" );
   fCavityVolMat = fRATDB->GetLink( "GEO", "cavity" )->GetS( "material" );
 
-  printf( "Inner AV material: %s\n", fScintVolMat.c_str() );
-  printf( "AV material: %s\n", fAVVolMat.c_str() );
-  printf( "Cavity material: %s\n", fCavityVolMat.c_str() );
+  //printf( "Inner AV material: %s\n", fScintVolMat.c_str() );
+  //printf( "AV material: %s\n", fAVVolMat.c_str() );
+  //printf( "Cavity material: %s\n", fCavityVolMat.c_str() );
 
   DU::Utility::Get()->BeginOfRun();
   fPMTInfo = DU::Utility::Get()->GetPMTInfo();
@@ -131,8 +131,8 @@ void LOCASFitLBPosition::FitLBPosition( const Int_t runID )
   // Get the pointer to the LOCASRun object from the reader based on the supplied run ID.
   fCurrentRun = fRunReader.GetLOCASRun( runID );
 
-  printf( "LOCASFitLBPosition::FitLBPosition: Fitting for Run: %i\n", runID );
-  printf( "LOCASFitLBPosition::FitLBPosition: Using 500 nm Run: %i\n", fCurrentRun->GetWavelengthRunID() );
+  //printf( "LOCASFitLBPosition::FitLBPosition: Fitting for Run: %i\n", runID );
+  //printf( "LOCASFitLBPosition::FitLBPosition: Using 500 nm Run: %i\n", fCurrentRun->GetWavelengthRunID() );
   stringstream tmpStream;
   tmpStream << (fCurrentRun->GetWavelengthRunID());
   string tmpStr = "";
@@ -156,27 +156,30 @@ void LOCASFitLBPosition::FitLBPosition( const Int_t runID )
   }
 
   // Begin the fitting routine
-  printf("LOCASFitLBPosition::FitLBPosition: Initial Parameter Values for run %i (off-axis %i):\n\n", fCurrentRun->GetWavelengthRunID(), runID );
-  printf("Laserball x-coordinate: %f mm\n", fMrqParameters[ 1 ] );
-  printf("Laserball y-coordinate: %f mm\n", fMrqParameters[ 2 ] );
-  printf("Laserball z-coordinate: %f mm\n", fMrqParameters[ 3 ] );
-  printf("Laserball time (centered): %f ns\n", fMrqParameters[ 4 ] );
-  //printf("Effective Group Velocity (fixed in fit): %f mm.ns^-1\n", 1.0 / fMrqParameters[ 5 ] );
+  //printf("LOCASFitLBPosition::FitLBPosition: Initial Parameter Values for run %i (off-axis %i):\n\n", fCurrentRun->GetWavelengthRunID(), runID );
+  //printf("Laserball x-coordinate: %f mm\n", fMrqParameters[ 1 ] );
+  //printf("Laserball y-coordinate: %f mm\n", fMrqParameters[ 2 ] );
+  //printf("Laserball z-coordinate: %f mm\n", fMrqParameters[ 3 ] );
+  //printf("Laserball time (centered): %f ns\n", fMrqParameters[ 4 ] );
 
-  printf("LOCASFitLBPosition::FitLBPosition: About to start LOCASFitLBPosition::MrqFit...\n");
+  //printf("LOCASFitLBPosition::FitLBPosition: About to start LOCASFitLBPosition::MrqFit...\n");
+  //printf("ChiSquare Value is: %f", fChiSquare );
+
   MrqFit( fMrqX, fMrqY, fMrqSigma, 
           fNPMTs, fMrqParameters, fMrqVary, 
           4, fMrqCovariance, fMrqCurvature, 
           &fChiSquare );
 
-  cout << "XPos: " << fMrqParameters[ 1 ] << endl;
-  cout << "YPos: " << fMrqParameters[ 2 ] << endl;
-  cout << "ZPos: " << fMrqParameters[ 3 ] << endl;
-  cout << "TPos: " << fMrqParameters[ 4 ] << endl; 
+  PrintFitInfo();
 
-  printf( "Number of PMTs in fit is: %d for 4 parameters\n", fNPMTs );
-  printf( "ChiSquare complete:\nChiSquare: %f\nReduced ChiSquare: %f\n", fChiSquare, fChiSquare / ( (Float_t)(fNPMTs - 3) ) );
-  printf( "-----------------------------------------\n \n" );
+  //cout << "XPos: " << fMrqParameters[ 1 ] << endl;
+  //cout << "YPos: " << fMrqParameters[ 2 ] << endl;
+  //cout << "ZPos: " << fMrqParameters[ 3 ] << endl;
+  //cout << "TPos: " << fMrqParameters[ 4 ] << endl; 
+
+  //printf( "Number of PMTs in fit is: %d for 4 parameters\n", fNPMTs );
+  //printf( "ChiSquare complete:\nChiSquare: %f\nReduced ChiSquare: %f\n", fChiSquare, fChiSquare / ( (Float_t)(fNPMTs - 3) ) );
+  //printf( "-----------------------------------------\n \n" );
 
 }
 
@@ -188,6 +191,28 @@ void LOCASFitLBPosition::FitLBPosition( const Int_t runID )
 void LOCASFitLBPosition::InitialiseArrays()
 {  
   
+  fArraysInitialised = false;
+  fLightPath.ResetValues();
+  fLightPathX.ResetValues();
+  fLightPathY.ResetValues();
+  fLightPathZ.ResetValues();
+  fChiSquare = 0.0;
+  for ( Int_t iD = 1; iD <= 10000; iD++ ){
+    fMrqX[ iD ] = 0.0;
+    fMrqY[ iD ] = 0.0;
+    fMrqSigma[ iD ] = 0.0;
+    fChiArray[ iD ] = 0.0;
+    fResArray[ iD ] = 0.0;
+  }
+
+  for ( Int_t iP = 1; iP <= 4; iP++ ){
+    fMrqParameters[ iP ] = 0.0;
+    for ( Int_t iJ = 1; iJ <= 4; iJ++ ){
+      fMrqCovariance[ iP ][ iJ ] = 0.0;
+      fMrqCurvature[ iP ][ iJ ] = 0.0;
+    }
+  }
+  
   // Initialise the value of the counter for the number of PMTs in this fit.
   fNPMTs = 0;
   
@@ -196,7 +221,7 @@ void LOCASFitLBPosition::InitialiseArrays()
   Int_t nGoodPMTs = 0;
   Int_t nBadPMTs = 0;
   
-  printf("LOCASFitLBPosition::InitialiseArrays: About to initialise data point arrays for the laser ball fit...");
+  //printf("LOCASFitLBPosition::InitialiseArrays: About to initialise data point arrays for the laser ball fit...");
   
   // Get the value of Lambda for the laser ball run
   Float_t runLambda = fCurrentRun->GetWavelengthLambda();
@@ -225,8 +250,8 @@ void LOCASFitLBPosition::InitialiseArrays()
     
   }
 
-  printf("timesigmamean is: %f\n",promptRunTimeWidthMean);
-  printf("timesigmameansqd is: %f\n",promptRunTimeWidthMean2);
+  //printf("timesigmamean is: %f\n",promptRunTimeWidthMean);
+  //printf("timesigmameansqd is: %f\n",promptRunTimeWidthMean2);
   
   Int_t nPMTs = fCurrentRun->GetNPMTs();
   // Divide through by the number of PMTs to obtain the mean
@@ -279,19 +304,13 @@ void LOCASFitLBPosition::InitialiseArrays()
 
     // Set the 'Y' data point to be the prompt peak time + the time of flight
     fMrqY[ fNPMTs + 1 ] = ( fCurrentPMT->GetWavelengthPromptPeakTime() ) + ( fCurrentPMT->GetWavelengthTimeOfFlight() );
-    //cout << "fMrqY is: " << fMrqY[ fNPMTs + 1 ] << endl;
 
     // Set the 'sigma' value to be the prompt peak width of the PMT divided by the squareroot of the number
     // of bins used in the sliding window technique.
-    fMrqSigma[ fNPMTs + 1 ] = fCurrentPMT->GetWavelengthPromptPeakWidth() / TMath::Sqrt( (Float_t)( 32 - 1 ) );
-    //cout << "fMrqSigma is: " << fMrqSigma[ fNPMTs + 1 ] << endl;
-    //cout << "(sqrt)WavelengthOccupancy is: " << TMath::Sqrt( fCurrentPMT->GetWavelengthOccupancy() ) << endl;
+    fMrqSigma[ fNPMTs + 1 ] = fCurrentPMT->GetWavelengthPromptPeakWidth() / TMath::Sqrt( 32 - 1 );
     
     fNPMTs++;
   }
-
-  cout << "fNPMTs is: " << fNPMTs << endl;
-  cout << "nPMTsTmp is: " << nPMTsTmp << endl;
   
   // Check that the number of 'good' PMTs and the number of 'bad' PMTs matches the total number of PMTs
   // stroed on the LOCASRun object
@@ -308,7 +327,6 @@ void LOCASFitLBPosition::InitialiseArrays()
   // Parameter 2: y-coordinate of the laserball
   // Parameter 3: z-coordinate of the laserball
   // Parameter 4: The time of the laserball prompt peak (ideally centered about zero)
-  // Parameter 5: 1 / Vgroup(eff) i.e. 1 / [ Effective Group Velocity ]  ( 1 / mm.s^-1 ) throughout the detector.
 
   fMrqParameters[ 1 ] = ( fCurrentLBPos.X() );    // x-cordinate of the laserball
   fMrqParameters[ 2 ] = ( fCurrentLBPos.Y() );    // y-coordinate of the laserball
@@ -320,12 +338,6 @@ void LOCASFitLBPosition::InitialiseArrays()
 
   // We make an initial guess of the effective group velocity by calculating
   // the weighted velocity from the centre of the detector to the PSUP (using approximate distances)
-  Double_t lambdaVal = 500.0;
-  fQOptics.SetIndices(lambdaVal);
-  fQOpticsX.SetIndices(lambdaVal);
-  fQOpticsY.SetIndices(lambdaVal);
-  fQOpticsZ.SetIndices(lambdaVal);
-  cout << "Lambda is: " << fCurrentRun->GetWavelengthLambda() << endl;
 
   // Get the laser wavelength
   Float_t lambda = fCurrentRun->GetWavelengthLambda();
@@ -334,43 +346,16 @@ void LOCASFitLBPosition::InitialiseArrays()
   // the energy equivalent (MeV)
   Float_t energy = fLightPath.WavelengthToEnergy( lambda * 1e-6 );
 
-  // Obtain from the database the inner and outer radii of the acrylic vessel
-  Float_t avInnerRadius = fRATDB->GetLink( "SOLID", "acrylic_vessel_inner" )->GetD( "r_sphere" );
-  Float_t avOuterRadius = fRATDB->GetLink( "SOLID", "acrylic_vessel_outer" )->GetD( "r_sphere" );
-
-  // Calculate an average PMT radii across the detector from the centre of the acrylic vessel
-  Float_t pmtRadiusMean = 0.0;
-  for ( iPMT = fCurrentRun->GetLOCASPMTIterBegin();
-        iPMT != fCurrentRun->GetLOCASPMTIterEnd();
-        iPMT++ ){
-    pmtRadiusMean += ( ( iPMT->second ).GetPos() ).Mag();
-  }
-  pmtRadiusMean /= nPMTs;
-
   fVgScint = fGVelocity.GetScintGroupVelocity( energy );
   fVgAV = fGVelocity.GetAVGroupVelocity( energy );
   fVgWater = fGVelocity.GetWaterGroupVelocity( energy );
-
-  cout << "fVgScint is: " << fVgScint << endl;
-  cout << "fVgAV is: " << fVgAV << endl;
-  cout << "fVgWater is: " << fVgWater << endl;
-
-  // Calculate an approximate value for the group velocity;
-  Float_t vGroupEff = ( ( avInnerRadius * fVgScint )
-                        + ( ( avOuterRadius - avInnerRadius ) * fVgAV )
-                        + ( ( pmtRadiusMean - ( avOuterRadius ) ) * fVgWater ) )
-    / ( pmtRadiusMean );
-
-  cout << "vGroupEff is: " << vGroupEff << endl;
-  
-  //fMrqParameters[ 5 ] = 1.0 / vGroupEff ;             // 1 / [ Effective Group Velocity ] 1 / mm.s^-1
 
   ///////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////
   
   fArraysInitialised = true;
 
-  printf("done\n");
+  //printf("done\n");
     
 }
 
@@ -397,6 +382,36 @@ Bool_t LOCASFitLBPosition::SkipPMT( const LOCASRun* iRunPtr, const LOCASPMT* iPM
 //////////////////////////////////////
 //////////////////////////////////////
 
+
+void LOCASFitLBPosition::PrintFitInfo()
+{
+
+  printf( "---------------------------------------------\n" );
+  printf( "Laserball Position Fit for Runs: %i (Off-Axis) %i (Central) %i (500 nm)\n", 
+          fCurrentRun->GetRunID(), fCurrentRun->GetCentralRunID(), fCurrentRun->GetWavelengthRunID() );
+  printf( "Fitted Position using run: %i\n", fCurrentRun->GetWavelengthRunID() );
+  printf( "---------------------------\n" );
+  printf( "Seeded Laserball Position: ( %f, %f, %f ) mm\n", 
+          fCurrentRun->GetWavelengthLBPos().X(), fCurrentRun->GetWavelengthLBPos().Y(), fCurrentRun->GetWavelengthLBPos().Z() );
+  printf( "Seeded Laserball t0: %f ns\n", 0.0 );
+  printf( "---------------------------\n" );
+  printf( "Fitted Laserball Position: ( %f, %f, %f ) mm\n", 
+          fMrqParameters[ 1 ], fMrqParameters[ 2 ], fMrqParameters[ 3 ] );
+  printf( "Errors: ( %f, %f, %f ) mm\n", 
+          TMath::Sqrt( fMrqCovariance[ 1 ][ 1 ] ), TMath::Sqrt( fMrqCovariance[ 2 ][ 2 ] ), TMath::Sqrt( fMrqCovariance[ 3 ][ 3 ] ) );
+  printf( "Fitted Laserball t0: %f ns\n", fMrqParameters[ 4 ] );
+  printf( "Error: %f ns\n", TMath::Sqrt( fMrqCovariance[ 4 ][ 4 ] ) );
+  printf( "---------------------------\n" );
+  printf( "No. PMTs in fit: %i || ChiSquare: %f || Reduced ChiSquare: %f / %i - 4 = %f\n", fNPMTs, fChiSquare, fChiSquare, fNPMTs, fChiSquare / ( (Float_t)fNPMTs - 4.0 ) );
+  printf( "---------------------------------------------\n" );
+  printf( "\n\n" );
+
+  
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 Int_t LOCASFitLBPosition::MrqFit(float x[], float y[], float sig[], int ndata, float a[],
                                  int ia[], int ma, float **covar, float **alpha, float *chisq )
 {
@@ -414,11 +429,11 @@ Int_t LOCASFitLBPosition::MrqFit(float x[], float y[], float sig[], int ndata, f
   *chisq = 0;
   
   // First, call mrqmin with lambda = -1 for initialization
-  printf("Calling mrqmin for initialization...\n");
+  //printf("Calling mrqmin for initialization...\n");
   retval = mrqmin(x,y,sig,ndata,a,ia,ma,covar,alpha,chisq,&lambda);
-  printf("Done.  Chisq = %f\n",*chisq);
+  //printf("Done.  Chisq = %f\n",*chisq);
   oldchisq = *chisq;
-  printf("CHISQ at origin = %12.5g\n",*chisq);
+  //printf("CHISQ at origin = %12.5g\n",*chisq);
   
   // Next set lambda to 0.01, and iterate until convergence is reached
   // Bryce Moffat - 21-Oct-2000 - Changed from gooditer<6 to <4
@@ -426,9 +441,9 @@ Int_t LOCASFitLBPosition::MrqFit(float x[], float y[], float sig[], int ndata, f
   while (((fabs(*chisq - oldchisq) > tol || gooditer < 4) && (numiter < maxiter))
          && retval == 0 && lambda != 0.0) {
     oldchisq = *chisq;
-    printf("Iterating with lambda %g...\n",lambda);
+    //printf("Iterating with lambda %g...\n",lambda);
     retval = mrqmin(x,y,sig,ndata,a,ia,ma,covar,alpha,chisq,&lambda );
-    printf("New chisq = %12.8g with lambda %g \n",*chisq,lambda);
+    //printf("New chisq = %12.8g with lambda %g \n",*chisq,lambda);
     numiter++;
     
     if ( fabs( oldchisq - *chisq ) < tol ) gooditer ++;
@@ -441,7 +456,7 @@ Int_t LOCASFitLBPosition::MrqFit(float x[], float y[], float sig[], int ndata, f
   
   lambda = 0;
   retval = mrqmin( x, y, sig, ndata, a, ia, ma, covar, alpha, chisq, &lambda );  
-  printf("Finished MrqFit\n");
+  //printf("Finished MrqFit\n");
   return retval;
 }
 
@@ -569,7 +584,6 @@ void LOCASFitLBPosition::mrqcof(float x[], float y[], float sig[], int ndata, fl
     mrqfuncs( x[i],i,a,&ymod,dyda,ma);
     sig2i=1.0/(sig[i]*sig[i]);
     dy=y[i]-ymod;
-    //cout << "y[i] is: " << y[i] << " and ymod is: " << ymod << endl;
     for (j=0,l=1;l<=ma;l++) {
       if (ia[l]) {
         wt=dyda[l]*sig2i;
@@ -579,9 +593,7 @@ void LOCASFitLBPosition::mrqcof(float x[], float y[], float sig[], int ndata, fl
       }
     }
     chisqentry = dy*dy*sig2i;
-    //cout << "chisqentry: " << chisqentry << endl; 
     *chisq += chisqentry;
-    //if (i%1==2000) printf(" %i %f %f\n",i,x[i],chisqentry);
     if (fChiArray!=NULL && i>=0 && i<fNElements) fChiArray[i] = chisqentry;
     if (fResArray!=NULL && i>=0 && i<fNElements) fResArray[i] = dy;
   }
@@ -602,16 +614,12 @@ void LOCASFitLBPosition::mrqfuncs(Float_t x, Int_t i, Float_t a[], Float_t *y,
     printf("LOCASFitLBPosition::mrqfuncs: Error, no LOCASRun object being pointed to! Abort"); 
     return; 
   }
-   
+  
   Int_t ix = (Int_t)x;
   LOCASPMT* pmtPtr = &( fCurrentRun->GetPMT( ix ) );
   Int_t pmtID = pmtPtr->GetID();
   TVector3 srcPos( fCurrentLBPos );
   TVector3 pmtPos( fPMTInfo.GetPosition( pmtID ) );
-
-  Int_t panel;
-  Double_t dd2o,dh2o,dacr,cospmt,transpwr; // For the model value
-  Double_t dd2od,dh2od,dacrd;              // For derivatives.
 
   Float_t lbEnergy = fLightPath.WavelengthToEnergy( fCurrentRun->GetWavelengthLambda() * 1e-6 );
   fLightPath.CalcByPosition( srcPos, pmtPos, lbEnergy, 30.0 );
@@ -619,30 +627,10 @@ void LOCASFitLBPosition::mrqfuncs(Float_t x, Int_t i, Float_t a[], Float_t *y,
   Float_t distInAV = fLightPath.GetDistInAV();
   Float_t distInWater = fLightPath.GetDistInWater();
 
-  if ( distInScint < 10.0 || distInAV < 50.0 || distInWater < 10.0 ){
-    cout << "LOW VALUE: Scint: " << distInScint << " | AV: " << distInAV << " | Water: " << distInWater << endl;
-  }
-
-  // if ( TMath::Abs( distInScint - ( 10.0 * dd2o ) ) > 100.0 ){
-  //   cout << "My Scint Dist: " << distInScint << " mm || QSNO's Scint Dist: " << 10.0 * dd2o << " mm" << endl;
-  //   cout << "---------------" << endl;
-  // }
-  // if ( TMath::Abs( distInAV - ( 10.0 * dacr ) ) > 100.0 ){
-  //   cout << "My AV Dist: " << distInAV << " mm || QSNO's AV Dist: " << 10.0 * dacr << " mm" << endl;
-  //   cout << "---------------" << endl;
-  // }
-  // if ( TMath::Abs( distInWater - ( 10.0 * dh2o ) ) > 100.0 ){
-  //   cout << "My Water Dist: " << distInWater << " mm || QSNO's Water Dist: " << 10.0 * dh2o << " mm" << endl;
-  //     cout << "---------------" << endl;
-  // }
-
   Float_t lightSpeed = ( ( fVgScint * distInScint ) + ( fVgAV * distInAV ) + ( fVgWater * distInWater ) ) 
     / ( distInScint + distInAV + distInWater );
-  // Float_t lightSpeed = 10.0 * ( ( fVgScint * dd2o ) + ( fVgAV * dacr ) + ( fVgWater * dh2o ) ) 
-  //   / 10.0 * ( dd2o + dacr + dh2o );
   
   Float_t tFlight = ( distInScint / fVgScint ) + ( distInAV / fVgAV )  + ( distInWater / fVgWater );
-  // Float_t tFlight = 10.0 * ( ( dd2o / fVgScint ) + ( dacr / fVgAV )  + ( dh2o / fVgWater ) );
   
   *y = tFlight + a[ 4 ];
   
@@ -652,10 +640,6 @@ void LOCASFitLBPosition::mrqfuncs(Float_t x, Int_t i, Float_t a[], Float_t *y,
     dyda[ 1 ] = ( ( ( fLightPathX.GetDistInScint() - fLightPath.GetDistInScint() ) / fVgScint )
                   + ( ( fLightPathX.GetDistInAV() - fLightPath.GetDistInAV() ) / fVgAV )
                   + ( ( fLightPathX.GetDistInWater() - fLightPath.GetDistInWater() ) / fVgWater ) ) / fDelPos;
-    
-    // dyda[ 1 ] = ( ( ( dd2od - dd2o ) / fVgScint )
-    //               + ( ( dacr - dacrd ) / fVgAV )
-    //               + ( ( dh2o - dh2od ) / fVgWater ) ) / fDelPos;
     
   }
   else{ 
@@ -668,10 +652,6 @@ void LOCASFitLBPosition::mrqfuncs(Float_t x, Int_t i, Float_t a[], Float_t *y,
     dyda[ 2 ] = ( ( ( fLightPathY.GetDistInScint() - fLightPath.GetDistInScint() ) / fVgScint )
                     + ( ( fLightPathY.GetDistInAV() - fLightPath.GetDistInAV() ) / fVgAV )
                   + ( ( fLightPathY.GetDistInWater() - fLightPath.GetDistInWater() ) / fVgWater ) ) / fDelPos;
-    // dyda[ 2 ] = ( ( ( dd2od - dd2o ) / fVgScint )
-    //               + ( ( dacr - dacrd ) / fVgAV )
-    //               + ( ( dh2o - dh2od ) / fVgWater ) ) / fDelPos; 
-    
     
   }
   else{ dyda[ 2 ] = - ( pmtPos.Y() - srcvecY.Y() ) * ( 1.0 / lightSpeed ) / ( pmtPos - srcvecY ).Mag(); }
@@ -682,16 +662,11 @@ void LOCASFitLBPosition::mrqfuncs(Float_t x, Int_t i, Float_t a[], Float_t *y,
     dyda[ 3 ] = ( ( ( fLightPathZ.GetDistInScint() - fLightPath.GetDistInScint() ) / fVgScint )
                   + ( ( fLightPathZ.GetDistInAV() - fLightPath.GetDistInAV() ) / fVgAV )
                   + ( ( fLightPathZ.GetDistInWater() - fLightPath.GetDistInWater() ) / fVgWater ) ) / fDelPos;
-    // dyda[ 3 ] = ( ( ( dd2od - dd2o ) / fVgScint )
-    //               + ( ( dacr - dacrd ) / fVgAV )
-    //               + ( ( dh2o - dh2od ) / fVgWater ) ) / fDelPos; 
     
   }
   else{ dyda[ 3 ] = - ( pmtPos.Z() - srcvecZ.Z() ) * ( 1.0 / lightSpeed ) / ( pmtPos - srcvecZ ).Mag(); }
   
   dyda[ 4 ] = 1.0;
-
-  //cout << "dyda[ 1 ]: " << dyda[ 1 ] << " dyda[ 2 ]: " << dyda[ 2 ] << " dyda[ 3 ]: " << dyda[ 3 ] << endl;
   
 }
 

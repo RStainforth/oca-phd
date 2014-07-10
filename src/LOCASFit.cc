@@ -42,11 +42,17 @@
 using namespace LOCAS;
 using namespace std;
 
+
 ClassImp( LOCASFit )
 
 // Default Constructor
 LOCASFit::LOCASFit()
 {
+
+  // Set the path prefix for the location of the DQXX files
+  // This assumes that the envrionment variable $DQXXDIR is set
+  fDQXXDirPrefix = getenv("DQXXDIR");
+  fDQXXDirPrefix += "/DQXX_00000";
 
   fFitName = "";
   fFitTitle = "";
@@ -119,6 +125,7 @@ LOCASFit::LOCASFit()
   fChiArray = NULL;
   fResArray = NULL;
 
+  fLBDistributionType = 0;
   fiAng = -10;
   fCiAng = -10;
   fiLBDist = -10;
@@ -184,7 +191,8 @@ void LOCASFit::LoadFitFile( const char* fitFile )
     fRunReader.Add( fListOfRunIDs[ iRun ] );
   }
 
-  // Calculate the total number of PMTs accross all runs
+  fNDataPointsInFit = 0;
+  // Calculate an estimate for the total number of PMTs accross all runs
   for (Int_t iRun = 0; iRun < fNRuns; iRun++ ){
     fNDataPointsInFit += ( fRunReader.GetRunEntry( iRun ) )->GetNPMTs();
   }
@@ -201,11 +209,11 @@ void LOCASFit::LoadFitFile( const char* fitFile )
 
   // Set the values of the LM working arrays to zero.
   for ( Int_t iK = 1; iK <= fNDataPointsInFit; iK++ ){
-    fMrqX[ iK ] = 1.0;
-    fMrqY[ iK ] = 1.0;
-    fMrqSigma[ iK ] = 1.0;
-    fChiArray[ iK ] = 1.0;
-    fResArray[ iK ] = 1.0;
+    fMrqX[ iK ] = 0.0;
+    fMrqY[ iK ] = 0.0;
+    fMrqSigma[ iK ] = 0.0;
+    fChiArray[ iK ] = 0.0;
+    fResArray[ iK ] = 0.0;
   }
   
 
@@ -230,6 +238,7 @@ void LOCASFit::LoadFitFile( const char* fitFile )
 
   // The angular response and laserball distributions
   fAngularResponseVary = lDB.GetBoolField( "FITFILE", "ang_resp_vary" );
+  fAngularResponse2Vary = lDB.GetBoolField( "FITFILE", "ang_resp2_vary" );
   fAngularResponseInit = lDB.GetDoubleField( "FITFILE", "ang_resp_init" );
 
   fLBDistributionVary = lDB.GetBoolField( "FITFILE", "lb_dist_vary" );
@@ -243,7 +252,11 @@ void LOCASFit::LoadFitFile( const char* fitFile )
   // and the minimum number of entires required for each bin
   fNLBDistributionThetaBins = lDB.GetIntField( "FITFILE", "lb_dist_n_theta_bins" );
   fNLBDistributionPhiBins = lDB.GetIntField( "FITFILE", "lb_dist_n_phi_bins" );
+  fNLBDistributionMaskParameters = lDB.GetIntField( "FITFILE", "lb_dist_n_mask_pars" );
+  fNLBDistributionThetaWaveBins = lDB.GetIntField( "FITFILE", "lb_dist_n_theta_wave_bins" );
+  fNLBDistributionWave = 2;
   fNPMTsPerLBDistributionBinMin = lDB.GetIntField( "FITFILE", "lb_dist_min_n_pmts" );
+  fLBDistributionType = lDB.GetIntField( "FITFILE", "lb_dist_type" );
 
   // Get the number of theta bins for the PMT angular response histogram
   // and the minimum number of entries for each bin
@@ -322,29 +335,23 @@ void LOCASFit::InitialiseParameters()
   
   // The three attenuation length initial values;
   SetScintPar( fScintInit );
-  if ( fScintVary ){ fMrqVary[ GetScintParIndex() ] = 1; }
-  else{ fMrqVary[ GetScintParIndex() ] = 0; }
+  SetScintVary( fScintVary );
 
   SetAVPar( fAVInit );
-  if ( fAVVary ){ fMrqVary[ GetAVParIndex() ] = 1; }
-  else{ fMrqVary[ GetAVParIndex() ] = 0; }
+  SetAVVary( fAVVary );
 
   SetWaterPar( fWaterInit );
-  if ( fWaterVary ){ fMrqVary[ GetWaterParIndex() ] = 1; }
-  else{ fMrqVary[ GetWaterParIndex() ] = 0; }
+  SetWaterVary( fWaterVary ); 
 
   // The three rayleigh scattering length initial values;
   SetScintRSPar( fScintRSInit );
-  if ( fScintRSVary ){ fMrqVary[ GetScintRSParIndex() ] = 1; }
-  else{ fMrqVary[ GetScintRSParIndex() ] = 0; }
+  SetScintRSVary( fScintRSVary );
 
   SetAVRSPar( fAVRSInit );
-  if ( fAVRSVary ){ fMrqVary[ GetAVRSParIndex() ] = 1; }
-  else{ fMrqVary[ GetAVRSParIndex() ] = 0; }
+  SetAVRSVary( fAVRSVary );
 
   SetWaterRSPar( fWaterRSInit );
-  if ( fWaterRSVary ){ fMrqVary[ GetWaterRSParIndex() ] = 1; }
-  else{ fMrqVary[ GetWaterRSParIndex() ] = 0; }
+  SetWaterRSVary( fWaterRSVary );
 
   // The bin values for the angular response histogram
   Float_t angle = 0.0;
@@ -352,54 +359,73 @@ void LOCASFit::InitialiseParameters()
 
     angle = ( (Float_t)( 0.5 + iT ) ) * ( (Float_t)( 90.0 / fNAngularResponseBins ) ); // Centre of each bin...
     if ( angle < 36.0 ){     
-      fMrqParameters[ GetAngularResponseParIndex() + iT ] = fAngularResponseInit + ( 0.002222 * angle );
+      fMrqParameters[ GetAngularResponseParIndex() + iT ] = 1.0 + ( 0.002222 * angle );
+      fMrqParameters[ GetAngularResponse2ParIndex() + iT ] = 1.0 + ( 0.002222 * angle );
     }   
     else{
-      fMrqParameters[ GetAngularResponseParIndex() + iT ] = fAngularResponseInit;
+      fMrqParameters[ GetAngularResponseParIndex() + iT ] = 1.0;
+      fMrqParameters[ GetAngularResponse2ParIndex() + iT ] = 1.0;
     }
-
-    if( fAngularResponseVary ){ fMrqVary[ GetAngularResponseParIndex() + iT ] = 1; }
-    else{ fMrqVary[ GetAngularResponseParIndex() + iT ] = 0; }
   }
-  
+
+  SetAngularResponseVary( true );
+  SetAngularResponse2Vary( false );
+
+  if ( fNLBDistributionMaskParameters > 0 ){ fMrqParameters[ GetLBDistributionMaskParIndex() + 0 ] = 1; }
+  for ( Int_t iMask = 1; iMask < fNLBDistributionMaskParameters; iMask++ ){ fMrqParameters[ GetLBDistributionMaskParIndex() + iMask ] = 0.0; }
+  SetLBDistributionMaskVary( true );
+
   // The bin values for the laserball distribution histogram
   for ( Int_t iT = 0; iT < ( fNLBDistributionThetaBins * fNLBDistributionPhiBins ); iT++ ){
-    fMrqParameters[ GetLBDistributionParIndex() + iT ] = fLBDistributionInit;
-    
-    if( fLBDistributionVary ){ fMrqVary[ GetLBDistributionParIndex() + iT ] = 1; }
-    else{ fMrqVary[ GetLBDistributionParIndex() + iT ] = 0; }
+    fMrqParameters[ GetLBDistributionParIndex() + iT ] = 1.0;
   }
 
+  Float_t initVal = 0.0;
+  for ( Int_t iT = 0; iT < fNLBDistributionThetaWaveBins; iT++ ){
+    for ( Int_t iJ = 0; iJ < fNLBDistributionWave; iJ++ ){
+      if ( iJ == 0 ){ initVal = 0.01; }
+      if ( iJ == 1 ){ initVal = 0.0; }
+      fMrqParameters[ GetLBDistributionWaveParIndex() + iT * fNLBDistributionWave + iJ ] = initVal;
+    }
+  }
 
-  // The run normalisations
-  Float_t runNorm = 0.0;
-  Float_t cenNorm = 0.0;
-  Float_t normPar = 0.0;
+  SetLBDistributionVary( true );
+  SetLBDistributionWaveVary( false );
 
   for ( Int_t iT = 0; iT < fNRuns; iT++ ){
     fCurrentRun = fRunReader.GetRunEntry( iT );
+
+    Float_t normVal = 0.0;
+    Int_t nPMTsTmp = 0;
+
+    Float_t normCentralVal = 0.0;
    
-    runNorm = TMath::Power(fCurrentRun->GetNLBPulses(),1.0);
-    cout << "runNorm: " << runNorm << endl;
-    cenNorm = TMath::Power(fCurrentRun->GetCentralNLBPulses(),1.0);
-    cout << "cenNorm: " << cenNorm << endl;
+    for ( fiPMT = fCurrentRun->GetLOCASPMTIterBegin();
+          fiPMT != fCurrentRun->GetLOCASPMTIterEnd();
+          fiPMT++ ){
 
-    if ( cenNorm != 0.0 ){ normPar = ( runNorm / cenNorm ); }
-    else{ normPar = 1.0; } // Nominal Value
+      fCurrentPMT = &( fCurrentRun->GetPMT( fiPMT->first ) );      
+      if ( !PMTSkip( fCurrentRun, fCurrentPMT ) ){
+        normVal += fCurrentPMT->GetMPECorrOccupancy();
+        normCentralVal += fCurrentPMT->GetCentralMPECorrOccupancy();
+        nPMTsTmp++;
+      }
+    }
 
-    fMrqParameters[ GetLBNormalisationParIndex() + iT ] = normPar;
-
-    if ( fLBNormalisationVary ){ fMrqVary[ GetLBNormalisationParIndex() + iT ] = 1; }
-    else{ fMrqVary[ GetLBNormalisationParIndex() + iT ] = 0; }
-
-    cout << "normPar is: " << normPar << " and iRun is: " << iT << endl;
- 
+    if ( nPMTsTmp != 0 && normCentralVal != 0 ){ normVal /= nPMTsTmp; normCentralVal /= nPMTsTmp; }
+    fMrqParameters[ GetLBNormalisationParIndex() + iT ] = normCentralVal / normVal;
+    cout << "normPar is: " << normCentralVal / normVal << " and iRun is: " << iT << endl;
+    
   }
+
+  SetLBNormalisationVary( fLBNormalisationVary );
+
 
   // NOTE: In this method all the parameters representitive of the angular response
   // histogram and the laserball distribution histogram are set to either vary or not.
   // Later on in DataScreen, each bin is checked for the minimum PMT entries per bin
   // requirement to decide if the value will infact vary or not.
+  
 
 }
 
@@ -412,9 +438,11 @@ void LOCASFit::AllocateParameters( )
   // The total number of parameters in the fit
   fNParametersInFit = 3                                        // Three attenuation lengths
     + 3                                                        // Three Rayleigh scattering lengths
-    + fNAngularResponseBins                                    // PMT Angular Response(s) and response bins
+    + 2*fNAngularResponseBins                                  // PMT Angular Response(s) and response bins
+    + fNLBDistributionMaskParameters                           // Number of laserball mask parameters
     + fNLBDistributionThetaBins * fNLBDistributionPhiBins      // Number of LaserBall Distribution Bins (binned)
-    + fNRuns;  
+    + fNLBDistributionThetaWaveBins * fNLBDistributionWave     // Laserball distribution (sine)
+    + fNRuns;                                                  // Total number of runs
   
   // // The total number of parameters in the fit
   // fNParametersInFit = 3                                        // Three attenuation lengths
@@ -583,8 +611,10 @@ void LOCASFit::DataScreen()
 
     // Screen PMTs for bad tubes
     counter = 0;
-    for ( Int_t iPMT = 0; iPMT < fCurrentRun->GetNPMTs(); iPMT++){
-      fCurrentPMT = &( fCurrentRun->GetPMT( iPMT ) );
+    for ( fiPMT = fCurrentRun->GetLOCASPMTIterBegin(); 
+          fiPMT != fCurrentRun->GetLOCASPMTIterEnd(); 
+          fiPMT++ ){
+      fCurrentPMT = &( fCurrentRun->GetPMT( fiPMT->first ) );
       
       counter++;
       Double_t nPMTsToCheck = (Double_t)( fCurrentRun->GetNPMTs() );
@@ -604,6 +634,8 @@ void LOCASFit::DataScreen()
         pmtData = CalculatePMTData( fCurrentPMT );
         pmtModel = ModelPrediction( fCurrentRun, fCurrentPMT );
         pmtResidual = ( pmtData - pmtModel );
+        //cout << "PMT ChiSquare: " << pmtChiSquared << " || PMT Sigma: " << pmtSigma << " || PMT Data: " << pmtData << " || pmtModel: " << pmtModel << " || pmtResidual: " << pmtResidual << endl;
+        //cout << "--------" << endl;
         
         if ( fNPMTsInFit >= 0 && fNPMTsInFit < fNElements - 1 ){
           fChiArray[ fNPMTsInFit + 1 ] = pmtChiSquared;
@@ -611,7 +643,7 @@ void LOCASFit::DataScreen()
         }	  
         
         
-        fMrqX[ fNPMTsInFit + 1 ] = (Float_t)( ( iPMT ) + ( iRun * 10000 ) );         // 'Special' Indexing Scheme
+        fMrqX[ fNPMTsInFit + 1 ] = (Float_t)( ( fiPMT->first ) + ( iRun * 10000 ) );         // 'Special' Indexing Scheme
         fMrqY[ fNPMTsInFit + 1 ] = pmtData;
         fMrqSigma[ fNPMTsInFit + 1 ] = pmtSigma;
         
@@ -662,6 +694,7 @@ void LOCASFit::DataScreen()
 
   cout << "Current number of PMTs in Fit is: " << fNPMTsInFit << endl;
   cout << "Removing PMTs with high chisquare contributions...";
+  cout << "fChiSquareMaxLimit: " << fChiSquareMaxLimit << " and fChiSquareMinLimit: " << fChiSquareMinLimit << endl;
   jVar = 0;
   for ( Int_t iK = 1; iK < fNPMTsInFit; iK++ ){
     
@@ -680,8 +713,9 @@ void LOCASFit::DataScreen()
     
   }
   cout << "done." << endl;
-  cout << " ------------- " << endl;
   fNPMTsInFit = jVar;
+  cout << "Current number of PMTs in Fit is: " << fNPMTsInFit << endl;
+  cout << " ------------- " << endl;
 
   ///////////////////////////////////////////
   ///////////////////////////////////////////
@@ -700,7 +734,6 @@ void LOCASFit::DataScreen()
   Int_t *pmtAngleValid = new Int_t[ fNAngularResponseBins ];
   for (Int_t i = 0; i < fNAngularResponseBins; i++ ){ pmtAngleValid[ i ] = 0; }
 
-  cout << "Current number of PMTs in Fit is: " << fNPMTsInFit << endl;
   cout << "Counting entries in each parameter distribution histogram...";
 
   Int_t oldTmpRun = 0;
@@ -903,20 +936,26 @@ Bool_t LOCASFit::PMTSkip( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Floa
 
   Bool_t pmtSkip = false;
 
-  Float_t pmtData = CalculatePMTData( iPMTPtr );
-  Float_t pmtSigma = CalculatePMTSigma( iPMTPtr );
-  Float_t chiSqVal = CalculatePMTChiSquare( iRunPtr, iPMTPtr );
-  TVector3 pmtPos = iPMTPtr->GetPos();
-
   if ( iPMTPtr->GetBadPath()
+       || iPMTPtr->GetType() != 1
        || iPMTPtr->GetCentralBadPath()
-       || iPMTPtr->GetMPECorrOccupancy() < fNOccupancy
-       || iPMTPtr->GetCentralMPECorrOccupancy() < fNOccupancy 
-       || chiSqVal < fChiSquareMinLimit
+       || iPMTPtr->GetOccupancy() < fNOccupancy
+       || iPMTPtr->GetCentralOccupancy() < fNOccupancy ){
+    pmtSkip = true;
+  }
+
+  if ( pmtSkip == true ){ return pmtSkip; }
+
+  if ( mean >= 0.0 && sigma >= 0.0 ){
+    Float_t pmtData = CalculatePMTData( iPMTPtr );
+    Float_t pmtSigma = CalculatePMTSigma( iPMTPtr );
+    Float_t chiSqVal = CalculatePMTChiSquare( iRunPtr, iPMTPtr );
+    if ( chiSqVal < fChiSquareMinLimit
        || chiSqVal > fChiSquareMaxLimit 
        || pmtData > fPMTDataROccMaxLimit
-       || pmtData < fPMTDataROccMinLimit){ 
-    pmtSkip = true; 
+       || pmtData < fPMTDataROccMinLimit ){
+      pmtSkip = true; 
+    }
   }
        
   return pmtSkip;
@@ -999,9 +1038,24 @@ Float_t LOCASFit::ModelLBDistribution( const LOCASRun* iRunPtr, const LOCASPMT* 
   if ( phi > 2 * TMath::Pi() ) phi -= 2 * TMath::Pi();
   else if ( phi < 0 ) phi += 2 * TMath::Pi();
 
+  return ModelLBDistribution( cosTheta, phi, iLBDist );
+
+} 
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::ModelLBDistribution( const Float_t cosTheta, Float_t phi, Int_t& iLBDist )
+{
   
-  
-  Int_t iTheta = (Int_t)( ( 1 + cosTheta ) / 2 * fNLBDistributionThetaBins );
+  Int_t iTheta;
+
+  phi = fmod( (Double_t)phi, 2.0 * TMath::Pi() );
+  if ( phi > 2.0 * TMath::Pi() ){ phi -= 2.0 * TMath::Pi(); }
+  else if ( phi < 0.0 ){ phi += 2.0 * TMath::Pi(); }
+
+  if ( !fLBDistributionType ){
+  iTheta  = (Int_t)( ( 1 + cosTheta ) / 2 * fNLBDistributionThetaBins );
   if ( iTheta < 0 ) iTheta = 0;
   if ( iTheta >= fNLBDistributionThetaBins ) iTheta = fNLBDistributionThetaBins - 1;
 
@@ -1012,6 +1066,138 @@ Float_t LOCASFit::ModelLBDistribution( const LOCASRun* iRunPtr, const LOCASPMT* 
   iLBDist = iTheta * fNLBDistributionPhiBins + iPhi;
   Float_t laserlight = GetLBDistributionPar( iLBDist );
   return laserlight;
+  }
+
+  else{
+    iTheta = (Int_t)( ( 1 + cosTheta ) / 2 * fNLBDistributionThetaWaveBins );
+
+    if ( iTheta < 0 ){ iTheta = 0; }
+    if ( iTheta >= fNLBDistributionThetaWaveBins ){ iTheta = fNLBDistributionThetaWaveBins - 1; }
+
+    Double_t* aPhi = new Double_t( (Double_t)phi );
+    Double_t* par = new Double_t[ 1 + fNLBDistributionWave ];
+    par[ 0 ] = fNLBDistributionWave;
+
+    for ( Int_t iPar = 0; iPar < fNLBDistributionWave; iPar++ ){
+      par[ iPar + 1 ] = GetLBDistributionWave()[ iTheta * fNLBDistributionWave + iPar ];
+    }
+    Float_t laserlight = (Float_t)SLBDistributionWave( aPhi, par );
+
+    delete par;
+    delete aPhi;
+
+    iLBDist = iTheta;
+    return laserlight;
+  }
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::ModelLBDistributionMask( const LOCASPMT* iPMTPtr, const Int_t runType )
+{
+
+  Float_t lbTheta = 0.0;
+  if ( runType == 0 ){ lbTheta = iPMTPtr->GetRelLBTheta(); }
+  if ( runType == 1 ){ lbTheta = iPMTPtr->GetCentralRelLBTheta(); }
+  Float_t cosLBTheta = TMath::Cos( lbTheta );
+
+  return ModelLBDistributionMask( cosLBTheta );
+
+}
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::ModelLBDistributionMask( const Float_t cosTheta )
+{
+
+  Int_t iVal;
+  Float_t* lbMask = GetLBDistributionMask();
+
+  Float_t lbM = 0.0;
+  Float_t onePlus = 1.0 + cosTheta;
+  for ( iVal = fNLBDistributionMaskParameters - 1; iVal >= 0; iVal-- ){
+    lbM = lbM * onePlus + lbMask[ iVal ];
+  }
+  
+  return lbM;
+
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::SLBDistributionMask( Double_t* aPtr, Double_t* parPtr )
+{
+
+  Int_t nPars = (Int_t) parPtr[ 0 ];
+
+  Int_t iVal = 0;
+  Float_t lbM = 0.0;
+  Float_t onePlus = 1.0 + aPtr[ 0 ];
+
+  for ( iVal = nPars-1; iVal >= 0; iVal-- ){
+    lbM = lbM * onePlus + parPtr[ 1 + iVal ];
+  }
+
+  return lbM;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::DLBDistributionMask( Double_t* aPtr, Double_t* parPtr )
+{
+
+  Int_t iPar = (Int_t)parPtr[ 0 ];
+  Double_t cosTheta = aPtr[ 0 ];
+
+  Double_t onePlus = 1.0 + cosTheta;
+  
+  Double_t dlbM = TMath::Power( onePlus, iPar );
+
+  return dlbM;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::SLBDistributionWave( Double_t* aPtr, Double_t* parPtr )
+{
+
+  Double_t phi          = aPtr[ 0 ];
+  Double_t amplitudeAC = parPtr[ 1 ];
+  Double_t frequency    = 1.0;
+  Double_t phase        = parPtr[ 2 ];
+  Double_t amplitudeDC = 1.0;
+  Double_t lbD = amplitudeAC * TMath::Sin( frequency * phi + phase ) + amplitudeDC;
+
+  return lbD;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::DLBDistributionWave( Double_t* aPtr, Double_t* parPtr )
+{
+
+  Int_t iPar = (Int_t) parPtr[ 0 ];
+  Double_t phi          = aPtr[ 0 ];
+  Double_t amplitudeAC = parPtr[ 1 ];
+  Double_t frequency    = 1.0;
+  Double_t phase        = parPtr[ 2 ];
+  Double_t dlbD;
+
+  // actual derivatives
+  if ( iPar == 0 ){ dlbD = TMath::Sin( frequency * phi + phase ); }
+  else if ( iPar == 1 ){ dlbD = amplitudeAC * TMath::Cos( frequency * phi + phase ); }
+  else{ dlbD = 0.0; }
+  
+  return dlbD;
 
 }
 
@@ -1071,7 +1257,9 @@ Float_t LOCASFit::CalculateChiSquare()
 Float_t LOCASFit::CalculatePMTSigma( const LOCASPMT* iPMTPtr )
 {
 
-  Float_t pmtSigma = flMath.OccRatioErr( iPMTPtr );
+  Float_t pmtSigma = TMath::Sqrt(
+                                 TMath::Power( ( iPMTPtr->GetMPECorrOccupancyErr() / iPMTPtr->GetMPECorrOccupancy() ), 2 )
+                                 + TMath::Power( ( iPMTPtr->GetCentralMPECorrOccupancyErr() / iPMTPtr->GetCentralMPECorrOccupancy() ), 2 ) );
   return pmtSigma;
 
 }
@@ -1104,53 +1292,123 @@ Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMT
     dyda[ GetLBNormalisationParIndex() + fiNorm ] = 0;
     dyda[ GetAngularResponseParIndex() + fiAng ] = 0;
     dyda[ GetAngularResponseParIndex() + fCiAng ] = 0;
-    dyda[ GetLBDistributionParIndex() + fiLBDist ] = 0;
-    dyda[ GetLBDistributionParIndex() + fCiLBDist ] = 0;
+    dyda[ GetAngularResponse2ParIndex() + fiAng ] = 0;
+    dyda[ GetAngularResponse2ParIndex() + fCiAng ] = 0;
+    dyda[ GetLBDistributionMaskParIndex() + fiLBDist ] = 0;
+    dyda[ GetLBDistributionMaskParIndex() + fCiLBDist ] = 0;
 
+    if ( !fLBDistributionType ){
+      dyda[ GetLBDistributionParIndex() + fiLBDist ] = 0;
+      dyda[ GetLBDistributionParIndex() + fCiLBDist ] = 0;
+    }
+    else{
+
+      for ( Int_t iVal = 0; iVal < fNLBDistributionWave; iVal++ ){
+        dyda[ GetLBDistributionWaveParIndex() + fiLBDist * fNLBDistributionWave + iVal ] = 0;
+        dyda[ GetLBDistributionWaveParIndex() + fCiLBDist * fNLBDistributionWave + iVal ] = 0;
+      }
+    }
   }
  
   Float_t normVal = GetLBNormalisationPar( fiNorm );
   //cout << "normVal is: " << normVal << endl;
 
   Float_t solidARatio = ( iPMTPtr->GetSolidAngle() / iPMTPtr->GetCentralSolidAngle() );
-  //cout << "solidARatio is: " << solidARatio << endl;
+  //cout << "solidAngleRatio is: " << solidARatio << endl;
 
   Float_t fresnelTRatio = ( iPMTPtr->GetFresnelTCoeff() / iPMTPtr->GetCentralFresnelTCoeff() );
-  //cout << "Fresnel T Ratio is: " << fresnelTRatio << endl;
+  //cout << "fresnelTCoeff is: " << fresnelTRatio << endl;
 
   Float_t dScint = ( iPMTPtr->GetDistInScint() ) - ( iPMTPtr->GetCentralDistInScint() );
+  //cout << "dScint is: " << dScint << endl;
   Float_t dAV = ( iPMTPtr->GetDistInAV() ) - ( iPMTPtr->GetCentralDistInAV() );
+  //cout << "dAV is: " << dAV << endl;
   Float_t dWater = ( iPMTPtr->GetDistInWater() ) - ( iPMTPtr->GetCentralDistInWater() );
+  //cout << "dWater is: " << dWater << endl;
 
   Float_t angResp = ModelAngularResponse( iPMTPtr, fiAng, 0 );
-  //cout << "angResponse is: " << angResp << endl;
+  //cout << "angResp is: " << angResp << endl;
   Float_t intensity = ModelLBDistribution( iRunPtr, iPMTPtr, fiLBDist, 0 );
-  //cout << "intensity is: " << intensity << endl;
+  //cout << "Intensity is: " << intensity << endl;
+  Float_t lbMask = ModelLBDistributionMask( iPMTPtr, 0 );
+  intensity *= lbMask;
 
   Float_t pmtResponse = normVal * angResp * intensity * solidARatio * fresnelTRatio 
     * TMath::Exp( - ( dScint * ( GetScintPar() + GetScintRSPar() ) )
                   - ( dAV * ( GetAVPar() + GetAVRSPar() ) )
                   - ( dWater * ( GetWaterPar() + GetWaterRSPar() ) ) );
 
+  Float_t cosLB = 0.0;
+  Float_t phi = 0.0;
+
+  TVector3 lbAxis( 0.0, 0.0, 1.0 );
+  Float_t lbTheta = fCurrentRun->GetLBTheta();
+  Float_t lbPhi = fCurrentRun->GetLBPhi();
+
+  TVector3 pmtRelVec( 0.0, 0.0, 1.0 );
+  Float_t lbRelTheta = fCurrentPMT->GetRelLBTheta();
+  Float_t lbRelPhi = fCurrentPMT->GetRelLBPhi();
+
+  if ( lbTheta == 0.0 ){
+    cosLB = TMath::Cos( lbRelTheta );
+    phi = fmod( (Double_t)( lbRelPhi + lbPhi ), 2.0 * TMath::Pi() );
+  }
+  else{
+    lbAxis.SetXYZ( 0.0, 0.0, 1.0 );
+    lbAxis.SetTheta( lbTheta );
+    lbAxis.SetPhi( lbPhi );
+
+    pmtRelVec.SetXYZ( 0.0, 0.0, 1.0 );
+    pmtRelVec.SetTheta( lbRelTheta );
+    pmtRelVec.SetPhi( lbRelPhi );
+
+    cosLB = pmtRelVec * lbAxis;
+    phi = 0.0;
+  }
+
+  if ( cosLB > 1.0 ){ cosLB = 1.0; }
+  else if ( cosLB < -1.0 ){ cosLB = -1.0; }
+
+  if ( phi > 2.0 * TMath::Pi() ){ phi -= 2.0 * TMath::Pi(); }
+  else if ( phi < 0.0 ){ phi += 2.0 * TMath::Pi(); }
+
   if( derivatives ){
 
     dyda[ GetLBNormalisationParIndex() + fiNorm ] = +1.0 / normVal;
-    //cout << 1.0 / normVal << endl;
     dyda[ GetScintParIndex() ] = -dScint;
-    //cout << -dScint << endl;
     dyda[ GetAVParIndex() ] = -dAV;
-    //cout << -dAV << endl;
     dyda[ GetWaterParIndex() ] = -dWater;
-    //cout << -dWater << endl;
 
     dyda[ GetScintRSParIndex() ] = -dScint;
     dyda[ GetAVRSParIndex() ] = -dAV;
     dyda[ GetWaterRSParIndex() ] = -dWater;
 
     dyda[ GetAngularResponseParIndex() + fiAng ] = +1.0 / angResp;
-    //cout << +1.0 / angResp << endl;
-    dyda[ GetLBDistributionParIndex() + fiLBDist ] = +1.0 / intensity;
-    //cout << +1.0/intensity << endl;
+
+    if ( !fLBDistributionType ){
+      dyda[ GetLBDistributionParIndex() + fiLBDist ] = +1.0 / intensity;
+    }
+    else{
+      Double_t* parLB = new Double_t[ 1 + fNLBDistributionWave ];
+      Double_t* lbPhi = new Double_t( phi );
+      for ( Int_t iVal = 0; iVal < fNLBDistributionWave; iVal++ ){ parLB[ 1 + iVal ] = GetLBDistributionWave()[ fiLBDist * fNLBDistributionWave + iVal ]; }
+      for ( Int_t iVal = 0; iVal < fNLBDistributionWave; iVal ++ ){
+        parLB[ 0 ] = (Double_t)iVal;
+        dyda[ GetLBDistributionWaveParIndex() + fiLBDist * fNLBDistributionWave + iVal ] = DLBDistributionWave( lbPhi, parLB ) / intensity;
+      }
+      delete[] parLB;
+      delete lbPhi;
+    }
+
+    Double_t* parMask = new Double_t[ 1 + fNLBDistributionMaskParameters ];
+    Double_t* lbCTheta = new Double_t( cosLB );
+    for ( Int_t iVal = 0; iVal < fNLBDistributionMaskParameters; iVal++ ){ parMask[ 1 + iVal ] = GetLBDistributionMask()[ iVal ]; }
+    for ( Int_t iVal = 0; iVal < fNLBDistributionMaskParameters; iVal++ ){
+      parMask[ 0 ] = (Double_t)iVal;
+      dyda[ GetLBDistributionMaskParIndex() + iVal ] = DLBDistributionMask( lbCTheta, parMask ) / lbMask;
+    }
+    delete [] parMask;
+    delete lbCTheta;
 
   }
 
@@ -1158,20 +1416,76 @@ Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMT
   fCiLBDist = 0;
   Float_t angRespCtr = ModelAngularResponse( iPMTPtr, fCiAng, 1 );
   Float_t intensityCtr = ModelLBDistribution( iRunPtr, iPMTPtr, fCiLBDist, 1 );
+  Float_t lbMaskCtr = ModelLBDistributionMask( iPMTPtr, 1 );
+  intensityCtr *= lbMaskCtr;
 
   Float_t pmtResponseCtr = angRespCtr * intensityCtr;
+
+  Float_t modelValue = pmtResponse / pmtResponseCtr;
+
+  lbTheta = fCurrentRun->GetCentralLBTheta();
+  lbPhi = fCurrentRun->GetCentralLBPhi();
+
+  lbRelTheta = fCurrentPMT->GetCentralRelLBTheta();
+  lbRelPhi = fCurrentPMT->GetCentralRelLBPhi();
+
+  if ( lbTheta == 0.0 ){
+    cosLB = TMath::Cos( lbRelTheta );
+    phi = fmod( (Double_t)( lbRelPhi + lbPhi ), 2.0 * TMath::Pi() );
+  }
+  else{
+    lbAxis.SetXYZ( 0.0, 0.0, 1.0 );
+    lbAxis.SetTheta( lbTheta );
+    lbAxis.SetPhi( lbPhi );
+
+    pmtRelVec.SetXYZ( 0.0, 0.0, 1.0 );
+    pmtRelVec.SetTheta( lbRelTheta );
+    pmtRelVec.SetPhi( lbRelPhi );
+
+    cosLB = pmtRelVec * lbAxis;
+    phi = 0.0;
+  }
+
+  if ( cosLB > 1.0 ){ cosLB = 1.0; }
+  else if ( cosLB < -1.0 ){ cosLB = -1.0; }
+
+  if ( phi > 2.0 * TMath::Pi() ){ phi -= 2.0 * TMath::Pi(); }
+  else if ( phi < 0.0 ){ phi += 2.0 * TMath::Pi(); }
 
   if( derivatives ){
 
     dyda[ GetAngularResponseParIndex() + fCiAng ] -= 1.0 / angRespCtr;
-    //cout << 1.0 / angRespCtr << endl;
-    dyda[ GetLBDistributionParIndex() + fCiLBDist ] -= 1.0 / intensityCtr;
-    //cout << 1.0 / intensityCtr << endl;
 
+    if ( !fLBDistributionType ){
+      dyda[ GetLBDistributionParIndex() + fCiLBDist ] -= 1.0 / intensityCtr;
+    }
+    else{
+      Double_t* parLB = new Double_t[ 1 + fNLBDistributionWave ];
+      Double_t* lbPhi = new Double_t( phi );
+      for ( Int_t iVal = 0; iVal < fNLBDistributionWave; iVal++ ){ parLB[ 1 + iVal ] = GetLBDistributionWave()[ fCiLBDist * fNLBDistributionWave + iVal ]; }
+      for ( Int_t iVal = 0; iVal < fNLBDistributionWave; iVal++ ){
+        parLB[ 0 ] = (Double_t)iVal;
+        dyda[ GetLBDistributionWaveParIndex() + fCiLBDist * fNLBDistributionWave + iVal ] -= DLBDistributionWave( lbPhi, parLB ) / intensityCtr;
+      }
+      delete [] parLB;
+      delete lbPhi;
+    }
+
+    Double_t* parMask = new Double_t[ 1 + fNLBDistributionMaskParameters ];
+    Double_t* lbCTheta = new Double_t( cosLB );
+    for ( Int_t iVal = 0; iVal < fNLBDistributionMaskParameters; iVal++ ){ parMask[ 1 + iVal ] = GetLBDistributionMask()[ iVal ]; }
+    for ( Int_t iVal = 0; iVal < fNLBDistributionMaskParameters; iVal++ ){
+      parMask[ 0 ] = (Double_t)iVal;
+      dyda[ GetLBDistributionMaskParIndex() + iVal ] -= DLBDistributionMask( lbCTheta, parMask ) / lbMaskCtr;
+    }
+    delete [] parMask;
+    delete lbCTheta;
   }
-  Float_t modelValue = pmtResponse / pmtResponseCtr;
+  else {
+    pmtResponseCtr = 1.0; 
+  }
 
-  if( derivatives ){
+  if ( derivatives ){
     FillParameterPoint();
     for ( Int_t i = 1; i <= fParam; i++ ){
       dyda[ fParamIndex[ i ] ] *= modelValue;
@@ -1299,26 +1613,32 @@ void LOCASFit::FillParameterPoint()
       fParamIndex[ ++fParam ] = parnum;
     }
   }
-  Int_t first, second;
-  if ( fiLBDist <= fCiLBDist ){ first = fiLBDist; second = fCiLBDist; }
-  else{ first = fCiLBDist; second = fiLBDist; }
 
-  if ( first != second ){
-    parnum = GetLBDistributionParIndex() + first;
-    if ( fMrqVary[ parnum ] ) fParamIndex[ ++fParam ] = parnum;
+  if ( !fLBDistributionType ){
+    Int_t first, second;
+    if ( fiLBDist <= fCiLBDist ){ first = fiLBDist; second = fCiLBDist; }
+    else{ first = fCiLBDist; second = fiLBDist; }
 
-    parnum = GetLBDistributionParIndex() + second;
-    if ( fMrqVary[ parnum ] ) fParamIndex[ ++fParam ] = parnum;
-  }
+    if ( first != second ){
+      parnum = GetLBDistributionParIndex() + first;
+      if ( fMrqVary[ parnum ] ) fParamIndex[ ++fParam ] = parnum;
 
-  else{
-    parnum = GetLBDistributionParIndex() + fiLBDist;
+      parnum = GetLBDistributionParIndex() + second;
     if ( fMrqVary[ parnum ] ) fParamIndex[ ++fParam ] = parnum;
+    }
+    
+    else{
+      parnum = GetLBDistributionParIndex() + fiLBDist;
+      if ( fMrqVary[ parnum ] ) fParamIndex[ ++fParam ] = parnum;
+    }
+    
+    parnum = GetLBNormalisationParIndex() + fiNorm;
+    if( fMrqVary[ parnum ] ) fParamIndex[ ++fParam ] = parnum;
   }
 
   parnum = GetLBNormalisationParIndex() + fiNorm;
-  if( fMrqVary[ parnum ] ) fParamIndex[ ++fParam ] = parnum;
-
+  if ( fMrqVary[ parnum ] ){ fParamIndex[ ++fParam ] = parnum; }
+  
 }
 
 /////////////////////////////////////
@@ -1773,6 +2093,85 @@ Int_t LOCASFit::GetNVariableParameters()
 
 }
 
+/////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASFit::SetAngularResponseVary( Bool_t varyBool )
+{
+
+  for ( Int_t iV = 1; iV < fNAngularResponseBins; iV++ ){ 
+    fMrqVary[ GetAngularResponseParIndex() + iV ] = varyBool; 
+  }
+  // Ensure no duplicate normalisations from PMT angular response
+  // The first angular response is for normalisation of the fit parameters (normal indcidence)
+  fMrqVary[ GetAngularResponseParIndex() ] = false;
+
+}
+
+/////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASFit::SetAngularResponse2Vary( Bool_t varyBool )
+{
+
+  for ( Int_t iV = 1; iV < fNAngularResponseBins; iV++ ){ 
+    fMrqVary[ GetAngularResponse2ParIndex() + iV ] = varyBool; 
+  }
+  // Ensure no duplicate normalisations from PMT angular response
+  // The first angular response is for normalisation of the fit parameters (normal indcidence)
+  fMrqVary[ GetAngularResponse2ParIndex() ] = false;
+
+}
+
+/////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASFit::SetLBDistributionMaskVary( Bool_t varyBool )
+{
+
+  for ( Int_t iV = 1; iV < fNLBDistributionMaskParameters; iV++ ){
+    fMrqVary[ GetLBDistributionMaskParIndex() + iV ] = varyBool;
+  }
+  fMrqVary[ GetLBDistributionMaskParIndex() ] = false;
+
+}
+
+/////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASFit::SetLBDistributionVary( Bool_t varyBool )
+{
+
+  for ( Int_t iV = 0; iV < ( fNLBDistributionThetaBins * fNLBDistributionPhiBins ); iV++ ){ 
+    fMrqVary[ GetLBDistributionParIndex() + iV ] = varyBool; 
+  }
+
+}
+
+/////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASFit::SetLBDistributionWaveVary( Bool_t varyBool )
+{
+
+  for ( Int_t iV = 0; iV < ( fNLBDistributionThetaWaveBins * fNLBDistributionWave ); iV++ ){ 
+    fMrqVary[ GetLBDistributionWaveParIndex() + iV ] = varyBool; 
+  }
+
+}
+
+/////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASFit::SetLBNormalisationVary( Bool_t varyBool )
+{
+
+  for ( Int_t iV = 0; iV < ( fNRuns ); iV++ ){ 
+    fMrqVary[ GetLBNormalisationParIndex() + iV ] = varyBool; 
+  }
+
+}
+
 
 //////////////////////////////////////
 //////////////////////////////////////
@@ -1787,10 +2186,47 @@ Int_t LOCASFit::GetAngularResponseParIndex()
 //////////////////////////////////////
 //////////////////////////////////////
 
+Int_t LOCASFit::GetAngularResponse2ParIndex()
+{
+
+  return ( 7 
+           + fNAngularResponseBins );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Int_t LOCASFit::GetLBDistributionMaskParIndex()
+{
+
+  return ( 7 
+           + ( 2 * fNAngularResponseBins ) );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 Int_t LOCASFit::GetLBDistributionParIndex()
 {
 
-  return ( 7 + fNAngularResponseBins );
+  return ( 7 
+           + ( 2 * fNAngularResponseBins ) 
+           + fNLBDistributionMaskParameters );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Int_t LOCASFit::GetLBDistributionWaveParIndex()
+{
+
+  return ( 7 
+           + ( 2 * fNAngularResponseBins ) 
+           + fNLBDistributionMaskParameters 
+           + ( fNLBDistributionThetaBins * fNLBDistributionPhiBins ) );
 
 }
 
@@ -1800,7 +2236,11 @@ Int_t LOCASFit::GetLBDistributionParIndex()
 Int_t LOCASFit::GetLBNormalisationParIndex()
 {
 
-  return ( 7 + fNAngularResponseBins + ( fNLBDistributionPhiBins * fNLBDistributionThetaBins ) );
+  return ( 7 
+           + ( 2 * fNAngularResponseBins ) 
+           + fNLBDistributionMaskParameters 
+           + ( fNLBDistributionThetaBins * fNLBDistributionPhiBins )
+           + ( fNLBDistributionThetaWaveBins * fNLBDistributionWave ) );
 
 }
 

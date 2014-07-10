@@ -22,6 +22,7 @@
 #include "LOCASFitLBPosition.hh"
 
 #include <vector>
+#include <fstream>
 
 using namespace std;
 using namespace RAT;
@@ -41,15 +42,13 @@ int main( int argc, char** argv ){
   // Add all the run files to the LOCASRunReader object
   std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids" );
   LOCASRunReader lReader( runIDs );
-  //LOCASFitLBPosition* fitLB = new LOCASFitLBPosition( lReader, "geo/sno_d2o.geo" );
-  std::vector< LOCASFitLBPosition* > fitLBs;
+  LOCASFitLBPosition* fitLB = new LOCASFitLBPosition( lReader, "geo/sno_d2o.geo" );
+  //std::vector< LOCASFitLBPosition* > fitLBs;
 
   printf( "Number of runs is: %i \n", (Int_t)runIDs.size() );
   for ( Int_t iRun = 0; iRun < runIDs.size(); iRun++ ){
-    LOCASFitLBPosition* tmpLBFit = new LOCASFitLBPosition( lReader, "geo/sno_d2o.geo" );
     printf( "Run Number: %i || Run ID: %i \n", iRun, (Int_t)runIDs[ iRun ] );
-    tmpLBFit->FitLBPosition( runIDs[ iRun ] );
-    fitLBs.push_back( tmpLBFit );
+    fitLB->FitLBPosition( runIDs[ iRun ] );
   }
 
   return 0;

@@ -621,11 +621,18 @@ void LOCASRun::CalculateLBIntensityNorm()
   
   std::map< Int_t, LOCASPMT >::iterator iPMT;
   Float_t lbIntensityNorm = 0.0;
+  Float_t centrallbIntensityNorm = 0.0;
+  Float_t wavelengthlbIntensityNorm = 0.0;
+
   for ( iPMT = GetLOCASPMTIterBegin(); iPMT != GetLOCASPMTIterEnd(); iPMT++ ){
     lbIntensityNorm += ( iPMT->second ).GetOccupancy();
+    centrallbIntensityNorm += ( iPMT->second ).GetCentralOccupancy();
+    wavelengthlbIntensityNorm += ( iPMT->second ).GetWavelengthOccupancy();
   }
 
   fLBIntensityNorm = lbIntensityNorm;
+  fCentralLBIntensityNorm = centrallbIntensityNorm;
+  fWavelengthLBIntensityNorm = wavelengthlbIntensityNorm;
 
 }
 
