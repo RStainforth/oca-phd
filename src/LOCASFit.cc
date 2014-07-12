@@ -20,11 +20,11 @@
 #include "LOCASRun.hh"
 #include "LOCASDB.hh"
 #include "LOCASPMT.hh"
-#include "LOCASMath.hh"
 #include "LOCASFit.hh"
 
 #include "TFile.h"
 #include "TH1F.h"
+#include "TF1.h"
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TLegend.h"
@@ -203,9 +203,9 @@ void LOCASFit::LoadFitFile( const char* fitFile )
   fResArray = new Float_t[ fNElements ];
 
   // The LM working arrays
-  fMrqX = flMath.LOCASVector( 1, fNDataPointsInFit );
-  fMrqY = flMath.LOCASVector( 1, fNDataPointsInFit );
-  fMrqSigma = flMath.LOCASVector( 1, fNDataPointsInFit );
+  fMrqX = LOCASVector( 1, fNDataPointsInFit );
+  fMrqY = LOCASVector( 1, fNDataPointsInFit );
+  fMrqSigma = LOCASVector( 1, fNDataPointsInFit );
 
   // Set the values of the LM working arrays to zero.
   for ( Int_t iK = 1; iK <= fNDataPointsInFit; iK++ ){
@@ -344,7 +344,7 @@ void LOCASFit::InitialiseParameters()
   SetWaterVary( fWaterVary ); 
 
   // The three rayleigh scattering length initial values;
-  SetScintRSPar( fScintRSInit );
+  SetScintRSPar( fWaterRSInit );
   SetScintRSVary( fScintRSVary );
 
   SetAVRSPar( fAVRSInit );
@@ -396,9 +396,9 @@ void LOCASFit::InitialiseParameters()
     fCurrentRun = fRunReader.GetRunEntry( iT );
 
     Float_t normVal = 0.0;
-    Int_t nPMTsTmp = 0;
-
     Float_t normCentralVal = 0.0;
+
+    Int_t nPMTsTmp = 0;
    
     for ( fiPMT = fCurrentRun->GetLOCASPMTIterBegin();
           fiPMT != fCurrentRun->GetLOCASPMTIterEnd();
@@ -412,7 +412,7 @@ void LOCASFit::InitialiseParameters()
       }
     }
 
-    if ( nPMTsTmp != 0 && normCentralVal != 0 ){ normVal /= nPMTsTmp; normCentralVal /= nPMTsTmp; }
+    if ( nPMTsTmp != 0 && normCentralVal != 0.0 && normVal != 0.0 ){ normVal /= nPMTsTmp; normCentralVal /= nPMTsTmp; }
     fMrqParameters[ GetLBNormalisationParIndex() + iT ] = normCentralVal / normVal;
     cout << "normPar is: " << normCentralVal / normVal << " and iRun is: " << iT << endl;
     
@@ -443,23 +443,13 @@ void LOCASFit::AllocateParameters( )
     + fNLBDistributionThetaBins * fNLBDistributionPhiBins      // Number of LaserBall Distribution Bins (binned)
     + fNLBDistributionThetaWaveBins * fNLBDistributionWave     // Laserball distribution (sine)
     + fNRuns;                                                  // Total number of runs
-  
-  // // The total number of parameters in the fit
-  // fNParametersInFit = 3                                        // Three attenuation lengths
-  //   + 3                                                        // Three Rayleigh scattering lengths
-  //   + 2*fNAngularResponseBins                                  // PMT Angular Response(s) and response bins
-  //   + fNLBMaskParameters                                       // Laserball Mask Polynomial ( Function of Theta or Cos(Theta) )
-  //   + fNLBDistributionThetaBins * fNLBDistributionPhiBins      // Number of LaserBall Distribution Bins (binned)
-  //   + fNLBThetaWaveBins * fNLBDistWave                         // Laserball Distribution ( sine wave )
-  //   + fNRuns; 
-  // Number of runs ( run normalisations )
 
   // Initialise memory for the LM working arrays
-  fMrqParameters = flMath.LOCASVector( 1, fNParametersInFit );
-  fMrqVary = flMath.LOCASIntVector( 1, fNParametersInFit );
+  fMrqParameters = LOCASVector( 1, fNParametersInFit );
+  fMrqVary = LOCASIntVector( 1, fNParametersInFit );
 
-  fMrqAlpha = flMath.LOCASMatrix( 1, fNParametersInFit, 1, fNParametersInFit );
-  fMrqCovariance = flMath.LOCASMatrix( 1, fNParametersInFit, 1, fNParametersInFit );
+  fMrqAlpha = LOCASMatrix( 1, fNParametersInFit, 1, fNParametersInFit );
+  fMrqCovariance = LOCASMatrix( 1, fNParametersInFit, 1, fNParametersInFit );
 
   // Initialise all their values to zero by default
   for ( Int_t i = 1; i <= fNParametersInFit; i++ ){
@@ -588,21 +578,31 @@ void LOCASFit::DataScreen()
     ///////////////////////////////////////////
     ///////////////////////////////////////////
 
+    nPMTs = 0;
     dcOccValMean = 0.0;
     // Obtain the mean occRatio for the run
-    for ( fiPMT = fCurrentRun->GetLOCASPMTIterBegin(); fiPMT != fCurrentRun->GetLOCASPMTIterEnd(); fiPMT++ ){      
-      occVal = ( ( fiPMT->second ).GetMPECorrOccupancy() / ( fiPMT->second ).GetCentralMPECorrOccupancy() );
-      occVal *= fMrqParameters[ GetLBNormalisationParIndex() + iRun ];
-      dcOccValMean += occVal;
+    for ( fiPMT = fCurrentRun->GetLOCASPMTIterBegin(); fiPMT != fCurrentRun->GetLOCASPMTIterEnd(); fiPMT++ ){
+      fCurrentPMT = &( fCurrentRun->GetPMT( fiPMT->first ) );
+      if ( !PMTSkip( fCurrentRun, fCurrentPMT ) ){
+        occVal = ( ( fiPMT->second ).GetMPECorrOccupancy() / ( fiPMT->second ).GetCentralMPECorrOccupancy() );
+        occVal *= fMrqParameters[ GetLBNormalisationParIndex() + iRun ];
+        dcOccValMean += occVal;
+        nPMTs++;
+      }
     }
     if( nPMTs != 0 ){ dcOccValMean /= nPMTs; }
 
+    nPMTs = 0;
     dcSigma = 0.0;
     // Obtain the sigma occRatio for the run
-    for ( fiPMT = fCurrentRun->GetLOCASPMTIterBegin(); fiPMT != fCurrentRun->GetLOCASPMTIterEnd(); fiPMT++ ){      
+    for ( fiPMT = fCurrentRun->GetLOCASPMTIterBegin(); fiPMT != fCurrentRun->GetLOCASPMTIterEnd(); fiPMT++ ){
+      fCurrentPMT = &( fCurrentRun->GetPMT( fiPMT->first ) );
+      if ( !PMTSkip( fCurrentRun, fCurrentPMT ) ){     
       occVal = ( ( fiPMT->second ).GetMPECorrOccupancy() / ( fiPMT->second ).GetCentralMPECorrOccupancy() );
       occVal *= fMrqParameters[ GetLBNormalisationParIndex() + iRun ];
       dcSigma += TMath::Power( (occVal - dcOccValMean), 2 );
+      nPMTs++;
+      }
     }
     if( nPMTs != 0 ){ dcSigma = TMath::Sqrt( dcSigma / nPMTs ); }
 
@@ -734,6 +734,9 @@ void LOCASFit::DataScreen()
   Int_t *pmtAngleValid = new Int_t[ fNAngularResponseBins ];
   for (Int_t i = 0; i < fNAngularResponseBins; i++ ){ pmtAngleValid[ i ] = 0; }
 
+  Int_t *pmtAngle2Valid = new Int_t[ fNAngularResponseBins ];
+  for (Int_t i = 0; i < fNAngularResponseBins; i++ ){ pmtAngle2Valid[ i ] = 0; }
+
   cout << "Counting entries in each parameter distribution histogram...";
 
   Int_t oldTmpRun = 0;
@@ -771,15 +774,17 @@ void LOCASFit::DataScreen()
     if ( lbValid[ iBin ] < fNPMTsPerLBDistributionBinMin ){
 
       fMrqVary[ GetLBDistributionParIndex() + iBin ] = 0; 
-      fMrqParameters[ GetLBDistributionParIndex() + iBin ] = fLBDistributionInit;
+      fMrqParameters[ GetLBDistributionParIndex() + iBin ] = 1.0;
  
       if( lbValid[ iBin ] > 0 ){ 
         lbBinsInvalid++; 
-        printf( "Invalid laserball distribution bin %d, itheta %d iphi %d: only %d PMT's\n",
-               iBin,
-               iBin / fNLBDistributionThetaBins,
-               iBin % fNLBDistributionPhiBins, 
-               lbValid[ iBin ] );
+        if ( !fLBDistributionType ){
+          printf( "Invalid laserball distribution bin %d, itheta %d iphi %d: only %d PMT's\n",
+                  iBin,
+                  iBin / fNLBDistributionThetaBins,
+                  iBin % fNLBDistributionPhiBins, 
+                  lbValid[ iBin ] );
+        }
       }	
     }
   }
@@ -795,12 +800,13 @@ void LOCASFit::DataScreen()
 
   // Angular Response
   Int_t anglesInvalid = 0;
+  Int_t angles2Invalid = 0;
 
   for ( Int_t iBin = 0; iBin < fNAngularResponseBins; iBin++ ){      
     if ( pmtAngleValid[ iBin ] < fNPMTsPerAngularResponseBinMin ){
 
       fMrqVary[ GetAngularResponseParIndex() + iBin ] = 0;
-      fMrqParameters[ GetAngularResponseParIndex() + iBin ] = fAngularResponseInit;
+      fMrqParameters[ GetAngularResponseParIndex() + iBin ] = 1.0;
 	
       if ( pmtAngleValid[ iBin ] > 0 ){ 
         anglesInvalid++; 
@@ -819,7 +825,7 @@ void LOCASFit::DataScreen()
   ///////////////////////////////////////////
   ///////////////////////////////////////////
 
-  cout << "Removing PMTs with which don't meet minimum binning requirements..." << endl;
+  cout << "Removing PMTs which don't meet minimum binning requirements..." << endl;
   Int_t auxAnglesValid = 0;
   if ( anglesInvalid == 0 && lbBinsInvalid == 0 ){
     cout << "All bins for the PMT Angular Response and Laserball Distribution are filled" << endl;
@@ -925,6 +931,7 @@ void LOCASFit::DataScreen()
 
   delete lbValid;
   delete pmtAngleValid;
+  delete pmtAngle2Valid;
 
 }
 
@@ -947,13 +954,18 @@ Bool_t LOCASFit::PMTSkip( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Floa
   if ( pmtSkip == true ){ return pmtSkip; }
 
   if ( mean >= 0.0 && sigma >= 0.0 ){
+    Float_t pmtModel = ModelPrediction( iRunPtr, iPMTPtr );
     Float_t pmtData = CalculatePMTData( iPMTPtr );
     Float_t pmtSigma = CalculatePMTSigma( iPMTPtr );
     Float_t chiSqVal = CalculatePMTChiSquare( iRunPtr, iPMTPtr );
+    Float_t ratio = ( iPMTPtr->GetCentralSolidAngle() * iPMTPtr->GetCentralFresnelTCoeff() )
+      / ( iPMTPtr->GetSolidAngle() * iPMTPtr->GetFresnelTCoeff() );
     if ( chiSqVal < fChiSquareMinLimit
-       || chiSqVal > fChiSquareMaxLimit 
-       || pmtData > fPMTDataROccMaxLimit
-       || pmtData < fPMTDataROccMinLimit ){
+         || chiSqVal > fChiSquareMaxLimit 
+         || pmtData < mean - 3.0 * sigma
+         || pmtData > mean + 3.0 * sigma
+         || pmtModel * ratio > 1.8
+         || pmtModel * ratio < 0.8 ){
       pmtSkip = true; 
     }
   }
@@ -1105,6 +1117,7 @@ Float_t LOCASFit::ModelLBDistributionMask( const LOCASPMT* iPMTPtr, const Int_t 
   return ModelLBDistributionMask( cosLBTheta );
 
 }
+
 //////////////////////////////////////
 //////////////////////////////////////
 
@@ -1123,6 +1136,81 @@ Float_t LOCASFit::ModelLBDistributionMask( const Float_t cosTheta )
   return lbM;
 
 
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+TF1* LOCASFit::LBDistributionWaveTF1( const Int_t iTheta )
+{
+
+  // Returns a pointer to a function with no parameters, to plot the current
+  // laserball distribution sinusoidal function in this slice of
+  // cos(theta_lb).
+
+  if( iTheta < 0 
+      || iTheta >= fNLBDistributionWave ) { printf("LOCASFit::LBDistributionWaveTF1: The theta slice %d does not exist.",iTheta); }
+
+  Double_t* parVals = new Double_t[ 1 + fNLBDistributionWave ];
+  parVals[ 0 ] = fNLBDistributionWave;
+
+  Double_t* errVals = new Double_t[ 1 + fNLBDistributionWave ];
+  errVals[ 0 ] = 0.0;
+
+  for (Int_t i=0; i<fNLBDistributionWave; i++) {
+    parVals[ 1 + i ] = GetLBDistributionWave()[ iTheta * fNLBDistributionWave + i ];
+    errVals[ 1 + i ] = GetLBDistributionError( iTheta * fNLBDistributionWave + i );
+  }
+
+  TF1* funcObj = new TF1("LB Distribution", SLBDistributionWave, 0.0 , 2.0 * TMath::Pi(), 1 + fNLBDistributionWave );
+  funcObj->SetParameters( parVals );
+  funcObj->SetParErrors( errVals );
+  funcObj->SetNpx( 10 * fNLBDistributionPhiBins );
+  funcObj->SetMarkerStyle( 20 );
+  funcObj->GetXaxis()->SetTitle( "Azimuthal Angle #phi (radians)" );
+
+  delete[] parVals; delete[] errVals;
+
+  return funcObj;
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+TH2F* LOCASFit::ApplyLBDistribution()
+{
+
+  if ( fLBDistribution != NULL ){ delete fLBDistribution; }
+
+  if ( fLBDistributionType ){
+    fLBDistribution = new TH2F( "fLBDistribution", "Laserball Distrbiution (Histogram)",
+                                fNLBDistributionPhiBins, 0, 2.0 * TMath::Pi(), 
+                                fNLBDistributionThetaBins, -1.0, 1.0 );
+
+    for ( Int_t iTheta = 0; iTheta < fNLBDistributionThetaBins; iTheta++ ){
+      for ( Int_t j = 0; j < fNLBDistributionPhiBins; j++ ){
+        fLBDistribution->SetCellContent( j + 1, iTheta + 1, GetLBDistribution()[ iTheta * fNLBDistributionPhiBins + j ] );
+      }
+    }
+  }
+
+  else{
+
+    fLBDistribution = new TH2F( "fLBDistribution", "Laserball Distribution (Sinusoidal)",
+                                fNLBDistributionPhiBins, 0.0, 2.0 * TMath::Pi(),
+                                fNLBDistributionThetaWaveBins, -1, 1 );
+    for ( Int_t iTheta = 0; iTheta < fNLBDistributionThetaWaveBins; iTheta++ ){
+      TF1* funcObj = LBDistributionWaveTF1( iTheta );
+      for ( Int_t j = 0; j < fNLBDistributionPhiBins; j++ ){
+        Float_t phi = 2.0 * j * TMath::Pi() / fNLBDistributionPhiBins;
+      fLBDistribution->SetCellContent( j + 1, iTheta + 1, funcObj->Eval( phi ) );
+      }
+    delete funcObj;
+    }
+  }
+
+  return fLBDistribution;
+  
 }
 
 //////////////////////////////////////
@@ -1257,6 +1345,7 @@ Float_t LOCASFit::CalculateChiSquare()
 Float_t LOCASFit::CalculatePMTSigma( const LOCASPMT* iPMTPtr )
 {
 
+  Float_t modelVal = ModelPrediction( fCurrentRun, iPMTPtr );
   Float_t pmtSigma = TMath::Sqrt(
                                  TMath::Power( ( iPMTPtr->GetMPECorrOccupancyErr() / iPMTPtr->GetMPECorrOccupancy() ), 2 )
                                  + TMath::Power( ( iPMTPtr->GetCentralMPECorrOccupancyErr() / iPMTPtr->GetCentralMPECorrOccupancy() ), 2 ) );
@@ -1513,6 +1602,10 @@ void LOCASFit::PerformFit()
                        fMrqAlpha, &fChiSquare);
 
     cout << "done." << endl;
+    cout << "Some Parameter Values..." << endl;
+    for ( Int_t iPar = 1; iPar < fNParametersInFit; iPar++ ){
+      cout << " Parameter: " << iPar << " || Value: " << fMrqParameters[ iPar ] << endl;
+    }
     cout << " ------------- " << endl;
   }
   else{ return; }
@@ -1674,13 +1767,13 @@ void LOCASFit::DeAllocate()
   // Free up all the memory used during the fitting procedure.
   // This method is called by the LOCASFit desctructor.
 
-  if ( fMrqX ){ flMath.LOCASFree_Vector( fMrqX, 1, fNDataPointsInFit ); }
+  if ( fMrqX ){ LOCASFree_Vector( fMrqX, 1, fNDataPointsInFit ); }
   fMrqX = NULL;
 
-  if ( fMrqY ){ flMath.LOCASFree_Vector( fMrqY, 1, fNDataPointsInFit ); }
+  if ( fMrqY ){ LOCASFree_Vector( fMrqY, 1, fNDataPointsInFit ); }
   fMrqY = NULL;
 
-  if ( fMrqSigma ){ flMath.LOCASFree_Vector( fMrqSigma, 1, fNDataPointsInFit ); }
+  if ( fMrqSigma ){ LOCASFree_Vector( fMrqSigma, 1, fNDataPointsInFit ); }
   fMrqSigma = NULL;
 
   fCurrentRun = NULL;
@@ -1691,16 +1784,16 @@ void LOCASFit::DeAllocate()
   if ( fResArray != NULL ){ delete[] fResArray; }
   fResArray = NULL;
 
-  if ( fMrqParameters ){ flMath.LOCASFree_Vector( fMrqParameters, 1, fNParametersInFit ); }
+  if ( fMrqParameters ){ LOCASFree_Vector( fMrqParameters, 1, fNParametersInFit ); }
   fMrqParameters = NULL;
 
-  if ( fMrqVary ){ flMath.LOCASFree_IntVector( fMrqVary, 1, fNParametersInFit ); }
+  if ( fMrqVary ){ LOCASFree_IntVector( fMrqVary, 1, fNParametersInFit ); }
   fMrqVary = NULL;
 
-  if ( fMrqCovariance ){ flMath.LOCASFree_Matrix( fMrqCovariance, 1, fNParametersInFit, 1, fNParametersInFit ); }
+  if ( fMrqCovariance ){ LOCASFree_Matrix( fMrqCovariance, 1, fNParametersInFit, 1, fNParametersInFit ); }
   fMrqCovariance = NULL;
 
-  if ( fMrqAlpha ){ flMath.LOCASFree_Matrix( fMrqAlpha, 1, fNParametersInFit, 1, fNParametersInFit ); }
+  if ( fMrqAlpha ){ LOCASFree_Matrix( fMrqAlpha, 1, fNParametersInFit, 1, fNParametersInFit ); }
   fMrqAlpha = NULL;
 
   if ( fParamIndex != NULL ){ delete[] fParamIndex; }
@@ -1788,9 +1881,9 @@ Int_t LOCASFit::mrqmin(float x[], float y[], float sig[], int ndata, float a[],
   //--------------------
   // Initialization  
   if (*alamda < 0.0) {
-    atry=flMath.LOCASVector(1,ma);
-    beta=flMath.LOCASVector(1,ma);
-    da=flMath.LOCASVector(1,ma);
+    atry=LOCASVector(1,ma);
+    beta=LOCASVector(1,ma);
+    da=LOCASVector(1,ma);
     printf("Varying parameter indices:\n");
     for (mfit=0,j=1;j<=ma;j++){
       if (ia[j]) {
@@ -1799,7 +1892,7 @@ Int_t LOCASFit::mrqmin(float x[], float y[], float sig[], int ndata, float a[],
       }
     }
     
-    oneda=flMath.LOCASMatrix(1,mfit,1,1);
+    oneda=LOCASMatrix(1,mfit,1,1);
     *alamda=0.001;
     mrqcof(x,y,sig,ndata,a,ia,ma,alpha,beta,chisq);
     ochisq=(*chisq);
@@ -1839,10 +1932,10 @@ Int_t LOCASFit::mrqmin(float x[], float y[], float sig[], int ndata, float a[],
   // Final call to prepare covariance matrix and deallocate memory.
   if (*alamda == 0.0 ) {
     covsrt(covar,ma,ia,mfit);
-    flMath.LOCASFree_Matrix(oneda,1,mfit,1,1);
-    flMath.LOCASFree_Vector(da,1,ma);
-    flMath.LOCASFree_Vector(beta,1,ma);
-    flMath.LOCASFree_Vector(atry,1,ma);
+    LOCASFree_Matrix(oneda,1,mfit,1,1);
+    LOCASFree_Vector(da,1,ma);
+    LOCASFree_Vector(beta,1,ma);
+    LOCASFree_Vector(atry,1,ma);
     return retval;
   }
   
@@ -1910,9 +2003,9 @@ void LOCASFit::mrqcof(float x[], float y[], float sig[], int ndata, float a[],
   
   float chisqentry;  // chi-squared for single entry in list
   
-  float *beta2 = flMath.LOCASVector(1,ma);
-  float **alpha2 = flMath.LOCASMatrix(1,ma,1,ma);
-  dyda=flMath.LOCASVector(1,ma);
+  float *beta2 = LOCASVector(1,ma);
+  float **alpha2 = LOCASMatrix(1,ma,1,ma);
+  dyda=LOCASVector(1,ma);
   for (j=1;j<=ma;j++) {
     if (ia[j]) mfit++;
     dyda[j] = 0.0;
@@ -1966,10 +2059,10 @@ void LOCASFit::mrqcof(float x[], float y[], float sig[], int ndata, float a[],
       alpha[k][j]=alpha[j][k];
     }
   
-  flMath.LOCASFree_Vector(dyda,1,ma);
+  LOCASFree_Vector(dyda,1,ma);
   
-  flMath.LOCASFree_Matrix(alpha2,1,ma,1,ma);
-  flMath.LOCASFree_Vector(beta2,1,ma);
+  LOCASFree_Matrix(alpha2,1,ma,1,ma);
+  LOCASFree_Vector(beta2,1,ma);
 
 }
 //////////////////////////////////////
@@ -2014,9 +2107,9 @@ Int_t LOCASFit::gaussj(float **a, int n, float **b, int m)
 	int i,icol,irow,j,k,l,ll;
 	float big,dum,pivinv,swap;
 	Int_t retval = 0;
-	indxc=flMath.LOCASIntVector(1,n);
-	indxr=flMath.LOCASIntVector(1,n);
-	ipiv=flMath.LOCASIntVector(1,n);
+	indxc=LOCASIntVector(1,n);
+	indxr=LOCASIntVector(1,n);
+	ipiv=LOCASIntVector(1,n);
 	for (j=1;j<=n;j++) ipiv[j]=0;
 	for (i=1;i<=n;i++) {
 		big=0.0;
@@ -2068,9 +2161,9 @@ Int_t LOCASFit::gaussj(float **a, int n, float **b, int m)
 			for (k=1;k<=n;k++)
 				SWAP(a[k][indxr[l]],a[k][indxc[l]]);
 	}
-	flMath.LOCASFree_IntVector(ipiv,1,n);
-	flMath.LOCASFree_IntVector(indxr,1,n);
-	flMath.LOCASFree_IntVector(indxc,1,n);
+	LOCASFree_IntVector(ipiv,1,n);
+	LOCASFree_IntVector(indxr,1,n);
+	LOCASFree_IntVector(indxc,1,n);
 	return retval;
   
 }
@@ -2260,6 +2353,46 @@ Int_t LOCASFit::GetRunIndex( const Int_t runID )
   }
   return 0;
 
+}
+
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASFit::GetLBDistributionError( const Int_t nVal )
+{
+
+  // Return the square root of the diagonal element corresponding to the
+  // laserball distribution element n.
+  
+  if( !fLBDistributionType ){
+    
+    if ( nVal >= 0 && nVal < fNLBDistributionPhiBins * fNLBDistributionThetaBins ) {
+
+      Float_t coVar = fMrqCovariance[ GetLBDistributionParIndex() + nVal ][ GetLBDistributionParIndex() + nVal ];
+
+      if ( coVar >= 0.0 ){ return TMath::Sqrt( coVar ); }
+      else { printf("Covariance element for lbdist < 0.0!\n"); return 0; }
+    } 
+
+    else {
+      printf("LOCASFit::GetLBDistributionError( %d ) is out of range [ 0:%d ]\n", nVal, fNLBDistributionPhiBins * fNLBDistributionThetaBins - 1 );
+      return 0;
+    }
+  }
+
+  else { // sinusoidal
+    if ( nVal >=0 && nVal < fNLBDistributionThetaWaveBins * fNLBDistributionWave ) {
+      
+      Float_t coVar = fMrqCovariance[ GetLBDistributionParIndex() + nVal ][ GetLBDistributionParIndex() + nVal ];
+      if ( coVar >= 0.0 ){ return TMath::Sqrt( coVar ); }
+      else { printf("Covariance element for LBDistributionWave < 0!\n"); return 0; }
+    } 
+
+  else { printf("LOCASFit::GetLBDistributionError( %d ) is out of range [ 0:%d ]\n", nVal, fNLBDistributionPhiBins * fNLBDistributionThetaBins - 1 );
+      return 0;
+    }
+  }
 }
 
 

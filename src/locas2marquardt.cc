@@ -41,6 +41,7 @@ int main( int argc, char** argv ){
   lFit.LoadFitFile( argv[1] );
   lFit.DataScreen();
   lFit.PerformFit();
+  lFit.WriteFitToFile("example.root");
 
   cout << "\n";
   cout << "#######################################" << endl;

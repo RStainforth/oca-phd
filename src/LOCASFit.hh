@@ -31,12 +31,13 @@
 
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TF1.h"
 
 #include "QDQXX.h"
 
 namespace LOCAS{
 
-  class LOCASFit : public TObject
+  class LOCASFit : public TObject, LOCASMath
   {
   public:
     // The constructors
@@ -74,11 +75,15 @@ namespace LOCAS{
 
     Float_t ModelLBDistributionMask( const LOCASPMT* iPMTPtr, const Int_t runType );
     Float_t ModelLBDistributionMask( const Float_t cosTheta );
+
+
     
-    Float_t SLBDistributionMask( Double_t* aPtr, Double_t* parPtr );
-    Float_t DLBDistributionMask( Double_t* aPtr, Double_t* parPtr );
-    Float_t SLBDistributionWave( Double_t* aPtr, Double_t* parPtr );
-    Float_t DLBDistributionWave( Double_t* aPtr, Double_t* parPtr );
+    TH2F* ApplyLBDistribution();
+    TF1* LBDistributionWaveTF1( const Int_t iTheta );
+    static Float_t SLBDistributionMask( Double_t* aPtr, Double_t* parPtr );
+    static Float_t DLBDistributionMask( Double_t* aPtr, Double_t* parPtr );
+    static Float_t SLBDistributionWave( Double_t* aPtr, Double_t* parPtr );
+    static Float_t DLBDistributionWave( Double_t* aPtr, Double_t* parPtr );
 
     // Calculate the individual PMT chisquare and global chisquare
     Float_t CalculatePMTChiSquare( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr );
@@ -248,28 +253,30 @@ namespace LOCAS{
     Float_t GetAVRSPar() const { return fMrqParameters[ GetAVRSParIndex() ]; }
     Float_t GetWaterRSPar() const { return fMrqParameters[ GetWaterRSParIndex() ]; }
 
-    Float_t GetAngularResponsePar( Int_t n ){ return fMrqParameters[ GetAngularResponseParIndex() + n ]; }
-    Float_t GetAngularResponse2Par( Int_t n ){ return fMrqParameters[ GetAngularResponse2ParIndex() + n ]; }
+    Float_t GetAngularResponsePar( const Int_t n ){ return fMrqParameters[ GetAngularResponseParIndex() + n ]; }
+    Float_t GetAngularResponse2Par( const Int_t n ){ return fMrqParameters[ GetAngularResponse2ParIndex() + n ]; }
 
-    Float_t GetLBDistributionPar( Int_t n ){ return fMrqParameters[ GetLBDistributionParIndex() + n ]; }
-    Float_t GetLBDistributionMaskPar( Int_t n ){ return fMrqParameters[ GetLBDistributionMaskParIndex() + n ]; }
-    Float_t GetLBDistributionWavePar( Int_t n ){ return fMrqParameters[ GetLBDistributionWaveParIndex() + n ]; }
+    Float_t GetLBDistributionPar( const Int_t n ){ return fMrqParameters[ GetLBDistributionParIndex() + n ]; }
+    Float_t GetLBDistributionMaskPar( const Int_t n ){ return fMrqParameters[ GetLBDistributionMaskParIndex() + n ]; }
+    Float_t GetLBDistributionWavePar( const Int_t n ){ return fMrqParameters[ GetLBDistributionWaveParIndex() + n ]; }
+    Float_t* GetLBDistribution(){ return &fMrqParameters[ GetLBDistributionParIndex() ]; }
     Float_t* GetLBDistributionMask(){ return &fMrqParameters[ GetLBDistributionMaskParIndex() ]; }
     Float_t* GetLBDistributionWave(){ return &fMrqParameters[ GetLBDistributionWaveParIndex() ]; }
+    Float_t GetLBDistributionError( const Int_t n );
 
-    Float_t GetLBNormalisationPar( Int_t n ){ return fMrqParameters[ GetLBNormalisationParIndex() + n ]; }
+    Float_t GetLBNormalisationPar( const Int_t n ){ return fMrqParameters[ GetLBNormalisationParIndex() + n ]; }
 
-    Float_t GetMrqX( Int_t n ){ if ( n == 0 ){ return 0; } else{ return fMrqX[ n ]; } }
-    Float_t GetMrqY( Int_t n ){ if ( n == 0 ){ return 0; } else{ return fMrqY[ n ]; } }
-    Float_t GetMrqSigma( Int_t n ){ if ( n == 0 ){ return 0; } else{ return fMrqSigma[ n ]; } }
+    Float_t GetMrqX( const Int_t n ){ if ( n == 0 ){ return 0; } else{ return fMrqX[ n ]; } }
+    Float_t GetMrqY( const Int_t n ){ if ( n == 0 ){ return 0; } else{ return fMrqY[ n ]; } }
+    Float_t GetMrqSigma( const Int_t n ){ if ( n == 0 ){ return 0; } else{ return fMrqSigma[ n ]; } }
 
-    Float_t GetMrqParameter( Int_t n ){ if ( n == 0 ){ return 0; } else{ return fMrqParameters[ n ]; } }
-    Int_t GetMrqVary( Int_t n ){ if ( n == 0 ){ return 0; } else{ return fMrqVary[ n ]; } }
+    Float_t GetMrqParameter( const Int_t n ){ if ( n == 0 ){ return 0; } else{ return fMrqParameters[ n ]; } }
+    Int_t GetMrqVary( const Int_t n ){ if ( n == 0 ){ return 0; } else{ return fMrqVary[ n ]; } }
 
-    Float_t GetMrqCovariance( Int_t n, Int_t m ){ if ( n == 0 || m == 0 ){ return 0; } else{ return fMrqCovariance[ n ][ m ]; } }
-    Float_t GetMrqAlpha( Int_t n, Int_t m ){ if ( n == 0 || m == 0 ){ return 0; } else{ return fMrqAlpha[ n ][ m ]; } }
+    Float_t GetMrqCovariance( const Int_t n, const Int_t m ){ if ( n == 0 || m == 0 ){ return 0; } else{ return fMrqCovariance[ n ][ m ]; } }
+    Float_t GetMrqAlpha( const Int_t n, const Int_t m ){ if ( n == 0 || m == 0 ){ return 0; } else{ return fMrqAlpha[ n ][ m ]; } }
 
-    LOCASRun* GetRunEntry( Int_t iRun ){ return fRunReader.GetRunEntry( iRun ); }
+    LOCASRun* GetRunEntry( const Int_t iRun ){ return fRunReader.GetRunEntry( iRun ); }
     Int_t GetRunIndex( const Int_t runID );
 
     Int_t GetNVariableParameters();
@@ -447,8 +454,6 @@ namespace LOCAS{
 
     std::map< Int_t, LOCASPMT > fFitPMTs;                   // Map of PMTs which pass the cut selection and are to be used in the fit
     std::map< Int_t, LOCASPMT >::iterator fiPMT;            //! Map iterator used when scanning through PMTs
-
-    LOCASMath flMath;                                       //! Private LOCASMath object used for calculating corrections and errors
 
     ClassDef( LOCASFit, 1 )
 
