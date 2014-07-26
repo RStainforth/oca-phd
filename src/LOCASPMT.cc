@@ -44,6 +44,10 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
   fCentralIsVerified = rhs.fCentralIsVerified;
   fWavelengthIsVerified = rhs.fWavelengthIsVerified;
 
+  fDQXXFlag = rhs.fDQXXFlag;
+  fCentralDQXXFlag = rhs.fCentralDQXXFlag;
+  fWavelengthDQXXFlag = rhs.fWavelengthDQXXFlag;
+
   fPos = rhs.fPos;
   fNorm = rhs.fNorm;
 
@@ -181,6 +185,10 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
   fIsVerified = rhs.fIsVerified;
   fCentralIsVerified = rhs.fCentralIsVerified;
   fWavelengthIsVerified = rhs.fWavelengthIsVerified;
+
+  fDQXXFlag = rhs.fDQXXFlag;
+  fCentralDQXXFlag = rhs.fCentralDQXXFlag;
+  fWavelengthDQXXFlag = rhs.fWavelengthDQXXFlag;
 
   fPos = rhs.fPos;
   fNorm = rhs.fNorm;
@@ -321,6 +329,10 @@ void LOCASPMT::Initialise()
   SetIsVerified( false );
   SetCentralIsVerified( false );
   SetWavelengthIsVerified( false );
+
+  SetDQXXFlag( -1 );
+  SetCentralDQXXFlag( -1 );
+  SetWavelengthDQXXFlag( -1 );
 
   TVector3 nullVec( -99999.9, -99999.9, -99999.9 );
   SetPos( nullVec );

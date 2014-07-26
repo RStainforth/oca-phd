@@ -85,6 +85,37 @@ namespace LOCAS{
 
     void SetGeometryFile( std::string geoFile ){ fGeometryFile = geoFile; }
 
+    /////////////////////////////////
+    ////////     GETTERS     ////////
+    /////////////////////////////////
+
+    std::string GetGeometryFile(){ return fGeometryFile; }
+
+    // To obtain the fitted results, first 
+    // FitLBPosition must be called
+    Double_t GetFittedRadius();
+    Double_t GetFittedRadiusError();
+
+    TVector3 GetFittedXYZ();
+    TVector3 GetFittedXYZErrors();
+
+    Double_t GetFittedT0();
+    Double_t GetFittedT0Error();
+
+    Double_t GetChiSquare();
+    Double_t GetReducedChiSquare();
+
+    Double_t GetPromptTimePeakWidthMean(){ return fPromptTimePeakWidthMean; }
+    Double_t GetPromptTimePeakWidthSigma(){ return fPromptTimePeakWidthSigma; }
+
+    Float_t** GetCovarianceMatrix(){ return fMrqCovariance; }
+
+    Float_t* GetPromptWidthArray(){ return fPromptWidthArray; }
+    Float_t* GetPromptWidthArrayCut(){ return fPromptWidthArrayCut; }
+
+    LOCASRun* GetCurrentRun(){ return fCurrentRun; }
+
+
 
   private:
 
@@ -126,6 +157,12 @@ namespace LOCAS{
 
     Float_t* fChiArray;
     Float_t* fResArray;
+
+    Float_t* fPromptWidthArray;
+    Double_t fPromptTimePeakWidthMean;
+    Double_t fPromptTimePeakWidthSigma;
+
+    Float_t* fPromptWidthArrayCut;
 
     TVector3 fCurrentLBPos;
     Int_t fNElements;

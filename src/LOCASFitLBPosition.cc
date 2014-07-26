@@ -61,8 +61,6 @@ LOCASFitLBPosition::LOCASFitLBPosition( const LOCASRunReader& lRunReader, const 
   fDQXXDirPrefix = getenv("DQXXDIR");
   fDQXXDirPrefix += "/DQXX_00000";
   
-  //printf( "Initialising Laserball Position Manager\n" );
-  //printf( "-----------------------------------------\n \n" );
   ////////////////////////////////////////////////////////////////////////////////////////////
   // First load all the PMT, LightPath and Group Velocity information from the RAT database //
   ////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,10 +76,6 @@ LOCASFitLBPosition::LOCASFitLBPosition( const LOCASRunReader& lRunReader, const 
   fAVVolMat = fRATDB->GetLink( "GEO", "av" )->GetS( "material" );
   fCavityVolMat = fRATDB->GetLink( "GEO", "cavity" )->GetS( "material" );
 
-  //printf( "Inner AV material: %s\n", fScintVolMat.c_str() );
-  //printf( "AV material: %s\n", fAVVolMat.c_str() );
-  //printf( "Cavity material: %s\n", fCavityVolMat.c_str() );
-
   DU::Utility::Get()->BeginOfRun();
   fPMTInfo = DU::Utility::Get()->GetPMTInfo();
   fLightPath = DU::Utility::Get()->GetLightPathCalculator();
@@ -91,6 +85,7 @@ LOCASFitLBPosition::LOCASFitLBPosition( const LOCASRunReader& lRunReader, const 
   fGVelocity = DU::Utility::Get()->GetGroupVelocity();
   //////////////////////////////////////////////////////////////
 
+  // Initialise the vectors
   fMrqX = LOCASVector( 1, 10000 );
   fMrqY = LOCASVector( 1, 10000 );
   fMrqSigma = LOCASVector( 1, 10000 );
@@ -106,6 +101,12 @@ LOCASFitLBPosition::LOCASFitLBPosition( const LOCASRunReader& lRunReader, const 
   fChiSquare = 0.0;
   fChiArray = new Float_t[ 10001 ];
   fResArray = new Float_t[ 10001 ];
+
+  fPromptWidthArray = LOCASVector( 1, 10000 );
+  fPromptWidthArrayCut = LOCASVector( 1, 10000 );
+
+  fPromptTimePeakWidthMean = 0.0;
+  fPromptTimePeakWidthSigma = 0.0;
 
   fNElements = 10000;
   fDelPos = 10.0;
@@ -131,10 +132,9 @@ void LOCASFitLBPosition::FitLBPosition( const Int_t runID )
   // Get the pointer to the LOCASRun object from the reader based on the supplied run ID.
   fCurrentRun = fRunReader.GetLOCASRun( runID );
 
-  //printf( "LOCASFitLBPosition::FitLBPosition: Fitting for Run: %i\n", runID );
-  //printf( "LOCASFitLBPosition::FitLBPosition: Using 500 nm Run: %i\n", fCurrentRun->GetWavelengthRunID() );
+  // For now, use the wavelength run, 500nm
   stringstream tmpStream;
-  tmpStream << (fCurrentRun->GetWavelengthRunID());
+  tmpStream << ( fCurrentRun->GetWavelengthRunID() );
   string tmpStr = "";
   tmpStream >> tmpStr;
 
@@ -156,30 +156,14 @@ void LOCASFitLBPosition::FitLBPosition( const Int_t runID )
   }
 
   // Begin the fitting routine
-  //printf("LOCASFitLBPosition::FitLBPosition: Initial Parameter Values for run %i (off-axis %i):\n\n", fCurrentRun->GetWavelengthRunID(), runID );
-  //printf("Laserball x-coordinate: %f mm\n", fMrqParameters[ 1 ] );
-  //printf("Laserball y-coordinate: %f mm\n", fMrqParameters[ 2 ] );
-  //printf("Laserball z-coordinate: %f mm\n", fMrqParameters[ 3 ] );
-  //printf("Laserball time (centered): %f ns\n", fMrqParameters[ 4 ] );
-
-  //printf("LOCASFitLBPosition::FitLBPosition: About to start LOCASFitLBPosition::MrqFit...\n");
-  //printf("ChiSquare Value is: %f", fChiSquare );
-
   MrqFit( fMrqX, fMrqY, fMrqSigma, 
           fNPMTs, fMrqParameters, fMrqVary, 
           4, fMrqCovariance, fMrqCurvature, 
           &fChiSquare );
 
+
+  // Print the final information
   PrintFitInfo();
-
-  //cout << "XPos: " << fMrqParameters[ 1 ] << endl;
-  //cout << "YPos: " << fMrqParameters[ 2 ] << endl;
-  //cout << "ZPos: " << fMrqParameters[ 3 ] << endl;
-  //cout << "TPos: " << fMrqParameters[ 4 ] << endl; 
-
-  //printf( "Number of PMTs in fit is: %d for 4 parameters\n", fNPMTs );
-  //printf( "ChiSquare complete:\nChiSquare: %f\nReduced ChiSquare: %f\n", fChiSquare, fChiSquare / ( (Float_t)(fNPMTs - 3) ) );
-  //printf( "-----------------------------------------\n \n" );
 
 }
 
@@ -212,6 +196,11 @@ void LOCASFitLBPosition::InitialiseArrays()
       fMrqCurvature[ iP ][ iJ ] = 0.0;
     }
   }
+
+  for ( Int_t iP = 1; iP <= 10000; iP++ ){
+    fPromptWidthArray[ iP ] = -10.0;
+    fPromptWidthArrayCut[ iP ] = -10.0;
+  }
   
   // Initialise the value of the counter for the number of PMTs in this fit.
   fNPMTs = 0;
@@ -243,6 +232,7 @@ void LOCASFitLBPosition::InitialiseArrays()
         iPMT++ ){
     if ( fDQXX.LcnInfo( iPMT->first, iK ) == 1 ){
       fCurrentPMT = &( iPMT->second );
+      fPromptWidthArray[ iPMT->first ] = fCurrentPMT->GetWavelengthPromptPeakWidth();
       promptRunTimeWidthMean += fCurrentPMT->GetWavelengthPromptPeakWidth(); 
       promptRunTimeWidthMean2 += TMath::Power( fCurrentPMT->GetWavelengthPromptPeakWidth(), 2 );
       nPMTsTmp++;
@@ -271,6 +261,8 @@ void LOCASFitLBPosition::InitialiseArrays()
   
   cout << "Time Width Mean is: " << promptRunTimeWidthMean << endl;
   cout << "Time Width Deviation is: " << promptRunTimeWidth << endl;
+  fPromptTimePeakWidthMean = promptRunTimeWidthMean;
+  fPromptTimePeakWidthSigma = promptRunTimeWidth;
   // Now screen the PMTs to be included in the fit.
   // This checks for bad light paths, reasonable occupancy errors (i.e. MPE corrections), and whether each individual
   // PMT's time width was within 3 * 'sigma' of the global prompt time peak width distribution.
@@ -298,6 +290,7 @@ void LOCASFitLBPosition::InitialiseArrays()
     
     // If it gets this far, the PMT must be 'good' - so we can use it in the fit.
     nGoodPMTs++;
+    fPromptWidthArrayCut[ iPMT->first ] = fCurrentPMT->GetWavelengthPromptPeakWidth();
     
     // Set the 'X' data point to be the reference to the PMT (i.e. the PMT index/ID)
     fMrqX[ fNPMTs + 1 ] = fCurrentPMT->GetID();
@@ -369,9 +362,9 @@ Bool_t LOCASFitLBPosition::SkipPMT( const LOCASRun* iRunPtr, const LOCASPMT* iPM
   Bool_t skipPMT = false;
 
   if ( ( fCurrentPMT->GetWavelengthMPECorrOccupancyErr() > 0.1 * fCurrentPMT->GetWavelengthMPECorrOccupancy() )
-       || ( fCurrentPMT->GetWavelengthMPECorrOccupancyCorr() < 0.7 ) 
+       || ( fCurrentPMT->GetWavelengthMPECorrOccupancyCorr() < 0.0 ) 
        || ( fCurrentPMT->GetWavelengthMPECorrOccupancyCorr() > 1.5 )
-       || ( fCurrentPMT->GetWavelengthPromptPeakWidth() == 0 ) 
+       || ( fCurrentPMT->GetWavelengthPromptPeakWidth() <= 0 ) 
        || ( fCurrentPMT->GetWavelengthNeckFlag() ) ){ 
     skipPMT = true; return skipPMT; 
   }
@@ -407,6 +400,104 @@ void LOCASFitLBPosition::PrintFitInfo()
   printf( "\n\n" );
 
   
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+
+Double_t LOCASFitLBPosition::GetFittedRadius()
+{
+
+  TVector3 fitR( fMrqParameters[ 1 ], fMrqParameters[ 2 ], fMrqParameters[ 3 ] );
+  return fitR.Mag();
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+
+Double_t LOCASFitLBPosition::GetFittedRadiusError()
+{
+
+  TVector3 fitR( fMrqParameters[ 1 ], fMrqParameters[ 2 ], fMrqParameters[ 3 ] );
+  TVector3 fitRErr( TMath::Sqrt( fMrqCovariance[ 1 ][ 1 ] ), 
+                    TMath::Sqrt( fMrqCovariance[ 2 ][ 2 ] ), 
+                    TMath::Sqrt( fMrqCovariance[ 3 ][ 3 ]  ) );
+
+  Double_t rErr = ( 1.0 / fitR.Mag2() ) * ( ( fitR.X() * fitR.X() * fitRErr.X() * fitRErr.X() )
+                                            + ( fitR.Y() * fitR.Y() * fitRErr.Y() * fitRErr.Y() )
+                                            + ( fitR.Z() * fitR.Z() * fitRErr.Z() * fitRErr.Z() ) );
+  
+  return TMath::Sqrt( rErr );
+  
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+
+TVector3 LOCASFitLBPosition::GetFittedXYZ()
+{
+
+  TVector3 fitR( fMrqParameters[ 1 ], fMrqParameters[ 2 ], fMrqParameters[ 3 ] );
+  return fitR;
+
+}
+
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+TVector3 LOCASFitLBPosition::GetFittedXYZErrors()
+{
+
+  TVector3 fitRErr( TMath::Sqrt( fMrqCovariance[ 1 ][ 1 ] ), 
+                    TMath::Sqrt( fMrqCovariance[ 2 ][ 2 ] ), 
+                    TMath::Sqrt( fMrqCovariance[ 3 ][ 3 ]  ) );
+  return fitRErr;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Double_t LOCASFitLBPosition::GetFittedT0()
+{
+
+  return fMrqParameters[ 4 ];
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Double_t LOCASFitLBPosition::GetFittedT0Error()
+{
+
+  return TMath::Sqrt( fMrqCovariance[ 4 ][ 4 ] );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Double_t LOCASFitLBPosition::GetChiSquare()
+{
+
+  return fChiSquare;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Double_t LOCASFitLBPosition::GetReducedChiSquare()
+{
+
+  return ( fChiSquare / ( (Double_t)fNPMTs - 4.0 ) );
+
 }
 
 //////////////////////////////////////

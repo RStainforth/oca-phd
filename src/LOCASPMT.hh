@@ -68,6 +68,10 @@ namespace LOCAS{
     void SetIsVerified( const Bool_t verified ){ fIsVerified = verified; }
     void SetCentralIsVerified( const Bool_t verified ){ fCentralIsVerified = verified; }
     void SetWavelengthIsVerified( const Bool_t verified ){ fWavelengthIsVerified = verified; }
+
+    void SetDQXXFlag( const Int_t val ){ fDQXXFlag = val; }
+    void SetCentralDQXXFlag( const Int_t val ){ fCentralDQXXFlag = val; }
+    void SetWavelengthDQXXFlag( const Int_t val ){ fWavelengthDQXXFlag = val; }
                                                                           
     void SetPos( const TVector3 xyzPos ){ fPos = xyzPos; }                  
     void SetNorm( const TVector3 uvwOri ){ fNorm = uvwOri; }                
@@ -205,7 +209,11 @@ namespace LOCAS{
 
     Bool_t GetIsVerified() const { return fIsVerified; }
     Bool_t GetCentralIsVerified() const { return fCentralIsVerified; }
-    Bool_t GetWavelengthIsVerified() const { return fWavelengthIsVerified; }  
+    Bool_t GetWavelengthIsVerified() const { return fWavelengthIsVerified; }
+
+    Int_t GetDQXXFlag() const { return fDQXXFlag; }
+    Int_t GetCentralDQXXFlag() const { return fCentralDQXXFlag; }
+    Int_t GetWavelengthDQXXFlag() const { return fWavelengthDQXXFlag; }
   
     TVector3 GetPos() const { return fPos; }
     TVector3 GetNorm() const { return fNorm; }
@@ -355,6 +363,10 @@ namespace LOCAS{
                                         // See LOCASPMT::VerifyPMT for details (LOCASPMT.cc)
     Bool_t fCentralIsVerified;
     Bool_t fWavelengthIsVerified;
+
+    Int_t fDQXXFlag;                    // Integer status for DQXX KCCC_TUBE_ON_LINE the PMT from off-axis run
+    Int_t fCentralDQXXFlag;             // Integer status for DQXX KCCC_TUBE_ON_LINE the PMT from central run
+    Int_t fWavelengthDQXXFlag;          // Integer status for DQXX KCCC_TUBE_ON_LINE the PMT from wavelength run
     
     TVector3 fPos;                      // PMT Position
     TVector3 fNorm;                     // PMT Orientation

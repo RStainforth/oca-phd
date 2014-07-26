@@ -56,10 +56,10 @@
 #include "LOCASRun.hh"
 #include "LOCASPMT.hh"
 #include "LOCASDB.hh"
-#include "LOCASLightPath.hh"
 #include "LOCASMath.hh"
 
 #include "QRdt.h"
+#include "QDQXX.h"
 
 #include "TFile.h"
 #include "TTree.h"
@@ -140,6 +140,19 @@ int main( int argc, char** argv ){
   QRdt crQRdt( centralRunFile.c_str() );
   QRdt wrQRdt( wavelengthRunFile.c_str() );
 
+  // Initialise the DQXX objects
+  // Set the path prefix for the location of the DQXX files
+  // This assumes that the envrionment variable $DQXXDIR is set
+  string DQXXDirPrefix = getenv("DQXXDIR");
+  DQXXDirPrefix += "/DQXX_00000";
+  string rDQXXFile = DQXXDirPrefix + rIDStr + ".dat";
+  string crDQXXFile = DQXXDirPrefix + crIDStr + ".dat";
+  string wrDQXXFile = DQXXDirPrefix + wrIDStr + ".dat";
+
+  QDQXX rDQXX( rDQXXFile.c_str() );
+  QDQXX crDQXX( crDQXXFile.c_str() );
+  QDQXX wrDQXX( wrDQXXFile.c_str() );
+
   // Create the LOCASRun object
   LOCASRun* lRunPtr = new LOCASRun();
 
@@ -201,6 +214,13 @@ int main( int argc, char** argv ){
       lPMT.SetIsVerified( false );
       lPMT.SetCentralIsVerified( false );
       lPMT.SetWavelengthIsVerified( false );
+
+      // DQXX Flags for KCCC_TUBE_ON_LINE
+      Int_t iPMTStatus = KCCC_TUBE_ON_LINE;
+
+      lPMT.SetDQXXFlag( rDQXX.LcnInfo( iPMT, iPMTStatus ) );
+      lPMT.SetCentralDQXXFlag( crDQXX.LcnInfo( iPMT, iPMTStatus ) );
+      lPMT.SetWavelengthDQXXFlag( wrDQXX.LcnInfo( iPMT, iPMTStatus ) );
 
       // PMT Position and Normal Vector
       lPMT.SetPos( pmtInfo.GetPosition( iPMT ) );
@@ -284,7 +304,7 @@ int main( int argc, char** argv ){
       // Distances through the heavy water, acrylic and water regions
 
       ///////////// OFF AXIS /////////////
-      lightPath.CalcByPosition( lRunPtr->GetLBPos(), lPMT.GetPos() );
+      lightPath.CalcByPosition( lRunPtr->GetLBPos(), lPMT.GetPos(), lightPath.WavelengthToEnergy( ( lRunPtr->GetLambda() ) * 1e-6 ), 30.0 );
       
       lPMT.SetDistInScint( lightPath.GetDistInScint() );
       lPMT.SetDistInAV( lightPath.GetDistInAV() );
@@ -307,11 +327,13 @@ int main( int argc, char** argv ){
       lightPath.CalculateCosThetaPMT( lPMT.GetID() );
       lPMT.SetCosTheta( lightPath.GetCosThetaAvg() );
 
-      if ( lightPath.CheckForShadowing() == true ){ lPMT.SetBadPath( true ); }
+      if ( lightPath.CheckForShadowing() == true 
+           || lightPath.GetTIR() == true 
+           || lightPath.GetResvHit() == true ){ lPMT.SetBadPath( true ); }
       else{ lPMT.SetBadPath( false ); }
-
+      
       ///////////// CENTRAL /////////////
-      lightPath.CalcByPosition( lRunPtr->GetCentralLBPos(), lPMT.GetPos() );
+      lightPath.CalcByPosition( lRunPtr->GetCentralLBPos(), lPMT.GetPos(), lightPath.WavelengthToEnergy( ( lRunPtr->GetCentralLambda() ) * 1e-6 ), 30.0 );
       
       lPMT.SetCentralDistInScint( lightPath.GetDistInScint() );
       lPMT.SetCentralDistInAV( lightPath.GetDistInAV() );
@@ -334,11 +356,13 @@ int main( int argc, char** argv ){
       lightPath.CalculateCosThetaPMT( lPMT.GetID() );
       lPMT.SetCentralCosTheta( lightPath.GetCosThetaAvg() );
 
-      if ( lightPath.CheckForShadowing() == true ){ lPMT.SetCentralBadPath( true ); }
+      if ( lightPath.CheckForShadowing() == true 
+           || lightPath.GetTIR() == true
+           || lightPath.GetResvHit() == true ){ lPMT.SetCentralBadPath( true ); }
       else{ lPMT.SetCentralBadPath( false ); }
 
       ///////////// WAVELENGTH /////////////
-      lightPath.CalcByPosition( lRunPtr->GetWavelengthLBPos(), lPMT.GetPos() );
+      lightPath.CalcByPosition( lRunPtr->GetWavelengthLBPos(), lPMT.GetPos(), lightPath.WavelengthToEnergy( ( lRunPtr->GetWavelengthLambda() ) * 1e-6 ), 30.0 );
       
       lPMT.SetWavelengthDistInScint( lightPath.GetDistInScint() );
       lPMT.SetWavelengthDistInAV( lightPath.GetDistInAV() );
@@ -361,7 +385,9 @@ int main( int argc, char** argv ){
       lightPath.CalculateCosThetaPMT( lPMT.GetID() );
       lPMT.SetWavelengthCosTheta( lightPath.GetCosThetaAvg() );
 
-      if ( lightPath.CheckForShadowing() == true ){ lPMT.SetWavelengthBadPath( true ); }
+      if ( lightPath.CheckForShadowing() == true 
+           || lightPath.GetTIR() == true
+           || lightPath.GetResvHit() == true ){ lPMT.SetWavelengthBadPath( true ); }
       else{ lPMT.SetWavelengthBadPath( false ); }
 
       lPMT.VerifyPMT();

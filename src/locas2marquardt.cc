@@ -17,6 +17,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include "LOCASFit.hh"
+#include "TStyle.h"
+#include "TCanvas.h"
 
 #include <iostream>
 
@@ -39,9 +41,32 @@ int main( int argc, char** argv ){
 
   LOCASFit lFit;
   lFit.LoadFitFile( argv[1] );
-  lFit.DataScreen();
+  lFit.DataScreen( 100.0 );
   lFit.PerformFit();
+  lFit.DataScreen( 50.0 );
+  lFit.PerformFit();
+  lFit.DataScreen( 25.0 );
+  lFit.PerformFit();
+  lFit.DataScreen( 16.0 );
+  lFit.PerformFit();
+  lFit.DataScreen( 16.0 );
+  lFit.PerformFit();
+
+  
   lFit.WriteFitToFile("example.root");
+
+  TCanvas* canVas = new TCanvas( "LB Distribution Plot", "LB Distribution Plot", 640, 400 ); 
+  ( lFit.ApplyLBDistribution() )->Draw( "E" );
+  canVas->Print("lbdist.eps");
+
+  TCanvas* canVas1 = new TCanvas( "LB Distribution Mask Function", "LB Distribution Mask Function", 640, 400 ); 
+  ( lFit.LBDistributionMaskTF1() )->Draw();
+  canVas1->Print("lbwave.eps");
+
+  TCanvas* canVas2 = new TCanvas( "Angular Response Distribution", "Angular Response Distribution", 640, 400 ); 
+  ( lFit.AngularResponseTH1F() )->Draw();
+  gStyle->SetOptStat( 0 );
+  canVas2->Print("angresp.eps");
 
   cout << "\n";
   cout << "#######################################" << endl;

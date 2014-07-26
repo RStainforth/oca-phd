@@ -24,6 +24,9 @@
 #include <vector>
 #include <fstream>
 
+#include <map>
+
+
 using namespace std;
 using namespace RAT;
 using namespace LOCAS;
@@ -43,7 +46,7 @@ int main( int argc, char** argv ){
   std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids" );
   LOCASRunReader lReader( runIDs );
   LOCASFitLBPosition* fitLB = new LOCASFitLBPosition( lReader, "geo/sno_d2o.geo" );
-  //std::vector< LOCASFitLBPosition* > fitLBs;
+  map< Int_t, vector< Double_t > > lbPosFits;
 
   printf( "Number of runs is: %i \n", (Int_t)runIDs.size() );
   for ( Int_t iRun = 0; iRun < runIDs.size(); iRun++ ){

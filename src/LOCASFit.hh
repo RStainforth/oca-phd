@@ -63,12 +63,15 @@ namespace LOCAS{
     void PrintInitialisationInfo();
 
     // Screen the data and remove PMTs based on certain selection criteria
-    void DataScreen();                              
+    void DataScreen( const Float_t chiSqLimit = 100.0 );                              
 
     // Check whether a PMT should be skipped over
     Bool_t PMTSkip( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Float_t mean = -1.0e6, Float_t sigma = -1.0e6 );
 
     // Return the model Angular Response value and Laserball Distribution value
+    TH1F* AngularResponseTH1F();
+    static Double_t SPMTAngularResponse( Double_t* a, Double_t* par );
+    TF1* AngularResponseTF1();
     Float_t ModelAngularResponse( const LOCASPMT* iPMTPtr, Int_t& iAng, Int_t runType );
     Float_t ModelLBDistribution( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Int_t& iLBDist, Int_t runType );
     Float_t ModelLBDistribution( const Float_t cosTheta, const Float_t phi, Int_t& iLBDist );
@@ -80,6 +83,7 @@ namespace LOCAS{
     
     TH2F* ApplyLBDistribution();
     TF1* LBDistributionWaveTF1( const Int_t iTheta );
+    TF1* LBDistributionMaskTF1();
     static Float_t SLBDistributionMask( Double_t* aPtr, Double_t* parPtr );
     static Float_t DLBDistributionMask( Double_t* aPtr, Double_t* parPtr );
     static Float_t SLBDistributionWave( Double_t* aPtr, Double_t* parPtr );
@@ -201,7 +205,11 @@ namespace LOCAS{
     TH2F* GetLBDistribution() const { return fLBDistribution; }
     Int_t GetNLBDistributionThetaBins() const { return fNLBDistributionThetaBins; }
     Int_t GetNLBDistributionPhiBins() const { return fNLBDistributionPhiBins; }
+    Int_t GetNLBDistributionThetaWaveBins() const { return fNLBDistributionThetaWaveBins; }
+    Int_t GetNLBDistributionWave() const { return fNLBDistributionWave; }
+    Int_t GetNLBDistributionMaskParameters() const { return fNLBDistributionMaskParameters; }
     Int_t GetNPMTsPerLBDistributionBinMin() const { return fNPMTsPerAngularResponseBinMin; }
+    
 
     TH1F* GetAngularResponse() const { return fAngularResponse; }
     Int_t GetNAngularResponseBins() const { return fNAngularResponseBins; }
@@ -254,7 +262,9 @@ namespace LOCAS{
     Float_t GetWaterRSPar() const { return fMrqParameters[ GetWaterRSParIndex() ]; }
 
     Float_t GetAngularResponsePar( const Int_t n ){ return fMrqParameters[ GetAngularResponseParIndex() + n ]; }
+    Float_t GetAngularResponseError( const Int_t nVal );
     Float_t GetAngularResponse2Par( const Int_t n ){ return fMrqParameters[ GetAngularResponse2ParIndex() + n ]; }
+    Float_t* GetAngularResponse(){ return &fMrqParameters[ GetAngularResponseParIndex() ]; }
 
     Float_t GetLBDistributionPar( const Int_t n ){ return fMrqParameters[ GetLBDistributionParIndex() + n ]; }
     Float_t GetLBDistributionMaskPar( const Int_t n ){ return fMrqParameters[ GetLBDistributionMaskParIndex() + n ]; }
@@ -262,7 +272,8 @@ namespace LOCAS{
     Float_t* GetLBDistribution(){ return &fMrqParameters[ GetLBDistributionParIndex() ]; }
     Float_t* GetLBDistributionMask(){ return &fMrqParameters[ GetLBDistributionMaskParIndex() ]; }
     Float_t* GetLBDistributionWave(){ return &fMrqParameters[ GetLBDistributionWaveParIndex() ]; }
-    Float_t GetLBDistributionError( const Int_t n );
+    Float_t GetLBDistributionError( const Int_t nVal );
+    Float_t GetLBDistributionMaskError( const Int_t nVal );
 
     Float_t GetLBNormalisationPar( const Int_t n ){ return fMrqParameters[ GetLBNormalisationParIndex() + n ]; }
 
@@ -335,16 +346,16 @@ namespace LOCAS{
     std::string fFitName;                                    // The name of the fit
     std::string fFitTitle;                                   // The title of the fit
 
-    Bool_t fValidPars;                                       //! The LOCASFit structure has allocated valid parameters
-    Bool_t fDataScreen;                                      //! The Data has been screened and filtered for reasonable tubes
+    Bool_t fValidPars;                                       // The LOCASFit structure has allocated valid parameters
+    Bool_t fDataScreen;                                      // The Data has been screened and filtered for reasonable tubes
     
-    LOCASRunReader fRunReader;                               //! The Run reader to go over all the LOCASRun files
+    LOCASRunReader fRunReader;                               // The Run reader to go over all the LOCASRun files
 
-    LOCASRun* fCurrentRun;                                   //! Pointer to the current LOCASRun object
-    LOCASPMT* fCurrentPMT;                                   //! Pointer to the current LOCASPMT object
+    LOCASRun* fCurrentRun;                                   // Pointer to the current LOCASRun object
+    LOCASPMT* fCurrentPMT;                                   // Pointer to the current LOCASPMT object
 
     Int_t fNRuns;                                            // Number of runs loaded into the fit
-    std::vector< Int_t > fListOfRunIDs;                      //! List of run IDs in the fit
+    std::vector< Int_t > fListOfRunIDs;                      // List of run IDs in the fit
 
     Bool_t fVaryAll;                                         // TRUE: All parameters in the fit were varied (FALSE: not)
     Bool_t fScintVary;                                       // Whether the scintillator attenuation length was varied
@@ -419,41 +430,41 @@ namespace LOCAS{
     Bool_t fCHSFlag;                                        // The CHS Flag status for PMTs to be cut on
     Bool_t fCSSFlag;                                        // The CSS Flag status for PMTs to be cut on
 
-    Int_t fNElements;                                       //! The number of elements in the fChiArray[] and fResArray[] array
-    Float_t* fChiArray;                                     //! [fNElements] Array of chisquared for mrqcof() calls
-    Float_t* fResArray;                                     //! [fNElements] Array of residuals for mrqcof() calls
+    Int_t fNElements;                                       // The number of elements in the fChiArray[] and fResArray[] array
+    Float_t* fChiArray;                                     // [fNElements] Array of chisquared for mrqcof() calls
+    Float_t* fResArray;                                     // [fNElements] Array of residuals for mrqcof() calls
 
     Int_t fLBDistributionType;
-    Int_t fiAng;                                            //! Index for PMT angular response to be re-zeroed
-    Int_t fCiAng;                                           //! Index for PMT angular response in the central run to be re-zeroed
-    Int_t fiLBDist;                                         //! Index for laserball distribution to be re-zeroed
-    Int_t fCiLBDist;                                        //! Index for laserball distribution in the central run to be re-zeroed
-    Int_t fiNorm;                                           //! Index for laserball normalisation to be re-zeroed
+    Int_t fiAng;                                            // Index for PMT angular response to be re-zeroed
+    Int_t fCiAng;                                           // Index for PMT angular response in the central run to be re-zeroed
+    Int_t fiLBDist;                                         // Index for laserball distribution to be re-zeroed
+    Int_t fCiLBDist;                                        // Index for laserball distribution in the central run to be re-zeroed
+    Int_t fiNorm;                                           // Index for laserball normalisation to be re-zeroed
 
     
     Int_t fParamBase;                                       // Number of variable parameters, not including PMT Response or LB Distribution
     Int_t fParam;                                           // Number of variable parameters, including PMT response and LB distribution
-    Int_t*** fAngIndex;                                     //! Lookup table for unique variable parameters in the PMT response
-    Int_t* fParamIndex;                                     //! Lookup table for ordered variable parameters
-    Int_t* fParamVarMap;                                    //! Lookup table for variable parameters (global)
+    Int_t*** fAngIndex;                                     // Lookup table for unique variable parameters in the PMT response
+    Int_t* fParamIndex;                                     // Lookup table for ordered variable parameters
+    Int_t* fParamVarMap;                                    // Lookup table for variable parameters (global)
 
     // The arrays used by the Levenburg-Marquadt (Mrq) algorithm to find the parameters
-    Float_t* fMrqX;                                         //! [fNDataPointsInFit+1] Index into the PMTs to be used in the fit
-    Float_t* fMrqY;                                         //! [fNDataPointsInFit+1] Index into the PMTs (from above) corresponding OccRatio
-    Float_t* fMrqSigma;                                     //! [fNDataPointsInFit+1] Error on each PMT occupancy (statistical)
+    Float_t* fMrqX;                                         // [fNDataPointsInFit+1] Index into the PMTs to be used in the fit
+    Float_t* fMrqY;                                         // [fNDataPointsInFit+1] Index into the PMTs (from above) corresponding OccRatio
+    Float_t* fMrqSigma;                                     // [fNDataPointsInFit+1] Error on each PMT occupancy (statistical)
 
-    Float_t* fMrqParameters;                                //! [fNParameters+1] Parameters for the model
-    Int_t* fMrqVary;                                        //! [fNParameters+1] Flag for the parameters which vary in the model (from above)
-    Float_t** fMrqCovariance;                               //! [fNParameters+1][fNParameters+1] Covariance matrix
-    Float_t** fMrqAlpha;                                    //! [fNParameters+1][fNParameters+1] Curvature matrix
+    Float_t* fMrqParameters;                                // [fNParameters+1] Parameters for the model
+    Int_t* fMrqVary;                                        // [fNParameters+1] Flag for the parameters which vary in the model (from above)
+    Float_t** fMrqCovariance;                               // [fNParameters+1][fNParameters+1] Covariance matrix
+    Float_t** fMrqAlpha;                                    // [fNParameters+1][fNParameters+1] Curvature matrix
 
-    Int_t fCurrentRunIndex;                                 //! Current run index in the LOCASRun Reader Object
-    QDQXX fQDXX;                                           //! Private DQXX accessor (for old SNO data)
-    std::string fDQXXDirPrefix ;                            //! Full system path to the DQXX files (for old SNO data)
+    Int_t fCurrentRunIndex;                                 // Current run index in the LOCASRun Reader Object
+    QDQXX fQDXX;                                           // Private DQXX accessor (for old SNO data)
+    std::string fDQXXDirPrefix ;                            // Full system path to the DQXX files (for old SNO data)
     
 
     std::map< Int_t, LOCASPMT > fFitPMTs;                   // Map of PMTs which pass the cut selection and are to be used in the fit
-    std::map< Int_t, LOCASPMT >::iterator fiPMT;            //! Map iterator used when scanning through PMTs
+    std::map< Int_t, LOCASPMT >::iterator fiPMT;            // Map iterator used when scanning through PMTs
 
     ClassDef( LOCASFit, 1 )
 
