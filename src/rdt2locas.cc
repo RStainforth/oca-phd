@@ -57,6 +57,8 @@
 #include "LOCASPMT.hh"
 #include "LOCASDB.hh"
 #include "LOCASMath.hh"
+#include "LOCASFitLBPosition.hh"
+#include "LOCASRunReader.hh"
 
 #include "QRdt.h"
 #include "QDQXX.h"
@@ -112,8 +114,6 @@ int main( int argc, char** argv ){
   LightPathCalculator lightPath = Utility::Get()->GetLightPathCalculator();
   lightPath.LoadShadowingGeometryInfo( "geo/sno_d2o.geo" );
   //////////////////////////////////////////////////////////////
-
-  //cout << "Number of PMT is: " << pmtInfo.GetCount() << endl;
 
   // Parse arguments passed to the command line
   LOCASCmdOptions Opts = ParseArguments( argc, argv );
@@ -304,7 +304,7 @@ int main( int argc, char** argv ){
       // Distances through the heavy water, acrylic and water regions
 
       ///////////// OFF AXIS /////////////
-      lightPath.CalcByPosition( lRunPtr->GetLBPos(), lPMT.GetPos(), lightPath.WavelengthToEnergy( ( lRunPtr->GetLambda() ) * 1e-6 ), 30.0 );
+      lightPath.CalcByPosition( lRunPtr->GetLBPos(), lPMT.GetPos() );
       
       lPMT.SetDistInScint( lightPath.GetDistInScint() );
       lPMT.SetDistInAV( lightPath.GetDistInAV() );
@@ -333,7 +333,7 @@ int main( int argc, char** argv ){
       else{ lPMT.SetBadPath( false ); }
       
       ///////////// CENTRAL /////////////
-      lightPath.CalcByPosition( lRunPtr->GetCentralLBPos(), lPMT.GetPos(), lightPath.WavelengthToEnergy( ( lRunPtr->GetCentralLambda() ) * 1e-6 ), 30.0 );
+      lightPath.CalcByPosition( lRunPtr->GetCentralLBPos(), lPMT.GetPos() );
       
       lPMT.SetCentralDistInScint( lightPath.GetDistInScint() );
       lPMT.SetCentralDistInAV( lightPath.GetDistInAV() );
@@ -362,7 +362,7 @@ int main( int argc, char** argv ){
       else{ lPMT.SetCentralBadPath( false ); }
 
       ///////////// WAVELENGTH /////////////
-      lightPath.CalcByPosition( lRunPtr->GetWavelengthLBPos(), lPMT.GetPos(), lightPath.WavelengthToEnergy( ( lRunPtr->GetWavelengthLambda() ) * 1e-6 ), 30.0 );
+      lightPath.CalcByPosition( lRunPtr->GetWavelengthLBPos(), lPMT.GetPos() );
       
       lPMT.SetWavelengthDistInScint( lightPath.GetDistInScint() );
       lPMT.SetWavelengthDistInAV( lightPath.GetDistInAV() );
