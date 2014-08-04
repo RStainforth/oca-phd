@@ -56,11 +56,15 @@ namespace LOCAS{
     // Initialise the parameters
     void InitialiseParameters();
 
-    // Allocate space for the parameters
-    void AllocateParameters();
+    // This must only be called after LoadFitFile has been called
+    // Fits the laserball positions for all the runs
+    void FitLBPositions();
 
     // Print information about all the parameters
     void PrintInitialisationInfo();
+
+    // Allocate space for the parameters
+    void AllocateParameters();
 
     // Screen the data and remove PMTs based on certain selection criteria
     void DataScreen( const Float_t chiSqLimit = 100.0 );                              
@@ -96,6 +100,9 @@ namespace LOCAS{
     // Calculate the error on an individual PMT
     Float_t CalculatePMTSigma( const LOCASPMT* iPMTPtr );
 
+    // Calculate the error on an individual PMT
+    Float_t CalculatePMTVariability( const LOCASPMT* iPMTPtr );
+
     // Calculate the occupancy ratio (data) value
     Float_t CalculatePMTData( const LOCASPMT* iPMTPtr );
 
@@ -119,6 +126,12 @@ namespace LOCAS{
 
     // Deallocate all data declared on the stack - this is called by the LOCASFit destructor
     void DeAllocate();
+
+    // Print the coviariance matrix
+    void PrintCovarianceMatrix();
+    
+    // Print Paramter Information
+    void PrintParameterInformation();
     
     ///////////////////////////////////
     /////     FITTING METHODS     /////
@@ -433,6 +446,7 @@ namespace LOCAS{
     Int_t fNElements;                                       // The number of elements in the fChiArray[] and fResArray[] array
     Float_t* fChiArray;                                     // [fNElements] Array of chisquared for mrqcof() calls
     Float_t* fResArray;                                     // [fNElements] Array of residuals for mrqcof() calls
+    Float_t* fCentralRunNorms;
 
     Int_t fLBDistributionType;
     Int_t fiAng;                                            // Index for PMT angular response to be re-zeroed
@@ -461,6 +475,16 @@ namespace LOCAS{
     Int_t fCurrentRunIndex;                                 // Current run index in the LOCASRun Reader Object
     QDQXX fQDXX;                                           // Private DQXX accessor (for old SNO data)
     std::string fDQXXDirPrefix ;                            // Full system path to the DQXX files (for old SNO data)
+
+    LOCASRun** fRunPtrs;
+    LOCASPMT** fPMTPtrs;
+
+    Int_t fSkipLT25;
+    Int_t fSkipGT2;
+    Int_t fSkipErrFrac;
+    Int_t fSkipBad;
+    Int_t fSkipBasicBad;
+    Int_t fSkipCentralBad;
     
 
     std::map< Int_t, LOCASPMT > fFitPMTs;                   // Map of PMTs which pass the cut selection and are to be used in the fit

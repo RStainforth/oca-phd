@@ -40,10 +40,12 @@ int main( int argc, char** argv ){
 
 
   LOCASFit lFit;
+
   lFit.LoadFitFile( argv[1] );
-  lFit.DataScreen( 100.0 );
+
+  lFit.DataScreen( 1000.0 );
   lFit.PerformFit();
-  lFit.DataScreen( 50.0 );
+  lFit.DataScreen( 100.0 );
   lFit.PerformFit();
   lFit.DataScreen( 25.0 );
   lFit.PerformFit();
@@ -51,12 +53,11 @@ int main( int argc, char** argv ){
   lFit.PerformFit();
   lFit.DataScreen( 16.0 );
   lFit.PerformFit();
-
-  
-  lFit.WriteFitToFile("example.root");
+  lFit.PrintParameterInformation();
 
   TCanvas* canVas = new TCanvas( "LB Distribution Plot", "LB Distribution Plot", 640, 400 ); 
   ( lFit.ApplyLBDistribution() )->Draw( "colz" );
+  gStyle->SetOptStat( 0 );
   canVas->Print("lbdist.eps");
 
   TCanvas* canVas1 = new TCanvas( "LB Distribution Mask Function", "LB Distribution Mask Function", 640, 400 ); 
@@ -68,6 +69,8 @@ int main( int argc, char** argv ){
   ( lFit.AngularResponseTH1F() )->Draw();
   gStyle->SetOptStat( 0 );
   canVas2->Print("angresp.eps");
+
+  lFit.WriteFitToFile("SLPFIT2_Fit.root");
 
   cout << "\n";
   cout << "#######################################" << endl;

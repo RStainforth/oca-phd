@@ -18,6 +18,7 @@
 #include <TObject.h>
 
 #include <iostream>
+#include <cmath>
 
 #include <stdio.h>
 #include <stddef.h>
@@ -37,11 +38,11 @@ ClassImp( LOCASMath );
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t LOCASMath::MPECorrectedNPrompt( const Float_t nPrompt, const Float_t nPulses )
+Double_t LOCASMath::MPECorrectedNPrompt( const Double_t nPrompt, const Double_t nPulses )
 {
 
   // This is the equation as featured in eqn 4.13, page 77 of B.Moffat's PhD thesis
-  Float_t mpePrompt = -1.0 * TMath::Log( ( 1.0 - ( nPrompt / nPulses ) ) );
+  Double_t mpePrompt = -log( ( 1.0 - ( nPrompt / nPulses ) ) );
   return mpePrompt;
 
 }
@@ -49,11 +50,11 @@ Float_t LOCASMath::MPECorrectedNPrompt( const Float_t nPrompt, const Float_t nPu
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t LOCASMath::MPECorrectedNPromptErr( const Float_t nPrompt, const Float_t nPulses )
+Double_t LOCASMath::MPECorrectedNPromptErr( const Double_t nPrompt, const Double_t nPulses )
 {
 
   // This is the equation as featured in eqn 4.14, page 77 of B.Moffat's PhD thesis
-  Float_t mpePromptErr = ( TMath::Sqrt( nPrompt ) ) / ( nPulses - nPrompt );
+  Double_t mpePromptErr = sqrt( nPrompt ) / ( nPulses - nPrompt );
   return mpePromptErr;
 
 }
@@ -61,11 +62,11 @@ Float_t LOCASMath::MPECorrectedNPromptErr( const Float_t nPrompt, const Float_t 
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t LOCASMath::MPECorrectedNPromptCorr( const Float_t mpeOcc, const Float_t nPrompt, const Float_t nPulses )
+Double_t LOCASMath::MPECorrectedNPromptCorr( const Double_t mpeOcc, const Double_t nPrompt, const Double_t nPulses )
 {
 
   // This is the equation as featured in eqn 4.14, page 77 of B.Moffat's PhD thesis
-  Float_t mpePromptCorr = ( (Float_t)( mpeOcc * nPulses / nPrompt ) );
+  Double_t mpePromptCorr = ( (Double_t)( mpeOcc * nPulses / nPrompt ) );
   return mpePromptCorr;
 
 }
@@ -73,12 +74,12 @@ Float_t LOCASMath::MPECorrectedNPromptCorr( const Float_t mpeOcc, const Float_t 
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t LOCASMath::OccRatioErr( const LOCASPMT* pmt ){
+Double_t LOCASMath::OccRatioErr( const LOCASPMT* pmt ){
 
-  Float_t errResult = 1.0;
-  Float_t run2 = TMath::Power( ( ( pmt->GetMPECorrOccupancyErr() ) / ( pmt->GetMPECorrOccupancy() ) ), 2 );
-  Float_t centralRun2 = TMath::Power( ( ( pmt->GetCentralMPECorrOccupancyErr() ) / ( pmt->GetCentralMPECorrOccupancy() ) ), 2 );
-  errResult = ( pmt->GetMPECorrOccupancy() / pmt->GetCentralMPECorrOccupancy() ) * TMath::Sqrt( run2 + centralRun2 );
+  Double_t errResult = 1.0;
+  Double_t run2 = pow( ( ( pmt->GetMPECorrOccupancyErr() ) / ( pmt->GetMPECorrOccupancy() ) ), 2 );
+  Double_t centralRun2 = pow( ( ( pmt->GetCentralMPECorrOccupancyErr() ) / ( pmt->GetCentralMPECorrOccupancy() ) ), 2 );
+  errResult = ( pmt->GetMPECorrOccupancy() / pmt->GetCentralMPECorrOccupancy() ) * sqrt( run2 + centralRun2 );
   return errResult;
   
 }

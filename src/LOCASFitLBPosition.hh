@@ -21,6 +21,7 @@
 #include "LOCASPMT.hh"
 #include "LOCASRun.hh"
 #include "LOCASMath.hh"
+#include "LOCASRunReader.hh"
 
 #include "RAT/DU/LightPathCalculator.hh"
 #include "RAT/DU/GroupVelocity.hh"
