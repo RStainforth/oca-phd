@@ -35,6 +35,8 @@
 #include <TObject.h>
 #include <TClonesArray.h>
 
+#include "RAT/DU/LightPathCalculator.hh"
+#include "RAT/DU/PMTInfo.hh"
 #include "RAT/DS/SOC.hh"
 #include "RAT/DU/SOCReader.hh"
 
@@ -60,7 +62,10 @@ namespace LOCAS{
 
     // Fill information from a SOC file with run ID 'runID'
     // into the run information here
-    void Fill( RAT::DU::SOCReader& socR, Int_t runID );
+    void Fill( RAT::DU::SOCReader& socR,
+               RAT::DU::LightPathCalculator& lLP,
+               RAT::DU::PMTInfo& lDB,
+               Int_t runID );
     
     void CopySOCRunInfo( RAT::DS::SOC& socRun );
     void CopySOCPMTInfo( RAT::DS::SOC& socRun );

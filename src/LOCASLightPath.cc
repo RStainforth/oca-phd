@@ -48,7 +48,7 @@ LOCASLightPath& LOCASLightPath::operator=( const LOCASLightPath& rhs )
   fDistInNeck = rhs.fDistInNeck;
   fDistInUpperTarget = rhs.fDistInUpperTarget;
   fDistInLowerTarget = rhs.fDistInLowerTarget;
-  fDistInScint = rhs.fDistInScint;
+  fDistInInnerAV = rhs.fDistInInnerAV;
   fDistInAV = rhs.fDistInAV;
   fDistInWater = rhs.fDistInWater;
 
@@ -109,7 +109,7 @@ void LOCASLightPath::Initialise()
   fDistInNeck = -10.0;
   fDistInUpperTarget = -10.0;
   fDistInLowerTarget = -10.0;
-  fDistInScint = -10.0;
+  fDistInInnerAV = -10.0;
   fDistInAV = -10.0;
   fDistInWater = -10.0;
 
@@ -204,7 +204,7 @@ void LOCASLightPath::Clear()
   fDistInNeck = -10.0;
   fDistInUpperTarget = -10.0;
   fDistInLowerTarget = -10.0;
-  fDistInScint = -10.0;
+  fDistInInnerAV = -10.0;
   fDistInAV = -10.0;
   fDistInWater = -10.0;
 
@@ -746,7 +746,7 @@ void LOCASLightPath::DefineDistances( const TVector3& eventPos,
     // ELSE: Declare refracted path values.
     else{
 
-      SetDistInScint( ( distScint - eventPos ).Mag() );
+      SetDistInInnerAV( ( distScint - eventPos ).Mag() );
       SetDistInAV( ( distAV - distScint ).Mag() );
       SetDistInWater( ( distWater - distAV ).Mag() );
 
@@ -775,7 +775,7 @@ void LOCASLightPath::DefineDistances( const TVector3& eventPos,
       
       if ( approachAngleInner > ( -1.0 * eventPos ).Angle( pmtPos - eventPos ) ){
 
-        SetDistInScint( ( distAVXDet - distScint ).Mag() );
+        SetDistInInnerAV( ( distAVXDet - distScint ).Mag() );
         SetDistInAV( ( eventPos - distAVXDet ).Mag() + ( distAV - distScint ).Mag() );
         SetDistInWater( ( distWater - distAV ).Mag() );
 
@@ -795,7 +795,7 @@ void LOCASLightPath::DefineDistances( const TVector3& eventPos,
       
       else{
 
-        SetDistInScint( 0.0 );
+        SetDistInInnerAV( 0.0 );
         SetDistInAV( ( eventPos - distAV ).Mag() );
         SetDistInWater( ( distWater - distAV ).Mag() );
 
@@ -823,7 +823,7 @@ void LOCASLightPath::DefineDistances( const TVector3& eventPos,
       
       if ( approachAngleInner > ( -1 * eventPos ).Angle( pmtPos - eventPos ) ){
         
-        SetDistInScint( ( distAVXDet - distScint ).Mag() );
+        SetDistInInnerAV( ( distAVXDet - distScint ).Mag() );
         SetDistInAV( ( distWaterXDet - distAVXDet ).Mag() + ( distAV - distScint ).Mag() );
         SetDistInWater( ( eventPos - distWaterXDet ).Mag() + ( distWater - distAV ).Mag() );
 
@@ -846,7 +846,7 @@ void LOCASLightPath::DefineDistances( const TVector3& eventPos,
                &&
                ( approachAngleOuter > ( -1.0 * eventPos ).Angle( pmtPos - eventPos ) ) ){
         
-        SetDistInScint( 0.0 );
+        SetDistInInnerAV( 0.0 );
         SetDistInAV( ( distWaterXDet - distAV ).Mag() );
         SetDistInWater( ( eventPos - distWaterXDet ).Mag() + ( distWater - distAV ).Mag() );
 
@@ -865,7 +865,7 @@ void LOCASLightPath::DefineDistances( const TVector3& eventPos,
       
       else{
 
-        SetDistInScint( 0.0 );
+        SetDistInInnerAV( 0.0 );
         SetDistInAV( 0.0 );
         SetDistInWater( ( eventPos - pmtPos ).Mag() );
 
@@ -937,15 +937,15 @@ void LOCASLightPath::CalculateStraightPath( const TVector3& eventPos,
 { 
   if( std::isnan( eventPos.Mag() ) )
 	{
-	  SetDistInScint( eventPos.Mag() );
+	  SetDistInInnerAV( eventPos.Mag() );
 	  SetDistInAV( eventPos.Mag() );
 	  SetDistInWater( eventPos.Mag() );
 	  return;
 	}
 
-  SetDistInScint( CalcDistInSphere( eventPos, pmtPos, fAVInnerRadius ) );
-  SetDistInAV( CalcDistInSphere( eventPos, pmtPos, fAVOuterRadius ) - fDistInScint );
-  SetDistInWater( ( pmtPos - eventPos ).Mag() - fDistInAV - fDistInScint );
+  SetDistInInnerAV( CalcDistInSphere( eventPos, pmtPos, fAVInnerRadius ) );
+  SetDistInAV( CalcDistInSphere( eventPos, pmtPos, fAVOuterRadius ) - fDistInInnerAV );
+  SetDistInWater( ( pmtPos - eventPos ).Mag() - fDistInAV - fDistInInnerAV );
 
   SetLightPathEndPos( pmtPos );
   SetIncidentVecOnPMT( ( pmtPos - eventPos ).Unit() );
@@ -956,7 +956,7 @@ void LOCASLightPath::CalculateStraightPath( const TVector3& eventPos,
   if ( eventPos.Mag() < fAVInnerRadius ){
 
     SetLightPathType( 1 );
-    SetPointOnAV1st( eventPos + ( fDistInScint * ( ( pmtPos - eventPos ).Unit() ) ) );
+    SetPointOnAV1st( eventPos + ( fDistInInnerAV * ( ( pmtPos - eventPos ).Unit() ) ) );
     SetPointOnAV2nd( eventPos + ( fDistInAV * ( ( pmtPos - eventPos ).Unit() ) ) );
     
   }
@@ -1535,7 +1535,7 @@ void LOCASLightPath::CalculateSolidAnglePolygon( const TVector3& pmtNorm,
 
   std::vector<TVector3> nAVPoints;
 
-  if( !fTIR && !fResvHit && ( fDistInScint + fDistInAV > 1.0 ) ){
+  if( !fTIR && !fResvHit && ( fDistInInnerAV + fDistInAV > 1.0 ) ){
 
     for (int k = 0; k < nVal; k++){
 

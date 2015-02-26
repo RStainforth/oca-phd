@@ -40,7 +40,8 @@
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#include "RAT/getopt.h"
+#include "RAT/DU/Utility.hh"
+#include "RAT/DU/LightPathCalculator.hh"
 #include "RAT/DU/SOCReader.hh"
 #include "RAT/DS/SOC.hh"
 #include "RAT/DS/SOCPMT.hh"
@@ -48,11 +49,11 @@
 #include "LOCASRun.hh"
 #include "LOCASPMT.hh"
 #include "LOCASDB.hh"
-#include "LOCASLightPath.hh"
 
 #include "TFile.h"
 #include "TTree.h"
 
+#include <getopt.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -237,20 +238,30 @@ int main( int argc, char** argv ){
     soc.Add( ( socRunDir + wrIDStr + (string)"_Run.root" ).c_str() );
   }
 
+  // Create LightPathCalculator object;
+  RAT::DU::LightPathCalculator lightPath = RAT::DU::Utility::Get()->GetLightPathCalculator();
+  RAT::DU::PMTInfo pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
+
   // Now fill the LOCASRuns objects with the respective information
   // from the SOC files in the SOC reader
   cout << "Now filling run information from SOC file..." << endl;
-  lRunPtr->Fill( soc, rID );
-  if ( crBool ){ lCRunPtr->Fill( soc, crID ); cout << "Now filling central run information from SOC file..." << endl;}
-  if ( wrBool ){ lWRunPtr->Fill( soc, wrID ); cout << "Now filling wavelength run information from SOC file..." << endl;}
-
+  lRunPtr->Fill( soc, lightPath, pmtInfo, rID );
+  if ( crBool ){ 
+    cout << "Now filling central run information from SOC file..." << endl;
+    lCRunPtr->Fill( soc, lightPath, pmtInfo, crID ); 
+  }
+  if ( wrBool ){ 
+    cout << "Now filling wavelength run information from SOC file..." << endl;
+    lWRunPtr->Fill( soc, lightPath, pmtInfo, wrID );
+  }
+  
 
   // Now that all the SOC files have been loaded, and the LOCASRun objects
   // created, the corrections to the main-run entries can be calculated
   // using information from the other two files. The CrossRunFill function will
   // check the Run-IDs of both the central- and wavelength- LOCASRun objects
   // to see if their data has been entered following the above 'if' statements
-  //cout << "Now Performing CrossRunFill" << endl;
+  cout << "Now Performing CrossRunFill" << endl;
   // // CALCULATION OF CROSS-RUN INFORMATION GOES HERE //
   // // START //
   lRunPtr->CrossRunFill( lCRunPtr, lWRunPtr );
@@ -298,7 +309,7 @@ int main( int argc, char** argv ){
 
 LOCASCmdOptions ParseArguments( int argc, char** argv) 
 {
-  static struct RAT::option opts[] = { {"help", 0, NULL, 'h'},
+  static struct option opts[] = { {"help", 0, NULL, 'h'},
                                        {"run-id", 1, NULL, 'r'},
                                        {"central-run-id", 1, NULL, 'c'},
                                        {"wavelength-run-id", 1, NULL, 'w'},
@@ -310,9 +321,9 @@ LOCASCmdOptions ParseArguments( int argc, char** argv)
   while (c != -1) {
     switch (c) {
     case 'h': cout << "HELP GOES HERE" << endl; break;
-    case 'r': options.fRID = atol( RAT::optarg ); break;
-    case 'c': options.fCRID = atol( RAT::optarg ); break;
-    case 'w': options.fWRID = atol( RAT::optarg ); break;
+    case 'r': options.fRID = atol( optarg ); break;
+    case 'c': options.fCRID = atol( optarg ); break;
+    case 'w': options.fWRID = atol( optarg ); break;
     }
     
     c = getopt_long(argc, argv, "h:r:c:w:", opts, &option_index);

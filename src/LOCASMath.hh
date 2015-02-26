@@ -52,11 +52,11 @@ namespace LOCAS{
     ////////     METHODS     ////////
     /////////////////////////////////
 
-    static Float_t MPECorrectedNPrompt( const Float_t nPrompt, const Float_t nPulses );         // Calculate the MPE correction for the prompt counts
-    static Float_t MPECorrectedNPromptErr( const Float_t nPrompt, const Float_t nPulses );      // Calculate the error on the MPE corrected prompt counts
-    static Float_t MPECorrectedNPromptCorr( const Float_t mpeOcc, const Float_t nPrompt, const Float_t nPulses );      // Calculate the correction factor on the MPE calculation of the occupancy
+    static Double_t MPECorrectedNPrompt( const Double_t nPrompt, const Double_t nPulses );         // Calculate the MPE correction for the prompt counts
+    static Double_t MPECorrectedNPromptErr( const Double_t nPrompt, const Double_t nPulses );      // Calculate the error on the MPE corrected prompt counts
+    static Double_t MPECorrectedNPromptCorr( const Double_t mpeOcc, const Double_t nPrompt, const Double_t nPulses );      // Calculate the correction factor on the MPE calculation of the occupancy
 
-    static Float_t OccRatioErr( const LOCASPMT* pmt );
+    static Double_t OccRatioErr( const LOCASPMT* pmt );
 
     static float* LOCASVector( const long nStart, const long nEnd );
     static int* LOCASIntVector( const long nStart, const long nEnd );

@@ -98,7 +98,7 @@ void LOCASDataFiller::AddData( LOCASRawDataStore& dataSt, LOCASFilterStore& filt
       // the central and off-axis runs. Also checks the total distance of each light path
       
       else if ( filterName == "filter_deltascint" ){
-        Float_t deltaScint = TMath::Abs( iD->GetDistInScint() - iD->GetCentralDistInScint() );
+        Float_t deltaScint = TMath::Abs( iD->GetDistInInnerAV() - iD->GetCentralDistInInnerAV() );
         if ( !iF->CheckCondition( deltaScint ) ){ 
           validPoint = false; 
         }

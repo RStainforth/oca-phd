@@ -44,8 +44,8 @@ LOCASRawDataPoint::LOCASRawDataPoint( const LOCASPMT* pmtPtr, const LOCASRun* ru
   SetMPECorrOccupancy( pmtPtr->GetMPECorrOccupancy() );
   SetCentralMPECorrOccupancy( pmtPtr->GetCentralMPECorrOccupancy() );
   
-  SetDistInScint( pmtPtr->GetDistInScint() );
-  SetCentralDistInScint( pmtPtr->GetCentralDistInScint() );
+  SetDistInInnerAV( pmtPtr->GetDistInInnerAV() );
+  SetCentralDistInInnerAV( pmtPtr->GetCentralDistInInnerAV() );
   SetDistInAV( pmtPtr->GetDistInAV() );
   SetCentralDistInAV( pmtPtr->GetCentralDistInAV() );
   SetDistInWater( pmtPtr->GetDistInWater() );
@@ -132,8 +132,8 @@ LOCASRawDataPoint& LOCASRawDataPoint::operator=( const LOCASRawDataPoint& rhs )
 
   SetModelCorrOccRatio( rhs.GetModelCorrOccRatio() );
 
-  SetDistInScint( rhs.GetDistInScint() );
-  SetCentralDistInScint( rhs.GetCentralDistInScint() );
+  SetDistInInnerAV( rhs.GetDistInInnerAV() );
+  SetCentralDistInInnerAV( rhs.GetCentralDistInInnerAV() );
   SetDistInAV( rhs.GetDistInAV() );
   SetCentralDistInAV( rhs.GetCentralDistInAV() );
   SetDistInWater( rhs.GetDistInWater() );

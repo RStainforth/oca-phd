@@ -67,7 +67,7 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
 
   fFresnelTCoeff = rhs.fFresnelTCoeff;
 
-  fDistInScint = rhs.fDistInScint;
+  fDistInInnerAV = rhs.fDistInInnerAV;
   fDistInAV = rhs.fDistInAV;
   fDistInWater = rhs.fDistInWater;
   fDistInNeck = rhs.fDistInNeck;
@@ -106,7 +106,7 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
 
   fCentralFresnelTCoeff = rhs.fCentralFresnelTCoeff;
 
-  fCentralDistInScint = rhs.fCentralDistInScint;
+  fCentralDistInInnerAV = rhs.fCentralDistInInnerAV;
   fCentralDistInAV = rhs.fCentralDistInAV;
   fCentralDistInWater = rhs.fCentralDistInWater;
   fCentralDistInNeck = rhs.fCentralDistInNeck;
@@ -145,7 +145,7 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
 
   fWavelengthFresnelTCoeff = rhs.fWavelengthFresnelTCoeff;
 
-  fWavelengthDistInScint = rhs.fWavelengthDistInScint;
+  fWavelengthDistInInnerAV = rhs.fWavelengthDistInInnerAV;
   fWavelengthDistInAV = rhs.fWavelengthDistInAV;
   fWavelengthDistInWater = rhs.fWavelengthDistInWater;
   fWavelengthDistInNeck = rhs.fWavelengthDistInNeck;
@@ -209,7 +209,7 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
 
   fFresnelTCoeff = rhs.fFresnelTCoeff;
 
-  fDistInScint = rhs.fDistInScint;
+  fDistInInnerAV = rhs.fDistInInnerAV;
   fDistInAV = rhs.fDistInAV;
   fDistInWater = rhs.fDistInWater;
   fDistInNeck = rhs.fDistInNeck;
@@ -248,7 +248,7 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
 
   fCentralFresnelTCoeff = rhs.fCentralFresnelTCoeff;
 
-  fCentralDistInScint = rhs.fCentralDistInScint;
+  fCentralDistInInnerAV = rhs.fCentralDistInInnerAV;
   fCentralDistInAV = rhs.fCentralDistInAV;
   fCentralDistInWater = rhs.fCentralDistInWater;
   fCentralDistInNeck = rhs.fCentralDistInNeck;
@@ -287,7 +287,7 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
 
   fWavelengthFresnelTCoeff = rhs.fWavelengthFresnelTCoeff;
 
-  fWavelengthDistInScint = rhs.fWavelengthDistInScint;
+  fWavelengthDistInInnerAV = rhs.fWavelengthDistInInnerAV;
   fWavelengthDistInAV = rhs.fWavelengthDistInAV;
   fWavelengthDistInWater = rhs.fWavelengthDistInWater;
   fWavelengthDistInNeck = rhs.fWavelengthDistInNeck;
@@ -354,7 +354,7 @@ void LOCASPMT::Initialise()
 
   SetFresnelTCoeff( -10.0 );
 
-  SetDistInScint( -10.0 );
+  SetDistInInnerAV( -10.0 );
   SetDistInAV( -10.0 );
   SetDistInWater( -10.0 );
   SetDistInNeck( -10.0 );
@@ -392,7 +392,7 @@ void LOCASPMT::Initialise()
 
   SetCentralFresnelTCoeff( -10.0 );
 
-  SetCentralDistInScint( -10.0 );
+  SetCentralDistInInnerAV( -10.0 );
   SetCentralDistInAV( -10.0 );
   SetCentralDistInWater( -10.0 );
   SetCentralDistInNeck( -10.0 );
@@ -430,7 +430,7 @@ void LOCASPMT::Initialise()
 
   SetWavelengthFresnelTCoeff( -10.0 );
 
-  SetWavelengthDistInScint( -10.0 );
+  SetWavelengthDistInInnerAV( -10.0 );
   SetWavelengthDistInAV( -10.0 );
   SetWavelengthDistInWater( -10.0 );
   SetWavelengthDistInNeck( -10.0 );
@@ -484,7 +484,7 @@ void LOCASPMT::AddSOCPMTData( RAT::DS::SOCPMT& socPMT )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASPMT::ProcessLightPath( LOCASLightPath& lPath )
+void LOCASPMT::ProcessLightPath( RAT::DU::LightPathCalculator& lPath )
 {
 
   if ( fType == 1 ){
@@ -493,11 +493,11 @@ void LOCASPMT::ProcessLightPath( LOCASLightPath& lPath )
 
     if ( lPath.GetXAVNeck() ){ 
       SetNeckFlag( true );
-      SetDistInNeck( lPath.GetDistInNeck() );
+      //SetDistInNeck( lPath.GetDistInNeck() );
     }
     
-    SetDistInNeck( lPath.GetDistInNeck() );
-    SetDistInScint( lPath.GetDistInScint() );
+    //SetDistInNeck( lPath.GetDistInNeck() );
+    SetDistInInnerAV( lPath.GetDistInInnerAV() );
     SetDistInAV( lPath.GetDistInAV() );
     SetDistInWater( lPath.GetDistInWater() );
     SetTotalDist( lPath.GetTotalDist() );
@@ -548,7 +548,7 @@ void LOCASPMT::VerifyPMT()
 
   if ( fFresnelTCoeff == 0.0 || fFresnelTCoeff > 1.0 ){ SetIsVerified( false ); }
 
-  if ( fDistInScint < 0.0 || fDistInScint > 13000.0 ){ SetIsVerified( false ); }
+  if ( fDistInInnerAV < 0.0 || fDistInInnerAV > 13000.0 ){ SetIsVerified( false ); }
   if ( fDistInAV < 0.0 || fDistInAV > 1000.0 ){ SetIsVerified( false ); }
   if ( fDistInWater < 0.0 || fDistInWater > 10000.0 ){ SetIsVerified( false ); }
   

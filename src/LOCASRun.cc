@@ -21,14 +21,17 @@
 #include "LOCASRun.hh"
 #include "LOCASDB.hh"
 #include "LOCASPMT.hh"
-#include "LOCASLightPath.hh"
 #include "LOCASMath.hh"
 
 #include <map>
 
 #include "RAT/DS/SOCPMT.hh"
 #include "RAT/DS/SOC.hh"
+#include "RAT/DS/FitResult.hh"
+#include "RAT/DS/FitVertex.hh"
 #include "RAT/DU/SOCReader.hh"
+#include "RAT/DU/PMTInfo.hh"
+#include "RAT/DU/LightPathCalculator.hh"
 
 using namespace LOCAS;
 using namespace std;
@@ -259,14 +262,17 @@ void LOCASRun::Clear( Option_t* option )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASRun::Fill( RAT::DU::SOCReader& socR, Int_t runID )
+void LOCASRun::Fill( RAT::DU::SOCReader& socR, 
+                     RAT::DU::LightPathCalculator& lLP,
+                     RAT::DU::PMTInfo& lDB,
+                     Int_t runID )
 {
 
-  RAT::DS::SOC socPtr;
+  RAT::DS::SOC* socPtr = new RAT::DS::SOC;
   // First check that a SOC file with the specified runID exists in the SOCReader
   for ( Int_t iSOC = 0; iSOC < socR.GetSOCCount(); iSOC++ ){
-    socPtr = socR.GetSOC( iSOC );
-    if ( socPtr.GetRunID() == runID ){ break; }
+    *socPtr = socR.GetSOC( iSOC );
+    if ( socPtr->GetRunID() == runID ){ break; }
     else{ continue; }
     
     if ( iSOC == ( socR.GetSOCCount() - 1 ) ){
@@ -279,17 +285,9 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR, Int_t runID )
   // neccessary information.
   
   // The run information from the SOC file...
-  CopySOCRunInfo( socPtr );
+  CopySOCRunInfo( *socPtr );
   // ... and the PMT information from the SOC file.
-  CopySOCPMTInfo( socPtr );
-
-  // Create the LOCAS Data base Object (LOCASDB) and
-  // load PMT information and detector parameters;
-  LOCASDB lDB;
-  // Load the RAT PMT Positions, PMT Normals and Types
-  lDB.LoadPMTPositions();
-  lDB.LoadPMTNormals();
-  lDB.LoadPMTTypes();
+  CopySOCPMTInfo( *socPtr );
 
   // Calculate the number of prompt counts over each PMT for the run
   CalculateLBIntensityNorm();
@@ -299,10 +297,8 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR, Int_t runID )
 
   // The PMT ID variable for each PMT in the loop
   Int_t pmtID;
-  
-  // Create a LOCASLightPath which will be calculated for each 
-  // loop ( and inherently each PMT )
-  LOCASLightPath lLP;
+
+  Double_t wavelengthMeV = lLP.WavelengthToEnergy( GetLambda() * 1.0e-6 );
   
   // Set the PMT positions and normals and then 'feed' the PMT a calculated light path.
   // The PMT 'eats' this light path and calculates it's member variables
@@ -316,9 +312,10 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR, Int_t runID )
     ( iLP->second ).SetRunID( runID );
 
     // Set the Normals and Positions
-    ( iLP->second ).SetPos( lDB.GetPMTPosition( pmtID ) );
-    ( iLP->second ).SetNorm( lDB.GetPMTNormal( pmtID ) );
-    ( iLP->second ).SetType( lDB.GetPMTType( pmtID ) );
+    ( iLP->second ).SetPos( lDB.GetPosition( pmtID ) );
+    ( iLP->second ).SetNorm( lDB.GetDirection( pmtID ) );
+    ( iLP->second ).SetType( lDB.GetType( pmtID ) );
+
     // Put some of the run specific information on the PMT data structure.
     // This is worth it when it comes to fitting, as only a single pointer to
     // the PMT object will be required.
@@ -331,19 +328,19 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR, Int_t runID )
     ( iLP->second ).SetMPECorrOccupancyCorr( ( iLP->second ).GetMPECorrOccupancy() / ( iLP->second ).GetOccupancy() );
     
     // Calculate the light path for this source position and PMT
-    lLP.CalculatePath( GetLBPos(), GetPMT( iLP->first ).GetPos(), 10.0, GetLambda() );
+    lLP.CalcByPosition( GetLBPos(), GetPMT( iLP->first ).GetPos(), wavelengthMeV, 10.0 );
     
+
     // 'feed' the light path to the PMT
-    ( iLP->second ).ProcessLightPath( lLP );    
+    ( iLP->second ).ProcessLightPath( lLP ); 
+  
     // Reset the light path object
     lLP.Clear();
-    
+
+   
     ( iLP->second ).VerifyPMT();
     
   }
-
-  // Clear the LOCASDB object to free up memory
-  lDB.Clear();
 
 }
 
@@ -358,8 +355,16 @@ void LOCASRun::CopySOCRunInfo( RAT::DS::SOC& socRun )
 
   SetRunID( socRun.GetRunID() );
   SetSourceID( socRun.GetSourceID() );
-  //SetLambda( socRun.GetLaserWavelength() );
-  //SetLBPos( socRun.GetSourcePosManip() ); 
+  SetLambda( (Double_t)socRun.GetCalib().GetMode() );
+
+  RAT::DS::FitResult lbFit = socRun.GetFitResult( "lbfit" );
+  RAT::DS::FitVertex lbVertex = lbFit.GetVertex( 0 );
+   
+  SetLBPos( lbVertex.GetPosition() );
+
+  SetLBXPosErr( lbVertex.GetPositivePositionError().X() );
+  SetLBXPosErr( lbVertex.GetPositivePositionError().Y() );
+  SetLBXPosErr( lbVertex.GetPositivePositionError().Z() );
 
 }
 
@@ -543,7 +548,7 @@ void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
       
       ( fLOCASPMTs[ pmtID ] ).SetCentralFresnelTCoeff( ( iCPMT->second ).GetFresnelTCoeff() );
       
-      ( fLOCASPMTs[ pmtID ] ).SetCentralDistInScint( ( iCPMT->second ).GetDistInScint() );
+      ( fLOCASPMTs[ pmtID ] ).SetCentralDistInInnerAV( ( iCPMT->second ).GetDistInInnerAV() );
       ( fLOCASPMTs[ pmtID ] ).SetCentralDistInAV( ( iCPMT->second ).GetDistInAV() );
       ( fLOCASPMTs[ pmtID ] ).SetCentralDistInWater( ( iCPMT->second ).GetDistInWater() );
       ( fLOCASPMTs[ pmtID ] ).SetCentralDistInNeck( ( iCPMT->second ).GetDistInNeck() );
@@ -590,7 +595,7 @@ void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
       
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthFresnelTCoeff( ( iWPMT->second ).GetFresnelTCoeff() );
       
-      ( fLOCASPMTs[ pmtID ] ).SetWavelengthDistInScint( ( iWPMT->second ).GetDistInScint() );
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthDistInInnerAV( ( iWPMT->second ).GetDistInInnerAV() );
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthDistInAV( ( iWPMT->second ).GetDistInAV() );
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthDistInWater( ( iWPMT->second ).GetDistInWater() );
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthDistInNeck( ( iWPMT->second ).GetDistInNeck() );

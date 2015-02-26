@@ -16,7 +16,7 @@
   if (LOCASROOT != NULL) {
 	gSystem->Load("libLOCAS.so");
 	cout << "LOCAS: Libraries loaded." << endl;
-	gSystem->AddIncludePath(" -I$LOCAS_ROOT/include");
+	gSystem->AddIncludePath(" -I$LOCAS_ROOT/lib");
   }
 
   char *QLOCASROOT = getenv("QLOCAS_ROOT");

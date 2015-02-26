@@ -215,7 +215,7 @@ Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint )
   // This is currently set to 1.0 until the normalisation ratio is better understood
   Float_t normVal = dataPoint.GetLBIntensityNormRatio();
 
-  Float_t dScint = dataPoint.GetDeltaDistInScint();
+  Float_t dScint = dataPoint.GetDeltaDistInInnerAV();
   if ( GetScintParIndex() >= 0 ){ dScintAtt = dScint / GetScintPar(); }
   if ( GetScintRSParIndex() >= 0 ){ dScintRS = dScint / GetScintRSPar(); }
 

@@ -33,8 +33,6 @@
 #include "TH2F.h"
 #include "TF1.h"
 
-#include "QDQXX.h"
-
 namespace LOCAS{
 
   class LOCASFit : public TObject, LOCASMath
@@ -55,10 +53,6 @@ namespace LOCAS{
 
     // Initialise the parameters
     void InitialiseParameters();
-
-    // This must only be called after LoadFitFile has been called
-    // Fits the laserball positions for all the runs
-    void FitLBPositions();
 
     // Print information about all the parameters
     void PrintInitialisationInfo();
@@ -473,8 +467,6 @@ namespace LOCAS{
     Float_t** fMrqAlpha;                                    // [fNParameters+1][fNParameters+1] Curvature matrix
 
     Int_t fCurrentRunIndex;                                 // Current run index in the LOCASRun Reader Object
-    QDQXX fQDXX;                                           // Private DQXX accessor (for old SNO data)
-    std::string fDQXXDirPrefix ;                            // Full system path to the DQXX files (for old SNO data)
 
     LOCASRun** fRunPtrs;
     LOCASPMT** fPMTPtrs;

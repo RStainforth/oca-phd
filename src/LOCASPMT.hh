@@ -26,10 +26,9 @@
 #define _LOCASPMT_
 
 #include <RAT/DS/SOCPMT.hh>
+#include "RAT/DU/LightPathCalculator.hh"
 #include <TVector3.h>
 #include <TObject.h>
-
-#include "LOCASLightPath.hh"
 
 namespace LOCAS{
 
@@ -50,7 +49,7 @@ namespace LOCAS{
     void Initialise();
     void Clear( Option_t* option="");
     void AddSOCPMTData( RAT::DS::SOCPMT& socPMT );                    // Add information from a SOCPMT object to this LOCASPMT object
-    void ProcessLightPath( LOCASLightPath& lPath );                   // Process a light path to calculate the distances, solidangle etc.
+    void ProcessLightPath( RAT::DU::LightPathCalculator& lPath );                   // Process a light path to calculate the distances, solidangle etc.
     void VerifyPMT();                            // Verify that the fields of the PMT are complete and have 'reasonable' values
     
     /////////////////////////////////
@@ -92,7 +91,7 @@ namespace LOCAS{
     
     void SetFresnelTCoeff( const Float_t fresnelCoeff ){ fFresnelTCoeff = fresnelCoeff; }
     
-    void SetDistInScint( const Float_t distInScint ){ fDistInScint = distInScint; }
+    void SetDistInInnerAV( const Float_t distInScint ){ fDistInInnerAV = distInScint; }
     void SetDistInAV( const Float_t distInAV ){ fDistInAV = distInAV; }
     void SetDistInWater( const Float_t distInWater ){ fDistInWater = distInWater; }
     void SetDistInNeck( const Float_t distInNeck ){ fDistInNeck = distInNeck; }
@@ -133,7 +132,7 @@ namespace LOCAS{
     
     void SetCentralFresnelTCoeff( const  Float_t fresnelCoeff ){ fCentralFresnelTCoeff = fresnelCoeff; }
     
-    void SetCentralDistInScint( const  Float_t distInScint ){ fCentralDistInScint = distInScint; }
+    void SetCentralDistInInnerAV( const  Float_t distInScint ){ fCentralDistInInnerAV = distInScint; }
     void SetCentralDistInAV( const  Float_t distInAV ){ fCentralDistInAV = distInAV; }
     void SetCentralDistInWater( const  Float_t distInWater ){ fCentralDistInWater = distInWater; }
     void SetCentralDistInNeck( const  Float_t distInNeck ){ fCentralDistInNeck = distInNeck; }
@@ -174,7 +173,7 @@ namespace LOCAS{
     
     void SetWavelengthFresnelTCoeff( const  Float_t fresnelCoeff ){ fWavelengthFresnelTCoeff = fresnelCoeff; }
     
-    void SetWavelengthDistInScint( const  Float_t distInScint ){ fWavelengthDistInScint = distInScint; }
+    void SetWavelengthDistInInnerAV( const  Float_t distInScint ){ fWavelengthDistInInnerAV = distInScint; }
     void SetWavelengthDistInAV( const  Float_t distInAV ){ fWavelengthDistInAV = distInAV; }
     void SetWavelengthDistInWater( const  Float_t distInWater ){ fWavelengthDistInWater = distInWater; }
     void SetWavelengthDistInNeck( const  Float_t distInNeck ){ fWavelengthDistInNeck = distInNeck; }
@@ -234,7 +233,7 @@ namespace LOCAS{
     
     Float_t GetFresnelTCoeff() const { return fFresnelTCoeff; }
     
-    Float_t GetDistInScint() const { return fDistInScint; }
+    Float_t GetDistInInnerAV() const { return fDistInInnerAV; }
     Float_t GetDistInAV() const { return fDistInAV; }
     Float_t GetDistInWater() const { return fDistInWater; }
     Float_t GetDistInNeck() const { return fDistInNeck; }
@@ -276,7 +275,7 @@ namespace LOCAS{
     
     Float_t GetCentralFresnelTCoeff() const { return fCentralFresnelTCoeff; }
     
-    Float_t GetCentralDistInScint() const { return fCentralDistInScint; }
+    Float_t GetCentralDistInInnerAV() const { return fCentralDistInInnerAV; }
     Float_t GetCentralDistInAV() const { return fCentralDistInAV; }
     Float_t GetCentralDistInWater() const { return fCentralDistInWater; }
     Float_t GetCentralDistInNeck() const { return fCentralDistInNeck; }
@@ -317,7 +316,7 @@ namespace LOCAS{
     
     Float_t GetWavelengthFresnelTCoeff() const { return fWavelengthFresnelTCoeff; }
     
-    Float_t GetWavelengthDistInScint() const { return fWavelengthDistInScint; }
+    Float_t GetWavelengthDistInInnerAV() const { return fWavelengthDistInInnerAV; }
     Float_t GetWavelengthDistInAV() const { return fWavelengthDistInAV; }
     Float_t GetWavelengthDistInWater() const { return fWavelengthDistInWater; }
     Float_t GetWavelengthDistInNeck() const { return fWavelengthDistInNeck; }
@@ -388,7 +387,7 @@ namespace LOCAS{
     
     Float_t fFresnelTCoeff;             // Acrylic Fresnel transmission coefficient
     
-    Float_t fDistInScint;               // Distance through the scintillator region [mm]
+    Float_t fDistInInnerAV;               // Distance through the scintillator region [mm]
     Float_t fDistInAV;                  // Distance through the acrylic region [mm]
     Float_t fDistInWater;               // Distance through the water region [mm]
     Float_t fDistInNeck;                // Distance through the Neck region (if applicable) i.e. fNeckFlag == TRUE
@@ -430,7 +429,7 @@ namespace LOCAS{
     
     Float_t fCentralFresnelTCoeff;             // Acrylic Fresnel transmission coefficient - From the central run
     
-    Float_t fCentralDistInScint;               // Distance through the scintillator region [mm] - From the central run
+    Float_t fCentralDistInInnerAV;               // Distance through the scintillator region [mm] - From the central run
     Float_t fCentralDistInAV;                  // Distance through the acrylic region [mm] - From the central run
     Float_t fCentralDistInWater;               // Distance through the water region [mm] - From the central run
     Float_t fCentralDistInNeck;                // Distance through the Neck region (if applicable) i.e. fNeckFlag == TRUE - From the central run
@@ -471,7 +470,7 @@ namespace LOCAS{
 
     Float_t fWavelengthFresnelTCoeff;             // Acrylic Fresnel transmission coefficient- From the wavelength run
     
-    Float_t fWavelengthDistInScint;               // Distance through the scintillator region [mm]- From the wavelength run
+    Float_t fWavelengthDistInInnerAV;             // Distance through the scintillator region [mm]- From the wavelength run
     Float_t fWavelengthDistInAV;                  // Distance through the acrylic region [mm]- From the wavelength run
     Float_t fWavelengthDistInWater;               // Distance through the water region [mm]- From the wavelength run
     Float_t fWavelengthDistInNeck;                // Distance through the Neck region (if applicable) i.e. fNeckFlag == TRUE- From the wavelength run

@@ -39,7 +39,7 @@ LOCASDataPoint::LOCASDataPoint( const LOCASRawDataPoint dataPoint )
   SetMPECorrOccupancy( ( dataPoint.GetMPECorrOccupancy() ) );
   SetCentralMPECorrOccupancy( ( dataPoint.GetCentralMPECorrOccupancy() ) );
 
-  SetDeltaDistInScint( ( dataPoint.GetDistInScint() - dataPoint.GetCentralDistInScint() ) );
+  SetDeltaDistInInnerAV( ( dataPoint.GetDistInInnerAV() - dataPoint.GetCentralDistInInnerAV() ) );
   SetDeltaDistInAV( ( dataPoint.GetDistInAV() - dataPoint.GetCentralDistInAV() ) );
   SetDeltaDistInWater( ( dataPoint.GetDistInWater() - dataPoint.GetCentralDistInWater() ) );
   SetTotalDist( dataPoint.GetTotalDist() );
@@ -76,7 +76,7 @@ LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
   SetMPECorrOccupancy( rhs.GetMPECorrOccupancy() );
   SetCentralMPECorrOccupancy( rhs.GetCentralMPECorrOccupancy() );
 
-  SetDeltaDistInScint( rhs.GetDeltaDistInScint() );
+  SetDeltaDistInInnerAV( rhs.GetDeltaDistInInnerAV() );
   SetDeltaDistInAV( rhs.GetDeltaDistInAV() );
   SetDeltaDistInWater( rhs.GetDeltaDistInWater() );
   SetTotalDist( rhs.GetTotalDist() );

@@ -122,7 +122,7 @@ namespace LOCAS{
 
     void SetDistInUpperTarget( const Double_t val ){ fDistInUpperTarget = val; }
     void SetDistInLowerTarget( const Double_t val ){ fDistInUpperTarget = val; }
-    void SetDistInScint( const Double_t val ){ fDistInScint = val; }
+    void SetDistInInnerAV( const Double_t val ){ fDistInInnerAV = val; }
     void SetDistInAV( const Double_t val ){ fDistInAV = val; }
     void SetDistInWater( const Double_t val ){ fDistInWater = val; }
 
@@ -165,11 +165,11 @@ namespace LOCAS{
     Double_t GetDistInNeck() const { return fDistInNeck; }
     Double_t GetDistInUpperTarget() const { return fDistInUpperTarget; }
     Double_t GetDistInLowerTarget() const { return fDistInLowerTarget; }
-    Double_t GetDistInScint() const { return fDistInScint; }
+    Double_t GetDistInInnerAV() const { return fDistInInnerAV; }
     Double_t GetDistInAV() const { return fDistInAV; }
     Double_t GetDistInWater() const { return fDistInWater; }
     
-    Double_t GetTotalDist() const { return fDistInScint + fDistInAV + fDistInWater; }
+    Double_t GetTotalDist() const { return fDistInInnerAV + fDistInAV + fDistInWater; }
     Double_t GetTotalDistPartial() const { return fDistInUpperTarget + fDistInLowerTarget + fDistInAV + fDistInWater; }
     
     // A call to 'CalculateSolidAngle' must first be made before using this 'getter'
@@ -354,7 +354,7 @@ namespace LOCAS{
     
     Double_t fDistInUpperTarget;          // Distance of the light path in the upper targer [Used for Partial Fill]
     Double_t fDistInLowerTarget;          // Distance of the light path in the lower target [Used for Partial Fill]
-    Double_t fDistInScint;                // Distance of the light path in the scintillator region
+    Double_t fDistInInnerAV;                // Distance of the light path in the scintillator region
     Double_t fDistInAV;                   // Distance of the light path in the AV region
     Double_t fDistInWater;                // Distance of the light path in the water region
     

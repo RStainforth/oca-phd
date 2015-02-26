@@ -1,39 +1,18 @@
 source ${LOCAS_ROOT}/env_locas.sh
 
-soc2locas -r 12300901 -c 12300901
+soc2locas -r 500000000 -c 500000000
 
-soc2locas -r 11200901 -c 12300901
-soc2locas -r 12200901 -c 12300901
+soc2locas -r 500120000 -c 500000000
+soc2locas -r 500220000 -c 500000000
+#soc2locas -r 500140000 - Does not yet exist 500 nm @ ( 4000.0, 0.0, 0.0 ) mm
+soc2locas -r 500240000 -c 500000000
 
-soc2locas -r 11256901 -c 12300901
-soc2locas -r 12256901 -c 12300901
+soc2locas -r 500001200 -c 500000000
+soc2locas -r 500002200 -c 500000000
+soc2locas -r 500001400 -c 500000000
+soc2locas -r 500002400 -c 500000000
 
-#soc2locas -r 21256901 -c 12300901
-#soc2locas -r 22256901 -c 12300901
-
-#soc2locas -r 711200 -c 712300
-#soc2locas -r 712200 -c 712300
-
-#soc2locas -r 721400 -c 712300
-#soc2locas -r 722400 -c 712300
-
-#soc2locas -r 1011200 -c 1012300
-#soc2locas -r 1012200 -c 1012300
-
-#soc2locas -r 1021400 -c 1012300
-#soc2locas -r 1022400 -c 1012300
-
-#soc2locas -r 3511220 -c 3512300
-#soc2locas -r 3512220 -c 3512300
-#soc2locas -r 3511440 -c 3512300
-#soc2locas -r 3512440 -c 3512300
-
-#soc2locas -r 3521220 -c 3512300
-#soc2locas -r 3522220 -c 3512300
-#soc2locas -r 3521440 -c 3512300
-#soc2locas -r 3522440 -c 3512300
-
-#soc2locas -r 3531220 -c 3512300
-#soc2locas -r 3532220 -c 3512300
-#soc2locas -r 3531440 -c 3512300
-#soc2locas -r 3532440 -c 3512300
+soc2locas -r 500000012 -c 500000000
+soc2locas -r 500000022 -c 500000000
+soc2locas -r 500000014 -c 500000000
+soc2locas -r 500000024 -c 500000000

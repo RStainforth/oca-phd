@@ -54,7 +54,7 @@ namespace LOCAS{
     Float_t GetMPECorrOccupancy() const { return fMPECorrOccupancy; }
     Float_t GetCentralMPECorrOccupancy() const { return fCentralMPECorrOccupancy; }
     
-    Float_t GetDeltaDistInScint() const { return fDeltaDistInScint; }
+    Float_t GetDeltaDistInInnerAV() const { return fDeltaDistInInnerAV; }
     Float_t GetDeltaDistInAV() const { return fDeltaDistInAV; }
     Float_t GetDeltaDistInWater() const { return fDeltaDistInWater; }
     Float_t GetTotalDist() const { return fTotalDist; }
@@ -91,7 +91,7 @@ namespace LOCAS{
     void SetMPECorrOccupancy( const Float_t val ){ fMPECorrOccupancy = val; }
     void SetCentralMPECorrOccupancy( const Float_t val ){ fCentralMPECorrOccupancy = val; }
     
-    void SetDeltaDistInScint( Float_t val ) { fDeltaDistInScint = val; }
+    void SetDeltaDistInInnerAV( Float_t val ) { fDeltaDistInInnerAV = val; }
     void SetDeltaDistInAV( Float_t val ) { fDeltaDistInAV = val; }
     void SetDeltaDistInWater( Float_t val ) { fDeltaDistInWater = val; }
     void SetTotalDist( const Float_t val ){ fTotalDist = val; }
@@ -126,7 +126,7 @@ namespace LOCAS{
     Float_t fMPECorrOccupancy;          // The MPE corrected occupancy of the off-axis run
     Float_t fCentralMPECorrOccupancy;   // The MPE corrected occupancy from the central run
 
-    Float_t fDeltaDistInScint;    // The difference (off-axis - central) in the scintillator region distances
+    Float_t fDeltaDistInInnerAV;    // The difference (off-axis - central) in the scintillator region distances
     Float_t fDeltaDistInAV;       // The difference (off-axis - central) in the av region distances
     Float_t fDeltaDistInWater;    // The difference (off-axis - central) in the water region distances
     Float_t fTotalDist;           // The total distance of the light path in the off-axis run

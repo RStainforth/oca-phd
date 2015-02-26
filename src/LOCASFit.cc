@@ -21,7 +21,6 @@
 #include "LOCASDB.hh"
 #include "LOCASPMT.hh"
 #include "LOCASFit.hh"
-#include "LOCASFitLBPosition.hh"
 
 #include "TFile.h"
 #include "TH1F.h"
@@ -64,11 +63,6 @@ LOCASFit::LOCASFit()
 {
 
   fCentralRunNorms = NULL;
-
-  // Set the path prefix for the location of the DQXX files
-  // This assumes that the envrionment variable $DQXXDIR is set
-  fDQXXDirPrefix = getenv("DQXXDIR");
-  fDQXXDirPrefix += "/DQXX_00000";
 
   fFitName = "";
   fFitTitle = "";
@@ -506,30 +500,6 @@ void LOCASFit::AllocateParameters( )
       fMrqCovariance[ i ][ j ] = 0.0;
     }
   }
-
-}
-
-/////////////////////////////////////
-//////////////////////////////////////
-
-void LOCASFit::FitLBPositions()
-{
-
-  LOCASFitLBPosition* fitLB = new LOCASFitLBPosition( fRunReader, "geo/sno_d2o.geo" );
-
-  printf( "Number of runs is: %i \n", (Int_t)fListOfRunIDs.size() );
-  for ( Int_t iRun = 0; iRun < fListOfRunIDs.size(); iRun++ ){
-    printf( "Run Number: %i || Run ID: %i \n", iRun, (Int_t)fListOfRunIDs[ iRun ] );
-    fitLB->FitLBPosition( fListOfRunIDs[ iRun ] );
-    fCurrentRun = fRunPtrs[ iRun ];
-    //fCurrentRun = fRunReader.GetRunEntry( iRun );
-    TVector3 fitPos = fitLB->GetFittedXYZ();
-    fCurrentRun->SetLBPos( fitPos );
-  }
-
-  //delete fitLB;
-
-  return;
 
 }
 
@@ -1784,7 +1754,7 @@ Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMT
 
   Float_t normVal = GetLBNormalisationPar( fiNorm );
 
-  Float_t dScint = ( iPMTPtr->GetDistInScint() ) - ( iPMTPtr->GetCentralDistInScint() );
+  Float_t dScint = ( iPMTPtr->GetDistInInnerAV() ) - ( iPMTPtr->GetCentralDistInInnerAV() );
   dScint /= 10.0;
   Float_t dAV = ( iPMTPtr->GetDistInAV() ) - ( iPMTPtr->GetCentralDistInAV() );
   dAV /= 10.0;

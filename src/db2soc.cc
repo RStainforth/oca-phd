@@ -4,79 +4,58 @@
 ///
 /// EXECUTABLE: db2soc
 ///
-/// BRIEF: This executable loads information from the RAT or LOCAS DB
-///        (data base) or command line and inserts it into 
-///        the SOC (.root) file.
+/// BRIEF: This executable is used to briefly update
+///        certain 'empty' fields on the RAT::SOC file.
 ///                 
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:
-///     0X/2014 : RPFS - First Revision, new file.
+///     06/2014 : RPFS - First Revision, new file.
+///     02/2015 : RPFS - Update for current verison of RAT as of 02/2015
 ///
-/// DETAIL: Executable to insert values from the RAT or LOCAS 
-///         data base or command line into the SOC Run files. 
-///         
-///         DATA BASE: Updates the following entries on the SOC file:
-///
-///              1, SOCPMT::relOccSim_fillShadow
-///              2, SOCPMT::relOccSim_hdRopeShadow
+/// DETAIL: Executable to insert values into the SOC Run files.
+///         Currently this is only needed to insert the runID into the file
 ///
 ///         Example Usage (at command line):
 ///
-///              db2soc -r [run-id] -f [run-id]
-///              e.g. db2soc -r 12121953 -f 12121953
+///              db2soc -r [run-id]
+///              e.g. db2soc -r 12121953
 ///
 ///         where '12121953' is the Run-ID of the run SOC file
 ///         located in ${LOCAS_DATA}/runs/soc whose name is
-///         "12121953_Run.root". Values of the entries are obtained
-///         by the executable from the following locations:
-///
-///              1, ${LOCAS_DATA}/shadowing/geo/geo_[run-id].ratdb
-///              2, ${LOCAS_DATA}/shadowing/avhd/avhd_[run-id].ratdb
+///         "12121953_Run.root". This would udpdate the 'runID'
+///         private member variable on the soc file.
 ///
 ///         COMMAND LINE: For testing purposes and due to a non finalised
 ///         data structure on the SOC file, the following entries may
 ///         be specifed at the command line:
 ///
-///              1, SOC::sourceID (-s)
-///              2, SOC::runID (-i)
-///              3, SOC::laserWavelength (-w)
-///              4, SOC::sourcePosManip (-x, -y, -z for coordinates)
-///              5, SOC::globalTimeOffset (-g)
+///              1, SOC::runID (-r)
 ///
 ///         Example usage (at command line):
 ///
-///              db2soc -i [run-id] -s [source-run-id] -w [source-wavelength]
-///                     -x [source-pos-x] -y [source-pos-y]
-///                     -z [source-pos-z] -g [source-global-time-offset]
+///              db2soc -r [run-id]
 ///
-///              e.g. db2soc -i 12121953 -s 420 -w 420 -x 4000 -y 0 -z 0 -g 0
+///              e.g. db2soc -r 12121953
 ///
-///         The above would be specified for a 420 nm laser with run ID 
-///         12121953 at a position (4000,0,0) mm with a global time offset
-///         of 0 and a source ID (matching that of the laser) of 420.
+///         The above would be specified for a run with run ID 12121953
 ///
-///         NOTE: If you specify a negative numerical value you must end the
-///         command line command with the argument termination token '--'
-///
-///          e.g. db2soc -i 12121953 -s 420 -w 420 -x -4000 -y -1000 -z 500 --
+///         THIS EXECUTABLE IS SIMPLY PLACE-HOLDER 
+///         UNTIL THE RAT DATABASE IS WORKING!
 ///
 //////////////////////////////////////////////////////////////////////////////
 
-#include "RAT/getopt.h"
 #include "RAT/DS/SOC.hh"
-#include "RAT/DS/SOCPMT.hh"
+#include "RAT/DS/Run.hh"
 
-#include "LOCASRun.hh"
-#include "LOCASPMT.hh"
 #include "LOCASDB.hh"
 
 #include "TFile.h"
 #include "TTree.h"
 
+#include <getopt.h>
 #include <iostream>
 #include <string>
-#include <map>
 #include <fstream>
 
 #include <stdio.h>
@@ -90,16 +69,9 @@ using namespace LOCAS;
 class LOCASCmdOptions 
 {
 public:
-  LOCASCmdOptions( ) : fRID( -1 ), fRIDStr( "" ),
-		       fSrcID( "" ), fSrcRunID( -1 ),
-		       fSrcPosX( -1 ), fSrcPosY( -1 ),
-		       fSrcPosZ( -1 ), fSrcWL( -1 ),
-                       fSrcGTO( -1 ), fSrcFill( -1 ) { }
-  Long64_t fRID;
-  Int_t fSrcRunID, fSrcWL, fSrcFill;
-  Double_t fSrcPosX, fSrcPosY, fSrcPosZ;
-  Float_t fSrcGTO;
-  std::string fRIDStr, fSrcID;
+  LOCASCmdOptions( ) : fRID( -1 ), fRIDStr( "" ) { }
+  UInt_t fRID;
+  std::string fRIDStr;
 };
 
 // Declare the three function prototypes used
@@ -117,15 +89,8 @@ int main( int argc, char** argv ){
   LOCASCmdOptions Opts = ParseArguments( argc, argv );
 
   // Define the run-ID in Long64_t and string format
-  Long64_t rID = Opts.fRID;
+  UInt_t rID = Opts.fRID;
   string rIDStr = Opts.fRIDStr;
-
-  std::string srcID = Opts.fSrcID;
-  Int_t srcRunID = Opts.fSrcRunID;
-  Int_t srcWL = Opts.fSrcWL;
-  Int_t srcFill = Opts.fSrcFill;
-  Float_t srcGTO = Opts.fSrcGTO;
-  TVector3 srcPos( Opts.fSrcPosX, Opts.fSrcPosY, Opts.fSrcPosZ );
 
   // Obtain the directory path where the SOC files are located
   // from the environment and create the full filename path.
@@ -147,59 +112,48 @@ int main( int argc, char** argv ){
 
   // Obtain a pointer to the SOC Tree
   TTree* oldSocTree = (TTree*)file->Get( "T" );
+  // Obtain a pointer to the RunTree
+  TTree* oldRunTree = (TTree*)file->Get( "runT" );
   
   // Create a new pointer to a new tree and RAT::DS::SOC object.
   // These are the objects which will overwrite
   // the old one with the new values.
   TTree* socTree = new TTree( "T", "SOC Tree" );
 
+  // Create a new pointer to a new tree and RAT::DS::Run object.
+  TTree* runTree = new TTree( "runT", "RAT Run Tree" );
+
   DS::SOC* socBr = new DS::SOC();
+  DS::Run* runBr = new DS::Run();
+
+  // Copy the original RAT::DS::Run information into the
+  // new Run object
+  oldRunTree->SetBranchAddress( "run", &runBr ); 
+  oldRunTree->GetEntry( 0 ); 
 
   // Copy the original RAT::DS::SOC information into the
   // new SOC object
   oldSocTree->SetBranchAddress( "soc", &socBr ); 
   oldSocTree->GetEntry( 0 ); 
 
-  // Set SOC Run Information if it has been specified at the command line
-  if ( srcFill > 0 ){
-    lDB.LoadAVHDRopePMTShadowingVals( srcFill );
-    lDB.LoadGeoPMTShadowingVals( srcFill );
-  }
-
-  if ( srcID != "" ){ socBr->SetSourceID( srcID ); }
-  if ( srcRunID > 0 ){ socBr->SetRunID( srcRunID ); }
-  //if ( srcPos.Mag() >= 0.0 ){ socBr->SetSourcePosManip( srcPos ); }
-  //if ( srcWL > 0 ){ socBr->SetLaserWavelength( srcWL ); }
-  //if ( srcGTO > 0.0 ){ socBr->SetGlobalTimeOffset( srcGTO ); }
-
-  // Create an iterator to loop over the PMTs stored
-  // in the SOC object.
-  std::map<Int_t, DS::SOCPMT>::iterator iPMT;
-  std::vector< UInt_t > pmtIDs = socBr->GetSOCPMTIDs();
-
-  if ( srcFill > 0 ){
-    for ( Int_t iPMT = 0; iPMT < pmtIDs.size(); iPMT++ ){
-      
-      // Obtain the PMT ID
-      Int_t pmtID = pmtIDs[ iPMT ];
-      
-      // Obtain the shadowing values for the specified PMT ID
-      Double_t avhdRelOcc = lDB.GetAVHDRopePMTShadowingVal( pmtID );
-      Double_t geoRelOcc = lDB.GetGeoPMTShadowingVal( pmtID );
-      
-      // Set them in the SOCPMT objects contained in the SOC object
-      ( socBr->GetSOCPMT( pmtID ) ).SetShadowRelativeOccupancy( geoRelOcc );
-      ( socBr->GetSOCPMT( pmtID ) ).SetRopeShadowRelativeOccupancy( avhdRelOcc );
-      
-    }
+  if ( rID > 0 ){
+    cout << "Setting RunID to: " << rID << endl;
+    socBr->SetRunID( rID ); 
+    runBr->SetRunID( rID );
   }
 
   // Create the new branch on the new tree
   socTree->Branch( "soc", socBr->ClassName(), &socBr, 32000, 99 );
   socTree->Fill();
 
+  // Create the new branch on the new tree
+  runTree->Branch( "run", runBr->ClassName(), &runBr, 32000, 99 );
+  runTree->Fill();
+
   // Overwirte the old tree and close the file.
-  socTree->Write( "T", TObject::kOverwrite );  
+  socTree->Write( "T", TObject::kOverwrite );
+  // Overwirte the old tree and close the file.
+  runTree->Write( "runT", TObject::kOverwrite );   
   file->Close();
   
   cout << "File: " << filename << " has been updated" << endl;
@@ -214,38 +168,21 @@ int main( int argc, char** argv ){
 
 LOCASCmdOptions ParseArguments( int argc, char** argv) 
 {
-  static struct RAT::option opts[] = { {"help", 0, NULL, 'h'},
+  static struct option opts[] = { {"help", 0, NULL, 'h'},
                                        {"run-id", 1, NULL, 'r'},
-                                       {"source-run-id", 1, NULL, 's'},
-                                       {"source-id", 1, NULL, 'i'},
-                                       {"source-pos-x", 1, NULL, 'x'},
-				       {"source-pos-y", 1, NULL, 'y'},
-				       {"source-pos-z", 1, NULL, 'Z'},
-                                       {"source-wavelength", 1, NULL, 'w'},
-                                       {"source-global-time-offset", 1, NULL, 'g'},
-                                       {"fill-shadowing-values", 1, NULL, 'f'},
                                        {0,0,0,0} };
 
   
   LOCASCmdOptions options;
   int option_index = 0;
-  int c = getopt_long(argc, argv, "h:r:s:i:x:y:z:w:g:sh:", opts, &option_index);
+  int c = getopt_long(argc, argv, "h:r:", opts, &option_index);
   while (c != -1) {
     switch (c) {
     case 'h': help(); exit( 0 ); break;
-    case 'r': options.fRID = atol( RAT::optarg ); break;
-    case 's': options.fSrcID = atoi( RAT::optarg ); break;
-    case 'i': options.fSrcRunID = atoi( RAT::optarg ); break;
-    case 'x': options.fSrcPosX = atof( RAT::optarg ); break;
-    case 'y': options.fSrcPosY = atof( RAT::optarg );
-    case 'z': options.fSrcPosZ = atof( RAT::optarg ); break;
-    case 'w': options.fSrcWL = atoi( RAT::optarg ); break;
-    case 'g': options.fSrcGTO = atof( RAT::optarg ); break;
-    case 'f': options.fSrcFill = atof( RAT::optarg ); break;
-
+    case 'r': options.fRID = atol( optarg ); break;
     }
     
-    c = getopt_long(argc, argv, "h:r:s:i:x:y:z:w:g:f:", opts, &option_index);
+    c = getopt_long(argc, argv, "h:r:", opts, &option_index);
   }
   
   stringstream idStream;
@@ -264,17 +201,9 @@ void help(){
 
   cout << "\n";
   cout << "SNO+ LOCAS - db2soc" << "\n";
-  cout << "Description: Executable to update values from the RAT or LOCAS database to the SOC files. \n";
-  cout << "Usage: db2soc [-h] [-r run-id] [-s source-run-id] [-i source-id] \n [-x source-pos-x] [-y source-pos-y] [-z source-pos-z] \n [-w source-wavelength] [-g source-global-time-offset] [-f fill-shadowing-values] \n";
+  cout << "Description: Executable to update the runID on the SOC object in the SOC file.\n";
+  cout << "Usage: db2soc [-h] [-r run-id]\n";
   cout << " -h, --help                            Display this help message and exit \n";
   cout << " -r, --run-id                          Set the run ID for the corresponding SOC run file to be updated \n";
-  cout << " -s, --source-run-id                   Set the run ID in the SOC file specified by the '-r' option above \n";
-  cout << " -i, --source-id                       Set the source ID in the SOC file \n";
-  cout << " -x, --source-pos-x                    Set the source manip position [x-coordinate] \n";
-  cout << " -x, --source-pos-y                    Set the source manip position [y-coordinate] \n";
-  cout << " -x, --source-pos-z                    Set the source manip position [z-coordinate] \n";
-  cout << " -w, --source-wavelength               Set the source wavelength \n";
-  cout << " -g, --source-global-time-offset       Set the source global time offset \n";
-  cout << " -f, --fill-shadowing-values           Set the ID of the corresponding shadowing file to fill from \n";
   
 }

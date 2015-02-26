@@ -30,16 +30,6 @@ DEPLIBS     := ${ROOTLIB} ${GEANT4LIB} ${CLHEPLIB} ${CURLLIB}
 RATCFLAGS   := -I$(RATROOT)/include -I$(RATROOT)/include/RAT -I$(RATROOT)/include/RAT/DS
 RATLIB		:= -L$(RATROOT)/lib -lRATEvent_$(RATSYSTEM) -lrat_$(RATSYSTEM)
 
-QLOCASCFLAGS  := -I$(QLOCAS_ROOT)/include
-QLOCASLIB     := -L$(QLOCAS_ROOT)/lib -lQLOCAS
-QBANK         := $(QLOCAS_ROOT)/include/QBank.h
-QDBHDR         := $(QLOCAS_ROOT)/include/QDBHDR.h
-QSNO         := $(QLOCAS_ROOT)/include/QSNO.h
-QDQXX        := $(QLOCAS_ROOT)/include/QDQXX.h
-QSNOO        := $(pathsubst %.h, %.o, $($(QBANK) $(QDBHDR) $(QDQXX) $(QSNO)))
-QLOCASH       := $(addprefix $(QLOCAS_ROOT)/include/, $(notdir $(shell find $(QLOCAS_ROOT)/include -name "*.h")))
-QLOCASHNODIR  := $(notdir $(QLOCASH))
-
 # Compile and link flags for LOCAS
 LOCASCFLAGS := -I./
 LOCASLIB    := -L. -lLOCAS
@@ -83,7 +73,7 @@ DICT_H	:= LOCAS_LinkDef.h
 DICT_C	:= LOCAS_Dict.C
 DICT_O	:= $(patsubst %.C,%.o,$(DICT_C))
 
-LOCAS_EXE	:= soc2locas rdt2locas db2soc locas2debug locas2minuit locas2marquardt locas2marquardt2 locas2positionfit
+LOCAS_EXE	:= soc2locas db2soc locas2debug locas2minuit locas2marquardt
 
 # N. Barros - 22-11-2011 : Removed from the targets as the source file seems to be missing. Maybe a missing commit?
 # sjmptest
@@ -119,7 +109,6 @@ show:
 	@echo "Build options:"
 	@echo " * ARCH  	: $(ARCH)"
 	@echo " * LDOPT 	: $(LDOPTS)"
-	@echo " * QLOCASH   : $(QLOCASH)"
 
 headers: $(LOCASH)
 	@echo " == Executing $@ =="	
@@ -169,22 +158,12 @@ soc2locas: soc2locas.o $(LOCASL)
 	$(CXX) $(CXXFLAGS) -o $@ \
 	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB}
 
-rdt2locas: rdt2locas.o $(LOCASL)
-	@echo " == Executing $@ =="
-	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB} ${QLOCASLIB}
-
 db2soc: db2soc.o $(LOCASL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
 	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB}
 
 locas2marquardt: locas2marquardt.o $(LOCASL)
-	@echo " == Executing $@ =="
-	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB}
-
-locas2marquardt2: locas2marquardt2.o $(LOCASL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
 	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB}
@@ -199,16 +178,11 @@ locas2minuit: locas2minuit.o $(LOCASL)
 	$(CXX) $(CXXFLAGS) -o $@ \
 	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB}
 
-locas2positionfit: locas2positionfit.o $(LOCASL)
-	@echo " == Executing $@ =="
-	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${QLOCASLIB} ${LOCASLIB}
-
 $(LOCASL): $(LOCASO) $(DICT_O)
 	@echo " == Executing $@ =="
 	@echo "linking $(LOCASL)"
 	$(CXX) $(LDFLAGS) $(LDOPTS) \
-	-o $@ ${DEPLIBS} ${RATLIB} ${QLOCASLIB} $(LOCASO) $(DICT_O) $(LINKCMD)
+	-o $@ ${DEPLIBS} ${RATLIB} $(LOCASO) $(DICT_O) $(LINKCMD)
 
 # not sure if we really need ${DEPLIBS} up above here, we're only linking all the LOCAS object files
 
@@ -216,22 +190,22 @@ $(DICT_C): $(DICT_H) $(LOCASO) $(LOCASH)
 	@echo " == Executing $@ =="
 	@rm -f $@
 	@echo "Generating $@ dictionary"
-	rootcint -f $@ -c -p $(RATCFLAGS) $(QLOCASCFLAGS) $(LOCASH) $<
+	rootcint -f $@ -c -p $(RATCFLAGS) $(LOCASH) $<
 	@echo "Done with $@ ..."
 
 
 %.o:	%.cc %.hh
 #	@echo Special rule for .cc files with headers
-	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} ${QLOCASCFLAGS} -DCOMPILED_ROOT -c $<
+	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} -DCOMPILED_ROOT -c $<
 
 %.o:	%.C %.h
 #	@echo Special rule for .C files with headers
-	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} ${QLOCASCFLAGS} -DCOMPILED_ROOT -c $<
+	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} -DCOMPILED_ROOT -c $<
 
 %.o:	%.C
 #	@echo Rule for .C files
-	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} ${QLOCASCFLAGS} -DCOMPILED_ROOT -c $<
+	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} -DCOMPILED_ROOT -c $<
 
 %.o:	%.cc
 #	@echo Rule for .cc files
-	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} ${QLOCASCFLAGS} -DCOMPILED_ROOT -c $<
+	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} -DCOMPILED_ROOT -c $<

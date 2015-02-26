@@ -61,8 +61,8 @@ namespace LOCAS{
 
     Float_t GetModelCorrOccRatio() const { return fModelCorrOccRatio; }
 
-    Float_t GetDistInScint() const { return fDistInScint; }
-    Float_t GetCentralDistInScint() const { return fCentralDistInScint; }
+    Float_t GetDistInInnerAV() const { return fDistInInnerAV; }
+    Float_t GetCentralDistInInnerAV() const { return fCentralDistInInnerAV; }
     Float_t GetDistInAV() const { return fDistInAV; }
     Float_t GetCentralDistInAV() const { return fCentralDistInAV; }
     Float_t GetDistInWater() const { return fDistInWater; }
@@ -126,8 +126,8 @@ namespace LOCAS{
 
     void SetModelCorrOccRatio( const Float_t val ) { fModelCorrOccRatio = val; }
 
-    void SetDistInScint( const Float_t val ) { fDistInScint = val; }
-    void SetCentralDistInScint( const Float_t val ) { fCentralDistInScint = val; }
+    void SetDistInInnerAV( const Float_t val ) { fDistInInnerAV = val; }
+    void SetCentralDistInInnerAV( const Float_t val ) { fCentralDistInInnerAV = val; }
     void SetDistInAV( const Float_t val ) { fDistInAV = val; }
     void SetCentralDistInAV( const Float_t val ) { fCentralDistInAV = val; }
     void SetDistInWater( const Float_t val ) { fDistInWater = val; }
@@ -190,8 +190,8 @@ namespace LOCAS{
 
     Float_t fModelCorrOccRatio;          // The model corrected Occ (MPE) ratio, with solidangle and Fresnel corrections
 
-    Float_t fDistInScint;                // The distance through the scintillator region
-    Float_t fCentralDistInScint;         // The distancen through the scintillator region from the central run
+    Float_t fDistInInnerAV;                // The distance through the scintillator region
+    Float_t fCentralDistInInnerAV;         // The distancen through the scintillator region from the central run
     Float_t fDistInAV;                   // The distance through the AV region
     Float_t fCentralDistInAV;            // The distance through the AV region from the central run
     Float_t fDistInWater;                // The distance through the water region
