@@ -196,7 +196,7 @@ int main( int argc, char** argv ){
   LOCASRun* lRunPtr = new LOCASRun();
   // Set Default run-IDs and Run-Types
   lRunPtr->SetRunID( rID );
-  lRunPtr->SetNLBPulses( 1000000.0 );
+  lRunPtr->SetNLBPulses( 7500.0 );
 
   LOCASRun* lCRunPtr = NULL;
   LOCASRun* lWRunPtr = NULL;
@@ -214,7 +214,7 @@ int main( int argc, char** argv ){
 
     lCRunPtr = new LOCASRun();
     lCRunPtr->SetRunID( crID );
-    lCRunPtr->SetNLBPulses( 1000000.0 );
+    lCRunPtr->SetNLBPulses( 7500.0 );
 
     cout << "Adding central-run SOC file: " << endl;
     cout << crIDStr + (string)"_Run.root" << endl;
@@ -229,7 +229,7 @@ int main( int argc, char** argv ){
 
     lWRunPtr = new LOCASRun();
     lWRunPtr->SetRunID( crID );
-    lWRunPtr->SetNLBPulses( 1000000.0 );
+    lWRunPtr->SetNLBPulses( 7500.0 );
 
     cout << "Adding wavelength-run SOC file: " << endl;
     cout << wrIDStr + (string)"_Run.root" << endl;

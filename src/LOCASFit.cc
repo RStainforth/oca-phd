@@ -472,6 +472,7 @@ void LOCASFit::InitialiseParameters()
     fCentralRunNorms[ iT ] = normCentralVal;
     fMrqParameters[ GetLBNormalisationParIndex() + iT ] = normVal;
     printf( "Run %i of 27 has norm: %.10f with %i PMTs\n", iT + 1, normVal, nPMTsTmp );
+    printf( "With Central norm: %.10f\n", normCentralVal );
     
   }
 
@@ -1099,6 +1100,7 @@ Bool_t LOCASFit::PMTSkip( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Floa
   Int_t runIndex = GetRunIndex( iRunPtr->GetRunID() );
   //cout << "yes\n";
   Float_t pmtData = CalculatePMTData( iPMTPtr );
+  cout << "pmtData is: " << pmtData << endl;
   Float_t pmtSigma = CalculatePMTSigma( iPMTPtr );
   Float_t pmtDataNorm = pmtData * (1.0 / (GetLBNormalisationPar( runIndex )));
 

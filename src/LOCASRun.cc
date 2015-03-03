@@ -345,8 +345,6 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR,
     Float_t laserPhi = ( ( iLP->second ).GetInitialLBVec() ).Phi();
     Float_t relLBPhi = fmod( (Float_t)( laserPhi + lbAxis.Phi() ), 2.0 * M_PI ); 
     ( iLP->second ).SetRelLBPhi( relLBPhi );
-
-    ( iLP->second ).SetDQXXFlag( 1 );
   
     // Reset the light path object
     lLP.Clear();
@@ -576,6 +574,8 @@ void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
       
       ( fLOCASPMTs[ pmtID ] ).SetCentralCHSFlag( ( iCPMT->second ).GetCHSFlag() );
       ( fLOCASPMTs[ pmtID ] ).SetCentralCSSFlag( ( iCPMT->second ).GetCSSFlag() );
+
+      ( fLOCASPMTs[ pmtID ] ).SetCentralDQXXFlag( ( iCPMT->second ).GetDQXXFlag() );
       
       ( fLOCASPMTs[ pmtID ] ).SetCentralBadPath( ( iCPMT->second ).GetBadPath() );
       ( fLOCASPMTs[ pmtID ] ).SetCentralNeckFlag( ( iCPMT->second ).GetNeckFlag() );
@@ -623,6 +623,8 @@ void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
       
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthCHSFlag( ( iWPMT->second ).GetCHSFlag() );
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthCSSFlag( ( iWPMT->second ).GetCSSFlag() );
+
+      ( fLOCASPMTs[ pmtID ] ).SetWavelengthDQXXFlag( ( iWPMT->second ).GetDQXXFlag() );
       
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthBadPath( ( iWPMT->second ).GetBadPath() );
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthNeckFlag( ( iWPMT->second ).GetNeckFlag() );

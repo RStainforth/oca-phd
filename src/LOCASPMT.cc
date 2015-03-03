@@ -514,6 +514,8 @@ void LOCASPMT::ProcessLightPath( RAT::DU::LightPathCalculator& lPath )
     SetSolidAngle( lPath.GetSolidAngle() );
     SetCosTheta( lPath.GetCosThetaAvg() );
 
+    SetDQXXFlag( 1 );
+
   }
 
 }
