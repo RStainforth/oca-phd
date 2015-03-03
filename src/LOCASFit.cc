@@ -288,10 +288,10 @@ void LOCASFit::LoadFitFile( const char* fitFile )
   // and the minimum number of entires required for each bin
   fNLBDistributionThetaBins = lDB.GetIntField( "FITFILE", "lb_dist_n_theta_bins" );
   fNLBDistributionPhiBins = lDB.GetIntField( "FITFILE", "lb_dist_n_phi_bins" );
-  //fNLBDistributionMaskParameters = lDB.GetIntField( "FITFILE", "lb_dist_n_mask_pars" );
-  //fNLBDistributionThetaWaveBins = lDB.GetIntField( "FITFILE", "lb_dist_n_theta_wave_bins" );
-  cout << "Got this Far 7" << endl;
-  fNLBDistributionWave = 2;
+  fNLBDistributionMaskParameters = lDB.GetIntField( "FITFILE", "lb_dist_n_mask_pars" );
+  fNLBDistributionThetaWaveBins = lDB.GetIntField( "FITFILE", "lb_dist_n_theta_wave_bins" );
+  //cout << "Got this Far 7" << endl;
+  //fNLBDistributionWave = 2;
   fNPMTsPerLBDistributionBinMin = lDB.GetIntField( "FITFILE", "lb_dist_min_n_pmts" );
   //fLBDistributionType = lDB.GetIntField( "FITFILE", "lb_dist_type" );
 
@@ -755,6 +755,8 @@ void LOCASFit::DataScreen( const Float_t chiSqLimit )
     cout << " ------------- " << endl;
   }
 
+  cout << "Current number of PMTs in Fit is: " << fNPMTsInFit << endl;
+
   printf("Done initializing arrays to be fit with %d tubes total.\n",fNPMTsInFit);
   printf("Total Skipped %i tubes total.\n",nSkip);
   printf("Total Skipped: occvar > 2.0 or occvar <= 0.25: %i\n", fSkipGT2);
@@ -1100,7 +1102,6 @@ Bool_t LOCASFit::PMTSkip( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr, Floa
   Int_t runIndex = GetRunIndex( iRunPtr->GetRunID() );
   //cout << "yes\n";
   Float_t pmtData = CalculatePMTData( iPMTPtr );
-  cout << "pmtData is: " << pmtData << endl;
   Float_t pmtSigma = CalculatePMTSigma( iPMTPtr );
   Float_t pmtDataNorm = pmtData * (1.0 / (GetLBNormalisationPar( runIndex )));
 
@@ -1428,6 +1429,7 @@ Float_t LOCASFit::ModelLBDistributionMask( const Float_t cosTheta )
   Float_t onePlus = 1.0 + cosTheta;
   for ( iVal = fNLBDistributionMaskParameters-1; iVal >= 0; iVal-- ){
     lbM = lbM*onePlus + lbMask[ iVal ];
+    //cout << "lbMask[ iVal ] is: " << lbMask[ iVal ] << endl;
   }
   
   return lbM;
@@ -1772,12 +1774,18 @@ Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMT
 
   //cout << "Does fiNorm GetRunIndex work?...";
   fiNorm = GetRunIndex( iRunPtr->GetRunID() );
+  // if ( std::isnan( fiNorm ) || fiNorm == 0.0 ){
+  //   cout << "fiNorm is: " << fiNorm << endl;
+  // }
   //cout << "Yes\n";
   fiLBDist = 0;
   fiAng = 0;
  
 
   Float_t normVal = GetLBNormalisationPar( fiNorm );
+  if ( std::isnan( normVal ) || normVal == 0.0 ){
+    cout << "normVal is: " << normVal << endl;
+  }
 
   Float_t dScint = ( iPMTPtr->GetDistInInnerAV() ) - ( iPMTPtr->GetCentralDistInInnerAV() );
   dScint /= 10.0;
@@ -1785,16 +1793,34 @@ Float_t LOCASFit::ModelPrediction( const LOCASRun* iRunPtr, const LOCASPMT* iPMT
   dAV /= 10.0;
   Float_t dWater = ( iPMTPtr->GetDistInWater() ) - ( iPMTPtr->GetCentralDistInWater() );
   dWater /= 10.0;
+  if ( std::isnan( dScint * dAV * dWater ) ){
+    cout << "dScint is: " << dScint << endl;
+    cout << "dAV is: " << dAV << endl;
+    cout << "dWater is: " << dWater << endl;
+  }
 
   Float_t angResp = ModelAngularResponse( iPMTPtr, fiAng, 0 );
   Float_t intensity = ModelLBDistribution( iRunPtr, iPMTPtr, fiLBDist, 0 );
   Float_t lbMask = ModelLBDistributionMask( iPMTPtr, 0 );
   Float_t intensityMask = intensity * lbMask;
+  if ( std::isnan( angResp ) || angResp == 0.0 ){
+    cout << "angResp is: " << angResp << endl;
+  }
+  if ( std::isnan( intensity ) || intensity == 0.0 ){
+    cout << "intensity is: " << intensity << endl;
+  }
+  if ( std::isnan( lbMask ) || lbMask == 0.0 ){
+    cout << "lbMask is: " << lbMask << endl;
+  }
+  if ( std::isnan( intensityMask ) || intensityMask == 0.0 ){
+    cout << "intensityMask is: " << intensityMask << endl;
+  }
 
   Float_t pmtResponse = normVal * angResp * intensityMask 
     * exp( - ( dScint * ( GetScintPar() + GetScintRSPar() ) )
                   - ( dAV * ( GetAVPar() + GetAVRSPar() ) )
                   - ( dWater * ( GetWaterPar() + GetWaterRSPar() ) ) );
+  //cout << "pmtResponse is: " << pmtResponse << endl;
 
   Float_t cosLB = 0.0;
   Float_t phi = 0.0;
