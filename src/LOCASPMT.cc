@@ -489,7 +489,7 @@ void LOCASPMT::ProcessLightPath( RAT::DU::LightPathCalculator& lPath )
 
   if ( fType == 1 ){
     
-    if ( lPath.GetTIR() || lPath.GetResvHit() ){ SetBadPath( true ); }
+    if ( lPath.GetStraightLine() ){ SetBadPath( true ); }
 
     if ( lPath.GetXAVNeck() ){ 
       SetNeckFlag( true );
@@ -508,20 +508,11 @@ void LOCASPMT::ProcessLightPath( RAT::DU::LightPathCalculator& lPath )
     SetRelLBTheta( GetInitialLBVec().Theta() );
     SetRelLBPhi( GetInitialLBVec().Phi() );
 
-    lPath.CalculateFresnelTRCoeff();
     SetFresnelTCoeff( lPath.GetFresnelTCoeff() );
 
-    if ( ( lPath.GetStartPos() ).Mag() < 0.0 ){
-      lPath.CalculateSolidAngle( fNorm, 0 );
-      SetSolidAngle( lPath.GetSolidAngle() );
-      SetCosTheta( lPath.GetCosThetaAvg() );
-    }
-
-    else{
-      lPath.CalculateSolidAngle( GetNorm(), 0 );
-      SetSolidAngle( lPath.GetSolidAngle() );
-      SetCosTheta( lPath.GetCosThetaAvg() );
-    }
+    lPath.CalculateSolidAngle( fNorm, 0 );
+    SetSolidAngle( lPath.GetSolidAngle() );
+    SetCosTheta( lPath.GetCosThetaAvg() );
 
   }
 

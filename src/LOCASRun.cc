@@ -289,6 +289,9 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR,
   // ... and the PMT information from the SOC file.
   CopySOCPMTInfo( *socPtr );
 
+  SetLBTheta( 0.0 );
+  SetLBPhi( 0.0 );
+
   // Calculate the number of prompt counts over each PMT for the run
   CalculateLBIntensityNorm();
 
@@ -330,9 +333,20 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR,
     // Calculate the light path for this source position and PMT
     lLP.CalcByPosition( GetLBPos(), GetPMT( iLP->first ).GetPos(), wavelengthMeV, 10.0 );
     
-
     // 'feed' the light path to the PMT
-    ( iLP->second ).ProcessLightPath( lLP ); 
+    ( iLP->second ).ProcessLightPath( lLP );
+
+    ///////// Off-Axis Laserball Theta and Phi Angles //////////
+    TVector3 lbAxis( 0.0, 0.0, 1.0 );
+    lbAxis.SetPhi( GetLBPhi() );
+    lbAxis.SetTheta( GetLBTheta() );
+    
+    ( iLP->second ).SetRelLBTheta( ( ( iLP->second ).GetInitialLBVec() ).Angle( lbAxis ) );
+    Float_t laserPhi = ( ( iLP->second ).GetInitialLBVec() ).Phi();
+    Float_t relLBPhi = fmod( (Float_t)( laserPhi + lbAxis.Phi() ), 2.0 * M_PI ); 
+    ( iLP->second ).SetRelLBPhi( relLBPhi );
+
+    ( iLP->second ).SetDQXXFlag( 1 );
   
     // Reset the light path object
     lLP.Clear();
