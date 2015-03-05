@@ -241,6 +241,7 @@ int main( int argc, char** argv ){
   // Create LightPathCalculator object;
   RAT::DU::LightPathCalculator lightPath = RAT::DU::Utility::Get()->GetLightPathCalculator();
   RAT::DU::PMTInfo pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
+  lightPath.LoadShadowingGeometryInfo();
 
   // Now fill the LOCASRuns objects with the respective information
   // from the SOC files in the SOC reader

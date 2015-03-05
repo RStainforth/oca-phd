@@ -292,6 +292,11 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR,
   SetLBTheta( 0.0 );
   SetLBPhi( 0.0 );
 
+  cout << "Laserball Position is: ( " 
+       << GetLBPos().X() << ", "
+       << GetLBPos().Y() << ", "
+       << GetLBPos().Z() << " ) mm, R = " << GetLBPos().Mag() << " mm" << endl;
+
   // Calculate the number of prompt counts over each PMT for the run
   CalculateLBIntensityNorm();
 
@@ -453,12 +458,12 @@ void LOCASRun::AddLOCASPMT( LOCASPMT& locasPMT )
 
   Int_t pmtID = locasPMT.GetID();
 
-  if( fLOCASPMTs.find( locasPMT.GetID() ) == fLOCASPMTs.end() ){
+  if( fLOCASPMTs.find( pmtID ) == fLOCASPMTs.end() ){
     fLOCASPMTs[ pmtID ] = locasPMT;
   }
 
   else{
-    std::cout << "PMT Not Added - PMT with same ID already exists" << std::endl;
+    std::cout << "PMT Not Added - PMT with same ID already exists, PMT-ID: " << pmtID <<  std::endl;
   }
 
 }

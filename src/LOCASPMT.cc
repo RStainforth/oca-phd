@@ -32,6 +32,140 @@ ClassImp( LOCASPMT );
 LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
 {
   
+  // fID = rhs.fID;
+
+  // fRunID = rhs.fRunID;
+  // fCentralRunID = rhs.fCentralRunID;
+  // fWavelengthRunID = rhs.fWavelengthRunID;
+
+  // fType = rhs.fType;
+
+  // fIsVerified = rhs.fIsVerified;
+  // fCentralIsVerified = rhs.fCentralIsVerified;
+  // fWavelengthIsVerified = rhs.fWavelengthIsVerified;
+
+  // fDQXXFlag = rhs.fDQXXFlag;
+  // fCentralDQXXFlag = rhs.fCentralDQXXFlag;
+  // fWavelengthDQXXFlag = rhs.fWavelengthDQXXFlag;
+
+  // fPos = rhs.fPos;
+  // fNorm = rhs.fNorm;
+
+  // fPromptPeakTime = rhs.fPromptPeakTime;
+  // fPromptPeakWidth = rhs.fPromptPeakWidth;
+  // fTimeOfFlight = rhs.fTimeOfFlight;
+  // fOccupancy = rhs.fOccupancy;
+  // fOccupancyErr = rhs.fOccupancyErr;
+  // fOccupancyCorr = rhs.fOccupancyCorr;
+  // fLBIntensityNorm = rhs.fLBIntensityNorm;
+
+  // fNLBPulses = rhs.fNLBPulses;
+
+  // fMPECorrOccupancy = rhs.fMPECorrOccupancy;
+  // fMPECorrOccupancyErr = rhs.fMPECorrOccupancyErr;
+  // fMPECorrOccupancyCorr = rhs.fMPECorrOccupancyCorr;
+
+  // fFresnelTCoeff = rhs.fFresnelTCoeff;
+
+  // fDistInInnerAV = rhs.fDistInInnerAV;
+  // fDistInAV = rhs.fDistInAV;
+  // fDistInWater = rhs.fDistInWater;
+  // fDistInNeck = rhs.fDistInNeck;
+  // fTotalDist = rhs.fTotalDist;
+
+  // fSolidAngle = rhs.fSolidAngle;
+  // fCosTheta = rhs.fCosTheta;
+
+  // fRelLBTheta = rhs.fRelLBTheta;
+  // fRelLBPhi = rhs.fRelLBPhi;
+
+  // fCHSFlag = rhs.fCHSFlag;
+  // fCSSFlag = rhs.fCSSFlag;
+
+  // fBadPath = rhs.fBadPath;
+  // fNeckFlag = rhs.fNeckFlag;
+
+  // fInitialLBVec = rhs.fInitialLBVec;
+  // fIncidentLBVec = rhs.fIncidentLBVec;
+
+  // // Central Values
+
+  // fCentralPromptPeakTime = rhs.fCentralPromptPeakTime;
+  // fCentralPromptPeakWidth = rhs.fCentralPromptPeakWidth;
+  // fCentralTimeOfFlight = rhs.fCentralTimeOfFlight;
+  // fCentralOccupancy = rhs.fCentralOccupancy;
+  // fCentralOccupancyErr = rhs.fCentralOccupancyErr;
+  // fCentralOccupancyCorr = rhs.fCentralOccupancyCorr;
+  // fCentralLBIntensityNorm = rhs.fCentralLBIntensityNorm;
+
+  // fCentralNLBPulses = rhs.fCentralNLBPulses;
+
+  // fCentralMPECorrOccupancy = rhs.fCentralMPECorrOccupancy;
+  // fCentralMPECorrOccupancyErr = rhs.fCentralMPECorrOccupancyErr;
+  // fCentralMPECorrOccupancyCorr = rhs.fCentralMPECorrOccupancyCorr;
+
+  // fCentralFresnelTCoeff = rhs.fCentralFresnelTCoeff;
+
+  // fCentralDistInInnerAV = rhs.fCentralDistInInnerAV;
+  // fCentralDistInAV = rhs.fCentralDistInAV;
+  // fCentralDistInWater = rhs.fCentralDistInWater;
+  // fCentralDistInNeck = rhs.fCentralDistInNeck;
+  // fCentralTotalDist = rhs.fCentralTotalDist;
+
+  // fCentralSolidAngle = rhs.fCentralSolidAngle;
+  // fCentralCosTheta = rhs.fCentralCosTheta;
+
+  // fCentralRelLBTheta = rhs.fCentralRelLBTheta;
+  // fCentralRelLBPhi = rhs.fCentralRelLBPhi;
+
+  // fCentralCHSFlag = rhs.fCentralCHSFlag;
+  // fCentralCSSFlag = rhs.fCentralCSSFlag;
+
+  // fCentralBadPath = rhs.fCentralBadPath;
+  // fCentralNeckFlag = rhs.fCentralNeckFlag;
+
+  // fCentralInitialLBVec = rhs.fCentralInitialLBVec;
+  // fCentralIncidentLBVec = rhs.fCentralIncidentLBVec;
+
+  // // Wavelength values
+
+  // fWavelengthPromptPeakTime = rhs.fWavelengthPromptPeakTime;
+  // fWavelengthPromptPeakWidth = rhs.fWavelengthPromptPeakWidth;
+  // fWavelengthTimeOfFlight = rhs.fWavelengthTimeOfFlight;
+  // fWavelengthOccupancy = rhs.fWavelengthOccupancy;
+  // fWavelengthOccupancyErr = rhs.fWavelengthOccupancyErr;
+  // fWavelengthOccupancyCorr = rhs.fWavelengthOccupancyCorr;
+  // fWavelengthLBIntensityNorm = rhs.fWavelengthLBIntensityNorm;
+
+  // fWavelengthNLBPulses = rhs.fWavelengthNLBPulses;
+
+  // fWavelengthMPECorrOccupancy = rhs.fWavelengthMPECorrOccupancy;
+  // fWavelengthMPECorrOccupancyErr = rhs.fWavelengthMPECorrOccupancyErr;
+  // fWavelengthMPECorrOccupancyCorr = rhs.fWavelengthMPECorrOccupancyCorr;
+
+  // fWavelengthFresnelTCoeff = rhs.fWavelengthFresnelTCoeff;
+
+  // fWavelengthDistInInnerAV = rhs.fWavelengthDistInInnerAV;
+  // fWavelengthDistInAV = rhs.fWavelengthDistInAV;
+  // fWavelengthDistInWater = rhs.fWavelengthDistInWater;
+  // fWavelengthDistInNeck = rhs.fWavelengthDistInNeck;
+  // fWavelengthTotalDist = rhs.fWavelengthTotalDist;
+
+  // fWavelengthSolidAngle = rhs.fWavelengthSolidAngle;
+  // fWavelengthCosTheta = rhs.fWavelengthCosTheta;
+
+  // fWavelengthRelLBTheta = rhs.fWavelengthRelLBTheta;
+  // fWavelengthRelLBPhi = rhs.fWavelengthRelLBPhi;
+
+  // fWavelengthCHSFlag = rhs.fWavelengthCHSFlag;
+  // fWavelengthCSSFlag = rhs.fWavelengthCSSFlag;
+
+  // fWavelengthBadPath = rhs.fWavelengthBadPath;
+  // fWavelengthNeckFlag = rhs.fWavelengthNeckFlag;
+
+  // fWavelengthInitialLBVec = rhs.fWavelengthInitialLBVec;
+  // fWavelengthIncidentLBVec = rhs.fWavelengthIncidentLBVec;
+
   fID = rhs.fID;
 
   fRunID = rhs.fRunID;
@@ -489,7 +623,7 @@ void LOCASPMT::ProcessLightPath( RAT::DU::LightPathCalculator& lPath )
 
   if ( fType == 1 ){
     
-    if ( lPath.GetStraightLine() ){ SetBadPath( true ); }
+    if ( lPath.GetStraightLine() || lPath.CheckForShadowing() == true ){ SetBadPath( true ); }
 
     if ( lPath.GetXAVNeck() ){ 
       SetNeckFlag( true );

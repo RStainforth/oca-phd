@@ -51,7 +51,7 @@ int main( int argc, char** argv ){
   lFit.PerformFit();
   lFit.DataScreen( 16.0 );
   lFit.PerformFit();
-  lFit.DataScreen( 16.0 );
+  lFit.DataScreen( 9.0 );
   lFit.PerformFit();
   lFit.PrintParameterInformation();
 
@@ -69,6 +69,11 @@ int main( int argc, char** argv ){
   ( lFit.AngularResponseTH1F() )->Draw();
   gStyle->SetOptStat( 0 );
   canVas2->Print("angresp.eps");
+
+  TCanvas* canVas3 = new TCanvas( "Data ROcc vs. Model ROcc", "Data ROcc vs. Model ROcc", 640, 400 ); 
+  ( lFit.PlotModelROccVsDataROcc() )->Draw("AP");
+  gStyle->SetOptStat( 0 );
+  canVas3->Print("modelroccvsdatarocc.eps");
 
   lFit.WriteFitToFile("SLPFIT2_Fit.root");
 

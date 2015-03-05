@@ -32,6 +32,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TF1.h"
+#include "TGraph.h"
 
 namespace LOCAS{
 
@@ -86,6 +87,8 @@ namespace LOCAS{
     static Float_t DLBDistributionMask( Double_t* aPtr, Double_t* parPtr );
     static Float_t SLBDistributionWave( Double_t* aPtr, Double_t* parPtr );
     static Float_t DLBDistributionWave( Double_t* aPtr, Double_t* parPtr );
+
+    TGraph* PlotModelROccVsDataROcc();
 
     // Calculate the individual PMT chisquare and global chisquare
     Float_t CalculatePMTChiSquare( const LOCASRun* iRunPtr, const LOCASPMT* iPMTPtr );
