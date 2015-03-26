@@ -469,7 +469,7 @@ void LOCASFit::InitialiseParameters()
         nCentralPMTsTmp++;
       }
     }
-    if ( nPMTsTmp != 0 && normCentralVal != 0.0 && normVal != 0.0 && normCentralVal != 0.0 ){ normVal /= nPMTsTmp; normCentralVal /= nCentralPMTsTmp; }
+    if ( nPMTsTmp != 0 && nCentralPMTsTmp != 0.0 && normVal != 0.0 && normCentralVal != 0.0 ){ normVal /= nPMTsTmp; normCentralVal /= nCentralPMTsTmp; }
     fCentralRunNorms[ iT ] = normCentralVal;
     fMrqParameters[ GetLBNormalisationParIndex() + iT ] = normVal;
     printf( "Run %i of 27 has norm: %.10f with %i PMTs\n", iT + 1, normVal, nPMTsTmp );

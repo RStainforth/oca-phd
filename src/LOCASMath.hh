@@ -38,6 +38,7 @@
 #include <TObject.h>
 
 #include "LOCASPMT.hh"
+#include "LOCASDataPoint.hh"
 
 
 namespace LOCAS{
@@ -57,6 +58,7 @@ namespace LOCAS{
     static Double_t MPECorrectedNPromptCorr( const Double_t mpeOcc, const Double_t nPrompt, const Double_t nPulses );      // Calculate the correction factor on the MPE calculation of the occupancy
 
     static Double_t OccRatioErr( const LOCASPMT* pmt );
+    static void CalculateMPEOccRatio( const LOCASDataPoint& dPoint, Float_t& occRatio, Float_t& occRatioErr );
 
     static float* LOCASVector( const long nStart, const long nEnd );
     static int* LOCASIntVector( const long nStart, const long nEnd );

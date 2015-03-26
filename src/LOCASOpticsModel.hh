@@ -27,12 +27,13 @@ namespace LOCAS{
   public:
 
     // The constructors
-    LOCASOpticsModel(){ }
+    LOCASOpticsModel();
     LOCASOpticsModel( const char* fileName );
 
     // The destructor - delete the parameters
     ~LOCASOpticsModel(){ if ( fParameters != NULL ){ delete[] fParameters; } }
-
+ 
+    void ModelSetup( const char* fileName );
     
     void AllocateParameters();
     void InitialiseParameterIndices();

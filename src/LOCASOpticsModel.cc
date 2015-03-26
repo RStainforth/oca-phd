@@ -1,19 +1,3 @@
-////////////////////////////////////////////////////////////////////
-///
-/// FILENAME: LOCASOpticsModel.hh
-///
-/// CLASS: LOCAS::LOCASOpticsModel
-///
-/// BRIEF: The class which defines the optical response model
-///        of PMTs.
-///                
-/// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
-///
-/// REVISION HISTORY:\n
-///     02/2014 : RPFS - First Revision, new file. \n
-///
-////////////////////////////////////////////////////////////////////
-
 #include "LOCASOpticsModel.hh"
 #include "LOCASModelParameterStore.hh"
 #include "LOCASModelParameter.hh"
@@ -32,6 +16,34 @@ using namespace LOCAS;
 using namespace std;
 
 ClassImp( LOCASOpticsModel )
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+LOCASOpticsModel::LOCASOpticsModel()
+{
+
+  fParameters = NULL;
+
+  fScintParIndex = -10;
+  fAVParIndex = -10;
+  fWaterParIndex = -10;
+
+  fScintRSParIndex = -10;
+  fAVRSParIndex = -10;
+  fWaterRSParIndex = -10;
+
+  fAngularResponseParIndex = -10;
+  fLBDistributionParIndex = -10;
+  fLBPolynomialParIndex = -10;
+
+  fNAngularResponseBins = -10;
+  fNLBDistributionBins = -10;
+  fNLBDistributionThetaBins = -10;
+  fNLBDistributionPhiBins = -10;
+  fNLBPolynomialParameters = -10;
+
+}
 
 //////////////////////////////////////
 //////////////////////////////////////
@@ -58,6 +70,16 @@ LOCASOpticsModel::LOCASOpticsModel( const char* fileName )
   fNLBDistributionThetaBins = -10;
   fNLBDistributionPhiBins = -10;
   fNLBPolynomialParameters = -10;
+
+  ModelSetup( fileName );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASOpticsModel::ModelSetup( const char* fileName )
+{
 
   fModelParameterStore.AddParameters( fileName );
 
@@ -138,8 +160,7 @@ void LOCASOpticsModel::InitialiseParameterIndices()
     else if ( iPar->GetParameterName() == "par_lb_dist_poly" ){ 
       SetLBPolynomialParIndex( iPar->GetIndex() );
       SetNAngularResponseBins( iPar->GetNInGroup() );
-    }
-    
+    }    
 
   }
 
@@ -213,19 +234,11 @@ Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint )
   Float_t dWaterRS = 0.0;
 
   // This is currently set to 1.0 until the normalisation ratio is better understood
-  Float_t normVal = dataPoint.GetLBIntensityNormRatio();
+  Float_t normVal = dataPoint.GetLBIntensityNorm();
 
-  Float_t dScint = dataPoint.GetDeltaDistInInnerAV();
-  if ( GetScintParIndex() >= 0 ){ dScintAtt = dScint / GetScintPar(); }
-  if ( GetScintRSParIndex() >= 0 ){ dScintRS = dScint / GetScintRSPar(); }
-
-  Float_t dAV = dataPoint.GetDeltaDistInAV();
-  if ( GetAVParIndex() >= 0 ){ dAVAtt = dAV / GetAVPar(); }
-  if ( GetAVRSParIndex() >= 0 ){ dAVRS = dAV / GetAVRSPar(); }
-
-  Float_t dWater = dataPoint.GetDeltaDistInWater();
-  if ( GetWaterParIndex() >= 0 ){ dWaterAtt = dWater / GetWaterPar(); }
-  if ( GetWaterRSParIndex() >= 0 ){ dWaterRS = dWater / GetWaterRSPar(); }
+  Float_t dScint = dataPoint.GetDistInInnerAV() - dataPoint.GetCentralDistInInnerAV();
+  Float_t dAV = dataPoint.GetDistInAV() - dataPoint.GetCentralDistInAV();
+  Float_t dWater = dataPoint.GetDistInWater() - dataPoint.GetCentralDistInWater();
 
   if ( GetAngularResponseParIndex() >= 0 ){
     Float_t angResp = ModelAngularResponse( dataPoint, 0 );

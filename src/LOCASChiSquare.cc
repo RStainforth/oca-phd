@@ -29,33 +29,16 @@ ClassImp( LOCASChiSquare )
 //////////////////////////////////////
 //////////////////////////////////////
 
-LOCASChiSquare::LOCASChiSquare( const LOCASOpticsModel& locasModel, 
-                                const LOCASDataStore& locasData )
-{
-
-  // Set the model and the dataset for the chisquare to be calculated
-  fModel = locasModel;
-  fDataStore = locasData;
-
-}
-
-//////////////////////////////////////
-//////////////////////////////////////
-
 Float_t LOCASChiSquare::EvaluateChiSquare( LOCASDataPoint& dPoint )
 {
 
-  // Calculate the chisquare for a single datapoint (PMT) in the dataset
-  Float_t dataVal = ( 1 / ( dPoint.GetFresnelTCoeffRatio() * dPoint.GetSolidAngleRatio() ) )
-    * dPoint.GetMPEOccRatio();
-  Float_t modelVal = fModel.ModelPrediction( dPoint );
-  dPoint.SetModelOccRatio( modelVal );
+  Float_t modelVal = fModel->ModelPrediction( dPoint );
+  Float_t dataVal = 0.0;
+  Float_t error = 0.0;
+  LOCASMath::CalculateMPEOccRatio( dPoint, dataVal, error );
 
   Float_t res = ( dataVal - modelVal );
-  Float_t error = dPoint.GetMPEOccRatioErr();
-
   Float_t chiSq =  ( res * res ) / ( error * error );
-  dPoint.SetChiSq( chiSq );
 
   return chiSq;
 
@@ -71,48 +54,13 @@ Float_t LOCASChiSquare::EvaluateGlobalChiSquare()
   Float_t chiSq = 0.0;
   std::vector< LOCASDataPoint >::iterator iD;
 
-  for ( iD = fDataStore.GetLOCASDataPointsIterBegin();
-        iD != fDataStore.GetLOCASDataPointsIterEnd();
+  for ( iD = fDataStore->GetLOCASDataPointsIterBegin();
+        iD != fDataStore->GetLOCASDataPointsIterEnd();
         iD++ ){
 
       chiSq += EvaluateChiSquare( *(iD) );
   }
 
-  return chiSq;
-
-}
-
-//////////////////////////////////////
-//////////////////////////////////////
-
-Float_t LOCASChiSquare::EvaluateGlobalChiSquare( LOCASDataStore& lStore )
-{
-
-  // Calculate the total chisquare over all datapoints (PMTs) in the dataset  
-  Float_t chiSq = 0.0;
-  std::vector< LOCASDataPoint >::iterator iD;
-
-  for ( iD = lStore.GetLOCASDataPointsIterBegin();
-        iD != lStore.GetLOCASDataPointsIterEnd();
-        iD++ ){
-
-      chiSq += EvaluateChiSquare( *(iD) );
-
-  }
-
-  return chiSq;
-
-}
-
-//////////////////////////////////////
-//////////////////////////////////////
-
-Float_t LOCASChiSquare::EvaluateGlobalChiSquare( const Double_t* params )
-{
-
-  fModel.SetParameters( params );
-  Float_t chiSq = EvaluateGlobalChiSquare();
-  
   return chiSq;
 
 }

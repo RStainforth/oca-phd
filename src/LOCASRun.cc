@@ -297,9 +297,6 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR,
        << GetLBPos().Y() << ", "
        << GetLBPos().Z() << " ) mm, R = " << GetLBPos().Mag() << " mm" << endl;
 
-  // Calculate the number of prompt counts over each PMT for the run
-  CalculateLBIntensityNorm();
-
   // Create an iterator to loop over the PMTs...
   std::map< Int_t, LOCASPMT >::iterator iLP;
 
@@ -637,6 +634,9 @@ void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
     }
   }
 
+  // Calculate the number of prompt counts over each PMT for the run
+  CalculateLBIntensityNorm();
+
 }
 
 //////////////////////////////////////
@@ -650,11 +650,33 @@ void LOCASRun::CalculateLBIntensityNorm()
   Float_t centrallbIntensityNorm = 0.0;
   Float_t wavelengthlbIntensityNorm = 0.0;
 
+  Int_t nPMTs = 0;
+  Int_t nCentralPMTs = 0;
+  Int_t nWavelengthPMTs = 0;
+
   for ( iPMT = GetLOCASPMTIterBegin(); iPMT != GetLOCASPMTIterEnd(); iPMT++ ){
-    lbIntensityNorm += ( iPMT->second ).GetOccupancy();
-    centrallbIntensityNorm += ( iPMT->second ).GetCentralOccupancy();
-    wavelengthlbIntensityNorm += ( iPMT->second ).GetWavelengthOccupancy();
+    if ( ( iPMT->second ).GetDQXXFlag() == 1 ){
+      lbIntensityNorm += ( iPMT->second ).GetMPECorrOccupancy();
+      nPMTs++;
+    }
+    if ( ( iPMT->second ).GetCentralDQXXFlag() == 1 ){
+      centrallbIntensityNorm += ( iPMT->second ).GetCentralMPECorrOccupancy();
+      nCentralPMTs++;
+    }
+    if ( ( iPMT->second ).GetWavelengthDQXXFlag() == 1 ){
+      wavelengthlbIntensityNorm += ( iPMT->second ).GetWavelengthMPECorrOccupancy();
+      nWavelengthPMTs++;
+    }
   }
+
+  if ( nPMTs != 0 ){ lbIntensityNorm /= nPMTs; }
+  else{ lbIntensityNorm = -10.0; }
+
+  if ( nCentralPMTs != 0 ){ centrallbIntensityNorm /= nCentralPMTs; }
+  else{ centrallbIntensityNorm = -10.0; }
+
+  if ( nWavelengthPMTs != 0 ){ wavelengthlbIntensityNorm /= nWavelengthPMTs; }
+  else{ wavelengthlbIntensityNorm = -10.0; }
 
   fLBIntensityNorm = lbIntensityNorm;
   fCentralLBIntensityNorm = centrallbIntensityNorm;

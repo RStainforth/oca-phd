@@ -87,6 +87,21 @@ Double_t LOCASMath::OccRatioErr( const LOCASPMT* pmt ){
 //////////////////////////////////////
 //////////////////////////////////////
 
+void LOCASMath::CalculateMPEOccRatio( const LOCASDataPoint& dPoint, Float_t& occRatio, Float_t& occRatioErr ){
+
+  occRatio = dPoint.GetMPECorrOccupancy() / dPoint.GetMPECorrOccupancy();
+  occRatio *= ( dPoint.GetCentralFresnelTCoeff() * dPoint.GetCentralSolidAngle() ) / ( dPoint.GetFresnelTCoeff() * dPoint.GetSolidAngle() );
+  occRatio *= dPoint.GetCentralLBIntensityNorm();
+  
+  Double_t offAxisRun2 = TMath::Power( dPoint.GetMPECorrOccupancyErr() / dPoint.GetMPECorrOccupancy(), 2 );
+  Double_t centralRun2 = TMath::Power( dPoint.GetCentralMPECorrOccupancyErr() / dPoint.GetCentralMPECorrOccupancy(), 2 );
+  occRatioErr = occRatio * TMath::Sqrt( offAxisRun2 + centralRun2 );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 float* LOCASMath::LOCASVector( const long nStart, const long nEnd )
 {
 

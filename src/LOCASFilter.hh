@@ -15,6 +15,7 @@
 ///
 /// REVISION HISTORY:\n
 ///     02/2014 : RPFS - First Revision, new file. \n
+///     03/2015 : RPFS - Added counters for passing data points
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -43,7 +44,13 @@ namespace LOCAS{
     /////////////////////////////////
 
     // Check whether a value is within the limits set by the filter
-    Bool_t CheckCondition( Float_t val ) const;
+    Bool_t CheckCondition( Float_t val );
+
+    // Reset all values except name: minimum/maximum values, filter counters
+    void ResetFilter();
+
+    // Print out information for this current filter: Name, Boundaries and number of cut values
+    void PrintFilterInformation();
 
     /////////////////////////////////
     ////////     GETTERS     ////////
@@ -54,6 +61,10 @@ namespace LOCAS{
     // The maximum and minimum values for the filter to check against
     Float_t GetMaxValue() const { return fMaxValue; }
     Float_t GetMinValue() const { return fMinValue; }
+
+    // The number of times the filter has passed a check, and the number of times it has failed a check.
+    Int_t GetNumberConditionPasses() const { return fNumberConditionPasses; }
+    Int_t GetNumberConditionFails() const { return fNumberConditionFails; }
 
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -66,10 +77,13 @@ namespace LOCAS{
 
   private:
     
-    std::string fFilterName; // The name of the filter
+    std::string fFilterName;         // The name of the filter
 
-    Float_t fMaxValue;       // The maximum value for the condition to be checked against
-    Float_t fMinValue;       // The minimum value for the condition to be checked against
+    Float_t fMaxValue;               // The maximum value for the condition to be checked against
+    Float_t fMinValue;               // The minimum value for the condition to be checked against
+
+    Int_t fNumberConditionPasses;    // The number of times this instance of a filter has passed a check
+    Int_t fNumberConditionFails;     // The number of times this instance of a filter has failed a checkx
 
     ClassDef( LOCASFilter, 1 );
     

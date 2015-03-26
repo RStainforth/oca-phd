@@ -14,6 +14,7 @@
 ///
 /// REVISION HISTORY:\n
 ///     02/2014 : RPFS - First Revision, new file. \n
+///     03/2015 : RPFS - Restructred to construct using LOCASPMT objects
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -21,8 +22,6 @@
 #define _LOCASDataPoint_
 
 #include "LOCASPMT.hh"
-#include "LOCASRun.hh"
-#include "LOCASRawDataPoint.hh"
 
 #include "TVector3.h"
 
@@ -36,7 +35,7 @@ namespace LOCAS{
 
     // Constructors
     LOCASDataPoint(){ };
-    LOCASDataPoint( const LOCASRawDataPoint dataPoint );
+    LOCASDataPoint( const LOCASPMT& lPMT );
 
     // Destructor - nothing to delete
     ~LOCASDataPoint(){ };
@@ -47,21 +46,27 @@ namespace LOCAS{
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
-    
-    Float_t GetMPEOccRatio() const { return fMPEOccRatio; }
-    Float_t GetMPEOccRatioErr() const { return fMPEOccRatioErr; }
+
+    Int_t GetRunID() const { return fRunID; }
 
     Float_t GetMPECorrOccupancy() const { return fMPECorrOccupancy; }
     Float_t GetCentralMPECorrOccupancy() const { return fCentralMPECorrOccupancy; }
-    
-    Float_t GetDeltaDistInInnerAV() const { return fDeltaDistInInnerAV; }
-    Float_t GetDeltaDistInAV() const { return fDeltaDistInAV; }
-    Float_t GetDeltaDistInWater() const { return fDeltaDistInWater; }
-    Float_t GetTotalDist() const { return fTotalDist; }
-    Float_t GetCentralTotalDist() const { return fCentralTotalDist; }
 
-    Float_t GetSolidAngleRatio() const { return fSolidAngleRatio; }
-    Float_t GetFresnelTCoeffRatio() const { return fFresnelTCoeffRatio; }
+    Float_t GetMPECorrOccupancyErr() const { return fMPECorrOccupancyErr; }
+    Float_t GetCentralMPECorrOccupancyErr() const { return fCentralMPECorrOccupancyErr; }
+    
+    Float_t GetDistInInnerAV() const { return fDistInInnerAV; }
+    Float_t GetCentralDistInInnerAV() const { return fCentralDistInInnerAV; }
+    Float_t GetDistInAV() const { return fDistInAV; }
+    Float_t GetCentralDistInAV() const { return fCentralDistInAV; }
+    Float_t GetDistInWater() const { return fDistInWater; }
+    Float_t GetCentralDistInWater() const { return fCentralDistInWater; }
+
+    Float_t GetSolidAngle() const { return fSolidAngle; }
+    Float_t GetCentralSolidAngle() const { return fCentralSolidAngle; }
+
+    Float_t GetFresnelTCoeff() const { return fFresnelTCoeff; }
+    Float_t GetCentralFresnelTCoeff() const { return fCentralFresnelTCoeff; }
 
     Float_t GetLBTheta() const { return fLBTheta; }
     Float_t GetCentralLBTheta() const { return fCentralLBTheta; }
@@ -72,86 +77,107 @@ namespace LOCAS{
     Float_t GetIncidentAngle() const { return fIncidentAngle; }
     Float_t GetCentralIncidentAngle() const { return fCentralIncidentAngle; }
 
-    Float_t GetLBIntensityNormRatio() const { return fLBIntensityNormRatio; }
+    Float_t GetLBIntensityNorm() const { return fLBIntensityNorm; }
+    Float_t GetCentralLBIntensityNorm() const { return fCentralLBIntensityNorm; }
 
-    Float_t GetModelOccRatio() const { return fModelOccRatio; }
+    Int_t GetCSSFlag() const { return fCSSFlag; }
+    Int_t GetCentralCSSFlag() const { return fCentralCSSFlag; }
 
-    Float_t GetChiSq() const { return fChiSq; }
+    Int_t GetCHSFlag() const { return fCHSFlag; }
+    Int_t GetCentralCHSFlag() const { return fCentralCHSFlag; }
 
-    TVector3 GetPMTPos() const { return fPMTPos; }
-    TVector3 GetLBPos() const { return fLBPos; }
+    Bool_t GetBadPathFlag() const { return fBadPathFlag; }
+    Bool_t GetCentralBadPathFlag() const { return fCentralBadPathFlag; }
 
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
 
-    void SetMPEOccRatio( const Float_t val ) { fMPEOccRatio = val; }
-    void SetMPEOccRatioErr( const Float_t val ) { fMPEOccRatioErr = val; }
+    void SetRunID( const Int_t val ){ fRunID = val; }
 
     void SetMPECorrOccupancy( const Float_t val ){ fMPECorrOccupancy = val; }
     void SetCentralMPECorrOccupancy( const Float_t val ){ fCentralMPECorrOccupancy = val; }
+
+    void SetMPECorrOccupancyErr( const Float_t val ){ fMPECorrOccupancyErr = val; }
+    void SetCentralMPECorrOccupancyErr( const Float_t val ){ fCentralMPECorrOccupancyErr = val; }
     
-    void SetDeltaDistInInnerAV( Float_t val ) { fDeltaDistInInnerAV = val; }
-    void SetDeltaDistInAV( Float_t val ) { fDeltaDistInAV = val; }
-    void SetDeltaDistInWater( Float_t val ) { fDeltaDistInWater = val; }
-    void SetTotalDist( const Float_t val ){ fTotalDist = val; }
-    void SetCentralTotalDist( const Float_t val ){ fCentralTotalDist = val; }
+    void SetDistInInnerAV( const Float_t val ){ fDistInInnerAV = val; }
+    void SetCentralDistInInnerAV( const Float_t val ){ fCentralDistInInnerAV = val; }
+    void SetDistInAV( const Float_t val ){ fDistInAV = val; }
+    void SetCentralDistInAV( const Float_t val ){ fCentralDistInAV = val; }
+    void SetDistInWater( const Float_t val ){ fDistInWater = val; }
+    void SetCentralDistInWater( const Float_t val ){ fCentralDistInWater = val; }
 
-    void SetSolidAngleRatio( Float_t val ) { fSolidAngleRatio = val; }
-    void SetFresnelTCoeffRatio( Float_t val ) { fFresnelTCoeffRatio = val; }
+    void SetSolidAngle( const Float_t val ){ fSolidAngle = val; }
+    void SetCentralSolidAngle( const Float_t val ){ fCentralSolidAngle = val; }
 
-    void SetLBTheta( Float_t val ) { fLBTheta = val; }
-    void SetCentralLBTheta( Float_t val ) { fCentralLBTheta = val; }
+    void SetFresnelTCoeff( const Float_t val ){ fFresnelTCoeff = val; }
+    void SetCentralFresnelTCoeff( const Float_t val ){ fCentralFresnelTCoeff = val; }
 
-    void SetLBPhi( const Float_t val ) { fLBPhi = val; }
-    void SetCentralLBPhi( const Float_t val ) { fCentralLBPhi = val; }
+    void SetLBTheta( const Float_t val ){ fLBTheta = val; }
+    void SetCentralLBTheta( const Float_t val ){ fCentralLBTheta = val; }
+
+    void SetLBPhi( const Float_t val ){ fLBPhi = val; }
+    void SetCentralLBPhi( const Float_t val ){ fCentralLBPhi = val; }
 
     void SetIncidentAngle( const Float_t val ){ fIncidentAngle = val; }
     void SetCentralIncidentAngle( const Float_t val ){ fCentralIncidentAngle = val; }
 
-    void SetLBIntensityNormRatio( const Float_t val ) { fLBIntensityNormRatio = val; }
+    void SetLBIntensityNorm( const Float_t val ){ fLBIntensityNorm = val; }
+    void SetCentralLBIntensityNorm( const Float_t val ){ fCentralLBIntensityNorm = val; }
 
-    void SetModelOccRatio( const Float_t val ){ fModelOccRatio = val; }
+    void SetCSSFlag( const Int_t val ){ fCSSFlag = val; }
+    void SetCentralCSSFlag( const Int_t val ){ fCentralCSSFlag = val; }
 
-    void SetChiSq( const Float_t val ){ fChiSq = val; }
-    
-    void SetPMTPos( const TVector3& pmtPos ){ fPMTPos = pmtPos; }
-    void SetLBPos( const TVector3& lbPos ){ fLBPos = lbPos; }
+    void SetCHSFlag( const Int_t val ){ fCHSFlag = val; }
+    void SetCentralCHSFlag( const Int_t val ){ fCentralCHSFlag = val; }
+
+    void SetBadPathFlag( const Bool_t val ){ fBadPathFlag = val; }
+    void SetCentralBadPathFlag( const Bool_t val ){ fCentralBadPathFlag = val; }
 
   private:
 
-    Float_t fMPEOccRatio;         // The MPE corrected occupancy ratio
-    Float_t fMPEOccRatioErr;      // The error in the MPE corrected occupancy ratio
+    Int_t fRunID;                           // The run ID this datapoint originated from
 
-    Float_t fMPECorrOccupancy;          // The MPE corrected occupancy of the off-axis run
-    Float_t fCentralMPECorrOccupancy;   // The MPE corrected occupancy from the central run
+    Float_t fMPECorrOccupancy;              // The MPE corrected occupancy of the off-axis run
+    Float_t fCentralMPECorrOccupancy;       // The MPE corrected occupancy from the central run
 
-    Float_t fDeltaDistInInnerAV;    // The difference (off-axis - central) in the scintillator region distances
-    Float_t fDeltaDistInAV;       // The difference (off-axis - central) in the av region distances
-    Float_t fDeltaDistInWater;    // The difference (off-axis - central) in the water region distances
-    Float_t fTotalDist;           // The total distance of the light path in the off-axis run
-    Float_t fCentralTotalDist;    // The total distance of the light path in the central run
+    Float_t fMPECorrOccupancyErr;           // The error on the MPE corrected occupancy of the off-axis run
+    Float_t fCentralMPECorrOccupancyErr;    // The error on the MPE corrected occupancy from the central run
 
-    Float_t fSolidAngleRatio;     // The solid angle ratio (off-axis / central)
-    Float_t fFresnelTCoeffRatio;  // The fresnel transmission ratio (off-axis / central)
+    Float_t fDistInInnerAV;                 // The distance in the inner AV region from the off-axis run
+    Float_t fCentralDistInInnerAV;          // The distance in the inner AV region from the central run
+    Float_t fDistInAV;                      // The distance in the AV region from the off-axis run
+    Float_t fCentralDistInAV;               // The distance in the AV region from the central run
+    Float_t fDistInWater;                   // The distance in the water region from the off-axis run
+    Float_t fCentralDistInWater;            // The distance in the water region from the central run
 
-    Float_t fLBTheta;             // The theta value of the light path leaving the source in the source coordinate system
-    Float_t fCentralLBTheta;      // The theta value of the light path leaving the source in the source coordinate system from the central run
+    Float_t fSolidAngle;                    // The solid angle subtended from the source positions from the off-axis run
+    Float_t fCentralSolidAngle;             // The solid angle subtended from the source positions from the central run
 
-    Float_t fLBPhi;               // The phi value of the light path leaving the source in the source coordinate system
-    Float_t fCentralLBPhi;        // The phi value of the light path leaving the source in the source coordinate system from the central run
+    Float_t fFresnelTCoeff;                 // The fresnel transmission coefficient from the off-axis run
+    Float_t fCentralFresnelTCoeff;          // The fresnel transmission coefficient from the central run
 
-    Float_t fIncidentAngle;       // The incident angle of the light path on the PMT
-    Float_t fCentralIncidentAngle;// The incident angle of the light path on the PMt from the central run
+    Float_t fLBTheta;                       // The theta value of the light path leaving the source in the source coordinate system
+    Float_t fCentralLBTheta;                // The theta value of the light path leaving the source in the source coordinate system from the central run
 
-    Float_t fLBIntensityNormRatio;// The ratio of the prompt counts from all PMTs in the off-axis run / the same from the central run
+    Float_t fLBPhi;                         // The phi value of the light path leaving the source in the source coordinate system
+    Float_t fCentralLBPhi;                  // The phi value of the light path leaving the source in the source coordinate system from the central run
 
-    Float_t fModelOccRatio;       // The model prediction for the occupancy ratio
+    Float_t fIncidentAngle;                 // The incident angle of the light path on the PMT in degrees
+    Float_t fCentralIncidentAngle;          // The incident angle of the light path on the PMT from the central run in degrees
 
-    Float_t fChiSq;               // The chisquare value of this data point
+    Float_t fLBIntensityNorm;               // The run intensity normalisation value for the off-axis run (calculated by LOCASRun::CalculateLBIntensityNorm)
+    Float_t fCentralLBIntensityNorm;        // The run intensity normalisation value for the central run (calculated by LOCASRun::CalculateLBIntensityNorm)
 
-    TVector3 fPMTPos;             // The position of the PMT this datapoint represents   
-    TVector3 fLBPos;              // The source position
+    Int_t fCSSFlag;                         // The CSS flag (ANXX) for the off-axis run
+    Int_t fCentralCSSFlag;                  // The CSS flag (ANXX) for the central run
+    
+    Int_t fCHSFlag;                         // The CHS flag (DQXX) for the off-axis run
+    Int_t fCentralCHSFlag;                  // The CHS flag (DQXX) for the central run
+
+    Bool_t fBadPathFlag;                    // The path status from the off-axis run (i.e. shadowed, subject to reflections etc. true: bad, false: good)
+    Bool_t fCentralBadPathFlag;             // The path status from the central run (i.e. shadowed, subject to reflections etc. true: bad, false: good)
 
     ClassDef( LOCASDataPoint, 1 );
     

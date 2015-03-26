@@ -29,7 +29,6 @@ namespace LOCAS{
   {
   public:
     LOCASChiSquare(){ };
-    LOCASChiSquare( const LOCASOpticsModel& locasModel, const LOCASDataStore& locasData );
     ~LOCASChiSquare(){ };
 
     /////////////////////////////////
@@ -38,20 +37,14 @@ namespace LOCAS{
 
     Float_t EvaluateChiSquare( LOCASDataPoint& dPoint );
     Float_t EvaluateGlobalChiSquare();
-    Float_t EvaluateGlobalChiSquare( LOCASDataStore& lStore );
-    Float_t EvaluateGlobalChiSquare( const Double_t* params );
 
-    void ReInitialiseModelParameters(){ fModel.ReInitialiseParameters(); }
-
-    void AddModel( const LOCASOpticsModel& locasModel ){ fModel = locasModel; }
-    void AddData( const LOCASDataStore& locasData ){ fDataStore = locasData; }
-    void ClearData(){ fDataStore.ClearData(); }
+    void SetPointerToModel( LOCASOpticsModel* locasModel ){ fModel = locasModel; }
+    void SetPointerToData( LOCASDataStore* locasData ){ fDataStore = locasData; }
 
   private:
 
-    LOCASDataStore fDataStore;
-    
-    LOCASOpticsModel fModel;
+    LOCASDataStore* fDataStore;   
+    LOCASOpticsModel* fModel;
 
     ClassDef( LOCASChiSquare, 0 );
 

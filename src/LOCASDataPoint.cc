@@ -1,26 +1,8 @@
-////////////////////////////////////////////////////////////////////
-///
-/// FILENAME: LOCASDataPoint.cc
-///
-/// CLASS: LOCAS::LOCASDataPoint
-///
-/// BRIEF: Data-level structure for data
-///        points. These data points are used in a 
-///        chisquare function which is minimised over.
-///        These are the individual data points used in a fit
-///        
-///          
-/// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
-///
-/// REVISION HISTORY:\n
-///     02/2014 : RPFS - First Revision, new file. \n
-///
-////////////////////////////////////////////////////////////////////
-
-#include "LOCASRawDataPoint.hh"
+#include "LOCASPMT.hh"
 #include "LOCASDataPoint.hh"
 
 #include "TVector3.h"
+#include "TMath.h"
 
 using namespace LOCAS;
 using namespace std;
@@ -30,37 +12,50 @@ ClassImp( LOCASDataPoint )
 //////////////////////////////////////
 //////////////////////////////////////
 
-LOCASDataPoint::LOCASDataPoint( const LOCASRawDataPoint dataPoint )
+LOCASDataPoint::LOCASDataPoint( const LOCASPMT& lPMT )
 {
+  
+  SetRunID( lPMT.GetRunID() );
 
-  SetMPEOccRatio( ( dataPoint.GetModelCorrOccRatio() ) );
-  SetMPEOccRatioErr( ( dataPoint.GetMPEOccRatioErr() ) );
+  SetMPECorrOccupancy( lPMT.GetMPECorrOccupancy() );
+  SetCentralMPECorrOccupancy( lPMT.GetCentralMPECorrOccupancy() );
 
-  SetMPECorrOccupancy( ( dataPoint.GetMPECorrOccupancy() ) );
-  SetCentralMPECorrOccupancy( ( dataPoint.GetCentralMPECorrOccupancy() ) );
+  SetMPECorrOccupancyErr( lPMT.GetMPECorrOccupancyErr() );
+  SetCentralMPECorrOccupancyErr( lPMT.GetCentralMPECorrOccupancyErr() );
 
-  SetDeltaDistInInnerAV( ( dataPoint.GetDistInInnerAV() - dataPoint.GetCentralDistInInnerAV() ) );
-  SetDeltaDistInAV( ( dataPoint.GetDistInAV() - dataPoint.GetCentralDistInAV() ) );
-  SetDeltaDistInWater( ( dataPoint.GetDistInWater() - dataPoint.GetCentralDistInWater() ) );
-  SetTotalDist( dataPoint.GetTotalDist() );
-  SetCentralTotalDist( dataPoint.GetCentralTotalDist() );
+  SetDistInInnerAV( lPMT.GetDistInInnerAV() );
+  SetDistInInnerAV( lPMT.GetDistInInnerAV() );
+  SetDistInAV( lPMT.GetDistInAV() );
+  SetCentralDistInAV( lPMT.GetCentralDistInAV() );
+  SetDistInWater( lPMT.GetDistInWater() );
+  SetCentralDistInWater( lPMT.GetCentralDistInWater() );
 
-  SetSolidAngleRatio( ( dataPoint.GetSolidAngle() / dataPoint.GetCentralSolidAngle() ) );
-  SetFresnelTCoeffRatio( ( dataPoint.GetFresnelTCoeff() / dataPoint.GetCentralFresnelTCoeff() ) );
+  SetSolidAngle( lPMT.GetSolidAngle() );
+  SetCentralSolidAngle( lPMT.GetCentralSolidAngle() );
 
-  SetIncidentAngle( dataPoint.GetIncidentAngle() );
-  SetCentralIncidentAngle( dataPoint.GetCentralIncidentAngle() );
+  SetFresnelTCoeff( lPMT.GetFresnelTCoeff() );
+  SetCentralFresnelTCoeff( lPMT.GetCentralFresnelTCoeff() );
 
-  SetLBTheta( dataPoint.GetLBTheta() );
-  SetCentralLBTheta( dataPoint.GetCentralLBTheta() );
+  SetIncidentAngle( TMath::ACos( lPMT.GetCosTheta() ) * 180.0 / TMath::Pi() );
+  SetCentralIncidentAngle( TMath::ACos( lPMT.GetCentralCosTheta() ) * 180.0 / TMath::Pi() );
 
-  SetLBPhi( dataPoint.GetLBPhi() );
-  SetCentralLBPhi( dataPoint.GetCentralLBPhi() );
+  SetLBTheta( ( lPMT.GetInitialLBVec() ).Theta() );
+  SetCentralLBTheta( ( lPMT.GetCentralInitialLBVec() ).Theta() );
 
-  SetLBIntensityNormRatio( ( dataPoint.GetLBIntensityNorm() / dataPoint.GetCentralLBIntensityNorm() ) );
+  SetLBPhi( ( lPMT.GetInitialLBVec() ).Phi() );
+  SetCentralLBPhi( ( lPMT.GetCentralInitialLBVec() ).Phi() );
 
-  SetPMTPos( dataPoint.GetPMTPos() );
-  SetLBPos( dataPoint.GetLBPos() );
+  SetLBIntensityNorm( lPMT.GetLBIntensityNorm() );
+  SetCentralLBIntensityNorm( lPMT.GetCentralLBIntensityNorm() );
+
+  SetCHSFlag( lPMT.GetDQXXFlag() );
+  SetCentralCHSFlag( lPMT.GetCentralDQXXFlag() );
+
+  //SetCSSFlag( lPMT.GetANXXFlag() );
+  //SetCentralCSSFlag( lPMT.GetCentralANXXFlag() );
+
+  SetBadPathFlag( lPMT.GetBadPath() );
+  SetCentralBadPathFlag( lPMT.GetCentralBadPath() );
 
 }
 
@@ -70,20 +65,26 @@ LOCASDataPoint::LOCASDataPoint( const LOCASRawDataPoint dataPoint )
 LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
 {
 
-  SetMPEOccRatio( rhs.GetMPEOccRatio() );
-  SetMPEOccRatioErr( rhs.GetMPEOccRatioErr() );
+  SetRunID( rhs.GetRunID() );
 
   SetMPECorrOccupancy( rhs.GetMPECorrOccupancy() );
   SetCentralMPECorrOccupancy( rhs.GetCentralMPECorrOccupancy() );
 
-  SetDeltaDistInInnerAV( rhs.GetDeltaDistInInnerAV() );
-  SetDeltaDistInAV( rhs.GetDeltaDistInAV() );
-  SetDeltaDistInWater( rhs.GetDeltaDistInWater() );
-  SetTotalDist( rhs.GetTotalDist() );
-  SetCentralTotalDist( rhs.GetCentralTotalDist() );
+  SetMPECorrOccupancyErr( rhs.GetMPECorrOccupancyErr() );
+  SetCentralMPECorrOccupancyErr( rhs.GetCentralMPECorrOccupancyErr() );
 
-  SetSolidAngleRatio( rhs.GetSolidAngleRatio() );
-  SetFresnelTCoeffRatio( rhs.GetFresnelTCoeffRatio() );
+  SetDistInInnerAV( rhs.GetDistInInnerAV() );
+  SetCentralDistInInnerAV( rhs.GetCentralDistInInnerAV() );
+  SetDistInAV( rhs.GetDistInAV() );
+  SetCentralDistInAV( rhs.GetCentralDistInAV() );
+  SetDistInWater( rhs.GetDistInWater() );
+  SetCentralDistInWater( rhs.GetCentralDistInWater() );
+
+  SetSolidAngle( rhs.GetSolidAngle() );
+  SetCentralSolidAngle( rhs.GetCentralSolidAngle() );
+
+  SetFresnelTCoeff( rhs.GetFresnelTCoeff() );
+  SetCentralFresnelTCoeff( rhs.GetCentralFresnelTCoeff() );
 
   SetLBTheta( rhs.GetLBTheta() );
   SetCentralLBTheta( rhs.GetCentralLBTheta() );
@@ -94,14 +95,17 @@ LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
   SetIncidentAngle( rhs.GetIncidentAngle() );
   SetCentralIncidentAngle( rhs.GetCentralIncidentAngle() );
 
-  SetLBIntensityNormRatio( rhs.GetLBIntensityNormRatio() );
+  SetLBIntensityNorm( rhs.GetLBIntensityNorm() );
+  SetCentralLBIntensityNorm( rhs.GetCentralLBIntensityNorm() );
 
-  SetModelOccRatio( rhs.GetModelOccRatio() );
+  SetCSSFlag( rhs.GetCSSFlag() );
+  SetCentralCSSFlag( rhs.GetCentralCSSFlag() );
 
-  SetChiSq( rhs.GetChiSq() );
+  SetCHSFlag( rhs.GetCHSFlag() );
+  SetCentralCHSFlag( rhs.GetCentralCHSFlag() );
 
-  SetPMTPos( rhs.GetPMTPos() );
-  SetLBPos( rhs.GetLBPos() );
+  SetBadPathFlag( rhs.GetBadPathFlag() );
+  SetCentralBadPathFlag( rhs.GetCentralBadPathFlag() );
 
   return *this;
 

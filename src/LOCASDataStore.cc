@@ -33,14 +33,6 @@ ClassImp( LOCASDataStore )
 LOCASDataStore::LOCASDataStore( std::string storeName )
 {
 
-  fScintPar = -10.0;
-  fAVPar = -10.0;
-  fWaterPar = -10.0;
-
-  fScintRSPar = -10.0;
-  fAVRSPar = -10.0;
-  fWaterRSPar = -10.0;
-
   fStoreName = storeName;
   fDataPoints.clear();
  
@@ -92,11 +84,39 @@ void LOCASDataStore::AddDataPoint( LOCASDataPoint dataPoint )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASDataStore::AddDataPoint( LOCASRawDataPoint dataPoint )
+void LOCASDataStore::AddDataPoint( LOCASPMT& lPMT )
 {
 
-  LOCASDataPoint dp( dataPoint );
+  LOCASDataPoint dp( lPMT );
   fDataPoints.push_back( dp );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASDataStore::AddData( LOCASRunReader& lRuns )
+{
+
+  // LOCASPMT iterator used in below loop
+  std::map< Int_t, LOCASPMT >::iterator iPMT;
+  
+  // Loop through all the LOCASRun objects
+  for ( Int_t iRun = 0; iRun < lRuns.GetNLOCASRuns(); iRun++ ){
+
+    // Loop through all the LOCASPMTs
+    for ( iPMT = lRuns.GetRunEntry( iRun )->GetLOCASPMTIterBegin();
+          iPMT != lRuns.GetRunEntry( iRun )->GetLOCASPMTIterEnd();
+          iPMT ++ ){
+
+      // Add the LOCASPMT object to the LOCASDataStore object.
+      // This inherently converts the useful information on the LOCASPMT
+      // object to a LOCASDataPoint object.
+      AddDataPoint( iPMT->second ); 
+     
+    }
+
+  }
 
 }
 

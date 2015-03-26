@@ -41,45 +41,34 @@ namespace LOCAS{
     /////////////////////////////////
 
     // Add a filter to the collection of filters (this object)
-    void AddTopLevelFilter( LOCASFilter filter );
-    void AddFitLevelFilter( LOCASFilter filter );
+    void AddFilter( LOCASFilter filter );
 
     // Add a complete set of filters from a given card file
-    void AddTopLevelFilters( const char* fileName );
-    void AddFitLevelFilters( const char* fileName );
+    void AddFilters( const char* fileName );
 
     // Update a value of a filter (this may be used when considering sequential cuts)
-    void UpdateTopLevelFilter( const std::string filterName, const Double_t min, const Double_t max );
-    void UpdateFitLevelFilter( const std::string filterName, const Double_t min, const Double_t max );
+    void UpdateFilter( const std::string filterName, const Double_t min, const Double_t max );
 
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
 
     // Get the total number of filters
-    Int_t GetNTopLevelFilters(){ return fTopLevelFilters.size(); }
-    Int_t GetNFitLevelFilters(){ return fFitLevelFilters.size(); }
+    Int_t GetNFilters(){ return fFilters.size(); }
 
-    LOCASFilter& GetTopLevelFilter( const std::string filterName );
-    LOCASFilter& GetFitLevelFilter( const std::string filterName );
+    LOCASFilter& GetFilter( const std::string filterName );
 
-    // The iterators to the beginning and end of the top level filter store
-    std::vector< LOCASFilter >::iterator GetLOCASTopLevelFiltersIterBegin(){ return fTopLevelFilters.begin(); }
-    std::vector< LOCASFilter >::iterator GetLOCASTopLevelFiltersIterEnd(){ return fTopLevelFilters.end(); } 
-
-    // The iterators to the beginning and end of the fit level filter store
-    std::vector< LOCASFilter >::iterator GetLOCASFitLevelFiltersIterBegin(){ return fFitLevelFilters.begin(); }
-    std::vector< LOCASFilter >::iterator GetLOCASFitLevelFiltersIterEnd(){ return fFitLevelFilters.end(); }
+    // The iterators to the beginning and end of the filter store
+    std::vector< LOCASFilter >::iterator GetLOCASFiltersIterBegin(){ return fFilters.begin(); }
+    std::vector< LOCASFilter >::iterator GetLOCASFiltersIterEnd(){ return fFilters.end(); } 
 
   private:
 
     std::string fStoreName;                                 // The store name
 
-    std::vector< LOCASFilter > fTopLevelFilters;            // The vector of LOCASFilter objects which perform the top level cuts on the initial raw data
-    std::vector< LOCASFilter > fFitLevelFilters;            // The vector of LOCASFilter objects which perform cuts when refitting data
+    std::vector< LOCASFilter > fFilters;                    // The vector of LOCASFilter objects which perform the top level cuts on the initial raw data
     
-    std::map< std::string, Int_t > fTopLevelFilterLookUp;   // A look up map for the top level filters
-    std::map< std::string, Int_t > fFitLevelFilterLookUp;   // A look up map for the fit level filters  
+    std::map< std::string, Int_t > fFilterLookUp;           // A look up map for the filters by filter name
 
     ClassDef( LOCASFilterStore, 1 )
 
