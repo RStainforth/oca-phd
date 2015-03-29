@@ -36,6 +36,7 @@ Float_t LOCASChiSquare::EvaluateChiSquare( LOCASDataPoint& dPoint )
   Float_t dataVal = 0.0;
   Float_t error = 0.0;
   LOCASMath::CalculateMPEOccRatio( dPoint, dataVal, error );
+  cout << "data: " << dataVal << ", model: " << modelVal << endl;
 
   Float_t res = ( dataVal - modelVal );
   Float_t chiSq =  ( res * res ) / ( error * error );

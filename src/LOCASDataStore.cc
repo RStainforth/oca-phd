@@ -16,6 +16,8 @@
 
 #include "LOCASDataStore.hh"
 #include "LOCASDataPoint.hh"
+#include "LOCASRun.hh"
+#include "LOCASPMT.hh"
 
 #include "TFile.h"
 #include "TTree.h"
@@ -100,23 +102,27 @@ void LOCASDataStore::AddData( LOCASRunReader& lRuns )
 
   // LOCASPMT iterator used in below loop
   std::map< Int_t, LOCASPMT >::iterator iPMT;
+
+  LOCASRun* lRun = new LOCASRun();
   
   // Loop through all the LOCASRun objects
   for ( Int_t iRun = 0; iRun < lRuns.GetNLOCASRuns(); iRun++ ){
 
+    lRun = lRuns.GetRunEntry( iRun );
     // Loop through all the LOCASPMTs
-    for ( iPMT = lRuns.GetRunEntry( iRun )->GetLOCASPMTIterBegin();
-          iPMT != lRuns.GetRunEntry( iRun )->GetLOCASPMTIterEnd();
+    for ( iPMT = lRun->GetLOCASPMTIterBegin();
+          iPMT != lRun->GetLOCASPMTIterEnd();
           iPMT ++ ){
 
       // Add the LOCASPMT object to the LOCASDataStore object.
       // This inherently converts the useful information on the LOCASPMT
       // object to a LOCASDataPoint object.
-      AddDataPoint( iPMT->second ); 
-     
+        AddDataPoint( iPMT->second ); 
     }
 
   }
+
+  delete lRun;
 
 }
 
@@ -125,6 +131,10 @@ void LOCASDataStore::AddData( LOCASRunReader& lRuns )
 
 void LOCASDataStore::WriteToFile( const char* fileName )
 {
+
+  if ( fileName == NULL ){
+    cout << "LOCASDataStore::WriteToFile: No filename specified, aborting." << endl; return;
+  }
 
   TFile* file = TFile::Open( fileName, "RECREATE" );
   // Create the Run Tree

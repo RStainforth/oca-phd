@@ -49,6 +49,9 @@ namespace LOCAS{
     // Update a value of a filter (this may be used when considering sequential cuts)
     void UpdateFilter( const std::string filterName, const Double_t min, const Double_t max );
 
+    // Print the cut information for filters
+    void PrintFilterCutInformation();
+
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////

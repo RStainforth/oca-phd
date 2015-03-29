@@ -64,24 +64,30 @@ int main( int argc, char** argv ){
   /////////////////////////////////////////////////////////////
 
   // Setup the model to be used in the chisquare function
+  cout << "Model Setup" << endl;
   lModel->ModelSetup( argv[1] );
   // Link the chisquare function to the model
+  cout << "Setting Link" << endl;
   lChiSq->SetPointerToModel( lModel );
 
   // Initialise the database loader to parse the cardfile passed as the command line
   LOCASDB lDB;
+  cout << "Setting lDB File" << endl;
   lDB.SetFile( argv[1] );
 
   // Add all the run files to the LOCASRunReader object
   std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" ); 
+  cout << "Creating LOCASRunReader" << endl;
   LOCASRunReader lReader( runIDs );
 
   // Add the run information to the LOCASDataStore object
+  cout << "Adding data to LOCASDataStore" << endl;
   lData->AddData( lReader );
   lChiSq->SetPointerToData( lData );
 
   // Initalise a separate storage object for all the filters to cut on
   // the data with
+  cout << "Adding Filters" << endl;
   LOCASFilterStore lFilterStore( argv[1] );
 
   ///////////////////////////////////////////////////////////
@@ -91,10 +97,13 @@ int main( int argc, char** argv ){
   // Initalise a data filler object to filter through the raw
   // data using the filters
   LOCASDataFiller lDataFiller;
+  cout << "DataFiller Created" << endl;
   lDataFiller.FilterData( lFilterStore, lData, lChiSq );
+  lFilterStore.PrintFilterCutInformation();
+  cout << "DataFiller Filtering" << endl;
 
   // Write the data to file to begin with
-  lData->WriteToFile();
+  lData->WriteToFile("example_datastore.root");
 
   // Now that we have the raw data, have performed the initial cuts and prepared the model we can begin to perform the fit!
 

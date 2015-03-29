@@ -171,31 +171,31 @@ void LOCASOpticsModel::InitialiseParameterIndices()
 //////////////////////////////////////
 
 void LOCASOpticsModel::InitialiseParameters()
-  {
-
-    // Initialise the values of the parameter objects to the entries in the fParameters object array
+{
+  
+  // Initialise the values of the parameter objects to the entries in the fParameters object array
   Int_t nParams = fModelParameterStore.GetNParameters();
-
+  
   for ( Int_t iPar = 0; iPar < nParams; iPar++ ){
     fParameters[ iPar ] = 0.0;
   }
-
+  
   std::vector< LOCASModelParameter >::iterator iPar;
-
+  
   for ( iPar = fModelParameterStore.GetLOCASModelParametersIterBegin();
-        iPar != fModelParameterStore.GetLOCASModelParametersIterEnd();
+          iPar != fModelParameterStore.GetLOCASModelParametersIterEnd();
         iPar++ ){
-
+    
     if ( ( iPar->GetParameterName() == "par_scint" ) && ( GetScintParIndex() >= 0 ) ){ SetScintPar( iPar->GetInitialValue() ); }
     else if ( ( iPar->GetParameterName() == "par_av" ) && ( GetAVParIndex() >= 0 ) ){ SetAVPar( iPar->GetInitialValue() ); }
     else if ( ( iPar->GetParameterName() == "par_water" ) && ( GetWaterParIndex() >= 0 ) ){ SetWaterPar( iPar->GetInitialValue() ); }
-
+    
     else if ( ( iPar->GetParameterName() == "par_scint_rs" ) && ( GetScintRSParIndex() >= 0 ) ){ SetScintRSPar( iPar->GetInitialValue() ); }
     else if ( ( iPar->GetParameterName() == "par_av_rs" ) && ( GetAVRSParIndex() >= 0 ) ){ SetAVRSPar( iPar->GetInitialValue() ); }
     else if ( ( iPar->GetParameterName() == "par_water_rs" ) && ( GetWaterRSParIndex() >= 0 ) ){ SetWaterRSPar( iPar->GetInitialValue() ); }
-
+    
   }
-
+    
   if ( GetAngularResponseParIndex() >= 0 ){
     Float_t angle = 0.0;
     for ( Int_t iT = 0; iT < GetNAngularResponseBins(); iT++ ){
@@ -207,15 +207,15 @@ void LOCASOpticsModel::InitialiseParameters()
       
     }
   }
-
+  
   if ( GetLBDistributionParIndex() >= 0 ){
     for ( Int_t iT = 0; iT < GetNLBDistributionBins(); iT++ ){ SetPar( GetLBDistributionParIndex() + iT, 1.0 ); }
   }
-
+  
   if ( GetLBPolynomialParIndex() >= 0 ){
     for ( Int_t iPoly = 0; iPoly < GetNLBPolynomialParameters(); iPoly++ ){ SetPar( GetLBPolynomialParIndex() + iPoly, 1.0 ); }
   }
-
+  
 }
 
 //////////////////////////////////////
@@ -226,14 +226,13 @@ Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint )
   Float_t angRespRatio = 1.0;
   Float_t intensityRatio = 1.0;
 
-  Float_t dScintAtt = 0.0;
-  Float_t dScintRS = 0.0;
-  Float_t dAVAtt = 0.0;
-  Float_t dAVRS = 0.0;
-  Float_t dWaterAtt = 0.0;
-  Float_t dWaterRS = 0.0;
+  Float_t dScintAtt = GetScintPar();
+  Float_t dScintRS = GetScintRSPar();
+  Float_t dAVAtt = GetAVPar();
+  Float_t dAVRS = GetAVRSPar();
+  Float_t dWaterAtt = GetWaterPar();
+  Float_t dWaterRS = GetWaterRSPar();
 
-  // This is currently set to 1.0 until the normalisation ratio is better understood
   Float_t normVal = dataPoint.GetLBIntensityNorm();
 
   Float_t dScint = dataPoint.GetDistInInnerAV() - dataPoint.GetCentralDistInInnerAV();
@@ -245,7 +244,7 @@ Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint )
     Float_t angRespCtr = ModelAngularResponse( dataPoint, 1 );
     angRespRatio = angResp / angRespCtr; 
   }
-
+  
   if ( GetLBDistributionParIndex() >= 0 ){
     Float_t intensity = ModelLBDistribution( dataPoint, 0 );
     Float_t intensityCtr = ModelLBDistribution( dataPoint, 1 );
@@ -256,19 +255,19 @@ Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint )
       intensityRatio *= ( intensityPoly / intensityCtrPoly );
     }
   }
-
+  
   Float_t modelPrediction = normVal * angRespRatio * intensityRatio * 
-    TMath::Exp( - ( ( dScintAtt + dScintRS )
-                    + ( dAVAtt + dScintRS )
-                    + ( dWaterAtt + dWaterRS ) ) );
-
+    TMath::Exp( - ( dScint * ( dScintAtt + dScintRS )
+                    + dAV * ( dAVAtt + dScintRS )
+                    + dWater * ( dWaterAtt + dWaterRS ) ) );
+  
   return modelPrediction;
-
+  
 }
 
 //////////////////////////////////////
 //////////////////////////////////////
- 
+
 Float_t LOCASOpticsModel::ModelLBDistribution( const LOCASDataPoint& dataPoint, Int_t runType )
 {
   

@@ -38,11 +38,17 @@ void LOCASDataFiller::FilterData( LOCASFilterStore& filterSt, LOCASDataStore* lD
 
   // Filter name - changes based on the filter currently being used in the below loop
   std::string filterName = "";
+
+  Bool_t validPoint = true;
+
+  LOCASDataStore* newStore = new LOCASDataStore();
     
   // Loop through all the datapoints in the LOCASDataStore object
   for ( iD = lDataStore->GetLOCASDataPointsIterBegin();
         iD != lDataStore->GetLOCASDataPointsIterEnd();
         iD++ ){
+
+    validPoint = true;
     
     // Loop through all the filters
     for ( iF = filterSt.GetLOCASFiltersIterBegin();
@@ -58,13 +64,15 @@ void LOCASDataFiller::FilterData( LOCASFilterStore& filterSt, LOCASDataStore* lD
       
       if ( filterName == "filter_mpe_occupancy" ){ 
         if ( !iF->CheckCondition( iD->GetMPECorrOccupancy() ) ){ 
-          lDataStore->EraseDataPoint( iD );
+          //lDataStore->EraseDataPoint( iD ); break;
+          validPoint = false; break;
         }
       }
       
       else if ( filterName == "filter_mpe_ctr_occupancy" ){ 
         if ( !iF->CheckCondition( iD->GetCentralMPECorrOccupancy() ) ){ 
-          lDataStore->EraseDataPoint( iD );
+          //lDataStore->EraseDataPoint( iD ); break;
+          validPoint = false; break;
         }
       }
       
@@ -75,21 +83,24 @@ void LOCASDataFiller::FilterData( LOCASFilterStore& filterSt, LOCASDataStore* lD
       else if ( filterName == "filter_deltascint" ){
         Float_t deltaScint = TMath::Abs( iD->GetDistInInnerAV() - iD->GetCentralDistInInnerAV() );
         if ( !iF->CheckCondition( deltaScint ) ){ 
-          lDataStore->EraseDataPoint( iD );
+          //lDataStore->EraseDataPoint( iD ); break;
+          validPoint = false; break;
         }
       }
       
       else if ( filterName == "filter_deltaav" ){
         Float_t deltaAV = TMath::Abs( iD->GetDistInAV() - iD->GetCentralDistInAV() );
         if ( !iF->CheckCondition( deltaAV ) ){ 
-          lDataStore->EraseDataPoint( iD );
+          //lDataStore->EraseDataPoint( iD ); break;
+          validPoint = false; break;
         }
       }
       
       else if ( filterName == "filter_deltawater" ){
         Float_t deltaWater = TMath::Abs( iD->GetDistInWater() - iD->GetCentralDistInWater() );
         if ( !iF->CheckCondition( deltaWater ) ){ 
-          lDataStore->EraseDataPoint( iD );
+          //lDataStore->EraseDataPoint( iD ); break;
+          validPoint = false; break;
         }
       }
       
@@ -98,31 +109,36 @@ void LOCASDataFiller::FilterData( LOCASFilterStore& filterSt, LOCASDataStore* lD
       
       else if ( filterName == "filter_pmt_angle" ){ 
         if ( !iF->CheckCondition( iD->GetIncidentAngle() ) || !iF->CheckCondition( iD->GetCentralIncidentAngle() ) ){ 
-          lDataStore->EraseDataPoint( iD );
+          //lDataStore->EraseDataPoint( iD ); break;
+          validPoint = false; break;
         }
       }
       
       else if ( filterName == "filter_solid_angle_ratio" ){ 
         if ( !iF->CheckCondition( iD->GetSolidAngle() / iD->GetCentralSolidAngle() ) ){ 
-          lDataStore->EraseDataPoint( iD );
+          //lDataStore->EraseDataPoint( iD ); break;
+          validPoint = false; break;
         }
       }
       
       else if ( filterName == "filter_chs" ){ 
         if ( !iF->CheckCondition( iD->GetCHSFlag() ) || !iF->CheckCondition( iD->GetCentralCHSFlag() ) ){ 
-          lDataStore->EraseDataPoint( iD );
+          //lDataStore->EraseDataPoint( iD ); break;
+          validPoint = false; break;
         }
       }
       
       else if ( filterName == "filter_css" ){ 
         if ( !iF->CheckCondition( iD->GetCSSFlag() ) || !iF->CheckCondition( iD->GetCentralCSSFlag() ) ){ 
-          lDataStore->EraseDataPoint( iD );  
+          //lDataStore->EraseDataPoint( iD ); break;
+          validPoint = false; break;
         }
       }
       
       else if ( filterName == "filter_bad_path" ){ 
         if ( !iF->CheckCondition( iD->GetBadPathFlag() ) || !iF->CheckCondition( iD->GetCentralBadPathFlag() ) ){ 
-          lDataStore->EraseDataPoint( iD ); 
+          //lDataStore->EraseDataPoint( iD ); break;
+          validPoint = false; break;
         }
       }
 
@@ -131,7 +147,8 @@ void LOCASDataFiller::FilterData( LOCASFilterStore& filterSt, LOCASDataStore* lD
       
       else if ( filterName == "filter_chi_square" ){
         if ( !iF->CheckCondition( lChiSq->EvaluateChiSquare( *iD ) ) ){
-          lDataStore->EraseDataPoint( iD );
+          //lDataStore->EraseDataPoint( iD ); break;
+          validPoint = false; break;
         }
       }
 
@@ -142,7 +159,13 @@ void LOCASDataFiller::FilterData( LOCASFilterStore& filterSt, LOCASDataStore* lD
       
     }
     
+    if ( validPoint == true ){
+      newStore->AddDataPoint( *iD );
+    }
+    
   }
+
+  *lDataStore = *newStore;
   
 }
 

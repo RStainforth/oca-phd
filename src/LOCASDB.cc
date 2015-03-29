@@ -542,7 +542,7 @@ Bool_t LOCASDB::GetBoolField( const std::string& tableName,
   Int_t resultI = 0;
   resultI = fRATDBPtr->GetI( fieldName );
   resultBool = false;
-  if ( resultI == 0 ){ resultBool = false; }
+  if ( resultI <= 0 ){ resultBool = false; }
   else if ( resultI > 0 ){ resultBool = true; }
 
   return resultBool;

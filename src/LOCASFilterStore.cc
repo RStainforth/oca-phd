@@ -105,6 +105,24 @@ void LOCASFilterStore::UpdateFilter( const std::string filterName, const Double_
 //////////////////////////////////////
 //////////////////////////////////////
 
+void LOCASFilterStore::PrintFilterCutInformation()
+{
+
+  std::vector< LOCASFilter >::iterator iF;
+
+  for ( iF = GetLOCASFiltersIterBegin();
+        iF != GetLOCASFiltersIterEnd();
+        iF++ ){
+
+    iF->PrintFilterInformation();
+
+  }
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 LOCASFilter& LOCASFilterStore::GetFilter( const std::string filterName )
 {
 

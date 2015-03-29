@@ -89,7 +89,7 @@ Double_t LOCASMath::OccRatioErr( const LOCASPMT* pmt ){
 
 void LOCASMath::CalculateMPEOccRatio( const LOCASDataPoint& dPoint, Float_t& occRatio, Float_t& occRatioErr ){
 
-  occRatio = dPoint.GetMPECorrOccupancy() / dPoint.GetMPECorrOccupancy();
+  occRatio = dPoint.GetMPECorrOccupancy() / dPoint.GetCentralMPECorrOccupancy();
   occRatio *= ( dPoint.GetCentralFresnelTCoeff() * dPoint.GetCentralSolidAngle() ) / ( dPoint.GetFresnelTCoeff() * dPoint.GetSolidAngle() );
   occRatio *= dPoint.GetCentralLBIntensityNorm();
   

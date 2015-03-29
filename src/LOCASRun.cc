@@ -682,6 +682,13 @@ void LOCASRun::CalculateLBIntensityNorm()
   fCentralLBIntensityNorm = centrallbIntensityNorm;
   fWavelengthLBIntensityNorm = wavelengthlbIntensityNorm;
 
+  for ( iPMT = GetLOCASPMTIterBegin(); iPMT != GetLOCASPMTIterEnd(); iPMT++ ){
+    ( iPMT->second ).SetLBIntensityNorm( fLBIntensityNorm );
+    ( iPMT->second ).SetCentralLBIntensityNorm( fCentralLBIntensityNorm );
+    ( iPMT->second ).SetWavelengthLBIntensityNorm( fWavelengthLBIntensityNorm );
+
+  }
+
 }
 
  

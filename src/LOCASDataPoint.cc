@@ -15,6 +15,7 @@ ClassImp( LOCASDataPoint )
 LOCASDataPoint::LOCASDataPoint( const LOCASPMT& lPMT )
 {
   
+  //cout << "Test 1" << endl;
   SetRunID( lPMT.GetRunID() );
 
   SetMPECorrOccupancy( lPMT.GetMPECorrOccupancy() );
@@ -22,41 +23,42 @@ LOCASDataPoint::LOCASDataPoint( const LOCASPMT& lPMT )
 
   SetMPECorrOccupancyErr( lPMT.GetMPECorrOccupancyErr() );
   SetCentralMPECorrOccupancyErr( lPMT.GetCentralMPECorrOccupancyErr() );
-
+  //cout << "Test 2" << endl;
   SetDistInInnerAV( lPMT.GetDistInInnerAV() );
-  SetDistInInnerAV( lPMT.GetDistInInnerAV() );
+  SetCentralDistInInnerAV( lPMT.GetCentralDistInInnerAV() );
   SetDistInAV( lPMT.GetDistInAV() );
   SetCentralDistInAV( lPMT.GetCentralDistInAV() );
   SetDistInWater( lPMT.GetDistInWater() );
   SetCentralDistInWater( lPMT.GetCentralDistInWater() );
-
+  //cout << "Test 3" << endl;
   SetSolidAngle( lPMT.GetSolidAngle() );
   SetCentralSolidAngle( lPMT.GetCentralSolidAngle() );
-
+  //cout << "Test 4" << endl;
   SetFresnelTCoeff( lPMT.GetFresnelTCoeff() );
   SetCentralFresnelTCoeff( lPMT.GetCentralFresnelTCoeff() );
 
   SetIncidentAngle( TMath::ACos( lPMT.GetCosTheta() ) * 180.0 / TMath::Pi() );
   SetCentralIncidentAngle( TMath::ACos( lPMT.GetCentralCosTheta() ) * 180.0 / TMath::Pi() );
-
+  //cout << "Test 5" << endl;
   SetLBTheta( ( lPMT.GetInitialLBVec() ).Theta() );
   SetCentralLBTheta( ( lPMT.GetCentralInitialLBVec() ).Theta() );
-
+  //cout << "Test 6" << endl;
   SetLBPhi( ( lPMT.GetInitialLBVec() ).Phi() );
   SetCentralLBPhi( ( lPMT.GetCentralInitialLBVec() ).Phi() );
-
+  //cout << "Test 7" << endl;
   SetLBIntensityNorm( lPMT.GetLBIntensityNorm() );
   SetCentralLBIntensityNorm( lPMT.GetCentralLBIntensityNorm() );
-
+  //cout << "Test 8" << endl;
   SetCHSFlag( lPMT.GetDQXXFlag() );
   SetCentralCHSFlag( lPMT.GetCentralDQXXFlag() );
 
   //SetCSSFlag( lPMT.GetANXXFlag() );
   //SetCentralCSSFlag( lPMT.GetCentralANXXFlag() );
-
+  //cout << "Test 9" << endl;
   SetBadPathFlag( lPMT.GetBadPath() );
   SetCentralBadPathFlag( lPMT.GetCentralBadPath() );
-
+  //cout << "Test 10" << endl;
+  
 }
 
 //////////////////////////////////////

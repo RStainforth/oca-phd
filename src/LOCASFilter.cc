@@ -66,7 +66,7 @@ void LOCASFilter::PrintFilterInformation()
 {
 
   cout << "LOCAS::LOCASFilter: " << GetFilterName() 
-       << " has limits: [ " << GetMinValue() << ", " << GetMaxValue() << " ]\n"
+       << " has limits: ( " << GetMinValue() << ", " << GetMaxValue() << " )\n"
        << "---------------------------\n"
        << "Tested " << GetNumberConditionPasses() + GetNumberConditionFails() << " data points.\n"
        << "Passed: " << GetNumberConditionPasses() << "\n"

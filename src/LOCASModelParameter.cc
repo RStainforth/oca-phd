@@ -32,7 +32,8 @@ ClassImp( LOCASModelParameter )
 LOCASModelParameter::LOCASModelParameter( std::string parameterName, 
                                           Int_t index, Float_t initVal, 
                                           Float_t valLow, Float_t valHigh, 
-                                          Float_t valInc, Int_t nParsInGroup )
+                                          Float_t valInc, Int_t nParsInGroup,
+                                          Bool_t varyBool )
 {
 
   SetParameterName( parameterName );
@@ -49,6 +50,8 @@ LOCASModelParameter::LOCASModelParameter( std::string parameterName,
   SetMinValue( valLow );
   SetMaxValue( valHigh );
 
+  SetVary( varyBool );
+
 }
 
 //////////////////////////////////////
@@ -62,6 +65,12 @@ void LOCASModelParameter::PrintInfo()
   cout << "Parameter Initial Value: " << GetInitialValue() << endl;
   cout << "Parameter Range: [" << GetMinValue() << ", " << GetMaxValue() << "]" << endl;
   cout << "Parameter Increment Value: " << GetIncrementValue() << endl;
+  if ( GetVary() ){
+    cout << "Parameter varies." << endl;
+  }
+  else{
+    cout << "Parameter is fixed to initial value." << endl;
+  }
   cout << " -------------- " << endl;
 
 }

@@ -34,7 +34,8 @@ namespace LOCAS{
     LOCASModelParameter( std::string parameterName, 
                          Int_t index, Float_t initVal, 
                          Float_t valLow, Float_t valHigh, 
-                         Float_t valInc, Int_t nParsInGroup );
+                         Float_t valInc, Int_t nParsInGroup,
+                         Bool_t varyBool );
 
     // The destructor - nothing to delete
     ~LOCASModelParameter(){ };
@@ -67,6 +68,8 @@ namespace LOCAS{
     Float_t GetMaxValue() const { return fMaxValue; }
     Float_t GetMinValue() const { return fMinValue; }
 
+    Bool_t GetVary() const { return fVary; }
+
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
@@ -85,6 +88,8 @@ namespace LOCAS{
     void SetMinValue( const Float_t minVal ){ fMinValue = minVal; }
     void SetMaxValue( const Float_t maxVal ){ fMaxValue = maxVal; }
 
+    void SetVary( const Bool_t boolVal ){ fVary = boolVal; }
+
   private:
 
     std::string fParameterName;         // The parameter name
@@ -100,6 +105,8 @@ namespace LOCAS{
 
     Float_t fMinValue;                  // Minimum allowed value of parameter to be used by minimiser
     Float_t fMaxValue;                  // Maximum allowed value of parameter to be used by minimiser
+
+    Bool_t fVary;                       // Set whether this parameter varies or not
 
     ClassDef( LOCASModelParameter, 1 );
 

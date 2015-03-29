@@ -76,6 +76,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
   lDB.SetFile( fileName );
 
   Float_t maxVal, minVal, initVal, incVal = 0.0;
+  Bool_t varyBool = false;
   std::vector< Int_t > indexList;
   stringstream lStream;
   string parStr = "";
@@ -93,6 +94,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
     incVal = lDB.GetDoubleField( "FITFILE", (std::string)( paramList[ iStr ] + "_inc" ), "parameter_setup" );
     maxVal = lDB.GetDoubleField( "FITFILE", (std::string)( paramList[ iStr ] + "_max" ), "parameter_setup" );
     minVal = lDB.GetDoubleField( "FITFILE", (std::string)( paramList[ iStr ] + "_min" ), "parameter_setup" );
+    varyBool = lDB.GetBoolField( "FITFILE", (std::string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
     
     Int_t parNum = 0;
     for ( Int_t iPar = indexList[0]; iPar <= indexList[1]; iPar++ ){
@@ -115,7 +117,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
       Int_t nParsInGroup = ( indexList[1] - indexList[0] ) + 1;
 
       // Create the parameter object and add it to the store
-      LOCASModelParameter lParameter( (std::string)( paramList[ iStr ] + parStr ), iPar, initVal, minVal, maxVal, incVal, nParsInGroup );
+      LOCASModelParameter lParameter( (std::string)( paramList[ iStr ] + parStr ), iPar, initVal, minVal, maxVal, incVal, nParsInGroup, varyBool );
       AddParameter( lParameter, iPar );
       nPars++;
 
@@ -127,6 +129,12 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
     cout << "Parameter(s) (inclusive) Index Range: [" << indexList[ 0 ] << "," << indexList[ 1 ] << "]"  << endl;
     cout << "Initial Value(s): " << initVal << endl;
     cout << "Increment Value: " << incVal << endl;
+    if ( varyBool ){
+      cout << "Parameter varies." << endl;
+    }
+    else{
+      cout << "Parameter is fixed to initial value." << endl;
+    }
     cout << " ----------------- " << endl;
 
   }
