@@ -125,8 +125,6 @@ void LOCASDataStore::AddData( LOCASRunReader& lRuns )
 
   }
 
-  delete lRun;
-
 }
 
 //////////////////////////////////////

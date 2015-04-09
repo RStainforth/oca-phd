@@ -31,7 +31,7 @@ namespace LOCAS{
     //LOCASOpticsModel( const char* fileName );
 
     // The destructor - delete the parameters
-    ~LOCASOpticsModel(){ }
+    ~LOCASOpticsModel();
  
     // void ModelSetup( const char* fileName );
     

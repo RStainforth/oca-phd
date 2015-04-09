@@ -58,7 +58,7 @@ ifneq ($(findstring macosx, $(ARCH)),)
 	LDOPTS  := -dynamiclib -single_module -undefined dynamic_lookup
 
 # Shouldn't need the below statement anymore - will keep it here for legacy control.
-# LINKCMD := install_name_tool -change lib/libRATEvent_$(RATSYSTEM).so @rpath/libRATEvent_$(RATSYSTEM).so libLOCAS.so
+#LINKCMD := install_name_tool -change lib/libRATEvent_$(RATSYSTEM).so @rpath/libRATEvent_$(RATSYSTEM).so libLOCAS.so
 endif
 ifneq ($(findstring $(ARCH), $(strip linux debian redhat)),)
 	LDOPTS := -shared

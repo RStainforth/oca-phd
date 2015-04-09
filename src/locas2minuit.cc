@@ -40,10 +40,10 @@ using namespace std;
 using namespace LOCAS;
 
 // Initialise a global LOCASChiSquare object
-LOCASChiSquare* lChiSq = new LOCASChiSquare();
-LOCASOpticsModel* lModel = new LOCASOpticsModel();
-LOCASDataStore* lData = new LOCASDataStore();
-LOCASModelParameterStore* lParStore = new LOCASModelParameterStore();
+// LOCASChiSquare* lChiSq = new LOCASChiSquare();
+// LOCASOpticsModel* lModel = new LOCASOpticsModel();
+// LOCASDataStore* lData = new LOCASDataStore();
+// LOCASModelParameterStore* lParStore = new LOCASModelParameterStore();
 
 // Declare the functions which will be used in the executable
 int main( int argc, char** argv );
@@ -64,11 +64,11 @@ int main( int argc, char** argv ){
   ////////////////// RUN AND DATA MANAGEMENT //////////////////
   /////////////////////////////////////////////////////////////
 
-  //LOCASModelParameterStore* lParStore = new LOCASModelParameterStore();
+  LOCASModelParameterStore* lParStore = new LOCASModelParameterStore();
   lParStore->AddParameters( argv[1] );
   lParStore->PrintParameterInfo();
 
-  //LOCASOpticsModel* lModel = new LOCASOpticsModel();
+  LOCASOpticsModel* lModel = new LOCASOpticsModel();
   lModel->SetLOCASModelParameterStore( lParStore );
 
   // Initialise the database loader to parse the cardfile passed as the command line
@@ -80,31 +80,31 @@ int main( int argc, char** argv ){
   std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" ); 
   cout << "Creating LOCASRunReader" << endl;
   LOCASRunReader lReader( runIDs );
-
+  
   // Add the run information to the LOCASDataStore object
   cout << "Adding data to LOCASDataStore" << endl;
-  //LOCASDataStore* lData = new LOCASDataStore();
+  LOCASDataStore* lData = new LOCASDataStore();
   lData->AddData( lReader );
 
-  //LOCASChiSquare* lChiSq = new LOCASChiSquare();
+  LOCASChiSquare* lChiSq = new LOCASChiSquare();
   lChiSq->SetPointerToData( lData );
   lChiSq->SetPointerToModel( lModel );
 
   // Initalise a separate storage object for all the filters to cut on
   // the data with
-  //cout << "Adding Filters" << endl;
-  //LOCASFilterStore lFilterStore( argv[1] );
+  cout << "Adding Filters" << endl;
+  LOCASFilterStore lFilterStore( argv[1] );
 
   // Initalise a data filler object to filter through the raw
   // data using the filters
-  //LOCASDataFiller lDataFiller;
+  LOCASDataFiller lDataFiller;
   //cout << "DataFiller Created" << endl;
-  //lDataFiller.FilterData( lFilterStore, lData, lChiSq );
-  //lFilterStore.PrintFilterCutInformation();
+  lDataFiller.FilterData( lFilterStore, lData, lChiSq );
+  lFilterStore.PrintFilterCutInformation();
   //cout << "DataFiller Filtering" << endl;
 
   // Write the data to file to begin with
-  //lData->WriteToFile("april_datastore.root");
+  lData->WriteToFile("april_datastore.root");
 
   // // Setup the model to be used in the chisquare function
   // cout << "Model Setup" << endl;

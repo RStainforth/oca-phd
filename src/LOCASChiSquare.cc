@@ -20,11 +20,31 @@
 #include "LOCASModelParameterStore.hh"
 #include "LOCASDataStore.hh"
 #include "LOCASMath.hh"
+#include "LOCASOpticsModel.hh"
 
 using namespace LOCAS;
 using namespace std;
 
 ClassImp( LOCASChiSquare )
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+LOCASChiSquare::LOCASChiSquare()
+{
+
+  fDataStore = NULL;
+  fModel = NULL;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+LOCASChiSquare::~LOCASChiSquare()
+{
+
+}
 
 //////////////////////////////////////
 //////////////////////////////////////

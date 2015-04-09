@@ -29,8 +29,8 @@ namespace LOCAS{
   class LOCASChiSquare : public TObject, LOCASMath
   {
   public:
-    LOCASChiSquare(){ };
-    ~LOCASChiSquare(){ };
+    LOCASChiSquare();
+    ~LOCASChiSquare();
 
     /////////////////////////////////
     ////////     METHODS     ////////
