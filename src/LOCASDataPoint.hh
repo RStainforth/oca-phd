@@ -48,6 +48,8 @@ namespace LOCAS{
     /////////////////////////////////
 
     Int_t GetRunID() const { return fRunID; }
+    Int_t GetPMTID() const { return fPMTID; }
+    Int_t GetRunIndex() const{ return fRunIndex; }
 
     Float_t GetMPECorrOccupancy() const { return fMPECorrOccupancy; }
     Float_t GetCentralMPECorrOccupancy() const { return fCentralMPECorrOccupancy; }
@@ -89,11 +91,17 @@ namespace LOCAS{
     Bool_t GetBadPathFlag() const { return fBadPathFlag; }
     Bool_t GetCentralBadPathFlag() const { return fCentralBadPathFlag; }
 
+    Float_t GetOccupancyRatio() const { return fOccupancyRatio; }
+    Float_t GetOccupancyRatioErr() const { return fOccupancyRatioErr; }
+    Float_t GetModelOccupancyRatio() const { return fModelOccupancyRatio; }
+
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
 
     void SetRunID( const Int_t val ){ fRunID = val; }
+    void SetPMTID( const Int_t val ){ fPMTID = val; }
+    void SetRunIndex( const Int_t val ){ fRunIndex = val; }
 
     void SetMPECorrOccupancy( const Float_t val ){ fMPECorrOccupancy = val; }
     void SetCentralMPECorrOccupancy( const Float_t val ){ fCentralMPECorrOccupancy = val; }
@@ -135,9 +143,19 @@ namespace LOCAS{
     void SetBadPathFlag( const Bool_t val ){ fBadPathFlag = val; }
     void SetCentralBadPathFlag( const Bool_t val ){ fCentralBadPathFlag = val; }
 
+    void SetOccupancyRatio( const Float_t val ){ fOccupancyRatio = val; }
+    void SetOccupancyRatioErr( const Float_t val ){ fOccupancyRatioErr = val; }
+    void SetModelOccupancyRatio( const Float_t val ){ fModelOccupancyRatio = val; }
+
   private:
 
     Int_t fRunID;                           // The run ID this datapoint originated from
+    Int_t fPMTID;                           // The PMT ID from whence this data point came
+    Int_t fRunIndex;                        // The 'run index' is just the index for the order in which the run files
+                                            // were loaded into the fit. For example, if this data point represented
+                                            // a PMT from the first run loaded into the fit, then the index would be 0.
+                                            // If this data point represented a PMT from the second run to be loaded into
+                                            // the fit then the index would be 1. etc.
 
     Float_t fMPECorrOccupancy;              // The MPE corrected occupancy of the off-axis run
     Float_t fCentralMPECorrOccupancy;       // The MPE corrected occupancy from the central run
@@ -178,6 +196,10 @@ namespace LOCAS{
 
     Bool_t fBadPathFlag;                    // The path status from the off-axis run (i.e. shadowed, subject to reflections etc. true: bad, false: good)
     Bool_t fCentralBadPathFlag;             // The path status from the central run (i.e. shadowed, subject to reflections etc. true: bad, false: good)
+
+    Float_t fOccupancyRatio;                // The data occupancy ratio for this data point
+    Float_t fOccupancyRatioErr;             // The error on the data occupancy ratio for this data point
+    Float_t fModelOccupancyRatio;           // The model prediction for the occupancy ratio for this data point
 
     ClassDef( LOCASDataPoint, 1 );
     

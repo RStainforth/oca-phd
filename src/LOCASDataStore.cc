@@ -117,7 +117,10 @@ void LOCASDataStore::AddData( LOCASRunReader& lRuns )
       // Add the LOCASPMT object to the LOCASDataStore object.
       // This inherently converts the useful information on the LOCASPMT
       // object to a LOCASDataPoint object.
-        AddDataPoint( iPMT->second ); 
+      LOCASDataPoint dp( iPMT->second );
+      dp.SetRunIndex( iRun );
+      AddDataPoint( dp );
+ 
     }
 
   }

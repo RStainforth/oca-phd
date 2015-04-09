@@ -2471,9 +2471,10 @@ Int_t LOCASFit::mrqmin(float x[], float y[], float sig[], int ndata, float a[],
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASFit::covsrt(float **covar, int ma, int ia[], int mfit)
+void LOCASFit::covsrt( float **covar, int ma, 
+                      int ia[], int mfit )
 {
-  // Covariance matrix sorting.  Helper routine for mrqmin()
+
 
   int i,j,k;
   float swap;

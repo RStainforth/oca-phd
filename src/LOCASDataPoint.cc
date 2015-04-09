@@ -15,49 +15,55 @@ ClassImp( LOCASDataPoint )
 LOCASDataPoint::LOCASDataPoint( const LOCASPMT& lPMT )
 {
   
-  //cout << "Test 1" << endl;
   SetRunID( lPMT.GetRunID() );
+  SetPMTID( lPMT.GetID() );
+  // Note: SetRunIndex not set here, it is set when the datapoint
+  // is used as part of a data sample in a fit. see LOCAS::LOCASDataFiller
 
   SetMPECorrOccupancy( lPMT.GetMPECorrOccupancy() );
   SetCentralMPECorrOccupancy( lPMT.GetCentralMPECorrOccupancy() );
 
   SetMPECorrOccupancyErr( lPMT.GetMPECorrOccupancyErr() );
   SetCentralMPECorrOccupancyErr( lPMT.GetCentralMPECorrOccupancyErr() );
-  //cout << "Test 2" << endl;
+
+  SetOccupancyRatio( 0.0 );
+  SetOccupancyRatioErr( 0.0 );
+  SetModelOccupancyRatio( 0.0 );
+
   SetDistInInnerAV( lPMT.GetDistInInnerAV() );
   SetCentralDistInInnerAV( lPMT.GetCentralDistInInnerAV() );
   SetDistInAV( lPMT.GetDistInAV() );
   SetCentralDistInAV( lPMT.GetCentralDistInAV() );
   SetDistInWater( lPMT.GetDistInWater() );
   SetCentralDistInWater( lPMT.GetCentralDistInWater() );
-  //cout << "Test 3" << endl;
+
   SetSolidAngle( lPMT.GetSolidAngle() );
   SetCentralSolidAngle( lPMT.GetCentralSolidAngle() );
-  //cout << "Test 4" << endl;
+
   SetFresnelTCoeff( lPMT.GetFresnelTCoeff() );
   SetCentralFresnelTCoeff( lPMT.GetCentralFresnelTCoeff() );
 
   SetIncidentAngle( TMath::ACos( lPMT.GetCosTheta() ) * 180.0 / TMath::Pi() );
   SetCentralIncidentAngle( TMath::ACos( lPMT.GetCentralCosTheta() ) * 180.0 / TMath::Pi() );
-  //cout << "Test 5" << endl;
+
   SetLBTheta( ( lPMT.GetInitialLBVec() ).Theta() );
   SetCentralLBTheta( ( lPMT.GetCentralInitialLBVec() ).Theta() );
-  //cout << "Test 6" << endl;
+
   SetLBPhi( ( lPMT.GetInitialLBVec() ).Phi() );
   SetCentralLBPhi( ( lPMT.GetCentralInitialLBVec() ).Phi() );
-  //cout << "Test 7" << endl;
+
   SetLBIntensityNorm( lPMT.GetLBIntensityNorm() );
   SetCentralLBIntensityNorm( lPMT.GetCentralLBIntensityNorm() );
-  //cout << "Test 8" << endl;
+
   SetCHSFlag( lPMT.GetDQXXFlag() );
   SetCentralCHSFlag( lPMT.GetCentralDQXXFlag() );
 
+  // FIXME CSS and CHS values
   //SetCSSFlag( lPMT.GetANXXFlag() );
   //SetCentralCSSFlag( lPMT.GetCentralANXXFlag() );
-  //cout << "Test 9" << endl;
+
   SetBadPathFlag( lPMT.GetBadPath() );
   SetCentralBadPathFlag( lPMT.GetCentralBadPath() );
-  //cout << "Test 10" << endl;
   
 }
 
@@ -68,12 +74,18 @@ LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
 {
 
   SetRunID( rhs.GetRunID() );
+  SetPMTID( rhs.GetPMTID() );
+  SetRunIndex( rhs.GetRunIndex() );
 
   SetMPECorrOccupancy( rhs.GetMPECorrOccupancy() );
   SetCentralMPECorrOccupancy( rhs.GetCentralMPECorrOccupancy() );
 
   SetMPECorrOccupancyErr( rhs.GetMPECorrOccupancyErr() );
   SetCentralMPECorrOccupancyErr( rhs.GetCentralMPECorrOccupancyErr() );
+
+  SetOccupancyRatio( rhs.GetOccupancyRatio() );
+  SetOccupancyRatioErr( rhs.GetOccupancyRatioErr() );
+  SetModelOccupancyRatio( rhs.GetModelOccupancyRatio() );
 
   SetDistInInnerAV( rhs.GetDistInInnerAV() );
   SetCentralDistInInnerAV( rhs.GetCentralDistInInnerAV() );

@@ -22,10 +22,11 @@
 #include "LOCASModelParameterStore.hh"
 #include "LOCASDataPoint.hh"
 #include "LOCASDataStore.hh"
+#include "LOCASMath.hh"
 
 namespace LOCAS{
   
-  class LOCASChiSquare : public TObject
+  class LOCASChiSquare : public TObject, LOCASMath
   {
   public:
     LOCASChiSquare(){ };
@@ -40,6 +41,16 @@ namespace LOCAS{
 
     void SetPointerToModel( LOCASOpticsModel* locasModel ){ fModel = locasModel; }
     void SetPointerToData( LOCASDataStore* locasData ){ fDataStore = locasData; }
+
+    void FitEvaluation( Float_t dataIndex[], Float_t dataVals[], 
+                        Float_t dataErrors[], Int_t nDataPoints, 
+                        Float_t testParameters[], Int_t parametersVary[], 
+                        Int_t nParameters, Float_t **derivativeMatrix, 
+                        Float_t betaVec[], Float_t *chiSquareVal );
+
+    void FitEvaluateModel( LOCASDataPoint& dPoint, Float_t testParameters[],
+                           Float_t *modelVal, Float_t dDataValDParameters[], 
+                           Int_t nParameters );
 
   private:
 

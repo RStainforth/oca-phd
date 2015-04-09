@@ -71,6 +71,6 @@ void LOCASModelParameter::PrintInfo()
   else{
     cout << "Parameter is fixed to initial value." << endl;
   }
-  cout << " -------------- " << endl;
+  cout << "--------------" << endl;
 
 }

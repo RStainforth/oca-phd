@@ -60,13 +60,19 @@ namespace LOCAS{
     static Double_t OccRatioErr( const LOCASPMT* pmt );
     static void CalculateMPEOccRatio( const LOCASDataPoint& dPoint, Float_t& occRatio, Float_t& occRatioErr );
 
-    static float* LOCASVector( const long nStart, const long nEnd );
+    static Float_t* LOCASVector( const long nStart, const long nEnd );
     static int* LOCASIntVector( const long nStart, const long nEnd );
-    static float** LOCASMatrix( const long nStarti, const long nEndi, const long nStartj, const long nEndj );
+    static Float_t** LOCASMatrix( const long nStarti, const long nEndi, const long nStartj, const long nEndj );
 
-    static void LOCASFree_Matrix(float **m, const long nrl, const long nrh, const long ncl, const long nch);
-    static void LOCASFree_Vector(float *v, const long nl, const long nh);
+    static void LOCASFree_Matrix(Float_t **m, const long nrl, const long nrh, const long ncl, const long nch);
+    static void LOCASFree_Vector(Float_t *v, const long nl, const long nh);
     static void LOCASFree_IntVector(int *v, const long nl, const long nh);
+
+    Int_t GaussJordanElimination( Float_t** lhsMatrix, Int_t nParameters,
+                                  Float_t** rhsMatrix, Int_t mVectors );
+    
+    void CovarianceSorting( Float_t** covarianceMatrix, Int_t nParameters, 
+                            Int_t varyParameters[], Int_t nVaryParameters );
     
     ClassDef( LOCASMath, 0 );
 

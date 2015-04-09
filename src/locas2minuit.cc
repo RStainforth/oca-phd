@@ -43,10 +43,11 @@ using namespace LOCAS;
 LOCASChiSquare* lChiSq = new LOCASChiSquare();
 LOCASOpticsModel* lModel = new LOCASOpticsModel();
 LOCASDataStore* lData = new LOCASDataStore();
+LOCASModelParameterStore* lParStore = new LOCASModelParameterStore();
 
 // Declare the functions which will be used in the executable
 int main( int argc, char** argv );
-void chisquare( Int_t &npar, Double_t *gin, Double_t &f, Double_t* par, Int_t iflag );
+//void chisquare( Int_t &npar, Double_t *gin, Double_t &f, Double_t* par, Int_t iflag );
 
 //////////////////////
 //////////////////////
@@ -63,12 +64,12 @@ int main( int argc, char** argv ){
   ////////////////// RUN AND DATA MANAGEMENT //////////////////
   /////////////////////////////////////////////////////////////
 
-  // Setup the model to be used in the chisquare function
-  cout << "Model Setup" << endl;
-  lModel->ModelSetup( argv[1] );
-  // Link the chisquare function to the model
-  cout << "Setting Link" << endl;
-  lChiSq->SetPointerToModel( lModel );
+  //LOCASModelParameterStore* lParStore = new LOCASModelParameterStore();
+  lParStore->AddParameters( argv[1] );
+  lParStore->PrintParameterInfo();
+
+  //LOCASOpticsModel* lModel = new LOCASOpticsModel();
+  lModel->SetLOCASModelParameterStore( lParStore );
 
   // Initialise the database loader to parse the cardfile passed as the command line
   LOCASDB lDB;
@@ -82,83 +83,110 @@ int main( int argc, char** argv ){
 
   // Add the run information to the LOCASDataStore object
   cout << "Adding data to LOCASDataStore" << endl;
+  //LOCASDataStore* lData = new LOCASDataStore();
   lData->AddData( lReader );
+
+  //LOCASChiSquare* lChiSq = new LOCASChiSquare();
   lChiSq->SetPointerToData( lData );
+  lChiSq->SetPointerToModel( lModel );
 
   // Initalise a separate storage object for all the filters to cut on
   // the data with
-  cout << "Adding Filters" << endl;
-  LOCASFilterStore lFilterStore( argv[1] );
-
-  ///////////////////////////////////////////////////////////
-  //////// MODEL, INPUT DATA AND CHISQUARE MANAGEMENT ///////
-  ///////////////////////////////////////////////////////////
+  //cout << "Adding Filters" << endl;
+  //LOCASFilterStore lFilterStore( argv[1] );
 
   // Initalise a data filler object to filter through the raw
   // data using the filters
-  LOCASDataFiller lDataFiller;
-  cout << "DataFiller Created" << endl;
-  lDataFiller.FilterData( lFilterStore, lData, lChiSq );
-  lFilterStore.PrintFilterCutInformation();
-  cout << "DataFiller Filtering" << endl;
+  //LOCASDataFiller lDataFiller;
+  //cout << "DataFiller Created" << endl;
+  //lDataFiller.FilterData( lFilterStore, lData, lChiSq );
+  //lFilterStore.PrintFilterCutInformation();
+  //cout << "DataFiller Filtering" << endl;
 
   // Write the data to file to begin with
-  lData->WriteToFile("example_datastore.root");
+  //lData->WriteToFile("april_datastore.root");
 
-  // Now that we have the raw data, have performed the initial cuts and prepared the model we can begin to perform the fit!
+  // // Setup the model to be used in the chisquare function
+  // cout << "Model Setup" << endl;
+  // lModel->ModelSetup( argv[1] );
+  // // Link the chisquare function to the model
+  // cout << "Setting Link" << endl;
+  // lChiSq->SetPointerToModel( lModel );
 
-  // Retrieve information about the fitting procedure i.e. what subsequent values of the chisquare to cut
-  // on following each round of fitting.
-  std::vector< Double_t > chiSqLims = lDB.GetDoubleVectorField( "FITFILE", "chisq_lims", "fit_procedure" );
+  // // Initalise a separate storage object for all the filters to cut on
+  // // the data with
+  // cout << "Adding Filters" << endl;
+  // LOCASFilterStore lFilterStore( argv[1] );
 
-  // Begin the fitting loop, in the first instance
-  // we fit using the initial parameters as initialised in the card file; performing this fit on
-  // the initial LOCASDataStore object of data points.
-  // After the first loop, the chisquare limits are checked again, seeded by the parameters obtained
-  // at the end of the previous fit.
+  // ///////////////////////////////////////////////////////////
+  // //////// MODEL, INPUT DATA AND CHISQUARE MANAGEMENT ///////
+  // ///////////////////////////////////////////////////////////
 
-  for ( Int_t iFit = 0; iFit < chiSqLims.size(); iFit++ ){
+  // // Initalise a data filler object to filter through the raw
+  // // data using the filters
+  // LOCASDataFiller lDataFiller;
+  // cout << "DataFiller Created" << endl;
+  // lDataFiller.FilterData( lFilterStore, lData, lChiSq );
+  // lFilterStore.PrintFilterCutInformation();
+  // cout << "DataFiller Filtering" << endl;
 
-    // Update the chisquare filter
-    lFilterStore.UpdateFilter( "filter_chi_square", 
-                               ( lFilterStore.GetFilter( "filter_chi_square" ) ).GetMinValue(), 
-                               chiSqLims[ iFit ] );
-    
-    lDataFiller.FilterData( lFilterStore, lData, lChiSq );
+  // // Write the data to file to begin with
+  // lData->WriteToFile("example_datastore.root");
 
-    // Initalise TMinuit with the number of parameters and assign the function to minimise over
-    TMinuit *gMinuit = new TMinuit( lModel->GetNParameters() );
-    gMinuit->SetFCN( chisquare );
-    
-    Double_t arglist[10];
-    Int_t ierflg = 0;
-    arglist[0] = 1;
-    gMinuit->mnexcm( "SET ERR", arglist, 1, ierflg );
-    
-    // Loop over all the parameters in the model and add them to the TMinuit process
-    std::vector< LOCASModelParameter >::iterator iPar;
-    
-    for ( iPar = lModel->GetParametersIterBegin();
-          iPar != lModel->GetParametersIterEnd();
-          iPar++ ){
-      gMinuit->mnparm( iPar->GetIndex(), iPar->GetParameterName(), 
-                       iPar->GetInitialValue(), iPar->GetIncrementValue(), 
-                       iPar->GetMinValue(), iPar->GetMaxValue(), 
-                       ierflg );
-    }
-    
-    arglist[0] = 500;
-    arglist[1] = 1.0;
-    
-    // Perform the minimisation
-    gMinuit->mnexcm( "MIGRAD", arglist, 2, ierflg );
-    
-    // Print statistics afterwards with the error matrices
-    Double_t amin, edm, errdef;
-    Int_t nvpar, nparx, icstat;
-    gMinuit->mnstat( amin, edm, errdef, nvpar, nparx, icstat );
+  // // Now that we have the raw data, have performed the initial cuts and prepared the model we can begin to perform the fit!
 
-  }
+  // // Retrieve information about the fitting procedure i.e. what subsequent values of the chisquare to cut
+  // // on following each round of fitting.
+  // std::vector< Double_t > chiSqLims = lDB.GetDoubleVectorField( "FITFILE", "chisq_lims", "fit_procedure" );
+
+  // // Begin the fitting loop, in the first instance
+  // // we fit using the initial parameters as initialised in the card file; performing this fit on
+  // // the initial LOCASDataStore object of data points.
+  // // After the first loop, the chisquare limits are checked again, seeded by the parameters obtained
+  // // at the end of the previous fit.
+
+  // for ( Int_t iFit = 0; iFit < chiSqLims.size(); iFit++ ){
+
+  //   // Update the chisquare filter
+  //   lFilterStore.UpdateFilter( "filter_chi_square", 
+  //                              ( lFilterStore.GetFilter( "filter_chi_square" ) ).GetMinValue(), 
+  //                              chiSqLims[ iFit ] );
+    
+  //   lDataFiller.FilterData( lFilterStore, lData, lChiSq );
+
+  //   // Initalise TMinuit with the number of parameters and assign the function to minimise over
+  //   TMinuit *gMinuit = new TMinuit( lModel->GetNParameters() );
+  //   gMinuit->SetFCN( chisquare );
+    
+  //   Double_t arglist[10];
+  //   Int_t ierflg = 0;
+  //   arglist[0] = 1;
+  //   gMinuit->mnexcm( "SET ERR", arglist, 1, ierflg );
+    
+  //   // Loop over all the parameters in the model and add them to the TMinuit process
+  //   std::vector< LOCASModelParameter >::iterator iPar;
+    
+  //   for ( iPar = lModel->GetParametersIterBegin();
+  //         iPar != lModel->GetParametersIterEnd();
+  //         iPar++ ){
+  //     gMinuit->mnparm( iPar->GetIndex(), iPar->GetParameterName(), 
+  //                      iPar->GetInitialValue(), iPar->GetIncrementValue(), 
+  //                      iPar->GetMinValue(), iPar->GetMaxValue(), 
+  //                      ierflg );
+  //   }
+    
+  //   arglist[0] = 500;
+  //   arglist[1] = 1.0;
+    
+  //   // Perform the minimisation
+  //   gMinuit->mnexcm( "MIGRAD", arglist, 2, ierflg );
+    
+  //   // Print statistics afterwards with the error matrices
+  //   Double_t amin, edm, errdef;
+  //   Int_t nvpar, nparx, icstat;
+  //   gMinuit->mnstat( amin, edm, errdef, nvpar, nparx, icstat );
+
+  // }
     
     cout << "\n";
     cout << "##############################" << endl;
@@ -169,8 +197,8 @@ int main( int argc, char** argv ){
 }
 
 // The chisqare function to minimis over
-void chisquare( Int_t &npar, Double_t *gin, Double_t &f, Double_t* par, Int_t iflag )
-{   
-  lModel->SetParameters( par );
-  f = lChiSq->EvaluateGlobalChiSquare();
-}
+// void chisquare( Int_t &npar, Double_t *gin, Double_t &f, Double_t* par, Int_t iflag )
+// {   
+//   lModel->SetParameters( par );
+//   f = lChiSq->EvaluateGlobalChiSquare();
+// }
