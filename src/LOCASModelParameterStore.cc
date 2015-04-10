@@ -18,6 +18,7 @@
 
 #include "LOCASModelParameterStore.hh"
 #include "LOCASModelParameter.hh"
+#include "LOCASDataStore.hh"
 
 #include "LOCASDB.hh"
 #include "LOCASMath.hh"
@@ -46,6 +47,11 @@ LOCASModelParameterStore::LOCASModelParameterStore( std::string storeName )
   fParameters.clear();
   fParametersPtr = NULL;
   fParametersVary = NULL;
+  fCovarianceMatrix = NULL;
+  fDerivativeMatrix = NULL;
+  fVariableParameterIndex = NULL;
+  fVariableParameterMap = NULL;
+  fPMTAngularResponseIndex = NULL;
   fNParameters = 0;
 
 }
@@ -325,6 +331,15 @@ void LOCASModelParameterStore::AllocateParameterArrays()
 
   fParametersPtr = LOCASVector( 1, fNParameters );
   fParametersVary = LOCASIntVector( 1, fNParameters );
+  fCovarianceMatrix = LOCASMatrix( 1, fNParameters, 1, fNParameters );
+  fDerivativeMatrix = LOCASMatrix( 1, fNParameters, 1, fNParameters );
+
+  for ( Int_t iIndex = 1; iIndex <= fNParameters; iIndex++ ){
+    for ( Int_t jIndex = 1; jIndex <= fNParameters; jIndex++ ){
+      fCovarianceMatrix[ iIndex ][ jIndex ] = 0.0;
+      fDerivativeMatrix[ iIndex ][ jIndex ] = 0.0;
+    }
+  }
 
   std::vector< LOCASModelParameter >::iterator iPar;
   for ( iPar = GetLOCASModelParametersIterBegin();
@@ -348,7 +363,8 @@ void LOCASModelParameterStore::InitialisePMTAngularResponseIndex()
   if ( fVariableParameterMap ) delete[] fVariableParameterMap;
   fVariableParameterMap = new Int_t[ fNParameters + 1 ];
 
-  Int_t i, j;
+  Int_t i = 0; 
+  Int_t j = 0;
 
   j = 0;
   for ( i = 1; i <= fNParameters; i++ ) if ( fParametersVary[ i ] ) fVariableParameterMap[ i ] = ++j;
@@ -464,6 +480,70 @@ void LOCASModelParameterStore::IdentifyBaseVaryingParameters()
   }
 
 }
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+// void LOCASOpticsModel::IdentifyVaryingPMTAngularResponseBins( LOCASDataStore* lData )
+// {
+//   Int_t nPMTResponseBins = fModelParameterStore->GetNPMTAngularResponseBins()
+//   Int_t* pmtAngValid = new Int_t[ nPMTResponseBins ];
+//   for ( Int_t iAng = 0; iAng < nPMTResponseBins; iAng++ ){ 
+//     pmtAngValid[ iAng ] = 0; 
+//   }
+
+//   std::vector< LOCASDataPoint >::iterator iDP;
+//   for ( iDP = lData->GetLOCASDataPointsIterBegin(); 
+//         iDP != lData->GetLOCASDataPointsIterEnd(); 
+//         iDP++ ) {
+
+//     ModelAngularResponse( *iDP, "off-axis" );
+//     pmtAngValid[ fModelParameterStore->GetCurrentPMTAngularResponseBin() ]++;
+
+//   }
+
+//   for ( Int_t iAng = 0; iAng < nPMTResponseBins; iAng++ ){
+//     if ( pmtAngValid[ iAng ] < 25 ){ 
+//       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 0;
+//     }
+//     else{
+//       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 1;
+//     } 
+//   }
+
+// }
+
+// //////////////////////////////////////
+// //////////////////////////////////////
+
+// void LOCASOpticsModel::IdentifyVaryingLBDistributionBins( LOCASDataStore* lData )
+// {
+
+//   Int_t nLBDistBins = fModelParameterStore->GetNLBDistributionCosThetaBins() * fModelParameterStore->GetNLBDistributionPhiBins();
+//   Int_t* lbAngValid = new Int_t[ nLBDistBins ];
+//   for ( Int_t iLB = 0; iLB < nLBDistBins; iLB++ ){ lbAngValid[ iLB ] = 0; }
+
+//   std::vector< LOCASDataPoint >::iterator iDP;
+//   for ( iDP = lData->GetLOCASDataPointsIterBegin(); 
+//         iDP != lData->GetLOCASDataPointsIterEnd(); 
+//         iDP++ ) {
+
+//     ModelLBDistribution( *iDP, "off-axis" );
+//     lbAngValid[ fModelParameterStore->GetCurrentLBDistributionBin() ]++;
+    
+//   }
+
+//   for ( Int_t iLB = 0; iLB < nLBDistBins; iLB++ ){
+//     if ( lbAngValid[ iLB ] < 25 ){ 
+//       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 0;
+//     }
+//     else{
+//       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 1;
+//     } 
+//   }
+
+
+// }
 
 //////////////////////////////////////
 //////////////////////////////////////

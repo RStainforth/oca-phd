@@ -1,5 +1,5 @@
-#include "LOCASOpticsModel.hh"
 #include "LOCASModelParameterStore.hh"
+#include "LOCASOpticsModel.hh"
 #include "LOCASModelParameter.hh"
 #include "LOCASDataPoint.hh"
 
@@ -34,6 +34,73 @@ LOCASOpticsModel::~LOCASOpticsModel()
 {
 
 }
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASOpticsModel::IdentifyVaryingPMTAngularResponseBins( LOCASDataStore* lData )
+{
+  Int_t nPMTResponseBins = fModelParameterStore->GetNPMTAngularResponseBins();
+  Int_t* pmtAngValid = new Int_t[ nPMTResponseBins ];
+  for ( Int_t iAng = 0; iAng < nPMTResponseBins; iAng++ ){ 
+    pmtAngValid[ iAng ] = 0; 
+  }
+
+  std::vector< LOCASDataPoint >::iterator iDP;
+  for ( iDP = lData->GetLOCASDataPointsIterBegin(); 
+        iDP != lData->GetLOCASDataPointsIterEnd(); 
+        iDP++ ) {
+
+    ModelAngularResponse( *iDP, "off-axis" );
+    pmtAngValid[ fModelParameterStore->GetCurrentPMTAngularResponseBin() ]++;
+
+  }
+
+  for ( Int_t iAng = 0; iAng < nPMTResponseBins; iAng++ ){
+    if ( pmtAngValid[ iAng ] < 25 ){ 
+      fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 0;
+    }
+    else{
+      fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 1;
+    } 
+  }
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASOpticsModel::IdentifyVaryingLBDistributionBins( LOCASDataStore* lData )
+{
+
+  Int_t nLBDistBins = fModelParameterStore->GetNLBDistributionCosThetaBins() * fModelParameterStore->GetNLBDistributionPhiBins();
+  Int_t* lbAngValid = new Int_t[ nLBDistBins ];
+  for ( Int_t iLB = 0; iLB < nLBDistBins; iLB++ ){ lbAngValid[ iLB ] = 0; }
+
+  std::vector< LOCASDataPoint >::iterator iDP;
+  for ( iDP = lData->GetLOCASDataPointsIterBegin(); 
+        iDP != lData->GetLOCASDataPointsIterEnd(); 
+        iDP++ ) {
+
+    ModelLBDistribution( *iDP, "off-axis" );
+    lbAngValid[ fModelParameterStore->GetCurrentLBDistributionBin() ]++;
+    
+  }
+
+  for ( Int_t iLB = 0; iLB < nLBDistBins; iLB++ ){
+    if ( lbAngValid[ iLB ] < 2 ){ 
+      fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 0;
+    }
+    else{
+      fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 1;
+    } 
+  }
+
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
 
 //////////////////////////////////////
 //////////////////////////////////////
@@ -199,19 +266,27 @@ Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint, Floa
   Float_t intensityRatio = 1.0;
 
   Float_t dInnerAVExtinction = parPtr->GetInnerAVExtinctionLengthPar();
+  //cout << "dInnerAVExtinction is: " << dInnerAVExtinction << endl;
   Float_t dAVExtinction =  parPtr->GetAVExtinctionLengthPar();
+  //cout << "dAVExtinction is: " << dAVExtinction << endl;
   Float_t dWaterExtinction = parPtr->GetWaterExtinctionLengthPar();
+  //cout << "dWaterExtinction is: " << dWaterExtinction << endl;
 
   parPtr->SetCurrentLBRunNormalisationBin( dataPoint.GetRunIndex() );
   Float_t normVal = parPtr->GetLBRunNormalisationPar( dataPoint.GetRunIndex() );
+  //cout << "normVal is: " << normVal << endl;
 
   Float_t dInnerAV = dataPoint.GetDistInInnerAV() - dataPoint.GetCentralDistInInnerAV();
+  //cout << "dInnerAV is: " << dInnerAV << endl;
   Float_t dAV = dataPoint.GetDistInAV() - dataPoint.GetCentralDistInAV();
+  //cout << "dAV is: " << dAV << endl;
   Float_t dWater = dataPoint.GetDistInWater() - dataPoint.GetCentralDistInWater();
+  //cout << "dWater is: " << dWater << endl;
 
   Float_t angResp = ModelAngularResponse( dataPoint, "off-axis" );
   Float_t angRespCtr = ModelAngularResponse( dataPoint, "central" );
   angRespRatio = angResp / angRespCtr; 
+  //cout << "angRespRatio is: " << angRespRatio << endl;
   
   Float_t intensity = ModelLBDistribution( dataPoint, "off-axis" );
   Float_t intensityCtr = ModelLBDistribution( dataPoint, "central" );
@@ -219,6 +294,11 @@ Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint, Floa
   Float_t intensityPoly = ModelLBDistributionMask( dataPoint, "off-axis" );
   Float_t intensityCtrPoly = ModelLBDistributionMask( dataPoint, "central" );
   intensityRatio *= ( intensityPoly / intensityCtrPoly );
+  //cout << "intensity is: " << intensity << endl;
+  //cout << "intensityCtr is: " << intensityCtr << endl;
+  //cout << "intensityPoly is: " << intensityPoly << endl;
+  //cout << "intensityPolyCtr is: " << intensityCtrPoly << endl;
+  //cout << "intensityRatio is: " << intensityRatio << endl;
   
   
   Float_t modelPrediction = normVal * angRespRatio * intensityRatio * 
@@ -286,6 +366,7 @@ Float_t LOCASOpticsModel::ModelLBDistribution( const LOCASDataPoint& dataPoint, 
 {
   LOCASModelParameterStore* parPtr = GetLOCASModelParameterStore();
   Float_t lbRelTheta, lbRelPhi = 0.0;
+  Float_t lbTheta, lbPhi = 0.0;
   
   if ( runType == "off-axis" ){
     lbRelTheta = dataPoint.GetLBTheta();
@@ -306,8 +387,12 @@ Float_t LOCASOpticsModel::ModelLBDistribution( const LOCASDataPoint& dataPoint, 
   Float_t cosTheta = 0.0;
   Float_t phi = 0.0;
 
-  cosTheta = lbAxis * pmtRelVec;
-  phi = 0.0;
+  //cosTheta = lbAxis * pmtRelVec;
+  //phi = 0.0;
+
+  cosTheta = TMath::Cos( lbRelTheta );
+  phi = lbRelPhi;
+  //cout << "cosTheta is: " << cosTheta << " and phi is: " << phi << endl;
 
   if ( cosTheta > 1.0 ) cosTheta = 1.0;
   else if ( cosTheta < -1.0 ) cosTheta = -1.0;
@@ -324,12 +409,12 @@ Float_t LOCASOpticsModel::ModelLBDistribution( const LOCASDataPoint& dataPoint, 
   if ( iPhi < 0 ) iPhi = 0;
   if ( iPhi >= parPtr->GetNLBDistributionPhiBins() ) iPhi = parPtr->GetNLBDistributionPhiBins() - 1;
 
-  Int_t iLBDist = ( iTheta ) * ( parPtr->GetNLBDistributionPhiBins() + iPhi );
+  Int_t iLBDist = iTheta * parPtr->GetNLBDistributionPhiBins() + iPhi;
   if ( runType == "off-axis" ){ parPtr->SetCurrentLBDistributionBin( iLBDist ); }
   else if ( runType == "central" ){ parPtr->SetCentralCurrentLBDistributionBin( iLBDist ); }
-
   Float_t laserlight = parPtr->GetLBDistributionPar( iLBDist );
   
+  //cout << "iTheta is: " << iTheta << " and iPhi is: " << iPhi << " and iLBDist is: " << iLBDist << endl;
   return laserlight;
 
 }

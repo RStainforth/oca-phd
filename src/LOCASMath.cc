@@ -45,6 +45,9 @@ using namespace LOCAS;
 
 ClassImp( LOCASMath );
 
+LOCASMath::LOCASMath(){ }
+LOCASMath::~LOCASMath(){ }
+
 //////////////////////////////////////
 //////////////////////////////////////
 
@@ -204,8 +207,8 @@ void LOCASMath::LOCASFree_IntVector(Int_t *v, const long nl, const long nh)
 //////////////////////////////////////
 //////////////////////////////////////
 
-Int_t GaussJordanElimination( Float_t** lhsMatrix, Int_t nParameters,
-                              Float_t** rhsMatrix, Int_t mVectors )
+Int_t LOCASMath::GaussJordanElimination( Float_t** lhsMatrix, Int_t nParameters,
+                                        Float_t** rhsMatrix, Int_t mVectors )
 {
 
   // This routine is inspired by the original 
@@ -231,8 +234,8 @@ Int_t GaussJordanElimination( Float_t** lhsMatrix, Int_t nParameters,
   // 'retVal', the final return value
   // retVal = -1 : Error, singular matrix
   // retVal = -2 : Error, singular matrix due to insufficient statistics
-  // retVal = 1  : Everything's fine.
-  Int_t retVal = 1;
+  // retVal = 0  : Everything's fine.
+  Int_t retVal = 0;
 
   // Int_t arrays used in the book-keeping for the row and column operations
   Int_t *indXC,*indXR;

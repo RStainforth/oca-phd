@@ -68,6 +68,14 @@ namespace LOCAS{
     // Identify all the current base varying parameters ( **FILLPARAMETERBASE** )
     void IdentifyBaseVaryingParameters();
 
+    // // Given access to a datapoint, check which bins for the PMT angular
+    // // response need to vary.
+    // void IdentifyVaryingPMTAngularResponseBins( LOCASDataStore* lData );
+
+    // // Given access to a set of datapoints, check which bins for the
+    // // laserball distribution need to vary.
+    // void IdentifyVaryingLBDistributionBins( LOCASDataStore* lData );
+
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
@@ -77,6 +85,12 @@ namespace LOCAS{
 
     // Get the pointer to the varying parameter index
     Int_t* GetParametersVary() { return fParametersVary; }
+
+    // Get the coviarance matrix array
+    Float_t** GetCovarianceMatrix() { return fCovarianceMatrix; }
+    
+    // Get the derivative matrix array
+    Float_t** GetDerivativeMatrix() { return fDerivativeMatrix; }
 
     // Get the number of parameters in the store
     Int_t GetNParameters() const { return fNParameters; }
@@ -171,7 +185,7 @@ namespace LOCAS{
 
     void SetParameters( const std::vector< LOCAS::LOCASModelParameter >& pars ){ fParameters = pars; }
 
-    void SetParametersPtr( Float_t* pars ) { *fParametersPtr = *pars; }
+    void SetParametersPtr( Float_t* pars ) { fParametersPtr = pars; }
 
   private:
 
@@ -189,6 +203,9 @@ namespace LOCAS{
 
     Float_t* fParametersPtr;                        // The pointer of parameter values ( ** FMRQPARAMETERS** )
     Int_t* fParametersVary;                          // Array of which parameters vary ( =1 ) and which do not ( =0 ) ( **FMRQVARY** )
+
+    Float_t** fCovarianceMatrix;                     // [fNParameters+1][fNParameters+1] Covariance matrix
+    Float_t** fDerivativeMatrix;                     // [fNParameters+1][fNParameters+1] Curvature matrix
 
     Int_t fNBaseVariableParameters;                  // The number of base variable parameters, 
                                                      // i.e. the parameters which vary that do not include:

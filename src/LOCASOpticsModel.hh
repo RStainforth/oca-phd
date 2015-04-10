@@ -19,6 +19,7 @@
 
 #include "LOCASDataPoint.hh"
 #include "LOCASModelParameterStore.hh"
+#include "LOCASDataStore.hh"
 
 namespace LOCAS{
 
@@ -41,6 +42,9 @@ namespace LOCAS{
 
     // void ReInitialiseParameters() { fModelParameterStore.ReInitialiseParameters( fParameters ); }
 
+    void IdentifyVaryingPMTAngularResponseBins( LOCASDataStore* lData );
+    void IdentifyVaryingLBDistributionBins( LOCASDataStore* lData );
+
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
@@ -53,8 +57,6 @@ namespace LOCAS{
     Float_t ModelLBDistributionMaskDeriviative( Double_t* aPtr, Double_t* parPtr );
 
     Float_t ModelAngularResponse( const LOCASDataPoint& dataPoint, std::string runType );
-
-    //void IdentifyVaryingParameters();
 
     /////////////////////////////////
     ////////     GETTERS     ////////

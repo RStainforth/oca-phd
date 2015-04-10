@@ -21,6 +21,7 @@
 #include "LOCASDB.hh"
 #include "LOCASPMT.hh"
 #include "LOCASFit.hh"
+#include "LOCASMath.hh"
 
 #include "TFile.h"
 #include "TH1F.h"

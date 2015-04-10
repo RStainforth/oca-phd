@@ -46,8 +46,8 @@ namespace LOCAS{
   class LOCASMath
   {
   public:
-    LOCASMath(){ }
-    ~LOCASMath(){ }
+    LOCASMath();
+    ~LOCASMath();
 
     /////////////////////////////////
     ////////     METHODS     ////////
@@ -68,13 +68,14 @@ namespace LOCAS{
     static void LOCASFree_Vector(Float_t *v, const long nl, const long nh);
     static void LOCASFree_IntVector(int *v, const long nl, const long nh);
 
-    Int_t GaussJordanElimination( Float_t** lhsMatrix, Int_t nParameters,
-                                  Float_t** rhsMatrix, Int_t mVectors );
+    static void CovarianceSorting( Float_t** covarianceMatrix, Int_t nParameters, 
+                                   Int_t varyParameters[], Int_t nVaryParameters );
+
+    static Int_t GaussJordanElimination( Float_t** lhsMatrix, Int_t nParameters,
+                                        Float_t** rhsMatrix, Int_t mVectors );
+
     
-    void CovarianceSorting( Float_t** covarianceMatrix, Int_t nParameters, 
-                            Int_t varyParameters[], Int_t nVaryParameters );
-    
-    ClassDef( LOCASMath, 0 );
+    ClassDef( LOCASMath, 1 );
 
   };
 

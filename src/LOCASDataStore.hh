@@ -63,6 +63,8 @@ namespace LOCAS{
     // Get the number of data points in the store
     Int_t GetNDataPoints(){ return fDataPoints.size(); }
 
+    LOCASDataPoint GetDataPoint( Int_t iDP ){ return fDataPoints[ iDP ]; }
+
     // Get the iterators to the beginning and end of the data store
     std::vector< LOCASDataPoint >::iterator GetLOCASDataPointsIterBegin(){ return fDataPoints.begin(); }
     std::vector< LOCASDataPoint >::iterator GetLOCASDataPointsIterEnd(){ return fDataPoints.end(); }   

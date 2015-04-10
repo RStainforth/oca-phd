@@ -24,6 +24,7 @@
 #include "LOCASOpticsModel.hh"
 #include "LOCASRun.hh"
 #include "LOCASPMT.hh"
+#include "LOCASMath.hh"
 #include "LOCASDataStoreStore.hh"
 
 #include "TMinuit.h"
@@ -105,6 +106,12 @@ int main( int argc, char** argv ){
 
   // Write the data to file to begin with
   lData->WriteToFile("april_datastore.root");
+
+  cout << "Initialising Arrays!" << endl;
+  lChiSq->InitialiseArrays();
+
+  cout << "Performing Minimisation!" << endl;
+  lChiSq->PerformMinimisation();
 
   // // Setup the model to be used in the chisquare function
   // cout << "Model Setup" << endl;
