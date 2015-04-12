@@ -52,6 +52,11 @@ namespace LOCAS{
     // Print out information for this current filter: Name, Boundaries and number of cut values
     void PrintFilterInformation();
 
+    void ResetConditionCounters(){ 
+      fNumberConditionPasses = 0; 
+      fNumberConditionFails = 0; 
+    }
+
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////

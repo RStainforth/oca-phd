@@ -100,18 +100,42 @@ int main( int argc, char** argv ){
   // data using the filters
   LOCASDataFiller lDataFiller;
   //cout << "DataFiller Created" << endl;
-  lDataFiller.FilterData( lFilterStore, lData, lChiSq );
-  lFilterStore.PrintFilterCutInformation();
+  //lDataFiller.FilterData( lFilterStore, lData, lChiSq );
+  //lFilterStore.PrintFilterCutInformation();
   //cout << "DataFiller Filtering" << endl;
 
   // Write the data to file to begin with
-  lData->WriteToFile("april_datastore.root");
+  //lData->WriteToFile("april_datastore.root");
 
-  cout << "Initialising Arrays!" << endl;
-  lChiSq->InitialiseArrays();
+  // Retrieve information about the fitting procedure i.e. what subsequent values of the chisquare to cut
+  // on following each round of fitting.
+  LOCASDataStore* ogStore = new LOCASDataStore();
+  *ogStore = *lData;
+  std::vector< Double_t > chiSqLims = lDB.GetDoubleVectorField( "FITFILE", "chisq_lims", "fit_procedure" );
 
-  cout << "Performing Minimisation!" << endl;
-  lChiSq->PerformMinimisation();
+  for ( Int_t iFit = 0; iFit < chiSqLims.size(); iFit++ ){
+    
+    // Update the chisquare filter
+    lFilterStore.UpdateFilter( "filter_chi_square", 
+                               ( lFilterStore.GetFilter( "filter_chi_square" ) ).GetMinValue(), 
+                               chiSqLims[ iFit ] );
+    
+    cout << "ChiSquare is: " << chiSqLims[ iFit ] << endl;
+    lDataFiller.FilterData( lFilterStore, lData, lChiSq );
+    lFilterStore.PrintFilterCutInformation();
+    lFilterStore.ResetFilterConditionCounters();
+    //lChiSq->SetPointerToData( lData );
+    
+    cout << "Initialising Arrays!" << endl;
+    lChiSq->InitialiseArrays();
+    
+    cout << "Performing Minimisation!" << endl;
+    lChiSq->PerformMinimisation();
+
+    *lData = *ogStore;
+    //lChiSq->SetPointerToData( lData );
+    
+  }
 
   // // Setup the model to be used in the chisquare function
   // cout << "Model Setup" << endl;

@@ -52,6 +52,8 @@ namespace LOCAS{
     // Print the cut information for filters
     void PrintFilterCutInformation();
 
+    void ResetFilterConditionCounters();
+
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////

@@ -67,7 +67,8 @@ Float_t LOCASChiSquare::EvaluateChiSquare( LOCASDataPoint& dPoint )
 
   Float_t residual = ( dataVal - modelVal );
   Float_t chiSq =  ( residual * residual ) / ( error * error );
-  //cout << "modelVal is: " << modelVal << endl;
+  cout << "dataVal is: " << dataVal << endl;
+  cout << "modelVal is: " << modelVal << endl;
 
   return chiSq;
 
@@ -509,19 +510,19 @@ void LOCASChiSquare::PerformMinimisation()
     cout << "derivativeMatrix" << endl;
     Float_t** derivativeMatrix = fModel->GetLOCASModelParameterStore()->GetDerivativeMatrix();
     
-    for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
-      cout << "covarianceMatrix index Varies(?): " << parametersVary[ iPar ] << " Index: " << iPar << " Value: " <<  covarianceMatrix[ iPar ][ iPar ] << endl;
-    }
+    // for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
+    //   cout << "covarianceMatrix index Varies(?): " << parametersVary[ iPar ] << " Index: " << iPar << " Value: " <<  covarianceMatrix[ iPar ][ iPar ] << endl;
+    // }
     cout << "nParameters is: " << nParameters << endl;
 
     cout << "done." << endl;
-    cout << "Some Parameter Values..." << endl;
-    for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
-      if ( parametersVary[ iPar ] ){
-        cout << " Parameter: " << iPar << " || Value: " << parameters[ iPar ] << endl;
-      }
-    }
-    cout << " ------------- " << endl;
+    // cout << "Some Parameter Values..." << endl;
+    // for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
+    //   if ( parametersVary[ iPar ] ){
+    //     cout << " Parameter: " << iPar << " || Value: " << parameters[ iPar ] << endl;
+    //   }
+    // }
+    // cout << " ------------- " << endl;
     Int_t val = DoFit( fDataIndex, fDataVals, 
                        fDataErrors, nDataPoints, 
                        parameters, parametersVary, 
@@ -537,4 +538,5 @@ void LOCASChiSquare::PerformMinimisation()
     }
     cout << " ------------- " << endl;
 
+    fModel->GetLOCASModelParameterStore()->SetParametersPtr( parameters );
 }

@@ -123,6 +123,24 @@ void LOCASFilterStore::PrintFilterCutInformation()
 //////////////////////////////////////
 //////////////////////////////////////
 
+void LOCASFilterStore::ResetFilterConditionCounters()
+{
+
+  std::vector< LOCASFilter >::iterator iF;
+
+  for ( iF = GetLOCASFiltersIterBegin();
+        iF != GetLOCASFiltersIterEnd();
+        iF++ ){
+
+    iF->ResetConditionCounters();
+
+  }
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 LOCASFilter& LOCASFilterStore::GetFilter( const std::string filterName )
 {
 

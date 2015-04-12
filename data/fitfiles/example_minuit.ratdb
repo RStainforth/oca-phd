@@ -25,7 +25,7 @@ filter_mpe_ctr_occupancy_min: 0.0,
 filter_mpe_ctr_occupancy_max: 0.05,
 
 filter_chi_square_min: 0.0,
-filter_chi_square_max: 25.0,
+filter_chi_square_max: 100.0,
 
 }
 

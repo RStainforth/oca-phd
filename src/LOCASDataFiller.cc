@@ -166,6 +166,7 @@ void LOCASDataFiller::FilterData( LOCASFilterStore& filterSt, LOCASDataStore* lD
   }
 
   *lDataStore = *newStore;
+  delete newStore;
   
 }
 
