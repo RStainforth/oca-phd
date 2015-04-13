@@ -365,8 +365,9 @@ Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint, Floa
 Float_t LOCASOpticsModel::ModelLBDistribution( const LOCASDataPoint& dataPoint, std::string runType )
 {
   LOCASModelParameterStore* parPtr = GetLOCASModelParameterStore();
-  Float_t lbRelTheta, lbRelPhi = 0.0;
-  Float_t lbTheta, lbPhi = 0.0;
+  Float_t lbRelTheta = 0.0;
+  Float_t lbRelPhi = 0.0;
+  //Float_t lbTheta, lbPhi = 0.0;
   
   if ( runType == "off-axis" ){
     lbRelTheta = dataPoint.GetLBTheta();

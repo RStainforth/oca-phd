@@ -93,8 +93,6 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
   stringstream lStream;
   string parStr = "";
 
-  Int_t nPars = 0;
-
   // Get a list of the parameters to be included in the parameter store
   std::vector< std::string > paramList = lDB.GetStringVectorField( "FITFILE", "parameters_list", "parameter_setup" );
 
@@ -106,7 +104,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
   //                  - Number of bins in Phi between 0.0 and 360.0 'fNLBDistributionPhiBins'
 
   // Loop over each parameter set in the card file and add them/it to the store
-  for ( Int_t iStr = 0; iStr < paramList.size(); iStr++ ){
+  for ( Int_t iStr = 0; iStr < (Int_t)paramList.size(); iStr++ ){
 
     if ( paramList[ iStr ] == "laserball_intensity_mask" ){
       fNLBDistributionMaskParameters = lDB.GetIntField( "FITFILE", (std::string)( paramList[ iStr ] + "_number_of_parameters" ), "parameter_setup" );
@@ -129,7 +127,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
   }
 
   // Loop over each parameter set in the card file and add them/it to the store
-  for ( Int_t iStr = 0; iStr < paramList.size(); iStr++ ){
+  for ( Int_t iStr = 0; iStr < (Int_t)paramList.size(); iStr++ ){
 
     // Setup for the extinction length parameters
     if ( paramList[ iStr ] == "inner_av_extinction_length"
@@ -161,7 +159,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
       else{ cout << "LOCASModelParameterStore::LOCASModelParameterStore: Error, unknown parameter passed" << endl; }
 
       LOCASModelParameter lParameter( (std::string)( paramList[ iStr ] ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, varyBool );
-      AddParameter( lParameter, parIndex );
+      AddParameter( lParameter );
 
     }
 
@@ -199,7 +197,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
         Int_t parIndex = 3 + iPar;
         cout << "VaryBool is: " << varyBool << endl;
         LOCASModelParameter lParameter( (std::string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, parVary );
-        AddParameter( lParameter, parIndex );
+        AddParameter( lParameter );
         
         lStream.clear();
       }
@@ -241,7 +239,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 
         Int_t parIndex = 3 + fNLBDistributionMaskParameters + iPar;
         LOCASModelParameter lParameter( (std::string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, parVary );
-        AddParameter( lParameter, parIndex );
+        AddParameter( lParameter );
         
         lStream.clear();
       }
@@ -273,7 +271,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 
         Int_t parIndex = 3 + fNLBDistributionMaskParameters + fNPMTAngularResponseBins + iPar;
         LOCASModelParameter lParameter( (std::string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, varyBool );
-        AddParameter( lParameter, parIndex );
+        AddParameter( lParameter );
         
         lStream.clear();
       }
@@ -308,7 +306,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 
         Int_t parIndex = 3 + fNLBDistributionMaskParameters + fNPMTAngularResponseBins + ( fNLBDistributionPhiBins * fNLBDistributionCosThetaBins ) + iPar;
         LOCASModelParameter lParameter( (std::string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, varyBool );
-        AddParameter( lParameter, parIndex );
+        AddParameter( lParameter );
         
         lStream.clear();
       }
@@ -576,7 +574,7 @@ void LOCASModelParameterStore::WriteToFile( const char* fileName )
 void LOCASModelParameterStore::ReInitialiseParameters( const Double_t* pars )
 {
 
-  for ( Int_t iPar = 0; iPar < fParameters.size(); iPar++ ){
+  for ( Int_t iPar = 0; iPar < (Int_t)fParameters.size(); iPar++ ){
     ( fParameters[ iPar ] ).SetInitialValue( pars[ fParameters[ iPar ].GetIndex() ] );
   } 
   

@@ -66,7 +66,7 @@ LOCASRunReader::LOCASRunReader( std::vector< Int_t >& runIDs )
   fLOCASRun = new LOCASRun();
   fLOCASRunT->SetBranchAddress( "LOCASRun", &fLOCASRun );
 
-  for ( Int_t iRun = 0; iRun < runIDs.size(); iRun++ ){
+  for ( Int_t iRun = 0; iRun < (Int_t)runIDs.size(); iRun++ ){
 
     myStream << runIDs[ iRun ];
     myStream >> runIDStr;
@@ -206,7 +206,7 @@ Bool_t LOCASRunReader::CheckForLOCASRun( Int_t runID )
 
   Bool_t existRunID = false;
 
-  for ( Int_t iID = 0; iID < fListOfRunIDs.size(); iID++ ){
+  for ( Int_t iID = 0; iID < (Int_t)fListOfRunIDs.size(); iID++ ){
     
     if ( fListOfRunIDs[ iID ] == runID ){ existRunID = true; break; }
     else { continue; }

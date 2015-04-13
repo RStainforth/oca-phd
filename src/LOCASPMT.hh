@@ -47,7 +47,7 @@ namespace LOCAS{
     /////////////////////////////////
     
     void Initialise();
-    void Clear( Option_t* option="");
+    void ClearPMT();
     void AddSOCPMTData( RAT::DS::SOCPMT& socPMT );                    // Add information from a SOCPMT object to this LOCASPMT object
     void ProcessLightPath( RAT::DU::LightPathCalculator& lPath );                   // Process a light path to calculate the distances, solidangle etc.
     void VerifyPMT();                            // Verify that the fields of the PMT are complete and have 'reasonable' values

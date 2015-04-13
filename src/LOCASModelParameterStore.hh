@@ -42,7 +42,7 @@ namespace LOCAS{
     /////////////////////////////////
 
     // Add a parameter to the store
-    void AddParameter( LOCASModelParameter parameter, Int_t index ){ fParameters.push_back( parameter ); }
+    void AddParameter( LOCASModelParameter parameter ){ fParameters.push_back( parameter ); }
 
     // Add a complete set of parameters from a cardfile
     void AddParameters( const char* fileName );

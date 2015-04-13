@@ -22,6 +22,9 @@
 #include "LOCASFilter.hh"
 
 #include <string>
+#include <map>
+
+using namespace std;
 
 namespace LOCAS{
 

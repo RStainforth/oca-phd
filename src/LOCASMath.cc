@@ -43,10 +43,9 @@ using namespace std;
 
 using namespace LOCAS;
 
-ClassImp( LOCASMath );
+ClassImp( LOCASMath )
 
 LOCASMath::LOCASMath(){ }
-LOCASMath::~LOCASMath(){ }
 
 //////////////////////////////////////
 //////////////////////////////////////
@@ -173,7 +172,7 @@ Float_t** LOCASMath::LOCASMatrix( const long nStarti, const long nEndi, const lo
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASMath::LOCASFree_Vector(Float_t *v, const long nl, const long nh)
+void LOCASMath::LOCASFree_Vector( Float_t *v, const long nl )
 /* free a Float_t vector allocated with vector() */
 {
 
@@ -184,7 +183,7 @@ void LOCASMath::LOCASFree_Vector(Float_t *v, const long nl, const long nh)
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASMath::LOCASFree_Matrix(Float_t **m, const long nrl, const long nrh, const long ncl, const long nch)
+void LOCASMath::LOCASFree_Matrix(Float_t **m, const long nrl, const long ncl )
 /* free a Float_t vector allocated with vector() */
 {
 
@@ -196,7 +195,7 @@ void LOCASMath::LOCASFree_Matrix(Float_t **m, const long nrl, const long nrh, co
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASMath::LOCASFree_IntVector(Int_t *v, const long nl, const long nh)
+void LOCASMath::LOCASFree_IntVector(Int_t *v, const long nl )
 /* free a Float_t vector allocated with vector() */
 {
 
@@ -375,9 +374,9 @@ Int_t LOCASMath::GaussJordanElimination( Float_t** lhsMatrix, Int_t nParameters,
   }
   
   // Now free up the memory which was setup for the book-keeping vectors
-  LOCAS::LOCASMath::LOCASFree_IntVector( iPiv, 1, nParameters );
-  LOCAS::LOCASMath::LOCASFree_IntVector( indXR, 1, nParameters );
-  LOCAS::LOCASMath::LOCASFree_IntVector( indXC, 1, nParameters );
+  LOCAS::LOCASMath::LOCASFree_IntVector( iPiv, 1 );
+  LOCAS::LOCASMath::LOCASFree_IntVector( indXR, 1 );
+  LOCAS::LOCASMath::LOCASFree_IntVector( indXC, 1 );
 
   return retVal;
   

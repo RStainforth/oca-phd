@@ -14,7 +14,6 @@
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#include "LOCASRawDataStore.hh"
 #include "LOCASDataStore.hh"
 #include "LOCASDB.hh"
 #include "LOCASRunReader.hh"
@@ -25,7 +24,6 @@
 #include "LOCASRun.hh"
 #include "LOCASPMT.hh"
 #include "LOCASMath.hh"
-#include "LOCASDataStoreStore.hh"
 
 #include "TMinuit.h"
 
@@ -54,6 +52,12 @@ int main( int argc, char** argv );
 //////////////////////
 
 int main( int argc, char** argv ){
+
+  // Check that the 'locas2minuit' executable has been used properly 
+  if ( argc != 2 ){
+    cout << "locas2minuit: Error, no path specified for the LOCAS fit-file.\n";
+    cout << "usage: locas2minuit /path/to/fit-file.ratdb\n";
+  }
 
   cout << "\n";
   cout << "################################" << endl;
@@ -113,7 +117,7 @@ int main( int argc, char** argv ){
   *ogStore = *lData;
   std::vector< Double_t > chiSqLims = lDB.GetDoubleVectorField( "FITFILE", "chisq_lims", "fit_procedure" );
 
-  for ( Int_t iFit = 0; iFit < chiSqLims.size(); iFit++ ){
+  for ( Size_t iFit = 0; iFit < chiSqLims.size(); iFit++ ){
     
     // Update the chisquare filter
     lFilterStore.UpdateFilter( "filter_chi_square", 

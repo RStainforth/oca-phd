@@ -22,7 +22,7 @@
 #ifndef _LOCASFilter_
 #define _LOCASFilter_
 
-#include "LOCASRawDataPoint.hh"
+#include "TObject.h"
 
 #include <string>
 

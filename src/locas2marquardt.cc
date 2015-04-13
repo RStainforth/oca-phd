@@ -32,6 +32,12 @@ int main( int argc, char** argv );
 
 int main( int argc, char** argv ){
 
+  // Check that the 'locas2marquardt' executable has been used properly 
+  if ( argc != 2 ){
+    cout << "locas2minuit: Error, no path specified for the LOCAS fit-file.\n";
+    cout << "usage: locas2marquardt /path/to/fit-file.ratdb\n";
+  }
+
   cout << "\n";
   cout << "#######################################" << endl;
   cout << "######## LOCAS2MARQUARDT Start ########" << endl;

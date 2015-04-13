@@ -252,7 +252,7 @@ void LOCASRun::Initialise()
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASRun::Clear( Option_t* option )
+void LOCASRun::ClearRun()
 {
 
   Initialise();
@@ -265,12 +265,12 @@ void LOCASRun::Clear( Option_t* option )
 void LOCASRun::Fill( RAT::DU::SOCReader& socR, 
                      RAT::DU::LightPathCalculator& lLP,
                      RAT::DU::PMTInfo& lDB,
-                     Int_t runID )
+                     UInt_t runID )
 {
 
   RAT::DS::SOC* socPtr = new RAT::DS::SOC;
   // First check that a SOC file with the specified runID exists in the SOCReader
-  for ( Int_t iSOC = 0; iSOC < socR.GetSOCCount(); iSOC++ ){
+  for ( Int_t iSOC = 0; iSOC < (Int_t)socR.GetSOCCount(); iSOC++ ){
     *socPtr = socR.GetSOC( iSOC );
     if ( socPtr->GetRunID() == runID ){ break; }
     else{ continue; }
@@ -393,7 +393,7 @@ void LOCASRun::CopySOCPMTInfo( RAT::DS::SOC& socRun )
 
   std::vector< UInt_t > pmtIDs = socRun.GetSOCPMTIDs();
 
-  for ( Int_t iPMT = 0; iPMT < pmtIDs.size(); iPMT++ ){
+  for ( Int_t iPMT = 0; iPMT < (Int_t)pmtIDs.size(); iPMT++ ){
     AddSOCPMT( socRun.GetSOCPMT( pmtIDs[ iPMT ] ) );
   }
 

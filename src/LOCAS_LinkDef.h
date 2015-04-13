@@ -11,17 +11,14 @@
 #pragma link C++ class LOCAS::LOCASChiSquare+;
 #pragma link C++ class LOCAS::LOCASFit+;
 #pragma link C++ class LOCAS::LOCASMath+;
-#pragma link C++ class LOCAS::LOCASRawDataPoint+;
 #pragma link C++ class LOCAS::LOCASDataPoint+;
 #pragma link C++ class LOCAS::LOCASFilter+;
 #pragma link C++ class LOCAS::LOCASFilterStore+;
-#pragma link C++ class LOCAS::LOCASRawDataStore+;
 #pragma link C++ class LOCAS::LOCASDataStore+;
 #pragma link C++ class LOCAS::LOCASDataFiller+;
 #pragma link C++ class LOCAS::LOCASModelParameter+;
 #pragma link C++ class LOCAS::LOCASModelParameterStore+;
 #pragma link C++ class LOCAS::LOCASOpticsModel+;
-#pragma link C++ class LOCAS::LOCASDataStoreStore+;
 
 #pragma link C++ global gROOT;
 

@@ -8,13 +8,22 @@
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
-/// REVISION HISTORY:\n
+/// REVISION HISTORY:
 ///     04/2014 : RPFS - First Revision, new file.
 ///
-/// DETAIL: This class loads information from the RAT
-///         or LOCAS database. For instance, for all LOCASRun
-///         objects, the PMT positions, types and normals are all
-///         loaded using this class from the RAT database.
+/// DETAIL: This class loads information from the LOCAS database. 
+///         In particular, the purpose of this class is to load 
+///         information from a 'fit-file',
+///         located in the $LOCAS_ROOT/data/fit_files/ directory.
+///         Once the specific fit-file has been assigned using
+///         LOCASDB::SetFile, this class essentially provides
+///         easy access to any number of data types stored in the
+///         fit-file fields using the 'getter' functions
+///         e.g. LOCASDB::GetStringField, LOCASDB::GetDoubleVectorField
+///
+///         In short, this object just allows for easy access to
+///         the LOCAS specific database files in the same way that
+///         the RAT::RATDB class does for RAT database files.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -51,7 +60,7 @@ namespace LOCAS{
     
     // 'Clear' resets all the private variable values to how they
     // were upon the LOCASDB object being created i.e. LOCASDB::LOCASDB() call
-    void Clear();                      
+    void ClearDB();                      
     
     /////////////////////////////////
     ////////     GETTERS     ////////

@@ -2225,13 +2225,13 @@ void LOCASFit::DeAllocate()
   // Free up all the memory used during the fitting procedure.
   // This method is called by the LOCASFit desctructor.
 
-  if ( fMrqX ){ LOCASFree_Vector( fMrqX, 1, fNDataPointsInFit ); }
+  if ( fMrqX ){ LOCASFree_Vector( fMrqX, 1 ); }
   fMrqX = NULL;
 
-  if ( fMrqY ){ LOCASFree_Vector( fMrqY, 1, fNDataPointsInFit ); }
+  if ( fMrqY ){ LOCASFree_Vector( fMrqY, 1 ); }
   fMrqY = NULL;
 
-  if ( fMrqSigma ){ LOCASFree_Vector( fMrqSigma, 1, fNDataPointsInFit ); }
+  if ( fMrqSigma ){ LOCASFree_Vector( fMrqSigma, 1 ); }
   fMrqSigma = NULL;
 
   fCurrentRun = NULL;
@@ -2242,16 +2242,16 @@ void LOCASFit::DeAllocate()
   if ( fResArray != NULL ){ delete[] fResArray; }
   fResArray = NULL;
 
-  if ( fMrqParameters ){ LOCASFree_Vector( fMrqParameters, 1, fNParametersInFit ); }
+  if ( fMrqParameters ){ LOCASFree_Vector( fMrqParameters, 1 ); }
   fMrqParameters = NULL;
 
-  if ( fMrqVary ){ LOCASFree_IntVector( fMrqVary, 1, fNParametersInFit ); }
+  if ( fMrqVary ){ LOCASFree_IntVector( fMrqVary, 1 ); }
   fMrqVary = NULL;
 
-  if ( fMrqCovariance ){ LOCASFree_Matrix( fMrqCovariance, 1, fNParametersInFit, 1, fNParametersInFit ); }
+  if ( fMrqCovariance ){ LOCASFree_Matrix( fMrqCovariance, 1, 1 ); }
   fMrqCovariance = NULL;
 
-  if ( fMrqAlpha ){ LOCASFree_Matrix( fMrqAlpha, 1, fNParametersInFit, 1, fNParametersInFit ); }
+  if ( fMrqAlpha ){ LOCASFree_Matrix( fMrqAlpha, 1, 1 ); }
   fMrqAlpha = NULL;
 
   if ( fParamIndex != NULL ){ delete[] fParamIndex; }
@@ -2436,10 +2436,10 @@ Int_t LOCASFit::mrqmin(float x[], float y[], float sig[], int ndata, float a[],
       covsrt(covar,ma,ia,mfit);
       //printf("POST_COVSRT\n");
       //PrintCovarianceMatrix();
-      LOCASFree_Matrix(oneda,1,mfit,1,1);
-      LOCASFree_Vector(da,1,ma);
-      LOCASFree_Vector(beta,1,ma);
-      LOCASFree_Vector(atry,1,ma);
+      LOCASFree_Matrix(oneda,1,1);
+      LOCASFree_Vector(da,1);
+      LOCASFree_Vector(beta,1);
+      LOCASFree_Vector(atry,1);
       return retval;
 	}
 	for (j=0,l=1;l<=ma;l++)
@@ -2585,10 +2585,10 @@ void LOCASFit::mrqcof(float x[], float y[], float sig[], int ndata, float a[],
     }
   
   
-  LOCASFree_Vector(dyda,1,ma);
+  LOCASFree_Vector(dyda,1);
   
-  LOCASFree_Matrix(alpha2,1,ma,1,ma);
-  LOCASFree_Vector(beta2,1,ma);
+  LOCASFree_Matrix(alpha2,1,1);
+  LOCASFree_Vector(beta2,1);
 
 }
 //////////////////////////////////////
@@ -2686,9 +2686,9 @@ Int_t LOCASFit::gaussj(float **a, int n, float **b, int m)
 			for (k=1;k<=n;k++)
 				SWAP(a[k][indxr[l]],a[k][indxc[l]]);
 	}
-	LOCASFree_IntVector(ipiv,1,n);
-	LOCASFree_IntVector(indxr,1,n);
-	LOCASFree_IntVector(indxc,1,n);
+	LOCASFree_IntVector(ipiv,1);
+	LOCASFree_IntVector(indxr,1);
+	LOCASFree_IntVector(indxc,1);
 	return retval;
   
 }
@@ -2757,9 +2757,9 @@ Int_t LOCASFit::gaussj(float **a, int n, float **b, int m)
 // 			for (k=1;k<=n;k++)
 // 				SWAP(a[k][indxr[l]],a[k][indxc[l]]);
 // 	}
-// 	LOCASFree_IntVector(ipiv,1,n);
-// 	LOCASFree_IntVector(indxr,1,n);
-// 	LOCASFree_IntVector(indxc,1,n);
+// 	LOCASFree_IntVector(ipiv,1);
+// 	LOCASFree_IntVector(indxr,1);
+// 	LOCASFree_IntVector(indxc,1);
 // 	return retval;
 // }
 

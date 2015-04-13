@@ -66,7 +66,7 @@ void LOCASFilterStore::AddFilters( const char* fileName )
   std::vector< std::string > filterList = lDB.GetStringVectorField( "FITFILE", "filter_list", "filter_setup" );
 
   // Loop over each filter in the list and add it to the LOCASFilterStore
-  for ( Int_t iStr = 0; iStr < filterList.size(); iStr++ ){
+  for ( Int_t iStr = 0; iStr < (Int_t)filterList.size(); iStr++ ){
 
     // Get the maximum and minimum values
     maxVal = lDB.GetDoubleField( "FITFILE", (std::string)( filterList[ iStr ] + "_max"), "filter_setup" );

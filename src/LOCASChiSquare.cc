@@ -1,20 +1,3 @@
-////////////////////////////////////////////////////////////////////
-///
-/// FILENAME: LOCASChiSquare.cc
-///
-/// CLASS: LOCAS::LOCASChiSquare
-///
-/// BRIEF: A simple class to compute the global chi-square
-///        of an entire dataset given a LOCASModel object and
-///        LOCASModelParameterStore object
-///                
-/// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
-///
-/// REVISION HISTORY:\n
-///     02/2014 : RPFS - First Revision, new file. \n
-///
-////////////////////////////////////////////////////////////////////
-
 #include "LOCASChiSquare.hh"
 #include "LOCASDataPoint.hh"
 #include "LOCASModelParameterStore.hh"
@@ -101,7 +84,7 @@ Float_t LOCASChiSquare::EvaluateGlobalChiSquare()
 void LOCASChiSquare::InitialiseArrays()
 {
 
-  Int_t nDPs = 1;
+  Int_t nDPs = 0;
   Int_t nDataPoints = fDataStore->GetNDataPoints();
   fDataIndex = LOCASMath::LOCASVector( 1, nDataPoints );
   fDataVals = LOCASMath::LOCASVector( 1, nDataPoints );
@@ -124,9 +107,7 @@ void LOCASChiSquare::InitialiseArrays()
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASChiSquare::FitEvaluation( Float_t dataIndex[], Float_t dataVals[], 
-                                     Float_t dataErrors[], Int_t nDataPoints, 
-                                     Float_t testParameters[], Int_t parametersVary[], 
+void LOCASChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVary[], 
                                      Int_t nParameters, Float_t **derivativeMatrix, 
                                      Float_t betaVec[], Float_t *chiSquareVal )
 {
@@ -282,10 +263,10 @@ void LOCASChiSquare::FitEvaluation( Float_t dataIndex[], Float_t dataVals[],
   }
   
   // Free up the memory used by the vectors in this method
-  LOCASMath::LOCASFree_Vector( dDataValDParameters, 1, nParameters );
+  LOCASMath::LOCASFree_Vector( dDataValDParameters, 1 );
   
-  LOCASMath::LOCASFree_Matrix( derivativeMatrix2, 1, nParameters, 1, nParameters );
-  LOCASMath::LOCASFree_Vector( betaVec2, 1, nParameters );
+  LOCASMath::LOCASFree_Matrix( derivativeMatrix2, 1, 1 );
+  LOCASMath::LOCASFree_Vector( betaVec2, 1 );
 
 }
 
@@ -313,9 +294,7 @@ void  LOCASChiSquare::FitEvaluateModel( LOCASDataPoint& dPoint, Float_t testPara
 //////////////////////////////////////
 //////////////////////////////////////
 
-Int_t LOCASChiSquare::Minimise( Float_t dataIndex[], Float_t dataVals[], 
-                                Float_t dataErrors[], Int_t nDataPoints, 
-                                Float_t testParameters[], Int_t parametersVary[], 
+Int_t LOCASChiSquare::Minimise( Float_t testParameters[], Int_t parametersVary[], 
                                 Int_t nParameters, Float_t **covarianceMatrix, 
                                 Float_t **derivativeMatrix, Float_t *chiSquareVal, 
                                 Float_t *aLambdaPar )
@@ -350,7 +329,7 @@ Int_t LOCASChiSquare::Minimise( Float_t dataIndex[], Float_t dataVals[],
     oneda=LOCASMath::LOCASMatrix(1,mfit,1,1);
     *aLambdaPar=0.001;
     cout << "FitEvaluation" << endl;
-    FitEvaluation(dataIndex,dataVals,dataErrors,nDataPoints,testParameters,parametersVary,nParameters,derivativeMatrix,beta,chiSquareVal);
+    FitEvaluation(testParameters,parametersVary,nParameters,derivativeMatrix,beta,chiSquareVal);
     ochisq=(*chiSquareVal);
     for (j=1;j<=nParameters;j++) atry[j]=testParameters[j];
   }
@@ -387,16 +366,16 @@ Int_t LOCASChiSquare::Minimise( Float_t dataIndex[], Float_t dataVals[],
     LOCASMath::CovarianceSorting(covarianceMatrix,nParameters,parametersVary,mfit);
     //printf("POST_COVSRT\n");
     //PrintCovarianceMatrix();
-    LOCASMath::LOCASFree_Matrix(oneda,1,mfit,1,1);
-    LOCASMath::LOCASFree_Vector(da,1,nParameters);
-    LOCASMath::LOCASFree_Vector(beta,1,nParameters);
-    LOCASMath::LOCASFree_Vector(atry,1,nParameters);
+    LOCASMath::LOCASFree_Matrix(oneda,1,1);
+    LOCASMath::LOCASFree_Vector(da,1);
+    LOCASMath::LOCASFree_Vector(beta,1);
+    LOCASMath::LOCASFree_Vector(atry,1);
     return retval;
   }
   for (j=0,l=1;l<=nParameters;l++)
     if (parametersVary[l]) atry[l]=testParameters[l]+da[++j];
   //printf("TRY VECTOR: %8.2f %8.2f %8.2f %8.2f\n",atry[1],atry[2],atry[3],atry[4]);
-  FitEvaluation(dataIndex,dataVals,dataErrors,nDataPoints,atry,parametersVary,nParameters,covarianceMatrix,da,chiSquareVal);
+  FitEvaluation(atry,parametersVary,nParameters,covarianceMatrix,da,chiSquareVal);
   //printf("mrqmin:  chiSquareVal = %f\n",*chiSquareVal);
   if (*chiSquareVal < ochisq) {
     *aLambdaPar *= 0.1;
@@ -425,11 +404,9 @@ Int_t LOCASChiSquare::Minimise( Float_t dataIndex[], Float_t dataVals[],
 //////////////////////////////////////
 //////////////////////////////////////
 
-Int_t LOCASChiSquare::DoFit( Float_t dataIndex[], Float_t dataVals[], 
-                             Float_t dataErrors[], Int_t nDataPoints, 
-                             Float_t testParameters[], Int_t parametersVary[], 
-                             Int_t nParameters, Float_t **covarianceMatrix, 
-                             Float_t **derivativeMatrix, Float_t *chiSquareVal )
+void LOCASChiSquare::DoFit( Float_t testParameters[], Int_t parametersVary[], 
+                       Int_t nParameters, Float_t **covarianceMatrix, 
+                       Float_t **derivativeMatrix, Float_t *chiSquareVal )
 {
 
   //Fit these data using mrqmin() repeatedly until convergence is achieved.
@@ -446,7 +423,7 @@ Int_t LOCASChiSquare::DoFit( Float_t dataIndex[], Float_t dataVals[],
   *chiSquareVal = 0;
 
   printf("Calling Minimise for initialization...\n");
-  retval = Minimise(dataIndex,dataVals,dataErrors,nDataPoints,testParameters,parametersVary,nParameters,covarianceMatrix,derivativeMatrix,chiSquareVal,&lamda);
+  retval = Minimise(testParameters,parametersVary,nParameters,covarianceMatrix,derivativeMatrix,chiSquareVal,&lamda);
   cout << "chiSquareVal val is: " << *chiSquareVal << endl;
   oldchisq = *chiSquareVal;
   printf("CHISQ at origin = %8.2f\n",*chiSquareVal);
@@ -461,7 +438,7 @@ Int_t LOCASChiSquare::DoFit( Float_t dataIndex[], Float_t dataVals[],
          && retval == 0 && lamda != 0.0) {
     oldchisq = *chiSquareVal;
     printf("Iteration %d with lambda %g...\n",numiter,lamda);
-    retval = Minimise(dataIndex,dataVals,dataErrors,nDataPoints,testParameters,parametersVary,nParameters,covarianceMatrix,derivativeMatrix,chiSquareVal,&lamda );
+    retval = Minimise(testParameters,parametersVary,nParameters,covarianceMatrix,derivativeMatrix,chiSquareVal,&lamda );
     numiter++;
     printf("New ChiSquare = %12.2f with lambda %g \n", *chiSquareVal, lamda);
     if ( fabs( oldchisq - *chiSquareVal ) < tol ) gooditer ++;
@@ -472,8 +449,7 @@ Int_t LOCASChiSquare::DoFit( Float_t dataIndex[], Float_t dataVals[],
   // calculate covariance (covarianceMatrix), and curvature (derivativeMatrix) matrices. It also frees
   // up allocated memory.
   lamda = 0;
-  Minimise( dataIndex, dataVals, dataErrors, nDataPoints, testParameters, parametersVary, nParameters, covarianceMatrix, derivativeMatrix, chiSquareVal, &lamda );
-  return retval;
+  Minimise( testParameters, parametersVary, nParameters, covarianceMatrix, derivativeMatrix, chiSquareVal, &lamda );
 
 
 }
@@ -523,11 +499,9 @@ void LOCASChiSquare::PerformMinimisation()
     //   }
     // }
     // cout << " ------------- " << endl;
-    Int_t val = DoFit( fDataIndex, fDataVals, 
-                       fDataErrors, nDataPoints, 
-                       parameters, parametersVary, 
-                       nParameters, covarianceMatrix,
-                       derivativeMatrix, &chiSquare );
+    DoFit( parameters, parametersVary, 
+           nParameters, covarianceMatrix,
+           derivativeMatrix, &chiSquare );
 
     cout << "done." << endl;
     cout << "Some Parameter Values..." << endl;

@@ -10,7 +10,7 @@
 using namespace std;
 using namespace LOCAS;
 
-ClassImp( LOCASDB );
+ClassImp( LOCASDB )
 
 LOCASDB::LOCASDB()
 {
@@ -21,16 +21,16 @@ LOCASDB::LOCASDB()
   //      string objects are empty '""'
   //      TGraphs are empty '*.Set( 0 )'
   //      vector objects are empty '*.clear()'
-  // This is handled by 'LOCASDB::Clear()'
+  // This is handled by 'LOCASDB::ClearDB()'
   
-  Clear();
+  ClearDB();
   
 }
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASDB::Clear()
+void LOCASDB::ClearDB()
 {
   
   // Set pointers to NULL

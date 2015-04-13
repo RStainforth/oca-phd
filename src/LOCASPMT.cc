@@ -24,7 +24,7 @@
 using namespace LOCAS;
 using namespace std;
 
-ClassImp( LOCASPMT );
+ClassImp( LOCASPMT )
 
 //////////////////////////////////////
 //////////////////////////////////////
@@ -589,7 +589,7 @@ void LOCASPMT::Initialise()
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASPMT::Clear( Option_t* option )
+void LOCASPMT::ClearPMT()
 {
 
   Initialise();

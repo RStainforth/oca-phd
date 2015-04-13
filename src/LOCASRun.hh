@@ -58,14 +58,14 @@ namespace LOCAS{
     /////////////////////////////////
     
     void Initialise();
-    void Clear( Option_t* option="" );
+    void ClearRun();
 
     // Fill information from a SOC file with run ID 'runID'
     // into the run information here
     void Fill( RAT::DU::SOCReader& socR,
                RAT::DU::LightPathCalculator& lLP,
                RAT::DU::PMTInfo& lDB,
-               Int_t runID );
+               UInt_t runID );
     
     void CopySOCRunInfo( RAT::DS::SOC& socRun );
     void CopySOCPMTInfo( RAT::DS::SOC& socRun );
