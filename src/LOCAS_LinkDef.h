@@ -7,7 +7,6 @@
 #pragma link C++ class LOCAS::LOCASPMT+;
 #pragma link C++ class LOCAS::LOCASRun+;
 #pragma link C++ class LOCAS::LOCASDB+;
-#pragma link C++ class LOCAS::LOCASLightPath+;
 #pragma link C++ class LOCAS::LOCASRunReader+;
 #pragma link C++ class LOCAS::LOCASChiSquare+;
 #pragma link C++ class LOCAS::LOCASFit+;

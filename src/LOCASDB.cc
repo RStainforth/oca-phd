@@ -37,11 +37,6 @@ void LOCASDB::Clear()
   fRATDB = NULL;
   fRATDBPtr = NULL;
   
-  // Set the TGraphs to be empty
-  fInnerAVRI.Set( 0 );
-  fAVRI.Set( 0 );
-  fWaterRI.Set( 0 );
-  
   // The directories for the data stores (SOC, LOCASRun and RDT)
   // are set to empty paths.
   fSOCRunDir = "";
