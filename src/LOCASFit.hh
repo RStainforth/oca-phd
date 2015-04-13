@@ -36,7 +36,7 @@
 
 namespace LOCAS{
 
-  class LOCASFit : public TObject, LOCASMath
+  class LOCASFit : public TObject
   {
   public:
     // The constructors

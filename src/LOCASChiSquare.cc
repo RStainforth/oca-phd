@@ -16,20 +16,10 @@ ClassImp( LOCASChiSquare )
 LOCASChiSquare::LOCASChiSquare()
 {
 
+  // Ensure the pointers to the LOCASDataStore
+  // and LOCASOpticsModel pointers are initialised to 'NULL'
   fDataStore = NULL;
   fModel = NULL;
-
-  fDataIndex = NULL;
-  fDataVals = NULL;
-  fDataErrors = NULL;
-
-}
-
-//////////////////////////////////////
-//////////////////////////////////////
-
-LOCASChiSquare::~LOCASChiSquare()
-{
 
 }
 
@@ -39,19 +29,29 @@ LOCASChiSquare::~LOCASChiSquare()
 Float_t LOCASChiSquare::EvaluateChiSquare( LOCASDataPoint& dPoint )
 {
 
+  // Calculate the model predicted value for the occupancy
+  // ratio at this data point
   Float_t modelVal = fModel->ModelPrediction( dPoint );
   dPoint.SetModelOccupancyRatio( modelVal );
 
+  // Calculate the occupancy ratio from the data for this
+  // data point.
+  // Note: For now this just returns the statistical error
+  // on the occupancy ratio. It does not account for the correction
+  // due to the PMT incident angle. This will need to be implemented
+  // in the future.
   Float_t dataVal = 0.0;
   Float_t error = 0.0;
   LOCASMath::CalculateMPEOccRatio( dPoint, dataVal, error );
   dPoint.SetOccupancyRatio( dataVal );
   dPoint.SetOccupancyRatioErr( error );
 
+  // Calculate the difference between the model prediction
+  // and the data value ( the residual for the chi-square calculation )
   Float_t residual = ( dataVal - modelVal );
+
+  // Calculate the chi-square value
   Float_t chiSq =  ( residual * residual ) / ( error * error );
-  cout << "dataVal is: " << dataVal << endl;
-  cout << "modelVal is: " << modelVal << endl;
 
   return chiSq;
 
@@ -65,43 +65,22 @@ Float_t LOCASChiSquare::EvaluateGlobalChiSquare()
   
   // Calculate the total chisquare over all datapoints (PMTs) in the dataset
   Float_t chiSq = 0.0;
+
+  // Create an iterator to loop through all the data points
   std::vector< LOCASDataPoint >::iterator iD;
 
   for ( iD = fDataStore->GetLOCASDataPointsIterBegin();
         iD != fDataStore->GetLOCASDataPointsIterEnd();
         iD++ ){
+   
+    // Add the chi-square value for this data-point to the overall
+    // chi-square
+    chiSq += EvaluateChiSquare( *(iD) );
 
-      chiSq += EvaluateChiSquare( *(iD) );
   }
 
   return chiSq;
 
-}
-
-//////////////////////////////////////
-//////////////////////////////////////
-
-void LOCASChiSquare::InitialiseArrays()
-{
-
-  Int_t nDPs = 0;
-  Int_t nDataPoints = fDataStore->GetNDataPoints();
-  fDataIndex = LOCASMath::LOCASVector( 1, nDataPoints );
-  fDataVals = LOCASMath::LOCASVector( 1, nDataPoints );
-  fDataErrors = LOCASMath::LOCASVector( 1, nDataPoints );
-
-  std::vector< LOCASDataPoint >::iterator iDP;
-  for ( iDP = fDataStore->GetLOCASDataPointsIterBegin(); 
-        iDP != fDataStore->GetLOCASDataPointsIterEnd(); 
-        iDP++ ) {
-    
-    fDataIndex[ nDPs ] = ( 10000.0 * iDP->GetRunIndex() ) + iDP->GetPMTID();
-    fDataVals[ nDPs ] = iDP->GetOccupancyRatio();
-    fDataErrors[ nDPs ] = iDP->GetOccupancyRatioErr();
-    
-    nDPs++;
-  }
-  
 }
 
 //////////////////////////////////////
@@ -124,8 +103,8 @@ void LOCASChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersV
   // ---------------------------------------------------------------------
   // It has been annotated and rewritten to be consistent with the 
   // programming style of RAT.
-
-  // This routine is used in the fittig procedure to evaluate the linearised fitting matrix, 'derivativeMatrix', and the vector 'betaVec' and calculates the chisquare.
+  
+  // This routine is used in the fitting procedure to evaluate the linearised fitting matrix, 'derivativeMatrix', and the vector 'betaVec' and calculates the chisquare.
 
   // Simple loop variables used in loops throughout this method when looking
   // over the elements of the current parameters, current guess for the solution
@@ -174,35 +153,32 @@ void LOCASChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersV
 
   // Set the current value of the chiquare to zero
   *chiSquareVal = 0.0;
-  cout << "DataPoint Cycle" << endl;
+  //cout << "DataPoint Cycle" << endl;
   
-  //std::vector< LOCASDataPoint >::iterator iDP;
-  //std::vector< LOCASDataPoint >::iterator iDPBegin = fDataStore->GetLOCASDataPointsIterBegin();
-  //std::vector< LOCASDataPoint >::iterator iDPEnd = fDataStore->GetLOCASDataPointsIterEnd();
+  std::vector< LOCASDataPoint >::iterator iDP;
+  std::vector< LOCASDataPoint >::iterator iDPBegin = fDataStore->GetLOCASDataPointsIterBegin();
+  std::vector< LOCASDataPoint >::iterator iDPEnd = fDataStore->GetLOCASDataPointsIterEnd();
 
-  LOCASDataPoint* lDP = new LOCASDataPoint();
-  Int_t nDPs = fDataStore->GetNDataPoints();
-  LOCASDataPoint* dataPoints = new LOCASDataPoint[ nDPs ];
-  for ( Int_t iDP = 0; iDP < nDPs; iDP++ ){ dataPoints[ iDP ] = fDataStore->GetDataPoint( iDP ); }
-  cout << "nDPs: " << nDPs << endl;
-  for ( Int_t iDPInt = 0; 
-        iDPInt < nDPs; 
-        iDPInt++ ) {
+  // LOCASDataPoint* lDP = new LOCASDataPoint();
+  // Int_t nDPs = fDataStore->GetNDataPoints();
+  // LOCASDataPoint* dataPoints = new LOCASDataPoint[ nDPs ];
+  // for ( Int_t iDP = 0; iDP < nDPs; iDP++ ){ dataPoints[ iDP ] = fDataStore->GetDataPoint( iDP ); }
+  for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
     
-    *lDP = dataPoints[ iDPInt ];
-    iVar++;
+    //*lDP = dataPoints[ iDPInt ];
+    //iVar++;
     // Evaluate the model for this data point and calculate the 
     // parameters and the derivative of the this point with respect
     // to each of these parameters
     //cout << "FitEvaluate Model1" << endl;
-    FitEvaluateModel( *lDP, testParameters, &yMod, dDataValDParameters, nParameters );
+    FitEvaluateModel( *iDP, testParameters, &yMod, dDataValDParameters, nParameters );
     //cout << "FitEvaluate Model2" << endl;
     
     // Compute the 1 / sigma^2 value for this particular data point
-    dataError2 = 1.0 / ( lDP->GetOccupancyRatioErr() * lDP->GetOccupancyRatioErr() );
+    dataError2 = 1.0 / ( iDP->GetOccupancyRatioErr() * iDP->GetOccupancyRatioErr() );
 
     // And compute the difference between the model prediction and the data value
-    deltaDataVal = lDP->GetOccupancyRatio() - yMod;
+    deltaDataVal = iDP->GetOccupancyRatio() - yMod;
     //cout << "Identify Varying Parameters" << endl;
     LOCASModelParameterStore* parPtr = new LOCASModelParameterStore();
     parPtr = fModel->GetLOCASModelParameterStore();
@@ -255,7 +231,7 @@ void LOCASChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersV
     //cout << "Weighted Check5" << endl;
   }
 
-  cout << "Got this far!" << endl;
+  //cout << "Got this far!" << endl;
   for ( jVar = 2;jVar<=mFit;jVar++){
     for ( kVar = 1; kVar < jVar; kVar++ ) {
       derivativeMatrix[ kVar ][ jVar ] = derivativeMatrix[ jVar ][ kVar ];
@@ -278,15 +254,17 @@ void  LOCASChiSquare::FitEvaluateModel( LOCASDataPoint& dPoint, Float_t testPara
                                         Int_t nParameters )
 {
  
-  // Save parameters and use the ones just passed
+  // Save the current parameters in the model...
   Float_t *tempParameterSave = new Float_t[ nParameters ];
   *tempParameterSave = *fModel->GetLOCASModelParameterStore()->GetParametersPtr(); 
+
+  // ...and set use the ones just passed to this method; the trial parameters.
   fModel->GetLOCASModelParameterStore()->SetParametersPtr( testParameters );
 
-  // Calculation of the model value
+  // Calculate the model prediction for said trail parameters.
   *modelVal = fModel->ModelPrediction( dPoint, dDataValDParameters );
 
-  // Restore saved parameters
+  // Restore the original, saved parameters
   fModel->GetLOCASModelParameterStore()->SetParametersPtr( tempParameterSave );
   
 }
@@ -316,7 +294,6 @@ Int_t LOCASChiSquare::Minimise( Float_t testParameters[], Int_t parametersVary[]
   int j,k,l,m, retval = 0;
   static int mfit;
   static float ochisq,*atry,*beta,*da,**oneda;
-  cout << "Hello" << endl;
   if (*aLambdaPar < 0.0) {
     atry=LOCASMath::LOCASVector(1,nParameters);
     beta=LOCASMath::LOCASVector(1,nParameters);
@@ -354,10 +331,10 @@ Int_t LOCASChiSquare::Minimise( Float_t testParameters[], Int_t parametersVary[]
       }
     }
   }
-  cout << "GaussJordan" << endl;
+  //cout << "GaussJordan" << endl;
   //LOCASMath lMath;
   //retVal = 0;
-  retval = GaussJordanElimination(covarianceMatrix,mfit,oneda,1);
+  retval = LOCASMath::GaussJordanElimination(covarianceMatrix,mfit,oneda,1);
   for (j=1;j<=mfit;j++) da[j]=oneda[j][1];
   if (*aLambdaPar == 0.0 ) {
     printf("PRE_COVSRT\n");
@@ -405,8 +382,8 @@ Int_t LOCASChiSquare::Minimise( Float_t testParameters[], Int_t parametersVary[]
 //////////////////////////////////////
 
 void LOCASChiSquare::DoFit( Float_t testParameters[], Int_t parametersVary[], 
-                       Int_t nParameters, Float_t **covarianceMatrix, 
-                       Float_t **derivativeMatrix, Float_t *chiSquareVal )
+                            Int_t nParameters, Float_t **covarianceMatrix, 
+                            Float_t **derivativeMatrix, Float_t *chiSquareVal )
 {
 
   //Fit these data using mrqmin() repeatedly until convergence is achieved.
@@ -424,16 +401,16 @@ void LOCASChiSquare::DoFit( Float_t testParameters[], Int_t parametersVary[],
 
   printf("Calling Minimise for initialization...\n");
   retval = Minimise(testParameters,parametersVary,nParameters,covarianceMatrix,derivativeMatrix,chiSquareVal,&lamda);
-  cout << "chiSquareVal val is: " << *chiSquareVal << endl;
+  //cout << "chiSquareVal val is: " << *chiSquareVal << endl;
   oldchisq = *chiSquareVal;
   printf("CHISQ at origin = %8.2f\n",*chiSquareVal);
   
   // Next set lambda to 0.01, and iterate until convergence is reached
   // Bryce Moffat - 21-Oct-2000 - Changed from gooditer<6 to <4
   lamda = 0.01;
-  cout << "Top of while loop" << endl;
-  cout << "fabs(*chiSquareVal - oldchisq)" << fabs(*chiSquareVal - oldchisq) << endl;
-  cout << "tol is: " << tol << endl;
+  //cout << "Top of while loop" << endl;
+  //cout << "fabs(*chiSquareVal - oldchisq)" << fabs(*chiSquareVal - oldchisq) << endl;
+  //cout << "tol is: " << tol << endl;
   while (((fabs(*chiSquareVal - oldchisq) > tol || gooditer < 4) && (numiter < maxiter))
          && retval == 0 && lamda != 0.0) {
     oldchisq = *chiSquareVal;
@@ -461,37 +438,37 @@ void LOCASChiSquare::PerformMinimisation()
 {
 
     Float_t chiSquare = 0.0;
-    cout << "LOCASChiSquare::PerformMinimisation: Performing fit...\n";
-    cout << "IdentifyVaryingPMTAngularResponseBins" << endl;
+    //cout << "LOCASChiSquare::PerformMinimisation: Performing fit...\n";
+    //cout << "IdentifyVaryingPMTAngularResponseBins" << endl;
     fModel->IdentifyVaryingPMTAngularResponseBins( fDataStore );
-    cout << "IdentifyVaryingLBDistributionBins" << endl;
+    //cout << "IdentifyVaryingLBDistributionBins" << endl;
     fModel->IdentifyVaryingLBDistributionBins( fDataStore );
-    cout << "IdentifyBaseVaryingParameters" << endl;
+    //cout << "IdentifyBaseVaryingParameters" << endl;
     fModel->GetLOCASModelParameterStore()->IdentifyBaseVaryingParameters();
-    cout << "InitialisePMTAngularResponseIndex" << endl;
+    //cout << "InitialisePMTAngularResponseIndex" << endl;
     fModel->GetLOCASModelParameterStore()->InitialisePMTAngularResponseIndex();
 
-    Int_t nDataPoints = fDataStore->GetNDataPoints();
-    cout << "nDataPoints" << nDataPoints << endl;
+    //Int_t nDataPoints = fDataStore->GetNDataPoints();
+    //cout << "nDataPoints" << nDataPoints << endl;
 
-    cout << "parameters" << endl;
+    //cout << "parameters" << endl;
     Float_t* parameters = fModel->GetLOCASModelParameterStore()->GetParametersPtr();
-    cout << "parametersVary" << endl;
+    //cout << "parametersVary" << endl;
     Int_t* parametersVary = fModel->GetLOCASModelParameterStore()->GetParametersVary();
     Int_t nParameters = fModel->GetLOCASModelParameterStore()->GetNParameters();
 
-    cout << "covarianceMatrix" << endl;
+    //cout << "covarianceMatrix" << endl;
     Float_t** covarianceMatrix = fModel->GetLOCASModelParameterStore()->GetCovarianceMatrix();
 
-    cout << "derivativeMatrix" << endl;
+    //cout << "derivativeMatrix" << endl;
     Float_t** derivativeMatrix = fModel->GetLOCASModelParameterStore()->GetDerivativeMatrix();
     
     // for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
     //   cout << "covarianceMatrix index Varies(?): " << parametersVary[ iPar ] << " Index: " << iPar << " Value: " <<  covarianceMatrix[ iPar ][ iPar ] << endl;
     // }
-    cout << "nParameters is: " << nParameters << endl;
+    //cout << "nParameters is: " << nParameters << endl;
 
-    cout << "done." << endl;
+    //cout << "done." << endl;
     // cout << "Some Parameter Values..." << endl;
     // for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
     //   if ( parametersVary[ iPar ] ){

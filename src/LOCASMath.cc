@@ -43,10 +43,6 @@ using namespace std;
 
 using namespace LOCAS;
 
-ClassImp( LOCASMath )
-
-LOCASMath::LOCASMath(){ }
-
 //////////////////////////////////////
 //////////////////////////////////////
 

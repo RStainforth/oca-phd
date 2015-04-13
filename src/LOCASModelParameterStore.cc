@@ -212,18 +212,18 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 
       Float_t angleVal = 0.0;
       // Now loop over each angular response parameter and initialise its initial values;
-      for ( Int_t iPar = 1; iPar <= nParsInGroup; iPar++ ){
+      for ( Int_t iPar = 0; iPar < nParsInGroup; iPar++ ){
 
-        angleVal = ( iPar - 0.5 ) * ( 90.0 / fNPMTAngularResponseBins ); // Centre of each bin...
+        angleVal = ( iPar + 0.5 ) * ( 90.0 / fNPMTAngularResponseBins ); // Centre of each bin...
         if ( angleVal < 36.0 ){ initVal = 1.0 + ( 0.002222 * angleVal ); }
         else{ initVal = 1.0; }
 
         // Fix the bin containing the zero degrees value to 1.0
-        if ( iPar == 1 ){ initVal = 1.0; }
+        if ( iPar == 0 ){ initVal = 1.0; }
 
         Bool_t parVary = varyBool;
         // If the angular response has been set to vary, then the first parameter is held fixed, all others can vary
-        if ( varyBool == true && iPar == 1 ){ parVary = false; }
+        if ( varyBool == true && iPar == 0 ){ parVary = false; }
 
         // The angular response parameters have an absolutel minimum of 1.0, and are allowed to 
         // go up to 2.0, however it usually doesn't get much higher than 1.25
@@ -237,7 +237,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
         lStream << iPar;
         lStream >> parStr;
 
-        Int_t parIndex = 3 + fNLBDistributionMaskParameters + iPar;
+        Int_t parIndex = 3 + fNLBDistributionMaskParameters + 1 + iPar;
         LOCASModelParameter lParameter( (std::string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, parVary );
         AddParameter( lParameter );
         
@@ -419,17 +419,17 @@ void LOCASModelParameterStore::IdentifyVaryingParameters()
   Int_t i;
 
   fNCurrentVariableParameters = fNBaseVariableParameters;
-
+                                                                           
   Int_t parnum;
 
   for ( i = 1; i <= fPMTAngularResponseIndex[ fCurrentPMTAngularResponseBin ][ fCentralCurrentPMTAngularResponseBin ][ 0 ]; i++ ){
-
+    
     parnum = GetPMTAngularResponseParIndex() + fPMTAngularResponseIndex[ fCurrentPMTAngularResponseBin ][ fCentralCurrentPMTAngularResponseBin ][ i ];
     if ( fParametersVary[ parnum ] ){
       fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum;
     }
   }
-
+  
   Int_t first, second;
   if ( fCurrentLBDistributionBin <= fCentralCurrentLBDistributionBin ){ first = fCurrentLBDistributionBin; second = fCentralCurrentLBDistributionBin; }
   else{ first = fCentralCurrentLBDistributionBin; second = fCurrentLBDistributionBin; }

@@ -130,9 +130,6 @@ int main( int argc, char** argv ){
     lFilterStore.ResetFilterConditionCounters();
     //lChiSq->SetPointerToData( lData );
     
-    cout << "Initialising Arrays!" << endl;
-    lChiSq->InitialiseArrays();
-    
     cout << "Performing Minimisation!" << endl;
     lChiSq->PerformMinimisation();
 

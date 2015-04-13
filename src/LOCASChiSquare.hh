@@ -31,13 +31,13 @@ using namespace std;
 
 namespace LOCAS{
   
-  class LOCASChiSquare : public TObject, LOCASMath
+  class LOCASChiSquare : public TObject
   {
   public:
 
     // The constructor and destructor for the LOCASChiSquare object
     LOCASChiSquare();
-    ~LOCASChiSquare();
+    ~LOCASChiSquare(){ };
 
     /////////////////////////////////
     ////////     METHODS     ////////
@@ -50,9 +50,6 @@ namespace LOCAS{
     // that this LOCASChiSquare object has access to, as provided by the
     // the 'fDataStore' LOCASDataStore object pointer private variable.
     Float_t EvaluateGlobalChiSquare();
-
-    // 
-    void InitialiseArrays();
 
     void SetPointerToModel( LOCASOpticsModel* locasModel ){ fModel = locasModel; }
     void SetPointerToData( LOCASDataStore* locasData ){ fDataStore = locasData; }
@@ -82,11 +79,6 @@ namespace LOCAS{
 
     LOCASDataStore* fDataStore;   
     LOCASOpticsModel* fModel;
-
-    // The arrays used by the Levenburg-Marquadt (Mrq) algorithm to find the parameters
-    Float_t* fDataIndex;                                         // [fNDataPointsInFit+1] Index into the PMTs to be used in the fit
-    Float_t* fDataVals;                                         // [fNDataPointsInFit+1] Index into the PMTs (from above) corresponding OccRatio
-    Float_t* fDataErrors;                                     // [fNDataPointsInFit+1] Error on each PMT occupancy (statistical)
 
     ClassDef( LOCASChiSquare, 0 );
 

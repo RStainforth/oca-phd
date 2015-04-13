@@ -57,7 +57,7 @@ void LOCASOpticsModel::IdentifyVaryingPMTAngularResponseBins( LOCASDataStore* lD
   }
 
   for ( Int_t iAng = 0; iAng < nPMTResponseBins; iAng++ ){
-    if ( pmtAngValid[ iAng ] < 25 ){ 
+    if ( pmtAngValid[ iAng ] < 25 || iAng == 0 ){ 
       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 0;
     }
     else{

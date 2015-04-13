@@ -46,8 +46,6 @@ namespace LOCAS{
   class LOCASMath
   {
   public:
-    LOCASMath();
-    virtual ~LOCASMath();
 
     /////////////////////////////////
     ////////     METHODS     ////////
@@ -74,8 +72,6 @@ namespace LOCAS{
     static Int_t GaussJordanElimination( Float_t** lhsMatrix, Int_t nParameters,
                                         Float_t** rhsMatrix, Int_t mVectors );
 
-    
-    ClassDef( LOCASMath, 1 );
 
   };
 
