@@ -444,13 +444,14 @@ void LOCASModelParameterStore::IdentifyVaryingParameters()
     if ( fParametersVary[ parnum ] ) fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum;
   }
   
-  parnum = GetLBRunNormalisationParIndex() + fCurrentLBRunNormalisationBin;
-  if ( fParametersVary[ parnum ] ){ fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum; }
-
+  else{
+    parnum = GetLBRunNormalisationParIndex() + fCurrentLBRunNormalisationBin;
+    if ( fParametersVary[ parnum ] ){ fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum; 
+    }
+  }
   return;
 
 }
-
 //////////////////////////////////////
 //////////////////////////////////////
 
