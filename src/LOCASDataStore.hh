@@ -10,7 +10,7 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     04/2014 : RPFS - First Revision, new file. \n
+///     04/2015 : RPFS - First Revision, new file. \n
 ///
 /// DETAILS: This class holds a collection of LOCASDataPoint
 ///          objects. This allows for quick access by the

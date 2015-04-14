@@ -1,20 +1,3 @@
-////////////////////////////////////////////////////////////////////
-///
-/// FILENAME: LOCASFilterStore.cc
-///
-/// CLASS: LOCAS::LOCASFilterStore
-///
-/// BRIEF: Simple class to store a set filters used
-///        against a raw data set to produce a final
-///        data set
-///                
-/// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
-///
-/// REVISION HISTORY:\n
-///     02/2014 : RPFS - First Revision, new file. \n
-///
-////////////////////////////////////////////////////////////////////
-
 #include "LOCASFilterStore.hh"
 #include "LOCASFilter.hh"
 
@@ -33,8 +16,15 @@ ClassImp( LOCASFilterStore )
 LOCASFilterStore::LOCASFilterStore( const char* fileName, std::string storeName )
 {
 
+  // Set the store name
   fStoreName = storeName;
+
+  // Ensure the vector which holds all of the filters
+  // is empty to begin with.
   fFilters.clear();
+
+  // Add all the filters as defined in the 'fit-file' to the above
+  // private store 'fFilters'.
   AddFilters( fileName );
  
 }
@@ -45,7 +35,11 @@ LOCASFilterStore::LOCASFilterStore( const char* fileName, std::string storeName 
 void LOCASFilterStore::AddFilter( LOCASFilter filter )
 {
   
+  // Add a single filter to the current vector of pre-existing filters.
   fFilters.push_back( filter );
+
+  // Set the lookup map accordingly so we can find 
+  // this filter in the future by name.
   fFilterLookUp[ filter.GetFilterName() ] = (Int_t)( fFilters.size() - 1 );
 
 }
@@ -60,9 +54,13 @@ void LOCASFilterStore::AddFilters( const char* fileName )
   LOCASDB lDB;
   lDB.SetFile( fileName );
 
-  Float_t maxVal, minVal = 0.0;
+  // Initialise the minimm and maximum values of the filter which
+  // is about to be added.
+  Float_t maxVal = 0.0; 
+  Float_t minVal = 0.0;
 
-  // Obtain a list of the filters to be included in the store from the card file
+  // Obtain a list of the filters to be included in 
+  // the store from the 'fit-file'.
   std::vector< std::string > filterList = lDB.GetStringVectorField( "FITFILE", "filter_list", "filter_setup" );
 
   // Loop over each filter in the list and add it to the LOCASFilterStore
@@ -90,7 +88,9 @@ void LOCASFilterStore::AddFilters( const char* fileName )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASFilterStore::UpdateFilter( const std::string filterName, const Double_t min, const Double_t max )
+void LOCASFilterStore::UpdateFilter( const std::string filterName, 
+                                     const Double_t min, 
+                                     const Double_t max )
 {
 
   // Obtain the look up index for the filter
@@ -108,6 +108,8 @@ void LOCASFilterStore::UpdateFilter( const std::string filterName, const Double_
 void LOCASFilterStore::PrintFilterCutInformation()
 {
 
+  // Loop over each filter currently stored by this object
+  // and print information about each one.
   std::vector< LOCASFilter >::iterator iF;
 
   for ( iF = GetLOCASFiltersIterBegin();
@@ -126,6 +128,8 @@ void LOCASFilterStore::PrintFilterCutInformation()
 void LOCASFilterStore::ResetFilterConditionCounters()
 {
 
+  // Loop over each filter currently stored by this object
+  // and reset the condition counters for each one.
   std::vector< LOCASFilter >::iterator iF;
 
   for ( iF = GetLOCASFiltersIterBegin();
@@ -144,8 +148,7 @@ void LOCASFilterStore::ResetFilterConditionCounters()
 LOCASFilter& LOCASFilterStore::GetFilter( const std::string filterName )
 {
 
+  // Return a filter by name.
   return fFilters[ fFilterLookUp[ filterName ] ];
   
 }
-
-

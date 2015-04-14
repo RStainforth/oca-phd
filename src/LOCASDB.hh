@@ -9,7 +9,7 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:
-///     04/2014 : RPFS - First Revision, new file.
+///     04/2015 : RPFS - First Revision, new file.
 ///
 /// DETAIL: This class loads information from the LOCAS database. 
 ///         In particular, the purpose of this class is to load 

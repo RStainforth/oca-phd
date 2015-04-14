@@ -13,7 +13,7 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     04/2014 : RPFS - First Revision, new file. \n
+///     04/2015 : RPFS - First Revision, new file. \n
 ///
 /// DETAIL: LOCASDataPoints are used by a LOCASChiSquare object 
 ///         which, combined with a LOCASOptics model to perform a fit
