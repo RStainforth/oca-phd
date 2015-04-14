@@ -6,13 +6,13 @@
 ///
 /// BRIEF: A simple class to hold a collection of
 ///        LOCASModelParameter objects which are used
-///        by a LOCASModel class
+///        by the LOCASOpticsModel class.
 ///        
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
-/// REVISION HISTORY:\n
-///     02/2014 : RPFS - First Revision, new file. \n
+/// REVISION HISTORY:
+///     04/2015 : RPFS - First Revision, new file.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -23,149 +23,165 @@
 #include "LOCASMath.hh"
 
 #include <string>
-#include <map>
+
+using namespace std;
 
 namespace LOCAS{
 
-  class LOCASModelParameterStore : public TObject, LOCASMath
+  class LOCASModelParameterStore : public TObject
   {
   public:
 
-    // The constructor
-    LOCASModelParameterStore ( std::string storeName = "" );
-
-    // The destructor - nothing to delete
+    // The constructor and destructor of the LOCASModelParameterStore object.
+    LOCASModelParameterStore ( string storeName = "" );
     ~LOCASModelParameterStore(){ }
 
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
 
-    // Add a parameter to the store
-    void AddParameter( LOCASModelParameter parameter ){ fParameters.push_back( parameter ); }
+    // Add a parameter to the store.
+    void AddParameter( LOCASModelParameter parameter ){ 
+      fParameters.push_back( parameter ); 
+    }
 
-    // Add a complete set of parameters from a cardfile
+    // Add a complete set of parameters from a 'fit-file'.
     void AddParameters( const char* fileName );
 
-    // Print all the parameter information about each parameter in the store
+    // Print all the parameter information about each parameter in the store.
     void PrintParameterInfo();
     
     // Write the parameters to a .root file
     void WriteToFile( const char* fileName = "LOCASModelParameterStore.root" );
 
-    // Reinitialise the initial values of the parameters based on the values in the array; 'pars'
+    // Reinitialise the initial values of the parameters based 
+    // on the values in the passed array, 'pars'.
     void ReInitialiseParameters( const Double_t* par );
 
-    // Allocate the memory for the parameter arrays
+    // Allocate the memory for the parameter arrays.
     void AllocateParameterArrays();
 
-    // Initialise the PMT angular response look-up array ( **FILLANGINDEX** )
+    // Initialise the PMT angular response look-up array.
     void InitialisePMTAngularResponseIndex();
 
-    // Identify all the current varying parameters ( **FILLPARAMETERPOINT** )
+    // Identify all the current varying parameters for the last
+    // evaluated data point.
     void IdentifyVaryingParameters();
 
-    // Identify all the current base varying parameters ( **FILLPARAMETERBASE** )
+    // Identify all the current base varying parameters.
+    // i.e. the parameters which vary for every data point in the fit.
     void IdentifyBaseVaryingParameters();
-
-    // // Given access to a datapoint, check which bins for the PMT angular
-    // // response need to vary.
-    // void IdentifyVaryingPMTAngularResponseBins( LOCASDataStore* lData );
-
-    // // Given access to a set of datapoints, check which bins for the
-    // // laserball distribution need to vary.
-    // void IdentifyVaryingLBDistributionBins( LOCASDataStore* lData );
 
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
 
-    // Get the pointer to the parameters
+    // Get the pointer to the array of parameters.
     Float_t* GetParametersPtr() { return fParametersPtr; }
 
-    // Get the pointer to the varying parameter index
+    // Get the pointer to the array of the varying parameter indices.
     Int_t* GetParametersVary() { return fParametersVary; }
 
-    // Get the coviarance matrix array
+    // Get the pointer to the array which represents the 
+    // matrix of covariances.
     Float_t** GetCovarianceMatrix() { return fCovarianceMatrix; }
     
-    // Get the derivative matrix array
+    // Get the pointer to the array which represents the
+    // matrix of derivatives.
     Float_t** GetDerivativeMatrix() { return fDerivativeMatrix; }
 
-    // Get the number of parameters in the store
+    // Get the number of parameters in the store, and consequently.
     Int_t GetNParameters() const { return fNParameters; }
 
-    // Get the current number of varying parameters
+    // Get the current number of varying parameters.
     Int_t GetNCurrentVariableParameters() const { return fNCurrentVariableParameters; }
 
-    // Get the parameter indices of the parameter which vary for the last evaluated data point
+    // Get the parameter indices of the parameter which 
+    // vary for the last evaluated data point.
     Int_t* GetVariableParameterIndex() { return fVariableParameterIndex; }
 
-    // Get the map of variable parameter indices (ordered) for the las evaluated data point
+    // Get the map of variable parameter indices (ordered) 
+    // for the last evaluated data point.
     Int_t* GetVariableParameterMap() { return fVariableParameterMap; }
 
-    // Get the current PMT angular response bin
+    // Get the current PMT angular response bin.
     Int_t GetCurrentPMTAngularResponseBin() const { return fCurrentPMTAngularResponseBin; }
 
-    // Get the current PMT angular response bin from the central run
+    // Get the current PMT angular response bin from the central run.
     Int_t GetCentralCurrentPMTAngularResponseBin() const { return fCentralCurrentPMTAngularResponseBin; }
 
-    // Get the current laserball distribution bin
+    // Get the current laserball distribution bin.
     Int_t GetCurrentLBDistributionBin() const { return fCurrentLBDistributionBin; }
 
-    // Get the current laserball distribution bin from the central run
+    // Get the current laserball distribution bin from the central run.
     Int_t GetCentralCurrentLBDistributionBin() const { return fCentralCurrentLBDistributionBin; }
 
-    // Get the current laserball run normalisation bin
+    // Get the current laserball run normalisation bin.
     Int_t GetCurrentLBRunNormalisationBin() const { return fCurrentLBRunNormalisationBin; }
 
-    // Get the number of laserball mask parameters
+    // Get the number of laserball mask parameters.
     Int_t GetNLBDistributionMaskParameters() const { return fNLBDistributionMaskParameters; }
 
-    // Get the number of pmt angular response bins
+    // Get the number of pmt angular response bins.
     Int_t GetNPMTAngularResponseBins() const { return fNPMTAngularResponseBins; }
 
-    // Get the number of laserball distribution cos theta bins
+    // Get the number of laserball distribution cos theta bins.
     Int_t GetNLBDistributionCosThetaBins(){ return fNLBDistributionCosThetaBins; }
 
-    // Get the number of laserball distribution phi bins
+    // Get the number of laserball distribution phi bins.
     Int_t GetNLBDistributionPhiBins() const { return fNLBDistributionPhiBins; }
 
-    // Get the number of laserball run normalisations
+    // Get the number of laserball run normalisations.
     Int_t GetNLBRunNormalisations() const { return fNLBRunNormalisations; }
 
-    // Get the index for the inner av extinction length
-    Int_t GetInnerAVExtinctionLengthParIndex() const { return 1; }   
+    // Get the index for the inner av extinction length.
+    Int_t GetInnerAVExtinctionLengthParIndex() const { return 1; } 
+
+    // Get the inner av extinction length parameter.
     Float_t GetInnerAVExtinctionLengthPar() { return fParametersPtr[ GetInnerAVExtinctionLengthParIndex() ]; }
 
-    // Get the index for the acrylic extinction length parameter
+    // Get the index for the acrylic extinction length parameter.
     Int_t GetAVExtinctionLengthParIndex() const { return 2; }
+
+    // Get the av extinction length parameter.
     Float_t GetAVExtinctionLengthPar() { return fParametersPtr[ GetAVExtinctionLengthParIndex() ]; }
 
     // Get the index for the water extinction length parameter
     Int_t GetWaterExtinctionLengthParIndex() const { return 3; }
+
+    // Get the water extinction length parameter.
     Float_t GetWaterExtinctionLengthPar() { return fParametersPtr[ GetWaterExtinctionLengthParIndex() ]; }
 
     // Get the index for the start of the laserball distribution mask parameters
     Int_t GetLBDistributionMaskParIndex() const { return 3 + 1; }
+
+    // Get the 'iPar'-th laserball distriubtion mask parameter.
     Float_t GetLBDistributionMaskPar( const Int_t iPar ) { return fParametersPtr[ GetLBDistributionMaskParIndex() + iPar ]; }
 
     // Get the index for the start of the pmt angular response parameters
     Int_t GetPMTAngularResponseParIndex() const { return 3 + fNLBDistributionMaskParameters + 1; }
+
+    // Get the 'iPar'-th PMT angular response parameter.
     Float_t GetPMTAngularResponsePar( const Int_t iPar ) { return fParametersPtr[ GetPMTAngularResponseParIndex() + iPar ]; }
     
     // Get the index for the start of the laserball distribution hisotgram parameters
     Int_t GetLBDistributionParIndex() const { return 3 + fNLBDistributionMaskParameters + fNPMTAngularResponseBins + 1; }
+
+    // Get the 'iPar'-th laserball distribution parameter.
     Float_t GetLBDistributionPar( const Int_t iPar ) { return fParametersPtr[ GetLBDistributionParIndex() + iPar ]; } 
     
     // Get the index for the start of the run normalisation parameters
     Int_t GetLBRunNormalisationParIndex() const { return 3 + fNLBDistributionMaskParameters 
         + fNPMTAngularResponseBins + ( fNLBDistributionCosThetaBins * fNLBDistributionPhiBins ) + 1; }
+
+    // Get the 'iPar'-th laserball normalisation parameter.
+    // i.e. The off-axis normalisation value for the 'iPar'-th run in
+    // the list of runs included in the fit from the 'fit-file'.
     Float_t GetLBRunNormalisationPar( const Int_t iRun ) { return fParametersPtr[ GetLBRunNormalisationParIndex() + iRun ]; }
 
-    // Get iterators to the beginning and end of the parameter store
-    std::vector< LOCASModelParameter >::iterator GetLOCASModelParametersIterBegin(){ return fParameters.begin(); }
-    std::vector< LOCASModelParameter >::iterator GetLOCASModelParametersIterEnd(){ return fParameters.end(); }
+    // Get the iterators to the beginning and end of the parameter store.
+    vector< LOCASModelParameter >::iterator GetLOCASModelParametersIterBegin(){ return fParameters.begin(); }
+    vector< LOCASModelParameter >::iterator GetLOCASModelParametersIterEnd(){ return fParameters.end(); }
 
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -183,13 +199,13 @@ namespace LOCAS{
 
     void SetCurrentLBRunNormalisationBin( const Int_t iBin ) { fCurrentLBRunNormalisationBin = iBin; }
 
-    void SetParameters( const std::vector< LOCAS::LOCASModelParameter >& pars ){ fParameters = pars; }
+    void SetParameters( const vector< LOCAS::LOCASModelParameter >& pars ){ fParameters = pars; }
 
     void SetParametersPtr( Float_t* pars ) { fParametersPtr = pars; }
 
   private:
 
-    std::string fStoreName;                          // The store name
+    string fStoreName;                          // The store name
 
     Int_t fNLBDistributionMaskParameters;            // The number of laserball mask parameters
     Int_t fNPMTAngularResponseBins;                  // The number of PMT Angular Response Bins
@@ -199,7 +215,7 @@ namespace LOCAS{
 
     Int_t fNParameters;                              // The number of parameters in the store
 
-    std::vector< LOCASModelParameter > fParameters;  // The vector of parameter objects i.e. the store
+    vector< LOCASModelParameter > fParameters;  // The vector of parameter objects i.e. the store
 
     Float_t* fParametersPtr;                        // The pointer of parameter values ( ** FMRQPARAMETERS** )
     Int_t* fParametersVary;                          // Array of which parameters vary ( =1 ) and which do not ( =0 ) ( **FMRQVARY** )

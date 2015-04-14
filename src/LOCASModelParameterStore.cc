@@ -1,21 +1,3 @@
-////////////////////////////////////////////////////////////////////
-///
-/// FILENAME: LOCASModelParameterStore.cc
-///
-/// CLASS: LOCAS::LOCASModelParameterStore
-///
-/// BRIEF: A simple class to hold a collection of
-///        LOCASModelParameter objects which are used
-///        by a LOCASModel class
-///        
-///          
-/// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
-///
-/// REVISION HISTORY:\n
-///     02/2014 : RPFS - First Revision, new file. \n
-///
-////////////////////////////////////////////////////////////////////
-
 #include "LOCASModelParameterStore.hh"
 #include "LOCASModelParameter.hh"
 #include "LOCASDataStore.hh"
@@ -28,19 +10,18 @@
 
 #include <string>
 #include <sstream>
-#include <map>
 #include <vector>
 #include <iostream>
 
-using namespace LOCAS;
 using namespace std;
+using namespace LOCAS;
 
 ClassImp( LOCASModelParameterStore )
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-LOCASModelParameterStore::LOCASModelParameterStore( std::string storeName )
+LOCASModelParameterStore::LOCASModelParameterStore( string storeName )
 {
 
   fStoreName = storeName;
@@ -62,7 +43,7 @@ LOCASModelParameterStore::LOCASModelParameterStore( std::string storeName )
 void LOCASModelParameterStore::PrintParameterInfo()
 {
 
-  std::vector< LOCASModelParameter >::iterator iPar;
+  vector< LOCASModelParameter >::iterator iPar;
 
   cout << "Number of Parameters is: " << GetNParameters() << endl;
   cout << "--------------" << endl;
@@ -89,12 +70,12 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
   Float_t maxVal, minVal, initVal, incVal = 0.0;
   Int_t nParsInGroup = 0;
   Bool_t varyBool = false;
-  std::vector< Int_t > indexList;
+  vector< Int_t > indexList;
   stringstream lStream;
   string parStr = "";
 
   // Get a list of the parameters to be included in the parameter store
-  std::vector< std::string > paramList = lDB.GetStringVectorField( "FITFILE", "parameters_list", "parameter_setup" );
+  vector< string > paramList = lDB.GetStringVectorField( "FITFILE", "parameters_list", "parameter_setup" );
 
   // First find out the specifics for the number of bins required for each parameter type.
   // i.e. - Laserball Mask Function: Number of Parameters 'fNLBDistributionMaskParameters'
@@ -107,20 +88,20 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
   for ( Int_t iStr = 0; iStr < (Int_t)paramList.size(); iStr++ ){
 
     if ( paramList[ iStr ] == "laserball_intensity_mask" ){
-      fNLBDistributionMaskParameters = lDB.GetIntField( "FITFILE", (std::string)( paramList[ iStr ] + "_number_of_parameters" ), "parameter_setup" );
+      fNLBDistributionMaskParameters = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_parameters" ), "parameter_setup" );
     }
 
     else if ( paramList[ iStr ] == "pmt_angular_response" ){
-      fNPMTAngularResponseBins = lDB.GetIntField( "FITFILE", (std::string)( paramList[ iStr ] + "_number_of_bins" ), "parameter_setup" );
+      fNPMTAngularResponseBins = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_bins" ), "parameter_setup" );
     }
 
     else if ( paramList[ iStr ] == "laserball_distribution_histogram" ){
-      fNLBDistributionCosThetaBins = lDB.GetIntField( "FITFILE", (std::string)( paramList[ iStr ] + "_number_of_cos_theta_bins" ), "parameter_setup" );
-      fNLBDistributionPhiBins = lDB.GetIntField( "FITFILE", (std::string)( paramList[ iStr ] + "_number_of_phi_bins" ), "parameter_setup" );
+      fNLBDistributionCosThetaBins = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_cos_theta_bins" ), "parameter_setup" );
+      fNLBDistributionPhiBins = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_phi_bins" ), "parameter_setup" );
     }
 
     else if ( paramList[ iStr ] == "laserball_run_normalisation" ){
-      std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" );
+      vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" );
       fNLBRunNormalisations = (Int_t)( runIDs.size() );
     }
 
@@ -135,10 +116,10 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
          || paramList[ iStr ] == "water_extinction_length" ){
 
       // The initial value of the extinction length
-      initVal = lDB.GetDoubleField( "FITFILE", (std::string)( paramList[ iStr ] + "_initial_value" ), "parameter_setup" );
+      initVal = lDB.GetDoubleField( "FITFILE", (string)( paramList[ iStr ] + "_initial_value" ), "parameter_setup" );
 
       // Whether or not this parameter will vary in the fit ( 1: Yes, 0: No )
-      varyBool = lDB.GetBoolField( "FITFILE", (std::string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
+      varyBool = lDB.GetBoolField( "FITFILE", (string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
 
       // For extinction lengths, the minimum value can't be negative, so for now set to 1.0e-9 (= 1,000,000 m)
       // and for the maximum value set to 1.0 (= 0.001 m)
@@ -158,7 +139,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
       else if ( paramList[ iStr ] == "water_extinction_length" ){ parIndex = 3; }
       else{ cout << "LOCASModelParameterStore::LOCASModelParameterStore: Error, unknown parameter passed" << endl; }
 
-      LOCASModelParameter lParameter( (std::string)( paramList[ iStr ] ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, varyBool );
+      LOCASModelParameter lParameter( (string)( paramList[ iStr ] ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, varyBool );
       AddParameter( lParameter );
 
     }
@@ -167,7 +148,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 
       nParsInGroup = fNLBDistributionMaskParameters;
 
-      varyBool = lDB.GetBoolField( "FITFILE", (std::string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
+      varyBool = lDB.GetBoolField( "FITFILE", (string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
 
       // Now loop over each laserball mask parameter and initialise its initial values;
       for ( Int_t iPar = 1; iPar <= nParsInGroup; iPar++ ){
@@ -196,7 +177,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 
         Int_t parIndex = 3 + iPar;
         cout << "VaryBool is: " << varyBool << endl;
-        LOCASModelParameter lParameter( (std::string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, parVary );
+        LOCASModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, parVary );
         AddParameter( lParameter );
         
         lStream.clear();
@@ -208,7 +189,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 
       nParsInGroup = fNPMTAngularResponseBins;
 
-      varyBool = lDB.GetBoolField( "FITFILE", (std::string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
+      varyBool = lDB.GetBoolField( "FITFILE", (string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
 
       Float_t angleVal = 0.0;
       // Now loop over each angular response parameter and initialise its initial values;
@@ -238,7 +219,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
         lStream >> parStr;
 
         Int_t parIndex = 3 + fNLBDistributionMaskParameters + 1 + iPar;
-        LOCASModelParameter lParameter( (std::string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, parVary );
+        LOCASModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, parVary );
         AddParameter( lParameter );
         
         lStream.clear();
@@ -250,7 +231,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 
       nParsInGroup = fNLBDistributionPhiBins * fNLBDistributionCosThetaBins;
 
-      varyBool = lDB.GetIntField( "FITFILE", (std::string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
+      varyBool = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
 
       // Now loop over each angular response parameter and initialise its initial values;
       for ( Int_t iPar = 1; iPar <= nParsInGroup; iPar++ ){
@@ -270,7 +251,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
         lStream >> parStr;
 
         Int_t parIndex = 3 + fNLBDistributionMaskParameters + fNPMTAngularResponseBins + iPar;
-        LOCASModelParameter lParameter( (std::string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, varyBool );
+        LOCASModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, varyBool );
         AddParameter( lParameter );
         
         lStream.clear();
@@ -282,9 +263,9 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 
       nParsInGroup = fNLBRunNormalisations;
 
-      std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" );
-      initVal = lDB.GetDoubleField( "FITFILE", (std::string)( paramList[ iStr ] + "_initial_value" ), "parameter_setup" );
-      varyBool = lDB.GetIntField( "FITFILE", (std::string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
+      vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" );
+      initVal = lDB.GetDoubleField( "FITFILE", (string)( paramList[ iStr ] + "_initial_value" ), "parameter_setup" );
+      varyBool = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
 
       // Now loop over each angular response parameter and initialise its initial values;
       for ( Int_t iPar = 1; iPar <= nParsInGroup; iPar++ ){
@@ -305,7 +286,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
         lStream >> parStr;
 
         Int_t parIndex = 3 + fNLBDistributionMaskParameters + fNPMTAngularResponseBins + ( fNLBDistributionPhiBins * fNLBDistributionCosThetaBins ) + iPar;
-        LOCASModelParameter lParameter( (std::string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, varyBool );
+        LOCASModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, varyBool );
         AddParameter( lParameter );
         
         lStream.clear();
@@ -327,10 +308,10 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 void LOCASModelParameterStore::AllocateParameterArrays()
 {
 
-  fParametersPtr = LOCASVector( 1, fNParameters );
-  fParametersVary = LOCASIntVector( 1, fNParameters );
-  fCovarianceMatrix = LOCASMatrix( 1, fNParameters, 1, fNParameters );
-  fDerivativeMatrix = LOCASMatrix( 1, fNParameters, 1, fNParameters );
+  fParametersPtr = LOCASMath::LOCASVector( 1, fNParameters );
+  fParametersVary = LOCASMath::LOCASIntVector( 1, fNParameters );
+  fCovarianceMatrix = LOCASMath::LOCASMatrix( 1, fNParameters, 1, fNParameters );
+  fDerivativeMatrix = LOCASMath::LOCASMatrix( 1, fNParameters, 1, fNParameters );
 
   for ( Int_t iIndex = 1; iIndex <= fNParameters; iIndex++ ){
     for ( Int_t jIndex = 1; jIndex <= fNParameters; jIndex++ ){
@@ -339,7 +320,7 @@ void LOCASModelParameterStore::AllocateParameterArrays()
     }
   }
 
-  std::vector< LOCASModelParameter >::iterator iPar;
+  vector< LOCASModelParameter >::iterator iPar;
   for ( iPar = GetLOCASModelParametersIterBegin();
         iPar != GetLOCASModelParametersIterEnd();
         iPar++ ){
@@ -479,70 +460,6 @@ void LOCASModelParameterStore::IdentifyBaseVaryingParameters()
   }
 
 }
-
-//////////////////////////////////////
-//////////////////////////////////////
-
-// void LOCASOpticsModel::IdentifyVaryingPMTAngularResponseBins( LOCASDataStore* lData )
-// {
-//   Int_t nPMTResponseBins = fModelParameterStore->GetNPMTAngularResponseBins()
-//   Int_t* pmtAngValid = new Int_t[ nPMTResponseBins ];
-//   for ( Int_t iAng = 0; iAng < nPMTResponseBins; iAng++ ){ 
-//     pmtAngValid[ iAng ] = 0; 
-//   }
-
-//   std::vector< LOCASDataPoint >::iterator iDP;
-//   for ( iDP = lData->GetLOCASDataPointsIterBegin(); 
-//         iDP != lData->GetLOCASDataPointsIterEnd(); 
-//         iDP++ ) {
-
-//     ModelAngularResponse( *iDP, "off-axis" );
-//     pmtAngValid[ fModelParameterStore->GetCurrentPMTAngularResponseBin() ]++;
-
-//   }
-
-//   for ( Int_t iAng = 0; iAng < nPMTResponseBins; iAng++ ){
-//     if ( pmtAngValid[ iAng ] < 25 ){ 
-//       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 0;
-//     }
-//     else{
-//       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 1;
-//     } 
-//   }
-
-// }
-
-// //////////////////////////////////////
-// //////////////////////////////////////
-
-// void LOCASOpticsModel::IdentifyVaryingLBDistributionBins( LOCASDataStore* lData )
-// {
-
-//   Int_t nLBDistBins = fModelParameterStore->GetNLBDistributionCosThetaBins() * fModelParameterStore->GetNLBDistributionPhiBins();
-//   Int_t* lbAngValid = new Int_t[ nLBDistBins ];
-//   for ( Int_t iLB = 0; iLB < nLBDistBins; iLB++ ){ lbAngValid[ iLB ] = 0; }
-
-//   std::vector< LOCASDataPoint >::iterator iDP;
-//   for ( iDP = lData->GetLOCASDataPointsIterBegin(); 
-//         iDP != lData->GetLOCASDataPointsIterEnd(); 
-//         iDP++ ) {
-
-//     ModelLBDistribution( *iDP, "off-axis" );
-//     lbAngValid[ fModelParameterStore->GetCurrentLBDistributionBin() ]++;
-    
-//   }
-
-//   for ( Int_t iLB = 0; iLB < nLBDistBins; iLB++ ){
-//     if ( lbAngValid[ iLB ] < 25 ){ 
-//       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 0;
-//     }
-//     else{
-//       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 1;
-//     } 
-//   }
-
-
-// }
 
 //////////////////////////////////////
 //////////////////////////////////////
