@@ -1,19 +1,3 @@
-///////////////////////////////////////////////////////////////////
-///
-/// FILENAME: LOCASMath.hh
-///
-/// CLASS: LOCAS::LOCASMath
-///
-/// BRIEF: Utility class used to calculate mathematical formulae
-///        required in the optics fit.
-///          
-/// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
-///
-/// REVISION HISTORY:\n
-///     02/2014 : RPFS - First Revision, new file. \n
-///
-////////////////////////////////////////////////////////////////////
-
 #include <TMath.h>
 #include <TObject.h>
 
@@ -46,10 +30,12 @@ using namespace LOCAS;
 //////////////////////////////////////
 //////////////////////////////////////
 
-Double_t LOCASMath::MPECorrectedNPrompt( const Double_t nPrompt, const Double_t nPulses )
+Double_t LOCASMath::MPECorrectedNPrompt( const Double_t nPrompt, 
+                                         const Double_t nPulses )
 {
 
-  // This is the equation as featured in eqn 4.13, page 77 of B.Moffat's PhD thesis
+  // This is the equation as featured in eqn 4.13, 
+  // page 77 of B.Moffat's PhD thesis. This value is nPrompt independent.
   Double_t mpePrompt = -log( ( 1.0 - ( nPrompt / nPulses ) ) );
   return mpePrompt;
 
@@ -110,92 +96,130 @@ void LOCASMath::CalculateMPEOccRatio( const LOCASDataPoint& dPoint, Float_t& occ
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t* LOCASMath::LOCASVector( const long nStart, const long nEnd )
+Float_t* LOCASMath::LOCASVector( const Long_t nStart, const Long_t nEnd )
 {
 
-  Float_t *v;
+  // Initialise a pointer which will be the vector.
+  Float_t *vArray = NULL;
   
-  v=(Float_t*)malloc((size_t) ((nEnd-nStart+1+NR_END)*sizeof(Float_t)));
-  if (!v) cout << "LOCAS::LOCASMath: Allocation failure in LOCASVector()" << endl;
-  return v-nStart+NR_END;
+  // Allocate the required memory to store the length of the vector required
+  // of the specified type and between the required indices.
+  vArray = (Float_t*) malloc( (Size_t) ( ( nEnd - nStart + 1 + NR_END ) * sizeof(Float_t) ) );
+
+  // Check that the array is no longer 'NULL', otherwise return an error.
+  if ( !vArray ){
+    cout << "LOCAS::LOCASMath: Allocation failure in LOCASVector()" << endl;
+  }
+
+  // Return the array.
+  return vArray - nStart + NR_END;
   
 }
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-Int_t* LOCASMath::LOCASIntVector( const long nStart, const long nEnd )
+Int_t* LOCASMath::LOCASIntVector( const Long_t nStart, const Long_t nEnd )
 {
+
+  // Initialise a pointer which will be the vector.
+  Int_t *vArray = NULL;
+
+  // Allocate the required memory to store the length of the vector required
+  // of the specified type and between the required indices.  
+  vArray = (Int_t*)malloc( (Size_t) ( ( nEnd - nStart + 1 + NR_END ) * sizeof(Int_t) ) );
   
-  Int_t *v;
-  
-  v=(Int_t*)malloc((size_t) ((nEnd-nStart+1+NR_END)*sizeof(Int_t)));
-  if (!v) cout << "LOCAS::LOCASMath: Allocation failure in LOCASVector()" << endl;
-  return v-nStart+NR_END;
+  // Check that the array is no longer 'NULL', otherwise return an error.
+  if ( !vArray ){ 
+    cout << "LOCAS::LOCASMath: Allocation failure in LOCASIntVector()" << endl;
+  }
+
+  // Return the array.
+  return vArray - nStart + NR_END;
   
 }
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t** LOCASMath::LOCASMatrix( const long nStarti, const long nEndi, const long nStartj, const long nEndj )
+Float_t** LOCASMath::LOCASMatrix( const Long_t nStartI, const Long_t nEndI, 
+                                  const Long_t nStartJ, const Long_t nEndJ )
 {
   
-  long i; 
-  long nrow=nEndi-nStarti+1;
-  long ncol=nEndj-nStartj+1;
-  Float_t **m;
+  // Define the number of rows and columns
+  // in the matrix.
+  Long_t nRows = nEndI - nStartI + 1;
+  Long_t nCols = nEndJ - nStartJ + 1;
+
+  // Initialise an array which will hold the matrix.
+  Float_t **mArray = NULL;
   
-  /* allocate pointers to rows */
-  m=(Float_t**) malloc((size_t)((nrow+NR_END)*sizeof(Float_t*)));
-  if (!m) cout << "LOCAS::LOCASMath: Allocation failure 1 in LOCASMatrix()" << endl;
-  m += NR_END;
-  m -= nStarti;
+  // Allocate pointers to the rows.
+  // Allocate 'mArray' to an array of arrays of type Float_t with
+  // the memory of the number of rows required using the size of Float_t.
+  mArray = (Float_t**) malloc( (Size_t)( ( nRows + NR_END ) * sizeof(Float_t*) ) );
+
+  // If the array is still 'NULL', show a warning.
+  if ( !mArray ){
+    cout << "LOCAS::LOCASMath: Allocation failure 1 in LOCASMatrix()" << endl;
+  }
+
+  // Reconfigure the starting indices for the array.
+  mArray += NR_END;
+  mArray -= nStartI;
   
-  /* allocate rows and set pointers to them */
-  m[nStarti]=(Float_t*) malloc((size_t)((nrow*ncol+NR_END)*sizeof(Float_t)));
-  if (!m[nStarti]) cout << "LOCAS::LOCASMath: Allocation failure 2 in LOCASMatrix()" << endl;
-  m[nStarti] += NR_END;
-  m[nStarti] -= nStartj;
+  // Now allocate each of the rows and set pointers to them.
+  mArray[ nStartI ] = (Float_t*) malloc( (Size_t)( ( nRows * nCols + NR_END ) * sizeof(Float_t) ) );
+  if ( !mArray[ nStartI ] ){
+    cout << "LOCAS::LOCASMath: Allocation failure 2 in LOCASMatrix()" << endl;
+  }
+  // Reconfigure the starting indices for each of the arrays in each row.
+  mArray[ nStartI ] += NR_END;
+  mArray[ nStartI ] -= nStartJ;
   
-  for(i=nStarti+1;i<=nEndi;i++) m[i]=m[i-1]+ncol;
   
-  /* return pointer to array of pointers to rows */
-  return m;
+  for( Long_t iVal = nStartI + 1; iVal <= nEndI; iVal++ ){
+    mArray[ iVal ] = mArray[ iVal - 1 ] + nCols;
+  }
+  
+  // Return the pointer to an array of pointers to rows i.e. a matrix.
+  return mArray;
   
 }
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASMath::LOCASFree_Vector( Float_t *v, const long nl )
-/* free a Float_t vector allocated with vector() */
+void LOCASMath::LOCASFree_Vector( Float_t *vArray, const Long_t nLength )
 {
 
-  free((FREE_ARG) (v+nl-NR_END));
+  // Free up the memory allocated to the vArray array.
+  free( ( FREE_ARG ) ( vArray + nLength - NR_END ) );
 
 }
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASMath::LOCASFree_Matrix(Float_t **m, const long nrl, const long ncl )
-/* free a Float_t vector allocated with vector() */
+void LOCASMath::LOCASFree_Matrix( Float_t **mArray, 
+                                  const Long_t nRowsLength, 
+                                  const Long_t nColsLength )
 {
 
-  free((FREE_ARG) (m[nrl]+ncl-NR_END));
-  free((FREE_ARG) (m+nrl-NR_END));
+  // Free up the memory allocated in all the rows and columns in 'mArray'
+  free( ( FREE_ARG ) ( mArray[ nRowsLength ] + nColsLength - NR_END ) );
+  free( ( FREE_ARG ) ( mArray + nRowsLength - NR_END ) );
 
 }
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASMath::LOCASFree_IntVector(Int_t *v, const long nl )
-/* free a Float_t vector allocated with vector() */
+void LOCASMath::LOCASFree_IntVector(Int_t *vArray, const Long_t nLength )
 {
 
-  free((FREE_ARG) (v+nl-NR_END));
+  // Free up the memory allocated in the array.
+  free( ( FREE_ARG ) ( vArray + nLength - NR_END ) );
 
 }
 
@@ -203,7 +227,7 @@ void LOCASMath::LOCASFree_IntVector(Int_t *v, const long nl )
 //////////////////////////////////////
 
 Int_t LOCASMath::GaussJordanElimination( Float_t** lhsMatrix, Int_t nParameters,
-                                        Float_t** rhsMatrix, Int_t mVectors )
+                                         Float_t** rhsMatrix, Int_t mVectors )
 {
 
   // This routine is inspired by the original 
