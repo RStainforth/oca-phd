@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "LOCASRunReader.hh"
 #include "LOCASRun.hh"
 #include "LOCASPMT.hh"
@@ -10,6 +8,8 @@
 #include "LOCASFilterStore.hh"
 #include "LOCASChiSquare.hh"
 
+#include <iostream>
+
 using namespace LOCAS;
 using namespace std;
 
@@ -18,29 +18,44 @@ ClassImp( LOCASDataFiller )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASDataFiller::FilterData( LOCASFilterStore& filterSt, LOCASDataStore* lDataStore, LOCASChiSquare* lChiSq )
+void LOCASDataFiller::FilterData( LOCASFilterStore* lFilterStore,
+                                  LOCASDataStore* lDataStore,
+                                  LOCASChiSquare* lChiSq )
 {
-  
-  // Iterate through each datapoint in the LOCASDataStore object 'fDataStore' and
-  // apply all the filters in the passed LOCASFilterStore object, removing datapoints which do
-  // not satisfy the filter conditions. The datapoints which pass all the filter criteria are those
+
+  // Iterate through each datapoint in the LOCASDataStore 
+  // object 'lDataStore' and apply all the filters in the 
+  // passed LOCASFilterStore object 'lFilterStore', removing datapoints 
+  // which do not satisfy the individual filter conditions. 
+  // The datapoints which pass all the filter criteria are those
   // to be used in the fit.
 
-  // Note: The LOCASChiSquare object here is used for filters that set conditions on the 
-  // initial chi-square value of the datapoint against the model and its current set
-  // of parameters in the optical model
+  // Note: The LOCASChiSquare object here is used for filters 
+  // that set conditions on the initial chi-square value of 
+  // the datapoints against their model prediction using the current set
+  // of parameters in the optical model (linked to the LOCASChiSquare object)
 
   // LOCASDataPoint iterator to loop through the data points
   std::vector< LOCASDataPoint >::iterator iD;
 
-  // LOCASFilter iterator to loop through and apply the filters to the datapoints
+  // LOCASFilter iterator to loop through and apply the filters 
+  // to the datapoints
   std::vector< LOCASFilter >::iterator iF;
 
-  // Filter name - changes based on the filter currently being used in the below loop
+  // Filter name - changes based on the filter currently being 
+  // used in the below loop
   std::string filterName = "";
 
+  // Boolean value to determine if the current datapoint
+  // is valid. If it fails a filter check condition in the loop
+  // below then it is invalid (false), and therefore not included
+  // in the final data set.
   Bool_t validPoint = true;
 
+  // The new LOCASDataStore object which will store all the 
+  // LOCASDataPoints which successfully pass all the filter
+  // conditions. This object will be pointed to by the pointer
+  // passed into this function
   LOCASDataStore* newStore = new LOCASDataStore();
     
   // Loop through all the datapoints in the LOCASDataStore object
@@ -51,8 +66,8 @@ void LOCASDataFiller::FilterData( LOCASFilterStore& filterSt, LOCASDataStore* lD
     validPoint = true;
     
     // Loop through all the filters
-    for ( iF = filterSt.GetLOCASFiltersIterBegin();
-          iF != filterSt.GetLOCASFiltersIterEnd();
+    for ( iF = lFilterStore->GetLOCASFiltersIterBegin();
+          iF != lFilterStore->GetLOCASFiltersIterEnd();
           iF++ ){
       
       // Obtain the name of the filter
@@ -61,93 +76,93 @@ void LOCASDataFiller::FilterData( LOCASFilterStore& filterSt, LOCASDataStore* lD
       // Filters to check the occupancy ratio and MPE corrected
       // occupancy from the off-axis and central runs
       
-      
       if ( filterName == "filter_mpe_occupancy" ){ 
         if ( !iF->CheckCondition( iD->GetMPECorrOccupancy() ) ){ 
-          //lDataStore->EraseDataPoint( iD ); break;
           validPoint = false; break;
         }
       }
       
       else if ( filterName == "filter_mpe_ctr_occupancy" ){ 
         if ( !iF->CheckCondition( iD->GetCentralMPECorrOccupancy() ) ){ 
-          //lDataStore->EraseDataPoint( iD ); break;
           validPoint = false; break;
         }
       }
       
-      // Filters to check the various distances in the scintillator region, AV and water
-      // region in terms of the 'Delta' differences i.e. the modulus difference between
-      // the central and off-axis runs. Also checks the total distance of each light path
+      // Filters to check the various distances in the 
+      // inner AV, AV and water regions in terms of the 
+      // 'Delta' differences i.e. the modulus difference between
+      // the central and off-axis runs. 
+      // Also checks the total distance of each light path
       
       else if ( filterName == "filter_deltascint" ){
         Float_t deltaScint = TMath::Abs( iD->GetDistInInnerAV() - iD->GetCentralDistInInnerAV() );
         if ( !iF->CheckCondition( deltaScint ) ){ 
-          //lDataStore->EraseDataPoint( iD ); break;
           validPoint = false; break;
         }
       }
       
       else if ( filterName == "filter_deltaav" ){
-        Float_t deltaAV = TMath::Abs( iD->GetDistInAV() - iD->GetCentralDistInAV() );
+        Float_t deltaAV = TMath::Abs( iD->GetDistInAV() 
+                                      - iD->GetCentralDistInAV() );
         if ( !iF->CheckCondition( deltaAV ) ){ 
-          //lDataStore->EraseDataPoint( iD ); break;
           validPoint = false; break;
         }
       }
       
       else if ( filterName == "filter_deltawater" ){
-        Float_t deltaWater = TMath::Abs( iD->GetDistInWater() - iD->GetCentralDistInWater() );
+        Float_t deltaWater = TMath::Abs( iD->GetDistInWater() 
+                                         - iD->GetCentralDistInWater() );
         if ( !iF->CheckCondition( deltaWater ) ){ 
-          //lDataStore->EraseDataPoint( iD ); break;
           validPoint = false; break;
         }
       }
       
-      // Filters to check against various flags (CSHS, CSS) as well as neck light paths and
-      // 'bad' paths and incident angles
+      // Filters to check against the incident PMT angles and
+      // the solid angles.
       
       else if ( filterName == "filter_pmt_angle" ){ 
-        if ( !iF->CheckCondition( iD->GetIncidentAngle() ) || !iF->CheckCondition( iD->GetCentralIncidentAngle() ) ){ 
-          //lDataStore->EraseDataPoint( iD ); break;
+        if ( !iF->CheckCondition( iD->GetIncidentAngle() ) 
+             || !iF->CheckCondition( iD->GetCentralIncidentAngle() ) ){ 
           validPoint = false; break;
         }
       }
       
       else if ( filterName == "filter_solid_angle_ratio" ){ 
-        if ( !iF->CheckCondition( iD->GetSolidAngle() / iD->GetCentralSolidAngle() ) ){ 
-          //lDataStore->EraseDataPoint( iD ); break;
+        if ( !iF->CheckCondition( iD->GetSolidAngle() 
+                                  / iD->GetCentralSolidAngle() ) ){ 
           validPoint = false; break;
         }
       }
+
+      // Filters to check against various flags (CHS, CSS, 'Bad' lightpath)
+      // 'Bad' light paths are deemed so based on the conditions set out
+      // in LOCASPMT::VerifyPMT(). The flag is set in LOCASPMT::ProcessLightPath
       
       else if ( filterName == "filter_chs" ){ 
-        if ( !iF->CheckCondition( iD->GetCHSFlag() ) || !iF->CheckCondition( iD->GetCentralCHSFlag() ) ){ 
-          //lDataStore->EraseDataPoint( iD ); break;
+        if ( !iF->CheckCondition( iD->GetCHSFlag() ) 
+             || !iF->CheckCondition( iD->GetCentralCHSFlag() ) ){ 
           validPoint = false; break;
         }
       }
       
       else if ( filterName == "filter_css" ){ 
-        if ( !iF->CheckCondition( iD->GetCSSFlag() ) || !iF->CheckCondition( iD->GetCentralCSSFlag() ) ){ 
-          //lDataStore->EraseDataPoint( iD ); break;
+        if ( !iF->CheckCondition( iD->GetCSSFlag() ) 
+             || !iF->CheckCondition( iD->GetCentralCSSFlag() ) ){ 
           validPoint = false; break;
         }
       }
       
       else if ( filterName == "filter_bad_path" ){ 
-        if ( !iF->CheckCondition( iD->GetBadPathFlag() ) || !iF->CheckCondition( iD->GetCentralBadPathFlag() ) ){ 
-          //lDataStore->EraseDataPoint( iD ); break;
+        if ( !iF->CheckCondition( iD->GetBadPathFlag() ) 
+             || !iF->CheckCondition( iD->GetCentralBadPathFlag() ) ){ 
           validPoint = false; break;
         }
       }
 
-      
-      // Filters to check the current chisquare value of the data point
+      // Filters to check the current chi-square value of the data point
       
       else if ( filterName == "filter_chi_square" ){
         if ( !iF->CheckCondition( lChiSq->EvaluateChiSquare( *iD ) ) ){
-          //lDataStore->EraseDataPoint( iD ); break;
           validPoint = false; break;
         }
       }
@@ -159,13 +174,23 @@ void LOCASDataFiller::FilterData( LOCASFilterStore& filterSt, LOCASDataStore* lD
       
     }
     
+    // If the validPoint boolean is still true, then the current datapoint
+    // passed all the filter checks above (as specified in the 'fit-file').
+    // Therefore we add this datapoint to the final set
     if ( validPoint == true ){
       newStore->AddDataPoint( *iD );
     }
     
   }
 
+  // Set and copy the value pointed to by the passed dataset to be this new
+  // 'filtered' data set. This ensures the pointer keeps the same address,
+  // but has a new value.
   *lDataStore = *newStore;
+
+  // Delete the memory which temporarily stored this new data set. This is
+  // OK because we copied the information in the above line to be linked
+  // with the address of the original pointer 'lDataStore'
   delete newStore;
   
 }

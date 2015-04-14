@@ -51,29 +51,39 @@ namespace LOCAS{
     // the 'fDataStore' LOCASDataStore object pointer private variable.
     Float_t EvaluateGlobalChiSquare();
 
+    // Set the pointer to the LOCASOpticsModel which is used for the
+    // model predictions when calculating the chi-square for a data point.
     void SetPointerToModel( LOCASOpticsModel* locasModel ){ fModel = locasModel; }
+
+    // Set the pointer to the LOCASDataStore object which is used
+    // as the collection of datapoints when calculating the chi-square.
     void SetPointerToData( LOCASDataStore* locasData ){ fDataStore = locasData; }
 
+    // This evaluates the solution vector and passes through to 
+    // FitEvaluateModel the matrix of derivatives to be calculated.
     void FitEvaluation( Float_t testParameters[], Int_t parametersVary[], 
                         Int_t nParameters, Float_t **derivativeMatrix, 
                         Float_t betaVec[], Float_t *chiSquareVal );
 
+    // Evaluates the model for a trial set of parameters 'testParameters'
+    // and then calculates the derivatives 'dDataValDParameters' with 
+    // respect to each variable parameter relevant to the provided 
+    // LOCASDataPoint
     void FitEvaluateModel( LOCASDataPoint& dPoint, Float_t testParameters[],
                            Float_t *modelVal, Float_t dDataValDParameters[], 
                            Int_t nParameters );
 
+    // Perform a single minimisation for the given value
     Int_t Minimise( Float_t testParameters[], Int_t parametersVary[], 
                     Int_t nParameters, Float_t **covarianceMatrix, 
-                   Float_t **derivativeMatrix, Float_t *chiSquareVal, 
-                   Float_t *aLambdaPar );
+                    Float_t **derivativeMatrix, Float_t *chiSquareVal, 
+                    Float_t *aLambdaPar );
 
     void DoFit( Float_t testParameters[], Int_t parametersVary[], 
                 Int_t nParameters, Float_t **covarianceMatrix, 
                 Float_t **derivativeMatrix, Float_t *chiSquareVal );
     
     void PerformMinimisation();
-    // Int_t GaussJordanElimination( Float_t** lhsMatrix, Int_t nParameters,
-    //                               Float_t** rhsMatrix, Int_t mVectors );
     
   private:
 

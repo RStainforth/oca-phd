@@ -4,13 +4,30 @@
 ///
 /// CLASS: LOCAS::LOCASDataFiller.hh
 ///
-/// BRIEF: A class used to take raw data points and a set
+/// BRIEF: A class used to take data points and a set
 ///        of filters and return a 'filtered' data set.
 ///                
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
-/// REVISION HISTORY:\n
-///     02/2014 : RPFS - First Revision, new file. \n
+/// REVISION HISTORY:
+///     04/2014 : RPFS - First Revision, new file.
+///
+/// DETAIL: This class acts on two 'Store' type objects.
+///         - LOCASDataStore
+///         - LOCASFilterStore
+///
+///         The LOCASDataFiller object takes each LOCASDataPoint
+///         from the LOCASDataStore, and passes it to each 
+///         LOCASDataFilter in the LOCASFilterStore. If the
+///         LOCASDataPoint passes all the 'check' conditions
+///         as determined by the filters, then it is added to
+///         a final, newly created LOCASDataStore object which is
+///         consequently returned with the address of the original
+///         LOCASDataStore.
+/// 
+///         NOTE: a LOCASChiSquare object is also required for this
+///         to work as some filters make use of the initial chi-square
+///         to make a cut.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -19,8 +36,10 @@
 
 #include "LOCASDataStore.hh"
 #include "LOCASFilterStore.hh"
-#include "LOCASRunReader.hh"
+
 #include "LOCASChiSquare.hh"
+
+using namespace std;
 
 namespace LOCAS{
 
@@ -28,19 +47,19 @@ namespace LOCAS{
   {
   public:
 
-    // The constructor
+    // The constructor and destructor for the LOCASDataFiller object.
     LOCASDataFiller(){ }
-
-    // The destructor - nothing to delete
     ~LOCASDataFiller(){ }
 
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
 
-    // Re-Filter the current data, requires a chisq object if 
+    // Filter the current data. This requires a LOCASChiSquare object if 
     // one of the filters is a chi square elimination cut
-    void FilterData( LOCASFilterStore& filterSt, LOCASDataStore* lDataStore, LOCASChiSquare* lChiSq );
+    void FilterData( LOCASFilterStore* lFilterStore, 
+                     LOCASDataStore* lDataStore, 
+                     LOCASChiSquare* lChiSq = NULL );
 
     ClassDef( LOCASDataFiller, 1 );
 

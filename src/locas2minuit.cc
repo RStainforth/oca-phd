@@ -98,11 +98,11 @@ int main( int argc, char** argv ){
   // Initalise a separate storage object for all the filters to cut on
   // the data with
   cout << "Adding Filters" << endl;
-  LOCASFilterStore lFilterStore( argv[1] );
+  LOCASFilterStore* lFilterStore = new LOCASFilterStore( argv[1] );
 
   // Initalise a data filler object to filter through the raw
   // data using the filters
-  LOCASDataFiller lDataFiller;
+  LOCASDataFiller* lDataFiller = new LOCASDataFiller();
   //cout << "DataFiller Created" << endl;
   //lDataFiller.FilterData( lFilterStore, lData, lChiSq );
   //lFilterStore.PrintFilterCutInformation();
@@ -120,14 +120,14 @@ int main( int argc, char** argv ){
   for ( Size_t iFit = 0; iFit < chiSqLims.size(); iFit++ ){
     
     // Update the chisquare filter
-    lFilterStore.UpdateFilter( "filter_chi_square", 
-                               ( lFilterStore.GetFilter( "filter_chi_square" ) ).GetMinValue(), 
+    lFilterStore->UpdateFilter( "filter_chi_square", 
+                               ( lFilterStore->GetFilter( "filter_chi_square" ) ).GetMinValue(), 
                                chiSqLims[ iFit ] );
     
     cout << "ChiSquare is: " << chiSqLims[ iFit ] << endl;
-    lDataFiller.FilterData( lFilterStore, lData, lChiSq );
-    lFilterStore.PrintFilterCutInformation();
-    lFilterStore.ResetFilterConditionCounters();
+    lDataFiller->FilterData( lFilterStore, lData, lChiSq );
+    lFilterStore->PrintFilterCutInformation();
+    lFilterStore->ResetFilterConditionCounters();
     //lChiSq->SetPointerToData( lData );
     
     cout << "Performing Minimisation!" << endl;
