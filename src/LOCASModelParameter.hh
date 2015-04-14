@@ -11,8 +11,8 @@
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
-/// REVISION HISTORY:\n
-///     04/2015 : RPFS - First Revision, new file. \n
+/// REVISION HISTORY:
+///     04/2015 : RPFS - First Revision, new file.
 ///
 /// DETAIL: A single parameter object for a parameter used
 ///         in the fit. This stores information specific to that

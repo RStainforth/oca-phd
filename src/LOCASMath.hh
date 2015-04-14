@@ -9,8 +9,8 @@
 ///          
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
-/// REVISION HISTORY:\n
-///     04/2015 : RPFS - First Revision, new file. \n
+/// REVISION HISTORY:
+///     04/2015 : RPFS - First Revision, new file.
 ///
 /// DETAIL: Utility class used to calculate mathematical formulae
 ///         required in the optics fit. This currently includes
