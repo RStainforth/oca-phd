@@ -1,24 +1,6 @@
-////////////////////////////////////////////////////////////////////
-///
-/// FILENAME: LOCASModelParameter.cc
-///
-/// CLASS: LOCAS::LOCASModelParameter
-///
-/// BRIEF: A simple class to hold the information about
-///        a specific parameter included in the LOCASModel
-///        object
-///        
-///          
-/// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
-///
-/// REVISION HISTORY:\n
-///     02/2014 : RPFS - First Revision, new file. \n
-///
-////////////////////////////////////////////////////////////////////
-
 #include "LOCASModelParameter.hh"
-#include <string>
 
+#include <string>
 #include <iostream>
 
 using namespace LOCAS;
@@ -36,20 +18,42 @@ LOCASModelParameter::LOCASModelParameter( std::string parameterName,
                                           Bool_t varyBool )
 {
 
+  // Set the parameter name.
   SetParameterName( parameterName );
 
+  // Set the index for this parameter in relation to the entire
+  // set of parameters which will be used in the fit.
   SetIndex( index );
 
+  // Set the number of other parameters in a specific group if applicable.
+  // For example, the extinction lengths are all individual parameters
+  // and so the value will be 1 (nParsInGroup = 1). But for the Laserball
+  // distribution this could be 432 in the case of a 2D histogram with
+  // (12x36) binning in (costheta, phi).
   SetNInGroup( nParsInGroup );
 
+  // Set the increment value. 
+  // Note: Currently not required by the Levenberg-marquardt algorithm 
+  // which is currently used.
   SetIncrementValue( valInc );
   
+  // Set the initial value for the parameter.
   SetInitialValue( initVal );
+
+  // Set the final value to 0.0 for now. This will be updated
+  // after the fit has been completed.
   SetFinalValue( 0.0 );
   
+  // Set the minimum and maximum allowed values for this parameters.
+  // Note: Currently not required by the Levenberg-Marquardt algorithm
+  // which is currently used.
   SetMinValue( valLow );
   SetMaxValue( valHigh );
 
+  // Set whether or not this parameter will vary in the fit.
+  // TRUE: Parameter Varies. 
+  // FALSE: Parameter remains fixed and uses the initial value provided
+  // above for the entirety of the fit.
   SetVary( varyBool );
 
 }
@@ -60,6 +64,7 @@ LOCASModelParameter::LOCASModelParameter( std::string parameterName,
 void LOCASModelParameter::PrintInfo()
 {
 
+  // Print all the current information pertaining to this parameter.
   cout << "Parameter Name: " << GetParameterName() << endl;
   cout << "Parameter Index: " << GetIndex() << endl;
   cout << "Parameter Initial Value: " << GetInitialValue() << endl;
