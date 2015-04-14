@@ -81,7 +81,7 @@ void LOCASDataStore::AddDataPoint( LOCASDataPoint dataPoint )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASDataStore::AddDataPoint( LOCASPMT& lPMT )
+void LOCASDataStore::AddDataPoint( const LOCASPMT& lPMT )
 {
 
   // Use the LCOASDataPoint constructor to create a new LOCASDataPoint
@@ -151,12 +151,12 @@ void LOCASDataStore::WriteToFile( const char* fileName )
   TTree* storeTree = new TTree( fileName, fileName );
 
   // Declare a new branch pointing to the data store object
-  runTree->Branch( "LOCASDataStore", (*this).ClassName(), &(*this), 32000, 99 );
+  storeTree->Branch( "LOCASDataStore", (*this).ClassName(), &(*this), 32000, 99 );
   file->cd();
 
   // Fill the tree and write it to the file
-  runTree->Fill();
-  runTree->Write();
+  storeTree->Fill();
+  storeTree->Write();
 
   // Close the file
   file->Close();
