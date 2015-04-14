@@ -1,7 +1,6 @@
 #include "LOCASPMT.hh"
 #include "LOCASDataPoint.hh"
 
-#include "TVector3.h"
 #include "TMath.h"
 
 using namespace LOCAS;
@@ -17,18 +16,16 @@ LOCASDataPoint::LOCASDataPoint( const LOCASPMT& lPMT )
   
   SetRunID( lPMT.GetRunID() );
   SetPMTID( lPMT.GetID() );
+  SetRunIndex( -1 );
   // Note: SetRunIndex not set here, it is set when the datapoint
-  // is used as part of a data sample in a fit. see LOCAS::LOCASDataFiller
+  // is added to a LOCASDataStore, see LOCASDataStore::AddData.
+  // For now set to -1.
 
   SetMPECorrOccupancy( lPMT.GetMPECorrOccupancy() );
   SetCentralMPECorrOccupancy( lPMT.GetCentralMPECorrOccupancy() );
 
   SetMPECorrOccupancyErr( lPMT.GetMPECorrOccupancyErr() );
   SetCentralMPECorrOccupancyErr( lPMT.GetCentralMPECorrOccupancyErr() );
-
-  SetOccupancyRatio( 0.0 );
-  SetOccupancyRatioErr( 0.0 );
-  SetModelOccupancyRatio( 0.0 );
 
   SetDistInInnerAV( lPMT.GetDistInInnerAV() );
   SetCentralDistInInnerAV( lPMT.GetCentralDistInInnerAV() );
@@ -64,7 +61,11 @@ LOCASDataPoint::LOCASDataPoint( const LOCASPMT& lPMT )
 
   SetBadPathFlag( lPMT.GetBadPath() );
   SetCentralBadPathFlag( lPMT.GetCentralBadPath() );
-  
+
+  SetOccupancyRatio( 0.0 );
+  SetOccupancyRatioErr( 0.0 );
+  SetModelOccupancyRatio( 0.0 );
+
 }
 
 //////////////////////////////////////
@@ -82,10 +83,6 @@ LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
 
   SetMPECorrOccupancyErr( rhs.GetMPECorrOccupancyErr() );
   SetCentralMPECorrOccupancyErr( rhs.GetCentralMPECorrOccupancyErr() );
-
-  SetOccupancyRatio( rhs.GetOccupancyRatio() );
-  SetOccupancyRatioErr( rhs.GetOccupancyRatioErr() );
-  SetModelOccupancyRatio( rhs.GetModelOccupancyRatio() );
 
   SetDistInInnerAV( rhs.GetDistInInnerAV() );
   SetCentralDistInInnerAV( rhs.GetCentralDistInInnerAV() );
@@ -120,6 +117,10 @@ LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
 
   SetBadPathFlag( rhs.GetBadPathFlag() );
   SetCentralBadPathFlag( rhs.GetCentralBadPathFlag() );
+
+  SetOccupancyRatio( rhs.GetOccupancyRatio() );
+  SetOccupancyRatioErr( rhs.GetOccupancyRatioErr() );
+  SetModelOccupancyRatio( rhs.GetModelOccupancyRatio() );
 
   return *this;
 

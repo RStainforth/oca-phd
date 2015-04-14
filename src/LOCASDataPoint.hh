@@ -13,8 +13,13 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:\n
-///     02/2014 : RPFS - First Revision, new file. \n
-///     03/2015 : RPFS - Restructred to construct using LOCASPMT objects
+///     04/2014 : RPFS - First Revision, new file. \n
+///
+/// DETAIL: LOCASDataPoints are used by a LOCASChiSquare object 
+///         which, combined with a LOCASOptics model to perform a fit
+///         to produce the parameters which characterise the optical
+///         response of the detector.
+///         These are the individual data points used in that fit
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -22,8 +27,6 @@
 #define _LOCASDataPoint_
 
 #include "LOCASPMT.hh"
-
-#include "TVector3.h"
 
 #include <string>
 
@@ -33,11 +36,9 @@ namespace LOCAS{
   {
   public:
 
-    // Constructors
+    // The constructors and destructors for the LOCASDataPoint object.
     LOCASDataPoint(){ };
     LOCASDataPoint( const LOCASPMT& lPMT );
-
-    // Destructor - nothing to delete
     ~LOCASDataPoint(){ };
     
     // Equality operator
@@ -47,104 +48,295 @@ namespace LOCAS{
     ////////     GETTERS     ////////
     /////////////////////////////////
 
+    // Get the run ID for the run from whence the PMT, which this
+    // data point represents, came.
     Int_t GetRunID() const { return fRunID; }
+
+    // Get the PMT ID for the PMT from whence this data point came.
     Int_t GetPMTID() const { return fPMTID; }
+
+    // Get the run index. This is set only when the data point becomes
+    // part of a set of many data points from accross different runs in
+    // a LOCASDataStore object. The index starts at 0.
+    // For example, if the data point represents
+    // a PMT from the 4th run in a list of runs to be used in a fit, 
+    // the index would be [3]. 1st Run [0], 2nd Run [1], etc.
     Int_t GetRunIndex() const{ return fRunIndex; }
 
+    // Get the Multi-Photoelectron (MPE) corrected occupancy from the
+    // off-axis run.
     Float_t GetMPECorrOccupancy() const { return fMPECorrOccupancy; }
+
+    // Get the Multi-Photoelectron (MPE) corrected occupancy from the
+    // central run.
     Float_t GetCentralMPECorrOccupancy() const { return fCentralMPECorrOccupancy; }
 
+    // Get the error on the Multi-Photoelectron (MPE) corrected occupancy
+    // from the off-axis run.
     Float_t GetMPECorrOccupancyErr() const { return fMPECorrOccupancyErr; }
+
+    // Get the error on the Multi-Photoelectron (MPE) corrected occupancy
+    // from the central run.
     Float_t GetCentralMPECorrOccupancyErr() const { return fCentralMPECorrOccupancyErr; }
     
+    // Get the distance of the light path for this data point in the
+    // inner AV region from the off-axis run.
     Float_t GetDistInInnerAV() const { return fDistInInnerAV; }
+
+    // Get the distance of the light path for this data point in the
+    // inner AV region from the central run.
     Float_t GetCentralDistInInnerAV() const { return fCentralDistInInnerAV; }
+
+    // Get the distance of the light path for this data point in the
+    // AV region from the off-axis run.
     Float_t GetDistInAV() const { return fDistInAV; }
+
+    // Get the distance of the light path for this data point in the
+    // AV region from the central run.
     Float_t GetCentralDistInAV() const { return fCentralDistInAV; }
+
+    // Get the distance of the light path for this data point in the
+    // water region from the off-axis run.
     Float_t GetDistInWater() const { return fDistInWater; }
+
+    // Get the distance of the light path for this data point in the
+    // water region from the central run.
     Float_t GetCentralDistInWater() const { return fCentralDistInWater; }
 
+    // Get the solid angle subtended by the PMT this data point represents
+    // from the laserball position in the off-axis run.
     Float_t GetSolidAngle() const { return fSolidAngle; }
+
+    // Get the solid angle subtended by the PMT this data point represents
+    // from the laserball position in the central run.
     Float_t GetCentralSolidAngle() const { return fCentralSolidAngle; }
 
+    // Get the Fresnel transmission coefficient for the PMT this 
+    // data point represents from the off-axis run.
     Float_t GetFresnelTCoeff() const { return fFresnelTCoeff; }
+
+    // Get the Fresnel transmission coefficient for the PMT this 
+    // data point represents from the central run.
     Float_t GetCentralFresnelTCoeff() const { return fCentralFresnelTCoeff; }
 
+    // Get the relative cos-theta value of the lightpath to the laserball
+    // axis from the off-axis run.
     Float_t GetLBTheta() const { return fLBTheta; }
+
+    // Get the relative cos-theta value of the lightpath to the laserball
+    // axis from the central run.
     Float_t GetCentralLBTheta() const { return fCentralLBTheta; }
 
+    // Get the relative phi coordinate of the lightpath to the laserball
+    // axis from the off-axis run.
     Float_t GetLBPhi() const { return fLBPhi; }
+
+    // Get the relative phi coordinate of the lightpath to the laserball
+    // axis from the central run.
     Float_t GetCentralLBPhi() const { return fCentralLBPhi; }
 
+    // Get the incident angle (in degrees) to the PMT bucket plane 
+    // from the light path from the off-axis run.
     Float_t GetIncidentAngle() const { return fIncidentAngle; }
+
+    // Get the incident angle (in degrees) to the PMT bucket plane 
+    // from the light path from the central run.
     Float_t GetCentralIncidentAngle() const { return fCentralIncidentAngle; }
 
+    // Get the sum of all the prompt MPE occupancy values for 
+    // the PMTs in the run from whence this data point came 
+    // for the off-axis run.
     Float_t GetLBIntensityNorm() const { return fLBIntensityNorm; }
+
+    // Get the sum of all the prompt MPE occupancy values for 
+    // the PMTs in the run from whence this data point came 
+    // for the central run.
     Float_t GetCentralLBIntensityNorm() const { return fCentralLBIntensityNorm; }
 
+    // Get the CSS flag for the PMT which this data point represents
+    // from the off-axis run (CSS: Channel Software Status (AQXX)).
     Int_t GetCSSFlag() const { return fCSSFlag; }
+
+    // Get the CSS flag for the PMT which this data point represents
+    // from the central run (CSS: Channel Software Status (AQXX)).
     Int_t GetCentralCSSFlag() const { return fCentralCSSFlag; }
 
+    // Get the CHS flag for the PMT which this data point represents
+    // from the off-axis run (CHS: Channel Hardware Status (DQXX)).
     Int_t GetCHSFlag() const { return fCHSFlag; }
+
+    // Get the CHS flag for the PMT which this data point represents
+    // from the central run (CHS: Channel Hardware Status (DQXX)).
     Int_t GetCentralCHSFlag() const { return fCentralCHSFlag; }
 
+    // Get the path flag status for this data point from the
+    // off axis run.
     Bool_t GetBadPathFlag() const { return fBadPathFlag; }
+
+    // Get the path flag status for this data point from the
+    // central run.
     Bool_t GetCentralBadPathFlag() const { return fCentralBadPathFlag; }
 
+    // Get the occupancy ratio (MPE corrected value ratio) for this
+    // data-point, ( ratio = off-axis / central ).
     Float_t GetOccupancyRatio() const { return fOccupancyRatio; }
+
+    // Get the error on the occupancy ratio (MPE corrected value ratio) 
+    // for this data-point, ( ratio = off-axis / central ).
     Float_t GetOccupancyRatioErr() const { return fOccupancyRatioErr; }
+
+    // Get the model predicted ratio for this
+    // data-point, ( ratio = off-axis / central ). The value for this is
+    // only initialised once a LOCASChiSquare object has computed the 
+    // chi-square value for this data point.
     Float_t GetModelOccupancyRatio() const { return fModelOccupancyRatio; }
 
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
 
+    // Set the run ID for the run from whence the PMT, which this
+    // data point represents, came.
     void SetRunID( const Int_t val ){ fRunID = val; }
+
+    // Set the PMT ID for the PMT from whence this data point came.
     void SetPMTID( const Int_t val ){ fPMTID = val; }
+
+    // Set the run index. This is set only when the data point becomes
+    // part of a set of many data points from accross different runs in
+    // a LOCASDataStore object. The index starts at 0.
+    // For example, if the data point represents
+    // a PMT from the 4th run in a list of runs to be used in a fit, 
+    // the index would be [3]. 1st Run [0], 2nd Run [1], etc.
     void SetRunIndex( const Int_t val ){ fRunIndex = val; }
 
+    // Set the Multi-Photoelectron (MPE) corrected occupancy from the
+    // off-axis run.
     void SetMPECorrOccupancy( const Float_t val ){ fMPECorrOccupancy = val; }
+
+    // Set the Multi-Photoelectron (MPE) corrected occupancy from the
+    // central run.
     void SetCentralMPECorrOccupancy( const Float_t val ){ fCentralMPECorrOccupancy = val; }
 
+    // Set the error on the Multi-Photoelectron (MPE) corrected occupancy
+    // from the off-axis run.
     void SetMPECorrOccupancyErr( const Float_t val ){ fMPECorrOccupancyErr = val; }
+
+    // Set the error on the Multi-Photoelectron (MPE) corrected occupancy
+    // from the central run.
     void SetCentralMPECorrOccupancyErr( const Float_t val ){ fCentralMPECorrOccupancyErr = val; }
     
+    // Set the distance of the light path for this data point in the
+    // inner AV region from the off-axis run.
     void SetDistInInnerAV( const Float_t val ){ fDistInInnerAV = val; }
+
+    // Set the distance of the light path for this data point in the
+    // inner AV region from the central run.
     void SetCentralDistInInnerAV( const Float_t val ){ fCentralDistInInnerAV = val; }
+
+    // Set the distance of the light path for this data point in the
+    // AV region from the off-axis run.
     void SetDistInAV( const Float_t val ){ fDistInAV = val; }
+
+    // Set the distance of the light path for this data point in the
+    // AV region from the central run.
     void SetCentralDistInAV( const Float_t val ){ fCentralDistInAV = val; }
+
+    // Set the distance of the light path for this data point in the
+    // water region from the off-axis run.
     void SetDistInWater( const Float_t val ){ fDistInWater = val; }
+
+    // Set the distance of the light path for this data point in the
+    // water region from the central run.
     void SetCentralDistInWater( const Float_t val ){ fCentralDistInWater = val; }
 
+    // Set the solid angle subtended by the PMT this data point represents
+    // from the laserball position in the off-axis run.
     void SetSolidAngle( const Float_t val ){ fSolidAngle = val; }
+
+    // Set the solid angle subtended by the PMT this data point represents
+    // from the laserball position in the central run.
     void SetCentralSolidAngle( const Float_t val ){ fCentralSolidAngle = val; }
 
+    // Set the Fresnel transmission coefficient for the PMT this 
+    // data point represents from the off-axis run.
     void SetFresnelTCoeff( const Float_t val ){ fFresnelTCoeff = val; }
+
+    // Set the Fresnel transmission coefficient for the PMT this 
+    // data point represents from the central run.
     void SetCentralFresnelTCoeff( const Float_t val ){ fCentralFresnelTCoeff = val; }
 
+    // Set the relative cos-theta value of the lightpath to the laserball
+    // axis from the off-axis run.
     void SetLBTheta( const Float_t val ){ fLBTheta = val; }
+
+    // Set the relative cos-theta value of the lightpath to the laserball
+    // axis from the central run.
     void SetCentralLBTheta( const Float_t val ){ fCentralLBTheta = val; }
 
+    // Set the relative phi coordinate of the lightpath to the laserball
+    // axis from the off-axis run.
     void SetLBPhi( const Float_t val ){ fLBPhi = val; }
+
+    // Set the relative phi coordinate of the lightpath to the laserball
+    // axis from the central run.
     void SetCentralLBPhi( const Float_t val ){ fCentralLBPhi = val; }
 
+    // Set the incident angle (in degrees) to the PMT bucket plane 
+    // from the light path from the off-axis run.
     void SetIncidentAngle( const Float_t val ){ fIncidentAngle = val; }
+
+    // Set the incident angle (in degrees) to the PMT bucket plane 
+    // from the light path from the central run.
     void SetCentralIncidentAngle( const Float_t val ){ fCentralIncidentAngle = val; }
 
+    // Set the sum of all the prompt MPE occupancy values for 
+    // the PMTs in the run from whence this data point came 
+    // for the off-axis run.
     void SetLBIntensityNorm( const Float_t val ){ fLBIntensityNorm = val; }
+
+    // Set the sum of all the prompt MPE occupancy values for 
+    // the PMTs in the run from whence this data point came 
+    // for the central run.
     void SetCentralLBIntensityNorm( const Float_t val ){ fCentralLBIntensityNorm = val; }
 
+    // Set the CSS flag for the PMT which this data point represents
+    // from the off-axis run (CSS: Channel Software Status (AQXX)).
     void SetCSSFlag( const Int_t val ){ fCSSFlag = val; }
+    
+    // Set the CSS flag for the PMT which this data point represents
+    // from the central run (CSS: Channel Software Status (AQXX)).
     void SetCentralCSSFlag( const Int_t val ){ fCentralCSSFlag = val; }
 
+    // Set the CHS flag for the PMT which this data point represents
+    // from the off-axis run (CHS: Channel Hardware Status (DQXX)).
     void SetCHSFlag( const Int_t val ){ fCHSFlag = val; }
+
+    // Set the CHS flag for the PMT which this data point represents
+    // from the central run (CHS: Channel Hardware Status (DQXX)).
     void SetCentralCHSFlag( const Int_t val ){ fCentralCHSFlag = val; }
 
+    // Set the path flag status for this data point from the
+    // off axis run.
     void SetBadPathFlag( const Bool_t val ){ fBadPathFlag = val; }
+
+    
+    // Set the path flag status for this data point from the
+    // central run.
     void SetCentralBadPathFlag( const Bool_t val ){ fCentralBadPathFlag = val; }
 
+    // Set the occupancy ratio (MPE corrected value ratio) for this
+    // data-point, ( ratio = off-axis / central ).
     void SetOccupancyRatio( const Float_t val ){ fOccupancyRatio = val; }
+
+    // Set the error on the occupancy ratio (MPE corrected value ratio) 
+    // for this data-point, ( ratio = off-axis / central ).
     void SetOccupancyRatioErr( const Float_t val ){ fOccupancyRatioErr = val; }
+
+    // Set the model predicted ratio for this
+    // data-point, ( ratio = off-axis / central ). The value for this is
+    // only initialised once a LOCASChiSquare object has computed the 
+    // chi-square value for this data point.
     void SetModelOccupancyRatio( const Float_t val ){ fModelOccupancyRatio = val; }
 
   private:

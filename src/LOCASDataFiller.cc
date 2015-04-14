@@ -1,12 +1,11 @@
-#include "LOCASRunReader.hh"
-#include "LOCASRun.hh"
-#include "LOCASPMT.hh"
 #include "LOCASDataFiller.hh"
 #include "LOCASDataStore.hh"
 #include "LOCASDataPoint.hh"
 #include "LOCASFilter.hh"
 #include "LOCASFilterStore.hh"
 #include "LOCASChiSquare.hh"
+
+#include "TMath.h"
 
 #include <iostream>
 
@@ -194,6 +193,3 @@ void LOCASDataFiller::FilterData( LOCASFilterStore* lFilterStore,
   delete newStore;
   
 }
-
-//////////////////////////////////////
-/////////////////////////////////////

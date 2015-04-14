@@ -36,7 +36,6 @@
 
 #include "LOCASDataStore.hh"
 #include "LOCASFilterStore.hh"
-
 #include "LOCASChiSquare.hh"
 
 using namespace std;
