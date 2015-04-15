@@ -14,7 +14,10 @@
 /// REVISION HISTORY:
 ///     04/2015 : RPFS - First Revision, new file.
 ///
-/// DETAILS:
+/// DETAIL: This object holds lots of individual 
+///         LOCASModelParameter objects together which collectively
+///         can be used by a LOCASOpticsModle object to make
+///         model predictions for the occuapncy ratio.
 ///
 ////////////////////////////////////////////////////////////////////
 

@@ -75,6 +75,8 @@ int main( int argc, char** argv ){
 
   LOCASOpticsModel* lModel = new LOCASOpticsModel();
   lModel->SetLOCASModelParameterStore( lParStore );
+  lModel->SetRequiredNPMTAngularRepsonseEntries( 10 );
+  lModel->SetRequiredNLBDistributionEntries( 2 );
 
   // Initialise the database loader to parse the cardfile passed as the command line
   LOCASDB lDB;
