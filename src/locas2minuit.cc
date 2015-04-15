@@ -138,6 +138,9 @@ int main( int argc, char** argv ){
     
   }
 
+  lParStore->CrossCheckParameters();
+  lParStore->WriteToFile();
+
   // // Setup the model to be used in the chisquare function
   // cout << "Model Setup" << endl;
   // lModel->ModelSetup( argv[1] );

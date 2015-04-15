@@ -24,8 +24,14 @@ ClassImp( LOCASModelParameterStore )
 LOCASModelParameterStore::LOCASModelParameterStore( string storeName )
 {
 
+  // Set the store name.
   fStoreName = storeName;
+
+  // Ensure the vector which will hold all the parameter objects
+  // is empty to begin with.
   fParameters.clear();
+
+  // Ensure all the pointers are initialised to 'NULL'
   fParametersPtr = NULL;
   fParametersVary = NULL;
   fCovarianceMatrix = NULL;
@@ -33,7 +39,24 @@ LOCASModelParameterStore::LOCASModelParameterStore( string storeName )
   fVariableParameterIndex = NULL;
   fVariableParameterMap = NULL;
   fPMTAngularResponseIndex = NULL;
-  fNParameters = 0;
+
+  // Set the 'Int_t' type variables to non-interpretive values,
+  // i.e. -1.
+  fCurrentLBDistributionBin = -1;
+  fCentralCurrentLBDistributionBin = -1;
+  fCurrentPMTAngularResponseBin = -1;
+  fCentralCurrentPMTAngularResponseBin = -1;
+  fCurrentLBRunNormalisationBin = -1;
+  
+  fNLBDistributionMaskParameters = -1;
+  fNPMTAngularResponseBins = -1;
+  fNLBDistributionCosThetaBins = -1;
+  fNLBDistributionPhiBins = -1;
+  fNLBRunNormalisations = -1;
+
+  fNParameters = -1;
+  fNCurrentVariableParameters = -1;
+  fNBaseVariableParameters = -1;
 
 }
 
@@ -43,6 +66,8 @@ LOCASModelParameterStore::LOCASModelParameterStore( string storeName )
 void LOCASModelParameterStore::PrintParameterInfo()
 {
 
+  // For each parameter currently held in the store, print
+  // out all the information for that parameter.
   vector< LOCASModelParameter >::iterator iPar;
 
   cout << "Number of Parameters is: " << GetNParameters() << endl;
@@ -64,42 +89,60 @@ void LOCASModelParameterStore::PrintParameterInfo()
 void LOCASModelParameterStore::AddParameters( const char* fileName )
 {
 
+  // Create a LOCASDB object so that the 'fit-file' can be read.
   LOCASDB lDB;
+
+  // Tell the LOCASDB object where to read the information from.
   lDB.SetFile( fileName );
 
-  Float_t maxVal, minVal, initVal, incVal = 0.0;
+  // Initialise the variables which will be defined
+  // for each parameter which is to be created in the
+  // loops which follow.
+  Float_t maxVal = 0.0;
+  Float_t minVal = 0.0;
+  Float_t initVal = 0.0;
+  Float_t incVal = 0.0;
   Int_t nParsInGroup = 0;
   Bool_t varyBool = false;
+
+  // List of runs.
   vector< Int_t > indexList;
+
+  // String stream and temport string object for string concatenation.
   stringstream lStream;
   string parStr = "";
 
-  // Get a list of the parameters to be included in the parameter store
+  // Get the list of the parameters to be included in the parameter store.
   vector< string > paramList = lDB.GetStringVectorField( "FITFILE", "parameters_list", "parameter_setup" );
 
-  // First find out the specifics for the number of bins required for each parameter type.
+  // First find out the specifics for the number of bins required 
+  // for each parameter type.
   // i.e. - Laserball Mask Function: Number of Parameters 'fNLBDistributionMaskParameters'
   //      - PMT Angular Response: Number of bins between 0-degrees and 90-degrees 'fNPMTAngularResponseBins'
   //      - Laserball Isotropy Distribution 2D ( CosTheta, Phi ) Histogram:
-  //                  - Number of bins in CosTheta between -1.0 and +1.0 'fNLBDistributionCosThetaBins'
-  //                  - Number of bins in Phi between 0.0 and 360.0 'fNLBDistributionPhiBins'
+  //            * Number of bins in CosTheta between -1.0 and +1.0 'fNLBDistributionCosThetaBins'
+  //            * Number of bins in Phi between 0.0 and 360.0 'fNLBDistributionPhiBins'
 
-  // Loop over each parameter set in the card file and add them/it to the store
+  // Loop over each parameter set in the card file and add them/it to the store.
   for ( Int_t iStr = 0; iStr < (Int_t)paramList.size(); iStr++ ){
 
+    // Laserball distribution mask.
     if ( paramList[ iStr ] == "laserball_intensity_mask" ){
       fNLBDistributionMaskParameters = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_parameters" ), "parameter_setup" );
     }
 
+    // PMT angular response.
     else if ( paramList[ iStr ] == "pmt_angular_response" ){
       fNPMTAngularResponseBins = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_bins" ), "parameter_setup" );
     }
 
+    // Laserball distribution hisotgram.
     else if ( paramList[ iStr ] == "laserball_distribution_histogram" ){
       fNLBDistributionCosThetaBins = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_cos_theta_bins" ), "parameter_setup" );
       fNLBDistributionPhiBins = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_phi_bins" ), "parameter_setup" );
     }
 
+    // Laserball run normalisation.
     else if ( paramList[ iStr ] == "laserball_run_normalisation" ){
       vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" );
       fNLBRunNormalisations = (Int_t)( runIDs.size() );
@@ -139,7 +182,8 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
       else if ( paramList[ iStr ] == "water_extinction_length" ){ parIndex = 3; }
       else{ cout << "LOCASModelParameterStore::LOCASModelParameterStore: Error, unknown parameter passed" << endl; }
 
-      LOCASModelParameter lParameter( (string)( paramList[ iStr ] ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, varyBool );
+      LOCASModelParameter lParameter( (string)( paramList[ iStr ] ), parIndex, initVal, 
+                                      minVal, maxVal, incVal, nParsInGroup, varyBool );
       AddParameter( lParameter );
 
     }
@@ -177,7 +221,8 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 
         Int_t parIndex = 3 + iPar;
         cout << "VaryBool is: " << varyBool << endl;
-        LOCASModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, parVary );
+        LOCASModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, 
+                                        minVal, maxVal, incVal, nParsInGroup, parVary );
         AddParameter( lParameter );
         
         lStream.clear();
@@ -193,9 +238,9 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 
       Float_t angleVal = 0.0;
       // Now loop over each angular response parameter and initialise its initial values;
-      for ( Int_t iPar = 0; iPar < nParsInGroup; iPar++ ){
+      for ( Int_t iPar = 1; iPar <= nParsInGroup; iPar++ ){
 
-        angleVal = ( iPar + 0.5 ) * ( 90.0 / fNPMTAngularResponseBins ); // Centre of each bin...
+        angleVal = ( iPar - 0.5 ) * ( 90.0 / fNPMTAngularResponseBins ); // Centre of each bin...
         if ( angleVal < 36.0 ){ initVal = 1.0 + ( 0.002222 * angleVal ); }
         else{ initVal = 1.0; }
 
@@ -218,8 +263,11 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
         lStream << iPar;
         lStream >> parStr;
 
-        Int_t parIndex = 3 + fNLBDistributionMaskParameters + 1 + iPar;
-        LOCASModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, parVary );
+        Int_t parIndex = 3 + 
+          fNLBDistributionMaskParameters + 
+          iPar;
+        LOCASModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, 
+                                        minVal, maxVal, incVal, nParsInGroup, parVary );
         AddParameter( lParameter );
         
         lStream.clear();
@@ -250,8 +298,12 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
         lStream << iPar;
         lStream >> parStr;
 
-        Int_t parIndex = 3 + fNLBDistributionMaskParameters + fNPMTAngularResponseBins + iPar;
-        LOCASModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, varyBool );
+        Int_t parIndex = 3 + 
+          fNLBDistributionMaskParameters + 
+          fNPMTAngularResponseBins + 
+          iPar;
+        LOCASModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, 
+                                        minVal, maxVal, incVal, nParsInGroup, varyBool );
         AddParameter( lParameter );
         
         lStream.clear();
@@ -285,8 +337,13 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
         lStream << runIDs[ iPar - 1 ];
         lStream >> parStr;
 
-        Int_t parIndex = 3 + fNLBDistributionMaskParameters + fNPMTAngularResponseBins + ( fNLBDistributionPhiBins * fNLBDistributionCosThetaBins ) + iPar;
-        LOCASModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, nParsInGroup, varyBool );
+        Int_t parIndex = 3 + 
+          fNLBDistributionMaskParameters + 
+          fNPMTAngularResponseBins + 
+          ( fNLBDistributionPhiBins * fNLBDistributionCosThetaBins ) 
+          + iPar;
+        LOCASModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, 
+                                        minVal, maxVal, incVal, nParsInGroup, varyBool );
         AddParameter( lParameter );
         
         lStream.clear();
@@ -305,27 +362,69 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 //////////////////////////////////////
 //////////////////////////////////////
 
+void LOCASModelParameterStore::WriteToFile( const char* fileName )
+{
+
+  TFile* file = TFile::Open( fileName, "RECREATE" );
+
+  // Create the parameter Tree
+  TTree* parTree = new TTree( fileName, fileName );
+
+  // Declare a new branch pointing to the parameter store
+  parTree->Branch( "LOCASModelParameterStore", (*this).ClassName(), &(*this), 32000, 99 );
+  file->cd();
+
+  // Fill the tree and write it to the file
+  parTree->Fill();
+  parTree->Write();
+
+  // Close the file
+  file->Close();
+  delete file;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 void LOCASModelParameterStore::AllocateParameterArrays()
 {
 
+  // Allocate memory for the pointer which will hold the parameter values.
   fParametersPtr = LOCASMath::LOCASVector( 1, fNParameters );
+
+  // Allocate memory for the pointer which will hold the varying map
+  // for each of the parameters (1: Vary, 0: Fixed)
   fParametersVary = LOCASMath::LOCASIntVector( 1, fNParameters );
+
+  // Allocate the memory for the covariance and derivative matrices.
   fCovarianceMatrix = LOCASMath::LOCASMatrix( 1, fNParameters, 1, fNParameters );
   fDerivativeMatrix = LOCASMath::LOCASMatrix( 1, fNParameters, 1, fNParameters );
 
+  // First initialise all the values in the above pointers to zero.
   for ( Int_t iIndex = 1; iIndex <= fNParameters; iIndex++ ){
+    fParametersPtr[ iIndex ] = 0.0;
+    fParametersVary[ iIndex ] = 0;
     for ( Int_t jIndex = 1; jIndex <= fNParameters; jIndex++ ){
       fCovarianceMatrix[ iIndex ][ jIndex ] = 0.0;
       fDerivativeMatrix[ iIndex ][ jIndex ] = 0.0;
     }
   }
 
+  // Now put each of the initial parameter values into the
+  // parameter pointer array from the vector of LOCASModelParameter objects.
+  // i.e. LOCASModelParameter --> Pointer Array (fParametersPtr).
+  // And also assign whether or not the parameter will vary.
+  // i.e. LOCASModelParameter --> Pointer Array (fParametersVary);
   vector< LOCASModelParameter >::iterator iPar;
   for ( iPar = GetLOCASModelParametersIterBegin();
         iPar != GetLOCASModelParametersIterEnd();
         iPar++ ){
 
+    // Set the initial value of the parameter in the array.
     fParametersPtr[ iPar->GetIndex() ] = iPar->GetInitialValue();
+
+    // Set whether or not the parameter is required to vary (0: Fixed, 1: Vary).
     if ( iPar->GetVary() ){ fParametersVary[ iPar->GetIndex() ] = 1; }
     else{ fParametersVary[ iPar->GetIndex() ] = 0; }
 
@@ -339,52 +438,80 @@ void LOCASModelParameterStore::AllocateParameterArrays()
 void LOCASModelParameterStore::InitialisePMTAngularResponseIndex()
 {
 
-  if ( fVariableParameterMap ) delete[] fVariableParameterMap;
+  // // Allocate memory for the look-up index to be used to 
+  // // keep track of the ordered variable parameters in the fit.
+  if ( fVariableParameterMap != NULL ){ delete[] fVariableParameterMap; }
   fVariableParameterMap = new Int_t[ fNParameters + 1 ];
 
-  Int_t i = 0; 
-  Int_t j = 0;
+  Int_t iVal = 0; 
+  Int_t jVal = 0;
 
-  j = 0;
-  for ( i = 1; i <= fNParameters; i++ ) if ( fParametersVary[ i ] ) fVariableParameterMap[ i ] = ++j;
+  // First assign the order of variability to the variable
+  // parameter map for parameters which vary in the fit.
+  jVal = 0;
+  for ( iVal = 1; iVal <= fNParameters; iVal++ ){
+    if ( fParametersVary[ iVal ] ){
+      fVariableParameterMap[ iVal ] = ++jVal;
+    }
+  }
   
-  if ( fPMTAngularResponseIndex ){
-    for ( i = 0; i < fNPMTAngularResponseBins + 1; i++ ){
-      for ( j = 0; j < fNPMTAngularResponseBins + 1; j++ ){
-	delete[] fPMTAngularResponseIndex[ i ][ j ];
+  // If the look-up array for the PMT Angular Response already exists,
+  // delete it. 
+  // As the array is a pointer to an array of arrays each holding an array!
+  // We need three loops to deallocate all the memory.
+  if ( fPMTAngularResponseIndex != NULL ){
+    for ( iVal = 0; iVal < fNPMTAngularResponseBins + 1; iVal++ ){
+      for ( jVal = 0; jVal < fNPMTAngularResponseBins + 1; jVal++ ){
+	delete[] fPMTAngularResponseIndex[ iVal ][ jVal ];
       }
-      delete[] fPMTAngularResponseIndex[ i ];
+      delete[] fPMTAngularResponseIndex[ iVal ];
     }
     delete[] fPMTAngularResponseIndex;
   }
   
+  // Ensure the pointer to the array is 'NULL'.
   fPMTAngularResponseIndex = NULL;
   
+  // Now allocate memory for a new PMT Angular response index look-up.
+  // The idea of the index look-up is to keep a track of which bins
+  // and how many vary between an evaluation of a data point from the
+  // off-axis and central calculations.
+  // e.g. data point A may use the 10-th PMT angular response bin 
+  //      for the off-axis run, and the 0-th PMT angular response bin
+  //      for the central run. So two bins will be associated with that
+  //      data point for the PMT angular response.
+  //
+  //      data point B may use the 0-th bin for BOTH off-axis and
+  //      central runs. So only one bin will be associate with that
+  //      data point for the PMT angular response.
   fPMTAngularResponseIndex = new Int_t**[ fNPMTAngularResponseBins + 1 ];
-  for ( i = 0; i < fNPMTAngularResponseBins + 1; i++ ){
-    fPMTAngularResponseIndex[ i ] = new Int_t*[ fNPMTAngularResponseBins + 1 ];
-    for ( j = 0; j < fNPMTAngularResponseBins + 1; j++ ) fPMTAngularResponseIndex[ i ][ j ] = new Int_t[ 4 + 1 ];
+  for ( iVal = 0; iVal < fNPMTAngularResponseBins + 1; iVal++ ){
+    fPMTAngularResponseIndex[ iVal ] = new Int_t*[ fNPMTAngularResponseBins + 1 ];
+    for ( jVal = 0; jVal < fNPMTAngularResponseBins + 1; jVal++ ){ 
+      fPMTAngularResponseIndex[ iVal ][ jVal ] = new Int_t[ 4 + 1 ];
+    }
   }
+  Int_t first = 0;
+  Int_t second = 0;
 
-  Int_t first, second;
-
-  for ( i = 0; i <= fNPMTAngularResponseBins; i++ ) {
-    for ( j = 0; j <= fNPMTAngularResponseBins; j++ ) {
-      if ( i <= j ) { first = i; second = j; }
-      else { first = j; second = i; }
-      if (first==second) {
-        fPMTAngularResponseIndex[i][j][0] = 1;
-        fPMTAngularResponseIndex[i][j][1] = first;
-        fPMTAngularResponseIndex[i][j][2] = -1;
-        fPMTAngularResponseIndex[i][j][3] = -1;
-        fPMTAngularResponseIndex[i][j][4] = -1;
+  // Fill the PMT angular response index look-up.
+  for ( iVal = 0; iVal <= fNPMTAngularResponseBins; iVal++ ) {
+    for ( jVal = 0; jVal <= fNPMTAngularResponseBins; jVal++ ) {
+      if ( iVal <= jVal ) { first = iVal; second = jVal; }
+      else { first = jVal; second = iVal; }
+      if ( first == second ) {
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 0 ] = 1;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 1 ] = first;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 2 ] = -1;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 3 ] = -1;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 4 ] = -1;
       } 
       else {
-        fPMTAngularResponseIndex[i][j][0] = 2;
-        fPMTAngularResponseIndex[i][j][1] = first;
-        fPMTAngularResponseIndex[i][j][2] = second;
-        fPMTAngularResponseIndex[i][j][3] = -1;
-        fPMTAngularResponseIndex[i][j][4] = -1;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 0 ] = 2;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 1 ] = first;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 2 ] = second;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 3 ] = -1;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 4 ] = -1;
       }
     }
   }
@@ -397,102 +524,119 @@ void LOCASModelParameterStore::InitialisePMTAngularResponseIndex()
 void LOCASModelParameterStore::IdentifyVaryingParameters()
 {
 
-  Int_t i;
+  Int_t iVal = 0;
 
+  // Set the number of variable parameters for the current data point to 
+  // be equal to the base number of parameters to be gin with
+  // i.e. the variables we know vary for all data points.
   fNCurrentVariableParameters = fNBaseVariableParameters;
                                                                            
-  Int_t parnum;
+  Int_t parnum = 0;
 
-  for ( i = 1; i <= fPMTAngularResponseIndex[ fCurrentPMTAngularResponseBin ][ fCentralCurrentPMTAngularResponseBin ][ 0 ]; i++ ){
+  // Fill the variable parameter index with the indices of the parameters
+  // which vary for the current data point.
+  for ( iVal = 1; iVal <= fPMTAngularResponseIndex[ fCurrentPMTAngularResponseBin ][ fCentralCurrentPMTAngularResponseBin ][ 0 ]; iVal++ ){
     
-    parnum = GetPMTAngularResponseParIndex() + fPMTAngularResponseIndex[ fCurrentPMTAngularResponseBin ][ fCentralCurrentPMTAngularResponseBin ][ i ];
+    parnum = GetPMTAngularResponseParIndex() + fPMTAngularResponseIndex[ fCurrentPMTAngularResponseBin ][ fCentralCurrentPMTAngularResponseBin ][ iVal ];
+    if ( fParametersVary[ parnum ] ){
+      fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum;
+    }
+
+  }
+ 
+  // Identify which bins varied, and in which order for the
+  // laserball distribution. Then give the associated parameter indices
+  // linked to those bins to the variable parameter index array.
+  Int_t first = 0;
+  Int_t second = 0;
+  if ( fCurrentLBDistributionBin <= fCentralCurrentLBDistributionBin ){ 
+    first = fCurrentLBDistributionBin; 
+    second = fCentralCurrentLBDistributionBin; 
+  }
+  else{ 
+    first = fCentralCurrentLBDistributionBin; 
+    second = fCurrentLBDistributionBin; 
+  }
+  
+  if ( first != second ){
+    parnum = GetLBDistributionParIndex() + first;
+    if ( fParametersVary[ parnum ] ){ 
+      fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum;
+    }
+    
+    parnum = GetLBDistributionParIndex() + second;
     if ( fParametersVary[ parnum ] ){
       fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum;
     }
   }
   
-  Int_t first, second;
-  if ( fCurrentLBDistributionBin <= fCentralCurrentLBDistributionBin ){ first = fCurrentLBDistributionBin; second = fCentralCurrentLBDistributionBin; }
-  else{ first = fCentralCurrentLBDistributionBin; second = fCurrentLBDistributionBin; }
-  
-  if ( first != second ){
-    parnum = GetLBDistributionParIndex() + first;
-    if ( fParametersVary[ parnum ] ) fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum;
-    
-    parnum = GetLBDistributionParIndex() + second;
-    if ( fParametersVary[ parnum ] ) fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum;
-  }
-  
   else{
     parnum = GetLBRunNormalisationParIndex() + fCurrentLBRunNormalisationBin;
-    if ( fParametersVary[ parnum ] ){ fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum; 
+    if ( fParametersVary[ parnum ] ){ 
+      fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum; 
     }
   }
   return;
 
 }
+
 //////////////////////////////////////
 //////////////////////////////////////
 
 void LOCASModelParameterStore::IdentifyBaseVaryingParameters()
 {
 
-  if ( fVariableParameterIndex != NULL ) delete[] fVariableParameterIndex;
-  fVariableParameterIndex = new Int_t[ fNParameters ];          // The number of unique parameters is guaranteed to be less than 
-                                                                // the number of total parameters
+  if ( fVariableParameterIndex != NULL ) { delete[] fVariableParameterIndex; }
+  // The number of unique parameters is guaranteed to be less than 
+  // the number of total parameters.
+  fVariableParameterIndex = new Int_t[ fNParameters ];
 
+  // First set the number of base varying parameters to zero.
   fNBaseVariableParameters = 0;
-  if( fParametersVary[ GetInnerAVExtinctionLengthParIndex() ] ) fVariableParameterIndex[ ++fNBaseVariableParameters ] = GetInnerAVExtinctionLengthParIndex();
-  if( fParametersVary[ GetAVExtinctionLengthParIndex() ] ) fVariableParameterIndex[ ++fNBaseVariableParameters ] = GetAVExtinctionLengthParIndex();
-  if( fParametersVary[ GetWaterExtinctionLengthParIndex() ] ) fVariableParameterIndex[ ++fNBaseVariableParameters ] = GetWaterExtinctionLengthParIndex();
 
+  // Now check which of the extinction lengths vary in the fit.
+  // For those which vary, add their parameter index to the variable parameter
+  // index array.
+  if( fParametersVary[ GetInnerAVExtinctionLengthParIndex() ] ){ 
+    fVariableParameterIndex[ ++fNBaseVariableParameters ] = GetInnerAVExtinctionLengthParIndex();
+  }
+  if( fParametersVary[ GetAVExtinctionLengthParIndex() ] ){ 
+    fVariableParameterIndex[ ++fNBaseVariableParameters ] = GetAVExtinctionLengthParIndex();
+  }
+  if( fParametersVary[ GetWaterExtinctionLengthParIndex() ] ){ 
+    fVariableParameterIndex[ ++fNBaseVariableParameters ] = GetWaterExtinctionLengthParIndex();
+  }
 
+  // Now check whether the laserball distribution mask is set to vary
+  // in the fit. If so, assign the parameter indices associated with the mask
+  // function to the variable parameter index array.
   for ( Int_t iPar = 0; iPar < fNLBDistributionMaskParameters; iPar++ ){
     if ( fParametersVary[ GetLBDistributionMaskParIndex() + iPar ] ){
       fVariableParameterIndex[ ++fNBaseVariableParameters ] = GetLBDistributionMaskParIndex() + iPar;
     }
   }
 
-  printf("fNBaseVariableParameters = %d == \n",fNBaseVariableParameters);
-  for (Int_t i = 1; i <= fNBaseVariableParameters; i++){
-    printf("%d ",fVariableParameterIndex[ i ]);
-    printf("\n");
-  }
-
 }
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASModelParameterStore::WriteToFile( const char* fileName )
+void LOCASModelParameterStore::CrossCheckParameters()
 {
 
-  TFile* file = TFile::Open( fileName, "RECREATE" );
-  // Create the Run Tree
-  TTree* runTree = new TTree( fileName, fileName );
+  // Now put each of the initial parameter values into the
+  // parameter pointer array from the vector of LOCASModelParameter objects.
+  // i.e. LOCASModelParameter --> Pointer Array (fParametersPtr).
+  // And also assign whether or not the parameter will vary.
+  // i.e. LOCASModelParameter --> Pointer Array (fParametersVary);
+  vector< LOCASModelParameter >::iterator iPar;
+  for ( iPar = GetLOCASModelParametersIterBegin();
+        iPar != GetLOCASModelParametersIterEnd();
+        iPar++ ){
 
-  // Declare a new branch pointing to the parameter store
-  runTree->Branch( "LOCASModelParameterStore", (*this).ClassName(), &(*this), 32000, 99 );
-  file->cd();
+    iPar->SetFinalValue( fParametersPtr[ iPar->GetIndex() ] );
+    iPar->SetVary( fParametersVary[ iPar->GetIndex() ] );
 
-  // Fill the tree and write it to the file
-  runTree->Fill();
-  runTree->Write();
+  }  
 
-  // Close the file
-  file->Close();
-  delete file;
-
-}
-
-//////////////////////////////////////
-//////////////////////////////////////
-
-void LOCASModelParameterStore::ReInitialiseParameters( const Double_t* pars )
-{
-
-  for ( Int_t iPar = 0; iPar < (Int_t)fParameters.size(); iPar++ ){
-    ( fParameters[ iPar ] ).SetInitialValue( pars[ fParameters[ iPar ].GetIndex() ] );
-  } 
-  
 }

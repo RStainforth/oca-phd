@@ -14,13 +14,14 @@
 /// REVISION HISTORY:
 ///     04/2015 : RPFS - First Revision, new file.
 ///
+/// DETAILS:
+///
 ////////////////////////////////////////////////////////////////////
 
 #ifndef _LOCASModelParameterStore_
 #define _LOCASModelParameterStore_
 
 #include "LOCASModelParameter.hh"
-#include "LOCASMath.hh"
 
 #include <string>
 
@@ -54,23 +55,24 @@ namespace LOCAS{
     // Write the parameters to a .root file
     void WriteToFile( const char* fileName = "LOCASModelParameterStore.root" );
 
-    // Reinitialise the initial values of the parameters based 
-    // on the values in the passed array, 'pars'.
-    void ReInitialiseParameters( const Double_t* par );
-
     // Allocate the memory for the parameter arrays.
     void AllocateParameterArrays();
 
     // Initialise the PMT angular response look-up array.
+    // Book keeping for the variable PMT angularresponse bins.
     void InitialisePMTAngularResponseIndex();
 
     // Identify all the current varying parameters for the last
-    // evaluated data point.
+    // evaluated data point. e.g. Laserball distribution and PMT angular response bins.
     void IdentifyVaryingParameters();
 
     // Identify all the current base varying parameters.
-    // i.e. the parameters which vary for every data point in the fit.
+    // i.e. the parameters which vary for every data point in the fit. e.g. extinction lengths
     void IdentifyBaseVaryingParameters();
+
+    // After a fit, ensure both the pointer arrays and vector of 
+    // LOCASModelParameter objects hold the same values.
+    void CrossCheckParameters();
 
     /////////////////////////////////
     ////////     GETTERS     ////////
@@ -104,19 +106,25 @@ namespace LOCAS{
     // for the last evaluated data point.
     Int_t* GetVariableParameterMap() { return fVariableParameterMap; }
 
-    // Get the current PMT angular response bin.
+    // After evaluating a specific data point, get the current 
+    // PMT angular response bin from the off-axis run.
     Int_t GetCurrentPMTAngularResponseBin() const { return fCurrentPMTAngularResponseBin; }
 
-    // Get the current PMT angular response bin from the central run.
+    // After evaluating a specific data point, get the current 
+    // PMT angular response bin from the central run.
     Int_t GetCentralCurrentPMTAngularResponseBin() const { return fCentralCurrentPMTAngularResponseBin; }
 
-    // Get the current laserball distribution bin.
+    // After evaluating a specific data point, get the current 
+    // laserball distribution bin from the off-axis run.
     Int_t GetCurrentLBDistributionBin() const { return fCurrentLBDistributionBin; }
 
-    // Get the current laserball distribution bin from the central run.
+    // After evaluating a specific data point, get the current 
+    // laserball distribution bin from the central run.
     Int_t GetCentralCurrentLBDistributionBin() const { return fCentralCurrentLBDistributionBin; }
 
-    // Get the current laserball run normalisation bin.
+    // After evaluating a specific data point, get the current 
+    // laserball run normalisation bin corresponding to the run index
+    // of the data point associated with the run from whence it came.
     Int_t GetCurrentLBRunNormalisationBin() const { return fCurrentLBRunNormalisationBin; }
 
     // Get the number of laserball mask parameters.
@@ -152,25 +160,25 @@ namespace LOCAS{
     // Get the water extinction length parameter.
     Float_t GetWaterExtinctionLengthPar() { return fParametersPtr[ GetWaterExtinctionLengthParIndex() ]; }
 
-    // Get the index for the start of the laserball distribution mask parameters
+    // Get the index for the start of the laserball distribution mask parameters.
     Int_t GetLBDistributionMaskParIndex() const { return 3 + 1; }
 
     // Get the 'iPar'-th laserball distriubtion mask parameter.
     Float_t GetLBDistributionMaskPar( const Int_t iPar ) { return fParametersPtr[ GetLBDistributionMaskParIndex() + iPar ]; }
 
-    // Get the index for the start of the pmt angular response parameters
+    // Get the index for the start of the pmt angular response parameters.
     Int_t GetPMTAngularResponseParIndex() const { return 3 + fNLBDistributionMaskParameters + 1; }
 
     // Get the 'iPar'-th PMT angular response parameter.
     Float_t GetPMTAngularResponsePar( const Int_t iPar ) { return fParametersPtr[ GetPMTAngularResponseParIndex() + iPar ]; }
     
-    // Get the index for the start of the laserball distribution hisotgram parameters
+    // Get the index for the start of the laserball distribution hisotgram parameters.
     Int_t GetLBDistributionParIndex() const { return 3 + fNLBDistributionMaskParameters + fNPMTAngularResponseBins + 1; }
 
     // Get the 'iPar'-th laserball distribution parameter.
     Float_t GetLBDistributionPar( const Int_t iPar ) { return fParametersPtr[ GetLBDistributionParIndex() + iPar ]; } 
     
-    // Get the index for the start of the run normalisation parameters
+    // Get the index for the start of the run normalisation parameters.
     Int_t GetLBRunNormalisationParIndex() const { return 3 + fNLBDistributionMaskParameters 
         + fNPMTAngularResponseBins + ( fNLBDistributionCosThetaBins * fNLBDistributionPhiBins ) + 1; }
 
@@ -187,68 +195,79 @@ namespace LOCAS{
     ////////     SETTERS     ////////
     /////////////////////////////////
 
-    void SetNParameters( const Int_t nPars ){ fNParameters = nPars; }
-
-    void SetCurrentLBDistributionBin( const Int_t iBin ){ fCurrentLBDistributionBin = iBin; }
-
-    void SetCentralCurrentLBDistributionBin( const Int_t iBin ){ fCentralCurrentLBDistributionBin = iBin; }
-
+    // After evaluating a specific data point, set the current 
+    // PMT angular response bin from the off-axis run.
     void SetCurrentPMTAngularRepsonseBin( const Int_t iBin ){ fCurrentPMTAngularResponseBin = iBin; }
 
+    // After evaluating a specific data point, set the current 
+    // PMT angular response bin from the central run.
     void SetCentralCurrentPMTAngularResponseBin( const Int_t iBin ){ fCentralCurrentPMTAngularResponseBin = iBin; }
 
+    // After evaluating a specific data point, set the current 
+    // laserball distribtion bin from the off-axis run.
+    void SetCurrentLBDistributionBin( const Int_t iBin ){ fCurrentLBDistributionBin = iBin; }
+
+    // After evaluating a specific data point, set the current 
+    // laserball distribution bin from the central run.
+    void SetCentralCurrentLBDistributionBin( const Int_t iBin ){ fCentralCurrentLBDistributionBin = iBin; }
+
+    // After evaluating a specific data point, set the current 
+    // laserball run normalisation bin corresponding to the run index
+    // of the data point associated with the run from whence it came.
     void SetCurrentLBRunNormalisationBin( const Int_t iBin ) { fCurrentLBRunNormalisationBin = iBin; }
 
+    // Set the parameters to be stored by this object to those held in 
+    // an vector of other parameters.
     void SetParameters( const vector< LOCAS::LOCASModelParameter >& pars ){ fParameters = pars; }
 
+    // Set the parameter pointer array to those given by the 'pars' array.
     void SetParametersPtr( Float_t* pars ) { fParametersPtr = pars; }
 
   private:
 
-    string fStoreName;                          // The store name
+    string fStoreName;                               // The store name.
 
-    Int_t fNLBDistributionMaskParameters;            // The number of laserball mask parameters
-    Int_t fNPMTAngularResponseBins;                  // The number of PMT Angular Response Bins
-    Int_t fNLBDistributionCosThetaBins;              // The number of bins in cos theta ( -1.0, 1.0 ) for the laserball distribution 2d histogram
-    Int_t fNLBDistributionPhiBins;                   // The number of bins in phi ( 0.0, 360.0 ) for the laserball distribution 2d hisotgram
-    Int_t fNLBRunNormalisations;                     // The total number of run normalisations ( = number of laserball runs )
+    Int_t fCurrentLBDistributionBin;                 // The current laserball distribution bin for the off-axis run.
+    
+    Int_t fCentralCurrentLBDistributionBin;          // The current laserball distribution for the central run.
 
-    Int_t fNParameters;                              // The number of parameters in the store
+    Int_t fCurrentPMTAngularResponseBin;             // The current angular response bin for the off-axis run.
 
-    vector< LOCASModelParameter > fParameters;  // The vector of parameter objects i.e. the store
+    Int_t fCentralCurrentPMTAngularResponseBin;      // The current angular response bin for the off-axis run.
 
-    Float_t* fParametersPtr;                        // The pointer of parameter values ( ** FMRQPARAMETERS** )
-    Int_t* fParametersVary;                          // Array of which parameters vary ( =1 ) and which do not ( =0 ) ( **FMRQVARY** )
+    Int_t fCurrentLBRunNormalisationBin;             // The current index for the laserball normalisation.
 
-    Float_t** fCovarianceMatrix;                     // [fNParameters+1][fNParameters+1] Covariance matrix
-    Float_t** fDerivativeMatrix;                     // [fNParameters+1][fNParameters+1] Curvature matrix
+    Int_t fNLBDistributionMaskParameters;            // The number of laserball mask parameters.
+    Int_t fNPMTAngularResponseBins;                  // The number of PMT Angular Response Bins.
+    Int_t fNLBDistributionCosThetaBins;              // The number of bins in cos theta ( -1.0, 1.0 ) for the laserball distribution 2d histogram.
+    Int_t fNLBDistributionPhiBins;                   // The number of bins in phi ( 0.0, 360.0 ) for the laserball distribution 2d hisotgram.
+    Int_t fNLBRunNormalisations;                     // The total number of run normalisations ( = number of laserball runs ).
+
+    Int_t fNParameters;                              // The number of parameters in the store.
+
+    Int_t fNCurrentVariableParameters;               // The total number of current variable parameters.
+
+    vector< LOCASModelParameter > fParameters;       // The vector of parameter objects i.e. the store.
+
+    Float_t* fParametersPtr;                         //! The pointer of parameter values.
+    Int_t* fParametersVary;                          //! Array of which parameters vary ( =1 ) and which do not ( =0 ).
+
+    Float_t** fCovarianceMatrix;                     //! [ fNParameters + 1 ][ fNParameters + 1 ] Covariance matrix.
+    Float_t** fDerivativeMatrix;                     //! [ fNParameters + 1 ][ fNParameters + 1 ] Curvature matrix.
 
     Int_t fNBaseVariableParameters;                  // The number of base variable parameters, 
                                                      // i.e. the parameters which vary that do not include:
                                                      // - PMT angular response
                                                      // - Laserball distribution histogram 
-                                                     // - Laserball Run normalisations ( **FPARAMBASE** )
-
-    Int_t fNCurrentVariableParameters;               // The total number of current variable parameters,
+                                                     // - Laserball Run normalisations
                                                      // i.e. fNBaseVariableParameters + all the variable parameters in the following:
                                                      // - PMT angular response, 
-                                                     // - Laserball distribution and run normalisations at the last evaluated data point ( **FPARAM** )
+                                                     // - Laserball distribution and run normalisations at the last evaluated data point.
 
-    Int_t*** fPMTAngularResponseIndex;               // Look-up table for unique variable parameters in the PMT angular response ( **FANGINDEX** )
+    Int_t*** fPMTAngularResponseIndex;               //! Look-up table for unique variable parameters in the PMT angular response.
 
-    Int_t* fVariableParameterIndex;                  // Look-up table for the ordered variable parameter indices ( **FPARAMINDEX** )
-    Int_t* fVariableParameterMap;                    // Look-up table for the variable parameters (global) ( **FPARAMVARMAP** )
-
-    Int_t fCurrentLBDistributionBin;                 // The current laserball distribution bin for the off-axis run ( **fILBDIST** )
-    
-    Int_t fCentralCurrentLBDistributionBin;          // The current laserball distribution for the central run ( **fCILBDIST** )
-
-    Int_t fCurrentPMTAngularResponseBin;             // The current angular response bin for the off-axis run ( **fIANG** )
-
-    Int_t fCentralCurrentPMTAngularResponseBin;      // The current angular response bin for the off-axis run ( **fCIANG** )
-
-    Int_t fCurrentLBRunNormalisationBin;             // The current index for the laserball normalisation ( **fINORM** )
-
+    Int_t* fVariableParameterIndex;                  //! Look-up table for the ordered variable parameter indices.
+    Int_t* fVariableParameterMap;                    //! Look-up table for the variable parameters (global).
 
     ClassDef( LOCASModelParameterStore, 1 )
 
