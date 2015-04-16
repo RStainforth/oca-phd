@@ -148,8 +148,7 @@ namespace LOCAS{
                                                      // that bin represents to vary in the fit.
     
     LOCASModelParameterStore* fModelParameterStore;  // The parameter store of LOCASModelParameter 
-                                                     // objects whose values are stored 
-                                                     // in the fParameters array
+                                                     // objects.
     
     ClassDef( LOCASOpticsModel, 1 );
     

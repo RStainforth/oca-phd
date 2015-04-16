@@ -1,23 +1,7 @@
-////////////////////////////////////////////////////////////////////
-///
-/// FILENAME: LOCASPMT.cc
-///
-/// CLASS: LOCAS::LOCASPMT
-///
-/// BRIEF: Run level data structure for LOCAS optics analysis
-///        (Full description in LOCASPMT.hh)
-///          
-/// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
-///
-/// REVISION HISTORY:\n
-///     02/2014 : RPFS - First Revision, new file.
-///
-////////////////////////////////////////////////////////////////////
-
-#include <TMath.h>
 #include "LOCASPMT.hh"
-#include "LOCASDB.hh"
-#include "LOCASMath.hh"
+
+#include "TMath.h"
+
 #include <iostream>
 #include <vector>
 
@@ -449,7 +433,7 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASPMT::Initialise()
+void LOCASPMT::ClearPMT()
 {
 
   SetID( -1 );
@@ -477,7 +461,6 @@ void LOCASPMT::Initialise()
   SetTimeOfFlight( -10.0 );
   SetOccupancy( -10.0 );
   SetOccupancyErr( -10.0 );
-  SetOccupancyCorr( -10.0 );
   SetLBIntensityNorm( -10.0 );
 
   SetNLBPulses( -10.0 );
@@ -583,16 +566,6 @@ void LOCASPMT::Initialise()
 
   SetWavelengthInitialLBVec( nullVec );
   SetWavelengthIncidentLBVec( nullVec );
-
-}
-
-//////////////////////////////////////
-//////////////////////////////////////
-
-void LOCASPMT::ClearPMT()
-{
-
-  Initialise();
 
 }
 
