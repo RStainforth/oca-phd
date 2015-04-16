@@ -1,19 +1,3 @@
-////////////////////////////////////////////////////////////////////
-///
-/// FILENAME: LOCASRun.cc
-///
-/// CLASS: LOCAS::LOCASRun
-///
-/// BRIEF: Run level data structure for LOCAS optics analysis
-///        (Full description in LOCASRun.hh)
-///          
-/// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
-///
-/// REVISION HISTORY:\n
-///     02/2014 : RPFS - First Revision, new file. \n
-///
-////////////////////////////////////////////////////////////////////
-
 #include <iostream>
 
 #include "TMath.h"
@@ -37,24 +21,6 @@ using namespace LOCAS;
 using namespace std;
 
 ClassImp( LOCASRun )
-
-// Default Constructor
-LOCASRun::LOCASRun()
-{  
-  // NULL-ify PMT private variables  
-  fLOCASPMTs.clear();
-  Initialise();
-}
-
-//////////////////////////////////////
-//////////////////////////////////////
-
-// Default Destructor
-LOCASRun::~LOCASRun()
-{
-  // Delete LOCASPMT array
-  
-}
 
 //////////////////////////////////////
 //////////////////////////////////////
@@ -103,15 +69,12 @@ LOCASRun::LOCASRun( const LOCASRun& locasRHS )
   fWavelengthLBYPosErr = locasRHS.fWavelengthLBYPosErr;
   fWavelengthLBZPosErr = locasRHS.fWavelengthLBZPosErr;
 
-  fLBPosChi2 = locasRHS.fLBPosChi2;
   fLBTheta = locasRHS.fLBTheta;
   fLBPhi = locasRHS.fLBPhi;
 
-  fCentralLBPosChi2 = locasRHS.fCentralLBPosChi2;
   fCentralLBTheta = locasRHS.fCentralLBTheta;
   fCentralLBPhi = locasRHS.fCentralLBPhi;
 
-  fWavelengthLBPosChi2 = locasRHS.fWavelengthLBPosChi2;
   fWavelengthLBTheta = locasRHS.fWavelengthLBTheta;
   fWavelengthLBPhi = locasRHS.fWavelengthLBPhi;
 
@@ -169,15 +132,12 @@ LOCASRun& LOCASRun::operator=( const LOCASRun& locasRHS )
   fWavelengthLBYPosErr = locasRHS.fWavelengthLBYPosErr;
   fWavelengthLBZPosErr = locasRHS.fWavelengthLBZPosErr;
 
-  fLBPosChi2 = locasRHS.fLBPosChi2;
   fLBTheta = locasRHS.fLBTheta;
   fLBPhi = locasRHS.fLBPhi;
 
-  fCentralLBPosChi2 = locasRHS.fCentralLBPosChi2;
   fCentralLBTheta = locasRHS.fCentralLBTheta;
   fCentralLBPhi = locasRHS.fCentralLBPhi;
 
-  fWavelengthLBPosChi2 = locasRHS.fWavelengthLBPosChi2;
   fWavelengthLBTheta = locasRHS.fWavelengthLBTheta;
   fWavelengthLBPhi = locasRHS.fWavelengthLBPhi;
 
@@ -191,7 +151,7 @@ LOCASRun& LOCASRun::operator=( const LOCASRun& locasRHS )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASRun::Initialise()
+void LOCASRun::ClearRun()
 { 
 
   SetRunID( -1 );
@@ -233,30 +193,17 @@ void LOCASRun::Initialise()
   SetWavelengthLBYPosErr( -10.0 );
   SetWavelengthLBZPosErr( -10.0 );
 
-  SetLBPosChi2( -10.0 );
   SetLBTheta( -10.0 );
   SetLBPhi( -10.0 );
 
-  SetCentralLBPosChi2( -10.0 );
   SetCentralLBTheta( -10.0 );
   SetCentralLBPhi( -10.0 );
 
-  SetWavelengthLBPosChi2( -10.0 );
   SetWavelengthLBTheta( -10.0 );
   SetWavelengthLBPhi( -10.0 );
 
   if ( !fLOCASPMTs.empty() ){ fLOCASPMTs.clear(); }
 
-}
-
-//////////////////////////////////////
-//////////////////////////////////////
-
-void LOCASRun::ClearRun()
-{
-
-  Initialise();
-  
 }
 
 //////////////////////////////////////
@@ -275,7 +222,7 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR,
     if ( socPtr->GetRunID() == runID ){ break; }
     else{ continue; }
     
-    if ( iSOC == ( socR.GetSOCCount() - 1 ) ){
+    if ( iSOC == ( (Int_t)socR.GetSOCCount() - 1 ) ){
       cout << "LOCASRun::Fill: Error: No SOC file with specified run-ID found" << endl;
     }
   }
