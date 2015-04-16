@@ -1,14 +1,3 @@
-#include <iostream>
-
-#include "TMath.h"
-
-#include "LOCASRun.hh"
-#include "LOCASDB.hh"
-#include "LOCASPMT.hh"
-#include "LOCASMath.hh"
-
-#include <map>
-
 #include "RAT/DS/SOCPMT.hh"
 #include "RAT/DS/SOC.hh"
 #include "RAT/DS/FitResult.hh"
@@ -17,8 +6,19 @@
 #include "RAT/DU/PMTInfo.hh"
 #include "RAT/DU/LightPathCalculator.hh"
 
-using namespace LOCAS;
+
+#include "LOCASRun.hh"
+#include "LOCASDB.hh"
+#include "LOCASPMT.hh"
+#include "LOCASMath.hh"
+
+#include "TMath.h"
+
+#include <map>
+#include <iostream>
+
 using namespace std;
+using namespace LOCAS;
 
 ClassImp( LOCASRun )
 
@@ -27,6 +27,14 @@ ClassImp( LOCASRun )
 
 LOCASRun::LOCASRun( const LOCASRun& locasRHS )
 {
+  
+  // Copy constructor.
+  // Copy all the run specific information from the 
+  // LOCASRun object on the right hand side 'rhs' to 
+  // a new instance of a LOCASRun object (this one).
+  // However, PMT information is copied separately
+  // using either LOCASRun::CopyLOCASPMTInfo or
+  // LOCARun::CopySOCPMTInfo.
 
   fRunID = locasRHS.fRunID;
   fCentralRunID = locasRHS.fCentralRunID;
@@ -88,8 +96,12 @@ LOCASRun::LOCASRun( const LOCASRun& locasRHS )
 LOCASRun& LOCASRun::operator=( const LOCASRun& locasRHS )
 {
 
-  // Copies all Run information from locasRHS
-  // EXCEPT for the fLOCASPMTs map
+  // Copies all the run specific information from the
+  // LOCASRun object on the right hand side 'locasRHS'
+  // to this one, 'this'. 
+  // However, PMT information is copied separately
+  // using either LOCASRun::CopyLOCASPMTInfo or
+  // LOCARun::CopySOCPMTInfo.
 
   fRunID = locasRHS.fRunID;
   fCentralRunID = locasRHS.fCentralRunID;
@@ -141,7 +153,6 @@ LOCASRun& LOCASRun::operator=( const LOCASRun& locasRHS )
   fWavelengthLBTheta = locasRHS.fWavelengthLBTheta;
   fWavelengthLBPhi = locasRHS.fWavelengthLBPhi;
 
-
   if ( !fLOCASPMTs.empty() ){ fLOCASPMTs.clear(); }
 
   return *this;
@@ -153,6 +164,9 @@ LOCASRun& LOCASRun::operator=( const LOCASRun& locasRHS )
 
 void LOCASRun::ClearRun()
 { 
+
+  // Set all the private member variables
+  // to non-interpretive/physical values.
 
   SetRunID( -1 );
   SetCentralRunID( -1 );
@@ -215,15 +229,26 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR,
                      UInt_t runID )
 {
 
+  // Create a new RAT::DS::SOC object to be used
+  // in the loop below.
   RAT::DS::SOC* socPtr = new RAT::DS::SOC;
-  // First check that a SOC file with the specified runID exists in the SOCReader
+  
+  // First check that a SOC file with the 
+  // specified runID exists in the SOCReader.
   for ( Int_t iSOC = 0; iSOC < (Int_t)socR.GetSOCCount(); iSOC++ ){
+
+    // Get the SOC entry.
     *socPtr = socR.GetSOC( iSOC );
+
+    // Check for the run ID on the SOC file.
     if ( socPtr->GetRunID() == runID ){ break; }
     else{ continue; }
     
+    // If the SOC object with the required run ID cannot be found
+    // then return an error.
     if ( iSOC == ( (Int_t)socR.GetSOCCount() - 1 ) ){
       cout << "LOCASRun::Fill: Error: No SOC file with specified run-ID found" << endl;
+      return;
     }
   }
 
@@ -236,20 +261,19 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR,
   // ... and the PMT information from the SOC file.
   CopySOCPMTInfo( *socPtr );
 
+  // Note: The orientation of the laserball isn't held
+  // on the SOC file currently. So will need to implement
+  // this in the future.
   SetLBTheta( 0.0 );
   SetLBPhi( 0.0 );
 
-  cout << "Laserball Position is: ( " 
-       << GetLBPos().X() << ", "
-       << GetLBPos().Y() << ", "
-       << GetLBPos().Z() << " ) mm, R = " << GetLBPos().Mag() << " mm" << endl;
-
   // Create an iterator to loop over the PMTs...
-  std::map< Int_t, LOCASPMT >::iterator iLP;
+  map< Int_t, LOCASPMT >::iterator iLP;
 
   // The PMT ID variable for each PMT in the loop
-  Int_t pmtID;
+  Int_t pmtID = 0;
 
+  // Get the wavelength of the laser light in units of MeV.
   Double_t wavelengthMeV = lLP.WavelengthToEnergy( GetLambda() * 1.0e-6 );
   
   // Set the PMT positions and normals and then 'feed' the PMT a calculated light path.
@@ -263,23 +287,26 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR,
     // Set the run ID
     ( iLP->second ).SetRunID( runID );
 
-    // Set the Normals and Positions
+    // Set the PMT positions, normals and types.
     ( iLP->second ).SetPos( lDB.GetPosition( pmtID ) );
     ( iLP->second ).SetNorm( lDB.GetDirection( pmtID ) );
     ( iLP->second ).SetType( lDB.GetType( pmtID ) );
 
     // Put some of the run specific information on the PMT data structure.
-    // This is worth it when it comes to fitting, as only a single pointer to
+    // This is worth it when it comes to fitting, as only a single reference to
     // the PMT object will be required.
     ( iLP->second ).SetNLBPulses( GetNLBPulses() );
     ( iLP->second ).SetLBIntensityNorm( GetLBIntensityNorm() );
 
-    LOCASMath lMath;
-    ( iLP->second ).SetMPECorrOccupancy( lMath.MPECorrectedNPrompt( ( iLP->second ).GetOccupancy(), GetNLBPulses() ) );
-    ( iLP->second ).SetMPECorrOccupancyErr( lMath.MPECorrectedNPromptErr( ( iLP->second ).GetOccupancy(), GetNLBPulses() ) );
+    
+    ( iLP->second ).SetMPECorrOccupancy( LOCASMath::MPECorrectedNPrompt( ( iLP->second ).GetOccupancy(), GetNLBPulses() ) );
+    ( iLP->second ).SetMPECorrOccupancyErr( LOCASMath::MPECorrectedNPromptErr( ( iLP->second ).GetOccupancy(), GetNLBPulses() ) );
     
     // Calculate the light path for this source position and PMT
-    lLP.CalcByPosition( GetLBPos(), GetPMT( iLP->first ).GetPos(), wavelengthMeV, 10.0 );
+    // Require a 10.0 mm precision for the light path to be
+    // calculated to the PMT.
+    lLP.CalcByPosition( GetLBPos(), GetPMT( iLP->first ).GetPos(), 
+                        wavelengthMeV, 10.0 );
     
     // 'feed' the light path to the PMT
     ( iLP->second ).ProcessLightPath( lLP );
@@ -289,15 +316,17 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR,
     lbAxis.SetPhi( GetLBPhi() );
     lbAxis.SetTheta( GetLBTheta() );
     
+    // Set the relative theta and phi coordinates of the light
+    // in the local frame of the laserball as it left the source.
     ( iLP->second ).SetRelLBTheta( ( ( iLP->second ).GetInitialLBVec() ).Angle( lbAxis ) );
     Float_t laserPhi = ( ( iLP->second ).GetInitialLBVec() ).Phi();
-    Float_t relLBPhi = fmod( (Float_t)( laserPhi + lbAxis.Phi() ), 2.0 * M_PI ); 
+    Float_t relLBPhi = fmod( (Float_t)( laserPhi + lbAxis.Phi() ), 2.0 * TMath::Pi() ); 
     ( iLP->second ).SetRelLBPhi( relLBPhi );
   
     // Reset the light path object
     lLP.Clear();
-
    
+    // Verify the values on the PMT.
     ( iLP->second ).VerifyPMT();
     
   }
@@ -313,10 +342,12 @@ void LOCASRun::CopySOCRunInfo( RAT::DS::SOC& socRun )
   // Copies all the Run-level information from a SOC file
   // and puts it into (this) LOCASRun object
 
+  // The run ID, source ID and laser wavelength.
   SetRunID( socRun.GetRunID() );
   SetSourceID( socRun.GetSourceID() );
   SetLambda( (Double_t)socRun.GetCalib().GetMode() );
 
+  // The fitted laserball position.
   RAT::DS::FitResult lbFit = socRun.GetFitResult( "lbfit" );
   RAT::DS::FitVertex lbVertex = lbFit.GetVertex( 0 );
    
@@ -337,8 +368,10 @@ void LOCASRun::CopySOCPMTInfo( RAT::DS::SOC& socRun )
   // Copies all the SOCPMTs information from from a SOC
   // file and copies them into LOCASPMT objects
 
-  std::vector< UInt_t > pmtIDs = socRun.GetSOCPMTIDs();
+  // List of PMT IDs.
+  vector< UInt_t > pmtIDs = socRun.GetSOCPMTIDs();
 
+  // Add the PMTs.
   for ( Int_t iPMT = 0; iPMT < (Int_t)pmtIDs.size(); iPMT++ ){
     AddSOCPMT( socRun.GetSOCPMT( pmtIDs[ iPMT ] ) );
   }
@@ -351,6 +384,7 @@ void LOCASRun::CopySOCPMTInfo( RAT::DS::SOC& socRun )
 void LOCASRun::CopyLOCASRunInfo( LOCASRun& locasRun )
 {
 
+  // Make us of the equality operator as defined above.
   *this = locasRun;
 
 }
@@ -365,9 +399,11 @@ void LOCASRun::CopyLOCASPMTInfo( LOCASRun& locasRun )
   // different LOCASRun object and copies them into 
   // new LOCASPMT objects in this LOCASRun
 
-  std::map<Int_t, LOCASPMT>::iterator iLOCASPMT;
+  map<Int_t, LOCASPMT>::iterator iLOCASPMT;
 
-  for ( iLOCASPMT = locasRun.GetLOCASPMTIterBegin(); iLOCASPMT != locasRun.GetLOCASPMTIterEnd(); ++iLOCASPMT ){
+  for ( iLOCASPMT = locasRun.GetLOCASPMTIterBegin(); 
+        iLOCASPMT != locasRun.GetLOCASPMTIterEnd(); 
+        ++iLOCASPMT ){
     AddLOCASPMT( iLOCASPMT->second );
   }
 
@@ -380,15 +416,18 @@ void LOCASRun::AddSOCPMT( RAT::DS::SOCPMT& socPMT )
 {
 
 
+  // Add a SOC PMT to the LOCASPMT objects held by this
+  // LOCASRun object.
   Int_t pmtID = socPMT.GetLCN();
 
+  // Check that a PMT of the same ID doesn't already exist.
   if( fLOCASPMTs.find( pmtID ) == fLOCASPMTs.end() ){
     fLOCASPMTs[ pmtID ] = LOCASPMT( pmtID );
     ( fLOCASPMTs[ pmtID ] ).AddSOCPMTData( socPMT );
   }
 
   else{
-    std::cout << "PMT Not Added - PMT with same ID already exists" << std::endl;
+    cout << "PMT Not Added - PMT with same ID already exists" << endl;
   }
 
 }
@@ -399,14 +438,17 @@ void LOCASRun::AddSOCPMT( RAT::DS::SOCPMT& socPMT )
 void LOCASRun::AddLOCASPMT( LOCASPMT& locasPMT )
 {
 
+  // Add a LOCASPMT to the LOCASPMT objects held by this
+  // LOCASRun object.
   Int_t pmtID = locasPMT.GetID();
 
+  // Check that a PMT of the same ID doesn't already exist.
   if( fLOCASPMTs.find( pmtID ) == fLOCASPMTs.end() ){
     fLOCASPMTs[ pmtID ] = locasPMT;
   }
 
   else{
-    std::cout << "PMT Not Added - PMT with same ID already exists, PMT-ID: " << pmtID <<  std::endl;
+    cout << "PMT Not Added - PMT with same ID already exists, PMT-ID: " << pmtID <<  endl;
   }
 
 }
@@ -418,6 +460,7 @@ void LOCASRun::RemovePMT( Int_t iPMT )
 {
 
   // Remove a LOCAS PMT from the fLOCASPMTs map
+  // i.e. the collection of LOCASPMT objects currently held.
   fLOCASPMTs.erase( iPMT );
 
 }
@@ -429,11 +472,6 @@ LOCASPMT& LOCASRun::GetPMT( Int_t iPMT )
 {
 
   // Return the LOCASPMT with LCN 'iPMT'
-  
-  // if( fLOCASPMTs.find( iPMT ) == fLOCASPMTs.end() ){
-  //   fLOCASPMTs[ iPMT ] = LOCASPMT( iPMT );
-  // }
-
   return fLOCASPMTs[ iPMT ];
   
 }
@@ -444,12 +482,18 @@ LOCASPMT& LOCASRun::GetPMT( Int_t iPMT )
 void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
 {
 
+
+  // Ensure that the pointers to the central and wavelength
+  // runs are not 'NULL', otherwise return an error.
   if ( cRun == NULL && wRun == NULL ){
     cout << "LOCASRun::CrossRunFill: Error: No Central or Wavelength Run Information to fill from" << endl;
     cout << "--------------------------" << endl;
     return;
   }
 
+  // If a pointer to a central run LOCASRun object
+  // exist, then fill the 'central' values on this object
+  // with the regular values from that one.
   if ( cRun != NULL ){
     
     fCentralRunID = cRun->GetRunID();
@@ -466,6 +510,9 @@ void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
         
   }
   
+  // If a pointer to a wavelength run LOCASRun object
+  // exist, then fill the 'wavelength' values on this object
+  // with the regular values from that one.  
   if ( wRun != NULL ){
     
     fWavelengthRunID = wRun->GetRunID();
@@ -482,11 +529,14 @@ void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
     
   }
 
-  if ( cRun ){
+  // Start filling the PMT information from the central run
+  // to all the 'central' values on the LOCASPMTs stored in 
+  // this one.
+  if ( cRun != NULL ){
 
     cout << "LOCASRun::CrossRunFill: Filling Central Run Information..." << endl;
     cout << "--------------------------" << endl;
-    std::map< Int_t, LOCASPMT >::iterator iCPMT;
+    map< Int_t, LOCASPMT >::iterator iCPMT;
     for( iCPMT = cRun->GetLOCASPMTIterBegin(); iCPMT != cRun->GetLOCASPMTIterEnd(); iCPMT++ ){
       Int_t pmtID = ( iCPMT->first );
       ( fLOCASPMTs[ pmtID ] ).SetCentralRunID( cRun->GetRunID() );
@@ -528,12 +578,15 @@ void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
       
     }
   }
-  
-  if ( wRun ){
+
+  // Start filling the PMT information from the central run
+  // to all the 'central' values on the LOCASPMTs stored in 
+  // this one.  
+  if ( wRun != NULL ){
 
     cout << "LOCASRun::CrossRunFill: Filling Wavelength Run Information..." << endl;
     cout << "--------------------------" << endl;
-    std::map< Int_t, LOCASPMT >::iterator iWPMT;
+    map< Int_t, LOCASPMT >::iterator iWPMT;
     for( iWPMT = wRun->GetLOCASPMTIterBegin(); iWPMT != wRun->GetLOCASPMTIterEnd(); iWPMT++ ){
       Int_t pmtID = ( iWPMT->first );
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthRunID( wRun->GetRunID() );
@@ -587,7 +640,10 @@ void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
 void LOCASRun::CalculateLBIntensityNorm()
 {
   
-  std::map< Int_t, LOCASPMT >::iterator iPMT;
+  // Initialise the values to hold the 
+  // laserball intensity normalisation value for the
+  // off-axis, central and wavelength runs.
+  map< Int_t, LOCASPMT >::iterator iPMT;
   Float_t lbIntensityNorm = 0.0;
   Float_t centrallbIntensityNorm = 0.0;
   Float_t wavelengthlbIntensityNorm = 0.0;
@@ -596,34 +652,58 @@ void LOCASRun::CalculateLBIntensityNorm()
   Int_t nCentralPMTs = 0;
   Int_t nWavelengthPMTs = 0;
 
+  // Loop through all the PMTs and compute the total number of counts
+  // in all the prompt peak timing windows (occupancy) for each PMT
+  // in each off-axis, central and wavelength run.
+
+  // Note: A call to LOCASRun::CrossRunFill must have been made
+  // if the central and wavelength values are to calculated.
   for ( iPMT = GetLOCASPMTIterBegin(); iPMT != GetLOCASPMTIterEnd(); iPMT++ ){
+
+    // Off-axis run: ensure the DQXX flag is 1.
     if ( ( iPMT->second ).GetDQXXFlag() == 1 ){
       lbIntensityNorm += ( iPMT->second ).GetMPECorrOccupancy();
       nPMTs++;
     }
+
+    // Central run: ensure the DQXX flag is 1.
     if ( ( iPMT->second ).GetCentralDQXXFlag() == 1 ){
       centrallbIntensityNorm += ( iPMT->second ).GetCentralMPECorrOccupancy();
       nCentralPMTs++;
     }
+
+    // Wavelength run: ensure the DQXX flag is 1.
     if ( ( iPMT->second ).GetWavelengthDQXXFlag() == 1 ){
       wavelengthlbIntensityNorm += ( iPMT->second ).GetWavelengthMPECorrOccupancy();
       nWavelengthPMTs++;
     }
   }
 
+  // Provided the total number of PMTs included in each run isn't zero
+  // (very unlikely), divide through by the number of PMTs to 
+  // calculate the average occupancy (Laserball normalisation).
+
+  // Off-axis runs.
   if ( nPMTs != 0 ){ lbIntensityNorm /= nPMTs; }
   else{ lbIntensityNorm = -10.0; }
 
+  // Central runs.
   if ( nCentralPMTs != 0 ){ centrallbIntensityNorm /= nCentralPMTs; }
   else{ centrallbIntensityNorm = -10.0; }
 
+  // Wavelength runs.
   if ( nWavelengthPMTs != 0 ){ wavelengthlbIntensityNorm /= nWavelengthPMTs; }
   else{ wavelengthlbIntensityNorm = -10.0; }
 
+  // Define the private member variables which
+  // hold the intensity normalisation value for each
+  // of the off-axis, central and wavelength runs.
   fLBIntensityNorm = lbIntensityNorm;
   fCentralLBIntensityNorm = centrallbIntensityNorm;
   fWavelengthLBIntensityNorm = wavelengthlbIntensityNorm;
 
+  // Also give these values to every PMT for easy access by
+  // LOCASOpticsMode::ModelPrediction.
   for ( iPMT = GetLOCASPMTIterBegin(); iPMT != GetLOCASPMTIterEnd(); iPMT++ ){
     ( iPMT->second ).SetLBIntensityNorm( fLBIntensityNorm );
     ( iPMT->second ).SetCentralLBIntensityNorm( fCentralLBIntensityNorm );
@@ -632,11 +712,3 @@ void LOCASRun::CalculateLBIntensityNorm()
   }
 
 }
-
- 
-
-
-
-
-
-
