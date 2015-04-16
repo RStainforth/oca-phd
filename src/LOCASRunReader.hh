@@ -51,7 +51,7 @@ namespace LOCAS{
     void Add( Int_t runID );
 
     // Add a LOCASRun file as specified by a list of
-    // run IDs in a 'fit-file'
+    // run IDs in a 'fit-file'.
     void Add( const char* filename );
 
     // Check to see if a LOCASRun object given by the 'runID'
@@ -62,24 +62,24 @@ namespace LOCAS{
     ////////     GETTERS     ////////
     /////////////////////////////////
 
-    // Returns a pointer to the current LOCASRun object on the reader
+    // Returns a pointer to the current LOCASRun object on the reader.
     LOCASRun* GetCurrentLOCASRun(){ return fLOCASRun; }
 
-    // Returns a pointer to the LOCASRun with run ID 'runID'
+    // Returns a pointer to the LOCASRun with run ID 'runID'.
     LOCASRun* GetLOCASRun( Int_t runID );
 
     // Returns the 'runEntry'-th entry, e.g. for 4 files on the LOCASRunReader
     // object, GetRunEntry( 1 ) would return the SECOND run file 
-    // ( 0 being the first )
+    // ( 0 being the first ).
     LOCASRun* GetRunEntry( Int_t runEntry ){ 
       fLOCASRunT->GetEntry( runEntry );
       return fLOCASRun;
     } 
 
-    // Returns the number of LOCASRuns on the reader object
+    // Returns the number of LOCASRuns on the reader object.
     Long64_t GetNLOCASRuns(){ return fNLOCASRuns; }
 
-    // Returns a vector of runIDs
+    // Returns a vector of runIDs.
     vector< Int_t > GetListOfRunIDs(){ return fListOfRunIDs; }
 
     /////////////////////////////////
