@@ -1,29 +1,22 @@
-#include <TMath.h>
-#include <TObject.h>
-
-#include <iostream>
-#include <cmath>
-
-#include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
-
 #include "LOCASMath.hh"
 #include "LOCASPMT.hh"
 
-#define NR_END 1
+#include "TMath.h"
+#include "TObject.h"
 
-using namespace LOCAS;
+#include <iostream>
+#include <cmath>
+#include <stdlib.h>
+
 using namespace std;
+using namespace LOCAS;
 
 #ifdef SWAP
 #undef SWAP
 #endif
 #ifndef SWAP
-#define SWAP(a,b) { swapVal = (a); (a) = (b); (b) = swapVal; }
+#define SWAP( a, b ) { swapVal = (a); (a) = (b); (b) = swapVal; }
 #endif
-
-#define FREE_ARG char*
 
 using namespace LOCAS;
 
@@ -104,7 +97,7 @@ Float_t* LOCASMath::LOCASVector( const Long_t nStart, const Long_t nEnd )
   
   // Allocate the required memory to store the length of the vector required
   // of the specified type and between the required indices.
-  vArray = (Float_t*) malloc( (Size_t) ( ( nEnd - nStart + 1 + NR_END ) * sizeof(Float_t) ) );
+  vArray = (Float_t*) malloc( (Size_t) ( ( nEnd - nStart + 1 + 1 ) * sizeof(Float_t) ) );
 
   // Check that the array is no longer 'NULL', otherwise return an error.
   if ( !vArray ){
@@ -112,7 +105,7 @@ Float_t* LOCASMath::LOCASVector( const Long_t nStart, const Long_t nEnd )
   }
 
   // Return the array.
-  return vArray - nStart + NR_END;
+  return vArray - nStart + 1;
   
 }
 
@@ -127,7 +120,7 @@ Int_t* LOCASMath::LOCASIntVector( const Long_t nStart, const Long_t nEnd )
 
   // Allocate the required memory to store the length of the vector required
   // of the specified type and between the required indices.  
-  vArray = (Int_t*)malloc( (Size_t) ( ( nEnd - nStart + 1 + NR_END ) * sizeof(Int_t) ) );
+  vArray = (Int_t*) malloc( (Size_t) ( ( nEnd - nStart + 1 + 1 ) * sizeof(Int_t) ) );
   
   // Check that the array is no longer 'NULL', otherwise return an error.
   if ( !vArray ){ 
@@ -135,7 +128,7 @@ Int_t* LOCASMath::LOCASIntVector( const Long_t nStart, const Long_t nEnd )
   }
 
   // Return the array.
-  return vArray - nStart + NR_END;
+  return vArray - nStart + 1;
   
 }
 
@@ -157,7 +150,7 @@ Float_t** LOCASMath::LOCASMatrix( const Long_t nStartI, const Long_t nEndI,
   // Allocate pointers to the rows.
   // Allocate 'mArray' to an array of arrays of type Float_t with
   // the memory of the number of rows required using the size of Float_t.
-  mArray = (Float_t**) malloc( (Size_t)( ( nRows + NR_END ) * sizeof(Float_t*) ) );
+  mArray = (Float_t**) malloc( (Size_t)( ( nRows + 1 ) * sizeof(Float_t*) ) );
 
   // If the array is still 'NULL', show a warning.
   if ( !mArray ){
@@ -165,16 +158,16 @@ Float_t** LOCASMath::LOCASMatrix( const Long_t nStartI, const Long_t nEndI,
   }
 
   // Reconfigure the starting indices for the array.
-  mArray += NR_END;
+  mArray += 1;
   mArray -= nStartI;
   
   // Now allocate each of the rows and set pointers to them.
-  mArray[ nStartI ] = (Float_t*) malloc( (Size_t)( ( nRows * nCols + NR_END ) * sizeof(Float_t) ) );
+  mArray[ nStartI ] = (Float_t*) malloc( (Size_t)( ( nRows * nCols + 1 ) * sizeof(Float_t) ) );
   if ( !mArray[ nStartI ] ){
     cout << "LOCAS::LOCASMath: Allocation failure 2 in LOCASMatrix()" << endl;
   }
   // Reconfigure the starting indices for each of the arrays in each row.
-  mArray[ nStartI ] += NR_END;
+  mArray[ nStartI ] += 1;
   mArray[ nStartI ] -= nStartJ;
   
   
@@ -194,7 +187,7 @@ void LOCASMath::LOCASFree_Vector( Float_t *vArray, const Long_t nLength )
 {
 
   // Free up the memory allocated to the vArray array.
-  free( ( FREE_ARG ) ( vArray + nLength - NR_END ) );
+  free( vArray + nLength - 1 );
 
 }
 
@@ -207,8 +200,8 @@ void LOCASMath::LOCASFree_Matrix( Float_t **mArray,
 {
 
   // Free up the memory allocated in all the rows and columns in 'mArray'
-  free( ( FREE_ARG ) ( mArray[ nRowsLength ] + nColsLength - NR_END ) );
-  free( ( FREE_ARG ) ( mArray + nRowsLength - NR_END ) );
+  free( mArray[ nRowsLength ] + nColsLength - 1 );
+  free( mArray + nRowsLength - 1 );
 
 }
 
@@ -219,7 +212,7 @@ void LOCASMath::LOCASFree_IntVector(Int_t *vArray, const Long_t nLength )
 {
 
   // Free up the memory allocated in the array.
-  free( ( FREE_ARG ) ( vArray + nLength - NR_END ) );
+  free( vArray + nLength - 1 );
 
 }
 
@@ -341,8 +334,8 @@ Int_t LOCASMath::GaussJordanElimination( Float_t** lhsMatrix, Int_t nParameters,
     // up in the correct order, and the inverse matrix will be scrambled by columns.
     ++( iPiv[ iCol ] );
     if ( iRow != iCol ) {
-      for ( lVal = 1; lVal <= nParameters; lVal++ ){ SWAP( lhsMatrix[ iRow ][ lVal ],lhsMatrix[ iCol ][ lVal ]) }
-      for ( lVal = 1; lVal <= mVectors; lVal++ ){ SWAP( rhsMatrix[ iRow ][ lVal ],rhsMatrix[ iCol ][ lVal ]) }
+      for ( lVal = 1; lVal <= nParameters; lVal++ ){ SWAP( lhsMatrix[ iRow ][ lVal ], lhsMatrix[ iCol ][ lVal ] ) }
+      for ( lVal = 1; lVal <= mVectors; lVal++ ){ SWAP( rhsMatrix[ iRow ][ lVal ], rhsMatrix[ iCol ][ lVal ] ) }
     }
 
     // We can now divide the pivot row by the element, located at (iRow, iCol)
