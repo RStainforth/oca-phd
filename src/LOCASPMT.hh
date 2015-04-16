@@ -45,10 +45,10 @@ namespace LOCAS{
   public:
 
     // The constructors and destructors for the LOCASPMT object.
-    LOCASPMT(){ Initialise(); }
+    LOCASPMT(){ ClearPMT(); }
     LOCASPMT( Int_t pmtID ){ 
       fID = pmtID; 
-      Initialise(); 
+      ClearPMT(); 
     }
     LOCASPMT( const LOCASPMT& rhs );
     ~LOCASPMT(){ }
@@ -431,7 +431,7 @@ namespace LOCAS{
     
     // Set the flag associated with the state of the light path
     // associated with this PMT from the wavelength run.
-    Void SetWavelengthBadPath( const  Bool_t badPath ){ fWavelengthBadPath = badPath; }
+    void SetWavelengthBadPath( const  Bool_t badPath ){ fWavelengthBadPath = badPath; }
 
     // Set the flag associated with whether the light path went 
     // thorugh the neck or not to reach this PMT from the

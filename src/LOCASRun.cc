@@ -330,7 +330,6 @@ void LOCASRun::Fill( RAT::DU::SOCReader& socR,
     LOCASMath lMath;
     ( iLP->second ).SetMPECorrOccupancy( lMath.MPECorrectedNPrompt( ( iLP->second ).GetOccupancy(), GetNLBPulses() ) );
     ( iLP->second ).SetMPECorrOccupancyErr( lMath.MPECorrectedNPromptErr( ( iLP->second ).GetOccupancy(), GetNLBPulses() ) );
-    ( iLP->second ).SetMPECorrOccupancyCorr( ( iLP->second ).GetMPECorrOccupancy() / ( iLP->second ).GetOccupancy() );
     
     // Calculate the light path for this source position and PMT
     lLP.CalcByPosition( GetLBPos(), GetPMT( iLP->first ).GetPos(), wavelengthMeV, 10.0 );
@@ -551,14 +550,12 @@ void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
       ( fLOCASPMTs[ pmtID ] ).SetCentralTimeOfFlight( ( iCPMT->second ).GetTimeOfFlight() );
       ( fLOCASPMTs[ pmtID ] ).SetCentralOccupancy( ( iCPMT->second ).GetOccupancy() );
       ( fLOCASPMTs[ pmtID ] ).SetCentralOccupancyErr( ( iCPMT->second ).GetOccupancyErr() );
-      ( fLOCASPMTs[ pmtID ] ).SetCentralOccupancyCorr( ( iCPMT->second ).GetOccupancyCorr() );
       ( fLOCASPMTs[ pmtID ] ).SetCentralLBIntensityNorm( ( iCPMT->second ).GetLBIntensityNorm() );
       
       ( fLOCASPMTs[ pmtID ] ).SetCentralNLBPulses( ( iCPMT->second ).GetNLBPulses() );
       
       ( fLOCASPMTs[ pmtID ] ).SetCentralMPECorrOccupancy( ( iCPMT->second ).GetMPECorrOccupancy() );
       ( fLOCASPMTs[ pmtID ] ).SetCentralMPECorrOccupancyErr( ( iCPMT->second ).GetMPECorrOccupancyErr() );
-      ( fLOCASPMTs[ pmtID ] ).SetCentralMPECorrOccupancyCorr( ( iCPMT->second ).GetMPECorrOccupancyCorr() );
       
       ( fLOCASPMTs[ pmtID ] ).SetCentralFresnelTCoeff( ( iCPMT->second ).GetFresnelTCoeff() );
       
@@ -600,14 +597,12 @@ void LOCASRun::CrossRunFill( LOCASRun* cRun, LOCASRun* wRun )
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthTimeOfFlight( ( iWPMT->second ).GetTimeOfFlight() );
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthOccupancy( ( iWPMT->second ).GetOccupancy() );
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthOccupancyErr( ( iWPMT->second ).GetOccupancyErr() );
-      ( fLOCASPMTs[ pmtID ] ).SetWavelengthOccupancyCorr( ( iWPMT->second ).GetOccupancyCorr() );
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthLBIntensityNorm( ( iWPMT->second ).GetLBIntensityNorm() );
       
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthNLBPulses( ( iWPMT->second ).GetNLBPulses() );
       
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthMPECorrOccupancy( ( iWPMT->second ).GetMPECorrOccupancy() );
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthMPECorrOccupancyErr( ( iWPMT->second ).GetMPECorrOccupancyErr() );
-      ( fLOCASPMTs[ pmtID ] ).SetWavelengthMPECorrOccupancyCorr( ( iWPMT->second ).GetMPECorrOccupancyCorr() );
       
       ( fLOCASPMTs[ pmtID ] ).SetWavelengthFresnelTCoeff( ( iWPMT->second ).GetFresnelTCoeff() );
       
