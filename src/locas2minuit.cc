@@ -33,6 +33,7 @@
 #include "TAxis.h"
 
 #include <iostream>
+#include <string>
 #include <map>
 
 using namespace std;
@@ -85,8 +86,9 @@ int main( int argc, char** argv ){
 
   // Add all the run files to the LOCASRunReader object
   std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" ); 
+  std::string dataSet = lDB.GetStringField( "FITFILE", "data_set", "fit_setup" );
   cout << "Creating LOCASRunReader" << endl;
-  LOCASRunReader lReader( runIDs );
+  LOCASRunReader lReader( runIDs, dataSet );
   
   // Add the run information to the LOCASDataStore object
   cout << "Adding data to LOCASDataStore" << endl;

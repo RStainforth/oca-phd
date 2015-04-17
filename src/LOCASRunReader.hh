@@ -38,7 +38,7 @@ namespace LOCAS{
 
     // The constructors and destructor for the LOCASRunReader object.
     LOCASRunReader();
-    LOCASRunReader( vector< Int_t >& runIDs );
+    LOCASRunReader( vector< Int_t >& runIDs, const string dataSet = "" );
     LOCASRunReader( Int_t runID );
     LOCASRunReader( const char* filename );
     ~LOCASRunReader();

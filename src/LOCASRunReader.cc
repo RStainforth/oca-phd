@@ -41,7 +41,8 @@ LOCASRunReader::LOCASRunReader()
 //////////////////////////////////////
 //////////////////////////////////////
 
-LOCASRunReader::LOCASRunReader( vector< Int_t >& runIDs )
+LOCASRunReader::LOCASRunReader( vector< Int_t >& runIDs,
+                                const string dataSet )
 {
 
   // Create a stringstream object and string to help
@@ -54,7 +55,7 @@ LOCASRunReader::LOCASRunReader( vector< Int_t >& runIDs )
   // obtain the full system path directory to 
   // the LOCASRun folder.
   LOCASDB lDB;
-  string locasRunDir = lDB.GetLOCASRunDir();
+  string locasRunDir = lDB.GetLOCASRunDir( dataSet );
   string fExt = "_LOCASRun.root";
   
   string filename = "";

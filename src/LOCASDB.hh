@@ -66,16 +66,20 @@ namespace LOCAS{
     ////////     GETTERS     ////////
     /////////////////////////////////
     
-    // Get the full path directory to where the SOC files are stored 
-    string GetSOCRunDir() const { return fSOCRunDir; }
+    // Get the full path directory to where the SOC files are stored. 
+    // SOC files traditionally stored by month and year.
+    string GetSOCRunDir( const string& monthYY = "" ) const { 
+      return fSOCRunDir + monthYY + "/"; }
 
-    // Get the full path directory to where the LOCASRun files are stored
-    string GetLOCASRunDir() const { return fLOCASRunDir; }
+    // Get the full path directory to where the LOCASRun files are stored.
+    // LOCASRun files traditionally stored by month and year.
+    string GetLOCASRunDir( const string& monthYY = "" ) const { 
+      return fLOCASRunDir + monthYY + "/"; }
 
     // Get the full path directory to where the RDT files are stored
-    // Note: RDT files traditionally stored by month and year
-    string GetRDTRunDir( const string& month = "oct03" ) const { 
-      return fRDTRunDir + month + "/"; 
+    // RDT files traditionally stored by month and year
+    string GetRDTRunDir( const string& monthYY = "" ) const { 
+      return fRDTRunDir + monthYY + "/"; 
     }
 
     // Get a field of type 'string' from the current 'fit-file'
