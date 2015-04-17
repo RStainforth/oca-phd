@@ -14,7 +14,27 @@
 /// REVISION HISTORY:
 ///     04/2015 : RPFS - First Revision, new file.
 ///
-/// DETAIL: *Write at the end!*
+/// DETAIL: The LOCASChiSquare object is used to compute the
+///         individual and global chisquare from a set of
+///         data points (in the form of LOCASDataPoint objects)
+///         stored in a LOCASDataStore object. The model prediction
+///         used to compare the data values is a LOCASOpticsModel
+///         object. The 'data' is the occupancy ratio variable.
+/// 
+///         Using 'LOCASChiSquare::SetPointerToModel' and
+///         'LOCASChiSquare::SetPointerToData', the LOCASChiSquare
+///         object has access to both the data and model required
+///         to compute the chisquare.
+///
+///         The chisquare is minimised using the
+///         Levenberg-Marquardt algorithm. This is done by calling
+///         'LOCASChiSquare::DoOpticsFit'. This then calls
+///         'LOCASChiSquare::PerformMinimisation' which calls
+///         'LOCASChiSquare::Minimise' many times to minimise the
+///         global chisquare. The 'LOCASChiSquare::FitEvaluation'
+///         and 'LOCASChiSquare::FitEvaluateModel' are called 
+///         at each iteration to evaulate the current trial
+///         solution for the parameters in the optics model.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -51,14 +71,6 @@ namespace LOCAS{
     // the 'fDataStore' LOCASDataStore object pointer private variable.
     Float_t EvaluateGlobalChiSquare();
 
-    // Set the pointer to the LOCASOpticsModel which is used for the
-    // model predictions when calculating the chi-square for a data point.
-    void SetPointerToModel( LOCASOpticsModel* locasModel ){ fModel = locasModel; }
-
-    // Set the pointer to the LOCASDataStore object which is used
-    // as the collection of datapoints when calculating the chi-square.
-    void SetPointerToData( LOCASDataStore* locasData ){ fDataStore = locasData; }
-
     // This evaluates the solution vector and passes through to 
     // FitEvaluateModel the matrix of derivatives to be calculated.
     void FitEvaluation( Float_t testParameters[], Int_t parametersVary[], 
@@ -68,28 +80,43 @@ namespace LOCAS{
     // Evaluates the model for a trial set of parameters 'testParameters'
     // and then calculates the derivatives 'dDataValDParameters' with 
     // respect to each variable parameter relevant to the provided 
-    // LOCASDataPoint
+    // LOCASDataPoint.
     void FitEvaluateModel( LOCASDataPoint& dPoint, Float_t testParameters[],
                            Float_t *modelVal, Float_t dDataValDParameters[], 
                            Int_t nParameters );
 
-    // Perform a single minimisation for the given value
+    // Perform a single minimisation for the given value of 'aLambdaPar'.
     Int_t Minimise( Float_t testParameters[], Int_t parametersVary[], 
                     Int_t nParameters, Float_t **covarianceMatrix, 
                     Float_t **derivativeMatrix, Float_t *chiSquareVal, 
                     Float_t *aLambdaPar );
 
-    void DoFit( Float_t testParameters[], Int_t parametersVary[], 
-                Int_t nParameters, Float_t **covarianceMatrix, 
-                Float_t **derivativeMatrix, Float_t *chiSquareVal );
+    // Performs many minimisations given the starting parameters
+    // and the array to the indices of those parameters which will vary in the
+    // the fit.
+    void PerformMinimisation( Float_t testParameters[], Int_t parametersVary[], 
+                              Int_t nParameters, Float_t **covarianceMatrix, 
+                              Float_t **derivativeMatrix, Float_t *chiSquareVal );
+    // Performs the optics fit.
+    void PerformOpticsFit();
+
+    /////////////////////////////////
+    ////////     SETTERS     ////////
+    /////////////////////////////////
+
+    // Set the pointer to the LOCASOpticsModel which is used for the
+    // model predictions when calculating the chi-square for a data point.
+    void SetPointerToModel( LOCASOpticsModel* locasModel ){ fModel = locasModel; }
     
-    void PerformMinimisation();
+    // Set the pointer to the LOCASDataStore object which is used
+    // as the collection of datapoints when calculating the chi-square.
+    void SetPointerToData( LOCASDataStore* locasData ){ fDataStore = locasData; }
     
   private:
 
-    LOCASDataStore* fDataStore;   
-    LOCASOpticsModel* fModel;
-
+    LOCASDataStore* fDataStore;       // Pointer to the LOCASDataStore object.   
+    LOCASOpticsModel* fModel;         // Pointer to the LOCASOpticsModel object.    
+ 
     ClassDef( LOCASChiSquare, 0 );
 
   };

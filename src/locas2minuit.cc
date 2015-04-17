@@ -133,7 +133,7 @@ int main( int argc, char** argv ){
     //lChiSq->SetPointerToData( lData );
     
     cout << "Performing Minimisation!" << endl;
-    lChiSq->PerformMinimisation();
+    lChiSq->PerformOpticsFit();
 
     *lData = *ogStore;
     //lChiSq->SetPointerToData( lData );
