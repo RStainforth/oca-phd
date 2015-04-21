@@ -28,6 +28,33 @@ LOCASFilter::LOCASFilter( const std::string filterName,
   fNumberConditionPasses = 0;
   fNumberConditionFails = 0;
 
+  // This isn't a Boolean type filter, so set to false.
+  fBoolTypeFilter = false;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+LOCASFilter::LOCASFilter( const std::string filterName, 
+                          const Bool_t boolVal )
+{
+
+  // Set the filter name.
+  SetFilterName( filterName );
+
+  // Set the bool value for this particualr
+  // filter to check against.
+  SetBoolValue( boolVal );
+
+  // Set the number of data points which have
+  // passed/failed on this particular filter to zero.
+  fNumberConditionPasses = 0;
+  fNumberConditionFails = 0;
+
+  // This is a Boolean type filter, so set to true.
+  fBoolTypeFilter = true;
+
 }
 
 //////////////////////////////////////
@@ -39,6 +66,9 @@ void LOCASFilter::ResetFilter()
   // Set the minimum and maximum values of the filter to zero.
   SetMinValue( 0.0 );
   SetMaxValue( 0.0 );
+
+  // Set the boolean value to false
+  SetBoolValue ( false );
   
   // Set the number of data points which have
   // passed/failed on this particular filter to zero.  
@@ -57,14 +87,19 @@ void LOCASFilter::PrintFilterInformation()
 {
 
   // Print all the current available information about this particualr filter.
-  cout << "LOCAS::LOCASFilter: " << GetFilterName() 
-       << " has limits: ( " << GetMinValue() << ", " << GetMaxValue() << " )\n"
-       << "---------------------------\n"
-       << "Tested " << GetNumberConditionPasses() + GetNumberConditionFails() << " data points.\n"
-       << "Passed: " << GetNumberConditionPasses() << "\n"
-       << "Failed: " << GetNumberConditionFails() << "\n"
-       << "---------------------------\n";
-
+  cout << "LOCAS::LOCASFilter: " << GetFilterName();
+  if ( fBoolTypeFilter == false ){ 
+    cout << " has limits: ( " << GetMinValue() << ", " << GetMaxValue() << " )\n";
+  }
+  else{
+    cout << " is testing for Bool (!=0 => 'true') of type: " << (Int_t)GetBoolValue() << "\n";
+  }
+  cout  << "---------------------------\n"
+        << "Tested " << GetNumberConditionPasses() + GetNumberConditionFails() << " data points.\n"
+        << "Passed: " << GetNumberConditionPasses() << "\n"
+        << "Failed: " << GetNumberConditionFails() << "\n"
+        << "---------------------------\n";
+  
 }
 
 //////////////////////////////////////
@@ -94,6 +129,35 @@ Bool_t LOCASFilter::CheckCondition( const Float_t val )
 
   // If it is within the bounds, set the pass condition to TRUE.
   if ( ( val < GetMaxValue() ) && ( val > GetMinValue() ) ){ 
+    fNumberConditionPasses++;
+    passCondition = true; 
+  }
+
+  // If it is not within the bounds, set the pass condition to FALSE.
+  else{ 
+    fNumberConditionFails++;
+    passCondition = false; 
+  }
+
+  // Return the pass condition boolean variable.
+  return passCondition;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Bool_t LOCASFilter::CheckBoolCondition( const Bool_t boolVal )
+{
+
+  // Assume the pass condition to be false to begin with.
+  Bool_t passCondition = false;
+
+  // Check whether the 'boolVal' is within the limits of 
+  // the minimum and maximum values as required.
+
+  // If it is the same to the filter boolean set the pass condition to TRUE.
+  if ( boolVal == fBoolValue ){ 
     fNumberConditionPasses++;
     passCondition = true; 
   }

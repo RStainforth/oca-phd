@@ -149,7 +149,7 @@ void LOCASOpticsModel::IdentifyVaryingLBDistributionBins( LOCASDataStore* lData 
 
     // If the number of entries is less than the requirement,
     // or if the bin is the first in the laserball
-    // distribution ( i.e. iAng = 0 ) then keep the associated
+    // distribution ( i.e. iLB = 0 ) then keep the associated
     // parameter fixed in the fit.
     if ( lbAngValid[ iLB ] < fRequiredNLBDistributionEntries ){ 
       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 0;

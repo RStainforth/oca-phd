@@ -227,7 +227,7 @@ void LOCASChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersV
     *chiSquareVal += chiSquareEntry;
   }
 
-  for ( jVar = 2;jVar<=mFit;jVar++){
+  for ( jVar = 2; jVar <= mFit; jVar++ ){
     for ( kVar = 1; kVar < jVar; kVar++ ) {
       derivativeMatrix[ kVar ][ jVar ] = derivativeMatrix[ jVar ][ kVar ];
     }
@@ -342,7 +342,7 @@ Int_t LOCASChiSquare::Minimise( Float_t testParameters[], Int_t parametersVary[]
 
     // Create a matrix of one line of length equal to the
     // number of varying parameters.
-    oneMatrixLine=LOCASMath::LOCASMatrix( 1, mFit, 1, 1 );
+    oneMatrixLine = LOCASMath::LOCASMatrix( 1, mFit, 1, 1 );
 
     // Initialise the lambda parameter to 0.001 to begin with.
     // This corresponds to small initial variations in the parameter
@@ -393,6 +393,7 @@ Int_t LOCASChiSquare::Minimise( Float_t testParameters[], Int_t parametersVary[]
       if( covarianceMatrix[ jVar ][ jVar ] <= 0.0 ) {
 
         if( covarianceMatrix[ jVar ][ jVar ] == 0.0 ) {
+          cout << "Derivative is: " << derivativeMatrix[ jVar ][ jVar ] << endl;
           cout << "LOCASChiSquare::Minimise: Error! Diagonal covariance matrix element [" << jVar  << ", " << jVar << "] is zero." << endl; 
           cout << "Tip: This is likely due to a parameter being forced to vary which shouldn't have. Check which parameters are varying." << endl;
         } 

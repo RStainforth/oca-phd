@@ -71,11 +71,26 @@ void LOCASDataFiller::FilterData( LOCASFilterStore* lFilterStore,
       
       // Obtain the name of the filter
       filterName = iF->GetFilterName();
+
+      // Filters to check boolean values
+
+      if ( filterName == "filter_bad_path" ){
+        if ( !iF->CheckBoolCondition( (Bool_t)iD->GetBadPathFlag() ) ){
+          validPoint = false; break;
+        }
+      }
+
+
+      else if ( filterName == "filter_ctr_bad_path" ){
+        if ( !iF->CheckBoolCondition( (Bool_t)iD->GetCentralBadPathFlag() ) ){
+          validPoint = false; break;
+        }
+      }
       
       // Filters to check the occupancy ratio and MPE corrected
       // occupancy from the off-axis and central runs
       
-      if ( filterName == "filter_mpe_occupancy" ){ 
+      else if ( filterName == "filter_mpe_occupancy" ){ 
         if ( !iF->CheckCondition( iD->GetMPECorrOccupancy() ) ){ 
           validPoint = false; break;
         }
@@ -83,6 +98,14 @@ void LOCASDataFiller::FilterData( LOCASFilterStore* lFilterStore,
       
       else if ( filterName == "filter_mpe_ctr_occupancy" ){ 
         if ( !iF->CheckCondition( iD->GetCentralMPECorrOccupancy() ) ){ 
+          validPoint = false; break;
+        }
+      }
+
+      // Filter to check fractional error
+      else if ( filterName == "filter_fractional_error" ){
+        lChiSq->EvaluateChiSquare( *iD );
+        if ( !iF->CheckCondition( iD->GetOccupancyRatioErr() / iD->GetOccupancyRatio() ) ){ 
           validPoint = false; break;
         }
       }

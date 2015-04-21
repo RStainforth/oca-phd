@@ -83,6 +83,31 @@ void LOCASFilterStore::AddFilters( const char* fileName )
 
   }
 
+  // Obtain a list of the boolean filters to be included in 
+  // the store from the 'fit-file'.
+  std::vector< std::string > boolFilterList = lDB.GetStringVectorField( "FITFILE", "filter_list", "bool_filter_setup" );
+
+  Bool_t boolVal = false;
+
+  // Loop over each filter in the list and add it to the LOCASFilterStore
+  for ( Int_t iStr = 0; iStr < (Int_t)boolFilterList.size(); iStr++ ){
+
+    // Get the maximum and minimum values
+    boolVal = lDB.GetBoolField( "FITFILE", (std::string)( boolFilterList[ iStr ] ), "bool_filter_setup" );
+
+    // Create the filter object
+    LOCASFilter lFilter( boolFilterList[ iStr ], boolVal );
+
+    // Add the filter
+    AddFilter( lFilter );
+
+    // Print the information about the filter to the screen
+    cout << "Added boolean filter '" << boolFilterList[ iStr ] << "' filter." << endl;
+    cout << "Boolean filter tests for bool (!=0 => true) of type: (" << (Int_t)boolVal << ")" << endl;
+    cout << " ----------------- " << endl;
+
+  }
+
 }
 
 //////////////////////////////////////
