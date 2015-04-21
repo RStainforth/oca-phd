@@ -82,6 +82,9 @@ namespace LOCAS{
       return fRDTRunDir + monthYY + "/"; 
     }
 
+    // Get the full path directory to the output directory for fits
+    string GetOutputDir(){ return fOutputDir; }
+
     // Get a field of type 'string' from the current 'fit-file'
     // based on the table name, 'tableName', field name 'fieldName
     // and relevant index 'indexName' (optional)
@@ -162,11 +165,13 @@ namespace LOCAS{
     string fCurrentFile;             // The full path of the current 'fit-file' in use.
     
     string fSOCRunDir;               // The full system path of the directory where 
-                                     // the SOC Run files are held
+                                     // the SOC Run files are held.
     string fLOCASRunDir;             // The full system path of the directory where 
-                                     // the LOCASRun files are held
+                                     // the LOCASRun files are held.
     string fRDTRunDir;               // The fill system path of the directory where 
-                                     // the RDT files are held
+                                     // the RDT files are held.
+    string fOutputDir;               // The fill system path of the directory where 
+                                     // the output files (e.g. fits) are held.
     
     ClassDef( LOCASDB, 1 );
     

@@ -42,6 +42,7 @@ void LOCASDB::ClearDB()
   fSOCRunDir = "";
   fLOCASRunDir = "";
   fRDTRunDir = "";
+  fOutputDir = "";
   
   // The current 'fit-file' this DB is accessing from
   // has an empty path
@@ -57,6 +58,7 @@ void LOCASDB::ClearDB()
   fSOCRunDir = getenv( "LOCAS_DATA" ) + (string)"/runs/soc/";
   fLOCASRunDir = getenv( "LOCAS_DATA" ) + (string)"/runs/locasrun/";
   fRDTRunDir = getenv( "LOCAS_DATA" ) + (string)"/runs/rdt/";
+  fOutputDir = getenv( "LOCAS_ROOT" ) + (string)"/output/";
   
 }
 

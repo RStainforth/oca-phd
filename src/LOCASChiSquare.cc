@@ -623,4 +623,7 @@ void LOCASChiSquare::PerformOpticsFit()
   // Set the parameters in the parameter store before finishing.
   fModel->GetLOCASModelParameterStore()->SetParametersPtr( parameters );
   
+  // Set the covariance matrix in the parameter store before finishing.
+  fModel->GetLOCASModelParameterStore()->SetCovarianceMatrix( covarianceMatrix );
+  
 }

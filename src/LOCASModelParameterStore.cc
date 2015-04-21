@@ -365,6 +365,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 void LOCASModelParameterStore::WriteToFile( const char* fileName )
 {
 
+  
   TFile* file = TFile::Open( fileName, "RECREATE" );
 
   // Create the parameter Tree
@@ -378,9 +379,24 @@ void LOCASModelParameterStore::WriteToFile( const char* fileName )
   parTree->Fill();
   parTree->Write();
 
+  TH2F* lbDistribution = GetLBDistributionHistogram();
+  file->WriteTObject( lbDistribution );
+
+  TH1F* angularResponse = GetPMTAngularResponseHistogram();
+  file->WriteTObject( angularResponse );
+
+  TF1* angularResponseTF1 = GetPMTAngularResponseFunction();
+  file->WriteTObject( angularResponseTF1 );
+
+  TF1* lbDistributionTF1 = GetLBDistributionMaskFunction();
+  file->WriteTObject( lbDistributionTF1 );
+
   // Close the file
   file->Close();
   delete file;
+
+  cout << "LOCAS::LOCASModelParameterStore: Fitted parameters saved to:\n";
+  cout << fileName << "\n";
 
 }
 
@@ -638,5 +654,421 @@ void LOCASModelParameterStore::CrossCheckParameters()
     iPar->SetVary( fParametersVary[ iPar->GetIndex() ] );
 
   }  
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+TH1F* LOCASModelParameterStore::GetPMTAngularResponseHistogram()
+{
+
+  // Returns a pointer to a histogram which contains the binned angular response
+  // and error bars (from the diagonal matrix elements).
+
+  // Get the number of bins in the PMT angular response distribution.
+  Int_t nBins = GetNPMTAngularResponseBins();
+
+  // Declare a hisotgram object.
+  TH1F* hHisto  = new TH1F( "AngRespH", "Relative PMT Angular Response", 
+                            nBins, 0, 90 );
+
+  // Loop over each of the parameters and set the error.
+  for ( Int_t iBin = 0; iBin < nBins; iBin++ ) {
+    hHisto->SetBinContent( iBin + 1.0, GetPMTAngularResponsePar( iBin ) );
+    hHisto->SetBinError( iBin + 1.0, GetPMTAngularResponseError( iBin ) );
+  }
+
+  // Set the titles of the x and y axes.
+  hHisto->GetXaxis()->SetTitle( "Incident PMT Angle (#theta_{PMT})[degrees]" );
+  hHisto->GetYaxis()->SetTitle( "Relative PMT Angular Response" );
+
+  // Set a title offset of 120% the default.
+  hHisto->GetXaxis()->SetTitleOffset( 1.2 );
+  hHisto->GetYaxis()->SetTitleOffset( 1.2 );
+
+  // Return the hisotgram.
+  return hHisto;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASModelParameterStore::GetPMTAngularResponseError( const Int_t angPar )
+{
+  
+  // Return the square root of the diagonal element in the
+  // covariance matrix of the parameters corresponding to the PMT
+  // response bin parameter 'angPar'.
+ 
+  // Check that the request PMT angular response index is between the
+  // number of parameters as specified for the PMT angular response in
+  // the model.
+  if ( angPar >= 0 
+       && angPar < GetNPMTAngularResponseBins() ) {
+
+    // Get the diagonal matrix cooresponding to the error^2 corresponding
+    // to this parameter.
+    Float_t coVar = fCovarianceMatrix[ GetPMTAngularResponseParIndex() + angPar ][ GetPMTAngularResponseParIndex() + angPar ];
+
+    // If the element is positive, return the square root i.e. the error.
+    if ( coVar >= 0.0 ){ return sqrt( coVar ); }
+
+    // Otherwise print out a warning message and return an error of 0.
+    else {
+      printf( "LOCASModelParameterStore::GetPMTAngularResponseError: Error! Requested error for the %i angular response parameter is 0.\n", angPar );
+      return 0;
+    }
+
+  } 
+
+  // If the requested parameter is out of range for the PMT angular
+  // response then return an error message and a return value of 0.
+  else {
+    printf( "LOCASModelParameterStore::GetPMTAngularResponseError: Error! Requested angular response parameter ( %i ) is out of range [ 0:%d ].\n", angPar, GetNPMTAngularResponseBins() - 1 );
+    return 0;
+  }
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+TF1* LOCASModelParameterStore::GetPMTAngularResponseFunction()
+{
+
+  // Returns a pointer to a function with parameters equal to angular response
+  // parameters from the optics fit. This can be used to plot the current 
+  // PMT angular response function.
+
+  // Create an array to the parameter values.
+  Double_t* parVals = new Double_t[ 1 + GetNPMTAngularResponseBins() + 1 ];
+
+  // Get the pointer to the PMT angular response parameters.
+  Float_t* angResp = &fParametersPtr[ GetPMTAngularResponseParIndex() ];
+
+  // Set the first value to the number of bins.
+  parVals[ 0 ] = GetNPMTAngularResponseBins();
+
+  // For each parameter set the corresponding entry in the array
+  // pointer.
+  for ( Int_t iPar = 0; iPar < GetNPMTAngularResponseBins(); iPar++ ){ 
+    parVals[ 1 + iPar ] = angResp[ iPar ]; 
+  }
+
+  // Relic from old code for the PMT response type. Needs removing or fixing.
+  parVals[ GetNPMTAngularResponseBins() + 1 ] = 2;
+
+  // Create the function object.
+  TF1* funcObj = new TF1( "Angular Response", SPMTAngularResponse, 0, 90, 1 + GetNPMTAngularResponseBins() + 1 );
+
+  // Set the parameters.
+  funcObj->SetParameters( parVals );
+
+  // Set the number of points in the function.
+  funcObj->SetNpx( GetNPMTAngularResponseBins() );
+
+  // Set the marker style for the function.
+  funcObj->SetMarkerStyle( 20 );
+
+  // Delete the parameter array.
+  delete[] parVals;
+
+  // Return the function.
+  return funcObj;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Double_t LOCASModelParameterStore::SPMTAngularResponse( Double_t* aPtr, Double_t* parPtr )
+{
+
+  // Function returns the PMT angular response corresponding to 
+  // angle aPtr[ 0 ] in degrees, bounded by 0 and 90 degrees.
+  // parPtr[ 0 ] specifies number of parameters; parPtr[ 1 ] through 
+  // parPtr[ parPtr[ 0 ] ] are the parameters themselves.
+
+  // Initialise the value of theta for this calculation.
+  Float_t thetaVal = aPtr[ 0 ];
+
+  // Check that the supplied value of theta is in range.
+  // If it isn't, return 0.0.
+  if ( thetaVal < 0.0 || thetaVal >= 90.0 ){
+    return 0.0;  // out of range if not in [0:90]
+  }
+  
+  // Get the number of parameters.
+  Int_t nPars = (Int_t) parPtr[ 0 ];
+
+  // Bins from 0 to 90 degrees.
+  Int_t iPar = (Int_t) ( thetaVal * nPars / 90.0 );
+
+  // Return 0.0 if the thetaVal is greater than 90 degrees
+  if ( thetaVal >= ( 90.0 - 0.5 * 90.0 / nPars ) ){ 
+    return 0.0;
+  }
+  
+  // Get the parameter index for the parameter value.
+  iPar = (Int_t) ( ( thetaVal - 0.5 * 90.0 / nPars ) * ( nPars / 90.0 ) );
+
+  // Return the parameter value.
+  return parPtr[ iPar + 1 ];
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+TH2F* LOCASModelParameterStore::GetLBDistributionHistogram()
+{
+
+  // Get the number of cos-theta and phi bins
+  // in the laserball isotropy distribution.
+  Int_t nCThetaBins = GetNLBDistributionCosThetaBins();
+  Int_t nPhiBins = GetNLBDistributionPhiBins();
+
+  // Decalre a new 2D histogram with 'Float_t' type entries.
+  // Set the ranges as phi : ( 0, 2pi ) and
+  // cos-theta : ( -1.0, 1.0 ).
+  TH2F* lbDistributionHist = new TH2F( "lbDistributionHist", "Laserball Distribution Histogram",
+                                       nPhiBins, 0.0, 2.0 * TMath::Pi(), 
+                                       nCThetaBins, -1.0, 1.0 );
+
+  // Get a pointer to the start of the laserball distribution
+  // parameters in the parameter array.
+  Float_t* lbDistPtr = &fParametersPtr[ GetLBDistributionParIndex() ];
+
+  // Loop through each of the cos-theta and phi
+  // bins and assign the corresponding parameter to its
+  // bin entry in the histogram.
+  for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
+    for ( Int_t jPhi = 0; jPhi < nPhiBins; jPhi++ ){
+
+      // Set the bin content to the parameter value for each bin.
+      // The (+1) is because the 0-th bin in a ROOT histogram
+      // is the underflow bin.
+      lbDistributionHist->SetCellContent( jPhi + 1, iTheta + 1, 
+                                          lbDistPtr[ iTheta * nPhiBins + jPhi ] );
+    }
+  }
+
+  // Set the titles of the x and y axes.
+  lbDistributionHist->GetXaxis()->SetTitle( "Laserball Phi_{LB}" );
+  lbDistributionHist->GetYaxis()->SetTitle( "Laserball Cos#theta_{LB}" );
+
+  // Set the title offset to each respective axis as 120% that
+  // of its original value.
+  lbDistributionHist->GetXaxis()->SetTitleOffset( 1.2 );
+  lbDistributionHist->GetYaxis()->SetTitleOffset( 1.2 );
+
+  // Return the histogram.
+  return lbDistributionHist;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+TF1* LOCASModelParameterStore::GetLBDistributionMaskFunction()
+{
+
+  // Get the number of mask parameters.
+  Int_t nMaskPars = GetNLBDistributionMaskParameters();
+
+  // Put the number into a string object for use in the
+  // title later on in this method.
+  stringstream tmpStream;
+  string nParsStr = "";
+  tmpStream << nMaskPars;
+  tmpStream >> nParsStr;
+  
+  // Returns a pointer to a function with no parameters, to plot the current
+  // laserball mask function polynomial in ( 1 + cos( theta_LB ) ).
+
+  // Create a pointer to an array of the laserball mask parameters.
+  Double_t* parVals = new Double_t[ 1 + nMaskPars ];
+
+  // Set the first element in the array to the number of mask parameters.
+  parVals[0] = nMaskPars;
+
+  // Create a pointer to an array of the errors on the laserball mask
+  // parameters.
+  Double_t* errVals = new Double_t[ 1 + nMaskPars ];
+
+  // Set the first element in the array to 0.0 to begin with.
+  errVals[0] = 0.0;
+
+  // Create a pointer to the laserball mask parameters.
+  Float_t* maskParsPtr = &fParametersPtr[ GetLBDistributionMaskParIndex() ];
+
+  // Loop over all the elements in the arrays and set the parameter
+  // value to its corresponding mask parameter value and the
+  // error value to the associated error value.
+  for ( Int_t iPar = 0; iPar < nMaskPars; iPar++ ){ 
+    parVals[ 1 + iPar ] = maskParsPtr[ iPar ]; 
+    errVals[ 1 + iPar ] = GetLBDistributionMaskError( iPar ); 
+  }
+
+  // Create the function object.
+  TF1 *lbMaskFunc = new TF1( "Laserball Distribution Mask", SLBDistributionMask, -1, 1, 1 + nMaskPars );
+
+  // Set the parameter and error values in the function.
+  lbMaskFunc->SetParameters( parVals );
+  lbMaskFunc->SetParErrors( errVals );
+
+  // Set the number of points and the marker style
+  // for the plot.
+  lbMaskFunc->SetNpx( 100 );
+  lbMaskFunc->SetMarkerStyle( 20 );
+
+  // Set the plot and axes titles.
+  string plotTitle = "Laserball Mask Function P_{" + nParsStr + "}";
+  lbMaskFunc->SetTitle( plotTitle.c_str() );
+  lbMaskFunc->GetXaxis()->SetTitle( "Polar Angle Cos#theta_{LB}" );
+  lbMaskFunc->GetYaxis()->SetTitle( "Relative Laserball Intensity" );
+
+  // Set the title offset to 120% of the original.
+  lbMaskFunc->GetXaxis()->SetTitleOffset( 1.2 );
+  lbMaskFunc->GetYaxis()->SetTitleOffset( 1.2 );
+
+  // Delete the parameter and error arrays before returning
+  // the function.
+  delete[] parVals; delete[] errVals;
+
+  return lbMaskFunc;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASModelParameterStore::GetLBDistributionMaskError( const Int_t nVal )
+{
+
+  // Get the number of mask parameters.
+  Int_t nMaskPars = GetNLBDistributionMaskParameters();
+  
+  // Return the square root of the diagonal element corresponding to the
+  // laserball mask parameter 'nVal'.  
+  if ( nVal >= 0 && nVal < nMaskPars ) {
+    
+    Float_t coVar = fCovarianceMatrix[ GetLBDistributionMaskParIndex() + nVal ][ GetLBDistributionMaskParIndex() + nVal ];
+
+    // If the covariance element is greater than 0.0 then
+    // return the square root (i.e. the error).
+    if ( coVar >= 0.0 ){ return TMath::Sqrt( coVar ); }
+
+    // Otherwise return an error
+    else { printf("LOCASModelParameterStore::GetLBDistributionMaskError: Error! Requested error for the %i laserball distribution mask parameter is 0.\n", nVal ); 
+      return 0; 
+    }
+
+  } 
+
+  // If the requested parameter is out of range for the laserball
+  // distribution mask then return an error message and a return value of 0.
+  else {
+    printf("LOCASModelParameterStore::GetLBDistributionMaskError: Error! Requested laserball distribution mask parameter ( %i ) is out of range [ 0:%d ].\n", nVal, nMaskPars - 1 );
+    return 0;
+  }
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASModelParameterStore::SLBDistributionMask( Double_t* aPtr, Double_t* parPtr )
+{
+
+  // Compute the value of the laserball
+  // mask from the parameter array.
+  Int_t nPars = (Int_t) parPtr[ 0 ];
+
+  Int_t iVal = 0;
+  Float_t lbM = 0.0;
+  Float_t onePlus = 1.0 + aPtr[ 0 ];
+
+  // The summation which forms the laserball
+  // mask function.
+  for ( iVal = nPars-1; iVal >= 0; iVal-- ){
+    lbM = lbM * onePlus + parPtr[ 1 + iVal ];
+  }
+
+  return lbM;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+TH2F* LOCASModelParameterStore::GetLBDistributionIntensityHistogram()
+{
+
+  // Get the number of cos-theta and phi bins
+  // in the laserball isotropy distribution.
+  Int_t nCThetaBins = GetNLBDistributionCosThetaBins();
+  Int_t nPhiBins = GetNLBDistributionPhiBins();
+
+  // Decalre a new 2D histogram with 'Float_t' type entries.
+  // Set the ranges as phi : ( 0, 2pi ) and
+  // cos-theta : ( -1.0, 1.0 ).
+  TH2F* lbDistributionIntHist = new TH2F( "lbDistributionHist", "Laserball Distribution Histogram",
+                                       nPhiBins, 0.0, 2.0 * TMath::Pi(), 
+                                       nCThetaBins, -1.0, 1.0 );
+
+  // Get a pointer to the start of the laserball distribution
+  // parameters in the parameter array.
+  Float_t* lbDistPtr = &fParametersPtr[ GetLBDistributionParIndex() ];
+
+  // Get the bin width for the cos-theta part of the distribution.
+  // This will be used to calculate the corresponding
+  // mask multipier for each cos-theta bin.
+  Float_t binWidth = 2.0 / nCThetaBins;
+
+  // Loop over all the bins in the distribution and set the
+  // corresponding bin entry in the histogram accordingly.
+  for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
+    for ( Int_t jPhi = 0; jPhi < nPhiBins; jPhi++ ){
+
+      // The value of cos-theta.
+      Float_t cTheta = binWidth * iTheta;
+      // Initialise the mask value to 1.0 to begin with.
+      Float_t polynomialVal = 1.0;
+      
+      // Loop through all the laserball mask parameters
+      // performing the summation of different degree terms
+      // The degree will run from 1 to NLBDistributionMaskParameters.
+      for ( Int_t iPar = 0; 
+            iPar < GetNLBDistributionMaskParameters(); 
+            iPar++ ){
+        
+        polynomialVal += ( ( GetLBDistributionMaskPar( iPar ) )
+                           * ( TMath::Power( ( 1 + TMath::Cos( cTheta ) ), 
+                                             ( iPar + 1 ) ) ) );
+        
+      }
+
+      // Set the hisotgram entry, note the 'polynomialVal' multiplier
+      // to apply the intensity correction from the laserball mask
+      // parameters to the laserball isotropy distribution.
+      lbDistributionIntHist->SetCellContent( jPhi + 1, iTheta + 1, 
+                                          polynomialVal * lbDistPtr[ iTheta * nPhiBins + jPhi ] );
+    }
+  }
+
+  // Set the titles of the x and y axes.
+  lbDistributionIntHist->GetXaxis()->SetTitle( "Laserball Phi_{LB}" );  
+  lbDistributionIntHist->GetYaxis()->SetTitle( "Laserball Cos#theta_{LB}" );
+
+  // Set the title offset to each respective axis as 120% that
+  // of its original value.
+  lbDistributionIntHist->GetXaxis()->SetTitleOffset( 1.2 );
+  lbDistributionIntHist->GetYaxis()->SetTitleOffset( 1.2 );
+  
+  // Return the histogram.
+  return lbDistributionIntHist;
 
 }

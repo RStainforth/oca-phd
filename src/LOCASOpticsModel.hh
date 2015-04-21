@@ -80,6 +80,7 @@ namespace LOCAS{
     // for the off-axis and central runs respectively.
     Float_t ModelAngularResponse( const LOCASDataPoint& dataPoint, std::string runType );
 
+
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////

@@ -26,6 +26,10 @@
 
 #include "LOCASModelParameter.hh"
 
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TF1.h"
+
 #include <string>
 
 using namespace std;
@@ -190,6 +194,47 @@ namespace LOCAS{
     // the list of runs included in the fit from the 'fit-file'.
     Float_t GetLBRunNormalisationPar( const Int_t iRun ) { return fParametersPtr[ GetLBRunNormalisationParIndex() + iRun ]; }
 
+    // Return the PMT angular response in the binned form as it is stored
+    // in the model.
+    TH1F* GetPMTAngularResponseHistogram();
+
+    // Get the error on the 'nVal'-th PMT angular response parameter.
+    Float_t GetPMTAngularResponseError( const Int_t nVal );
+
+    // Return the PMT angular response as a function based off of the
+    // binned form as it is stored in the model.
+    TF1* GetPMTAngularResponseFunction();
+
+    // Static function used to calculate the PMT angular response function
+    // above. (LOCASModelParameterStore::GetPMTAngularResponseFunction()).
+    // Function returns the PMT angular response corresponding to 
+    // angle a[0] in degrees, bounded by 0 and 90 degrees.
+    // par[0] specifies number of parameters; par[1] through 
+    // par[ par[ 0 ] ] are the parameters themselves.
+    static Double_t SPMTAngularResponse( Double_t* a, Double_t* par );
+
+    // Return the laserball isotropy distribution distribution in the
+    // 2D histogram form as it is stored in the model.
+    TH2F* GetLBDistributionHistogram();
+
+    // Return the laserball mask function as a function based off of the
+    // polynomial parameters as stored in the model.
+    TF1* GetLBDistributionMaskFunction();
+
+    // Get the error on the 'nVal'-th laserball distribution mask parameter.
+    Float_t GetLBDistributionMaskError( const Int_t nVal );
+
+    // Static function used to calculate the laserball mask function
+    // above. (LOCASModelParameterStore::GetLBDistributionMaskFunction()).
+    // Function returns the laserball mask function corresponding to 
+    // the polynomial as parameterised by the mask parameters.
+    static Float_t SLBDistributionMask( Double_t* aPtr, Double_t* parPtr );
+
+    // Return the combined (histogram + mask) histogram for the combined
+    // laserball distribution and intensity based off of the 2D histogram
+    // and the mask function parameters as they are stored in the model.
+    TH2F* GetLBDistributionIntensityHistogram();
+
     // Get the iterators to the beginning and end of the parameter store.
     vector< LOCASModelParameter >::iterator GetLOCASModelParametersIterBegin(){ return fParameters.begin(); }
     vector< LOCASModelParameter >::iterator GetLOCASModelParametersIterEnd(){ return fParameters.end(); }
@@ -225,6 +270,10 @@ namespace LOCAS{
 
     // Set the parameter pointer array to those given by the 'pars' array.
     void SetParametersPtr( Float_t* pars ) { fParametersPtr = pars; }
+
+    // Set the covariance matrix pointer array to those given 
+    // by the 'covar' array of arrays.
+    void SetCovarianceMatrix( Float_t** covar ) { fCovarianceMatrix = covar; }
 
   private:
 
