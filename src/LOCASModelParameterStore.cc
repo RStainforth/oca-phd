@@ -7,11 +7,13 @@
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TClass.h"
 
 #include <string>
 #include <sstream>
 #include <vector>
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 using namespace LOCAS;
@@ -220,7 +222,6 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
         lStream >> parStr;
 
         Int_t parIndex = 3 + iPar;
-        cout << "VaryBool is: " << varyBool << endl;
         LOCASModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, 
                                         minVal, maxVal, incVal, nParsInGroup, parVary );
         AddParameter( lParameter );
@@ -362,22 +363,13 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASModelParameterStore::WriteToFile( const char* fileName )
+void LOCASModelParameterStore::WriteToROOTFile( const char* fileName )
 {
-
   
   TFile* file = TFile::Open( fileName, "RECREATE" );
 
   // Create the parameter Tree
-  TTree* parTree = new TTree( fileName, fileName );
-
-  // Declare a new branch pointing to the parameter store
-  parTree->Branch( "LOCASModelParameterStore", (*this).ClassName(), &(*this), 32000, 99 );
-  file->cd();
-
-  // Fill the tree and write it to the file
-  parTree->Fill();
-  parTree->Write();
+  TTree* parTree = new TTree( fStoreName.c_str(), fStoreName.c_str() );
 
   TH2F* lbDistribution = GetLBDistributionHistogram();
   file->WriteTObject( lbDistribution );
@@ -391,11 +383,151 @@ void LOCASModelParameterStore::WriteToFile( const char* fileName )
   TF1* lbDistributionTF1 = GetLBDistributionMaskFunction();
   file->WriteTObject( lbDistributionTF1 );
 
-  // Close the file
+  // Declare a new branch pointing to the parameter store
+  parTree->Branch( "LOCASModelParameterStore", (*this).ClassName(), &(*this), 32000, 99 );
+  file->cd();
+
+  // Fill the tree and write it to the file
+  parTree->Fill();
+  parTree->Write();
+
   file->Close();
   delete file;
 
-  cout << "LOCAS::LOCASModelParameterStore: Fitted parameters saved to:\n";
+  cout << "LOCAS::LOCASModelParameterStore: Fitted parameters saved to ROOT file:\n";
+  cout << fileName << "\n";
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void LOCASModelParameterStore::WriteToRATDBFile( const char* fileName )
+{
+
+  ofstream roccVals;
+  roccVals.precision( 6 );
+  roccVals.open ( fileName );
+  roccVals << "{\n";
+  roccVals << "name : \"FITRESULTS\",\n";
+  roccVals << "index : \"" << fStoreName << "\",\n";
+
+  roccVals << "\n";
+  
+  roccVals << "valid_begin : [0, 0],\n";
+  roccVals << "valid_end : [0, 0],\n";
+  
+  roccVals << "\n";
+  roccVals << "// The extinction lengths [mm^-1] for the inner av, av and water regions.\n";
+  roccVals << "inner_av_extinction_length : " << GetInnerAVExtinctionLengthPar() << ",\n";
+  roccVals << "inner_av_extinction_length_error : " << TMath::Sqrt( fCovarianceMatrix[ GetInnerAVExtinctionLengthParIndex() ][ GetInnerAVExtinctionLengthParIndex() ] ) << ",\n";
+  roccVals << "\n";
+
+  roccVals << "acrylic_extinction_length : " << GetAVExtinctionLengthPar() << ",\n";
+  roccVals << "acrylic_extinction_length_error : " << TMath::Sqrt( fCovarianceMatrix[ GetAVExtinctionLengthParIndex() ][ GetAVExtinctionLengthParIndex() ] ) << ",\n";
+
+  roccVals << "\n";
+
+  roccVals << "water_extinction_length : " << GetWaterExtinctionLengthPar() << ",\n";
+  roccVals << "water_extinction_length_error : " << TMath::Sqrt( fCovarianceMatrix[ GetWaterExtinctionLengthParIndex() ][ GetWaterExtinctionLengthParIndex() ] ) << ",\n";
+
+  roccVals << "\n";
+  roccVals << "// The laserball distribution mask parameters.\n";
+  Int_t nMaskPars = GetNLBDistributionMaskParameters();
+  Float_t* maskPtr = &fParametersPtr[ GetLBDistributionMaskParIndex() ];
+  roccVals << "laserball_intensity_mask_number_of_parameters : " << nMaskPars << ",\n";
+  roccVals << "laserball_intensity_mask_parameters : [ ";
+  for ( Int_t iPar = 0; iPar < nMaskPars; iPar++ ){
+    
+    if ( iPar == nMaskPars - 1 ){
+      roccVals << maskPtr[ iPar ] << " ],\n";
+    }
+    else{
+      roccVals << maskPtr[ iPar ] << ", ";
+    }
+
+  }
+  roccVals << "laserball_intensity_mask_parameters_errors : [ ";
+  for ( Int_t iPar = 0; iPar < nMaskPars; iPar++ ){
+    
+    if ( iPar == nMaskPars - 1 ){
+      roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionMaskParIndex() + iPar ][ GetLBDistributionMaskParIndex() + iPar ] ) << " ],\n";
+    }
+    else{
+      roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionMaskParIndex() + iPar ][ GetLBDistributionMaskParIndex() + iPar ] ) << ", ";
+    }
+
+  }
+
+  roccVals << "\n";
+
+  Float_t* lbDistPtr = &fParametersPtr[ GetLBDistributionParIndex() ];
+
+  Int_t nCThetaBins = GetNLBDistributionCosThetaBins();
+  Int_t nPhiBins = GetNLBDistributionPhiBins();
+  roccVals << "// The laserball distribution histogram parameters.\n";
+  roccVals << "laserball_distribution_histogram_number_of_phi_bins : " << nPhiBins << ",\n";
+  roccVals << "laserball_distribution_histogram_number_of_cos_theta_bins : " << nCThetaBins << ",\n";
+  roccVals << "laserball_distribution_histogram : [ ";
+  for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
+    for ( Int_t iPhi = 0; iPhi < nPhiBins; iPhi++ ){
+      if ( iTheta == nCThetaBins - 1
+           && iPhi == nPhiBins - 1 ){
+        roccVals << lbDistPtr[ iTheta*nCThetaBins + iPhi ] << " ],\n";
+      }
+      else{
+        roccVals << lbDistPtr[ iTheta*nCThetaBins + iPhi ] << ", ";
+      }
+    }
+    roccVals << "\n";
+  }
+  roccVals << "laserball_distribution_errors : [ ";
+  for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
+    for ( Int_t iPhi = 0; iPhi < nPhiBins; iPhi++ ){
+      if ( iTheta == nCThetaBins - 1
+           && iPhi == nPhiBins - 1 ){
+        roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ][ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ] ) << " ],\n";
+      }
+      else{
+        roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ][ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ] ) << ", ";
+      }
+    }
+    roccVals << "\n";
+  }
+
+  roccVals << "\n";
+
+  roccVals << "// The PMT angular response parameters.\n";
+  Int_t nPMTAngPars = GetNPMTAngularResponseBins();
+  Float_t* pmtAngPtr = &fParametersPtr[ GetPMTAngularResponseParIndex() ];
+  roccVals << "pmt_angular_response_number_of_bins : " << nPMTAngPars << ",\n";
+  roccVals << "pmt_angular_response : [ ";
+  for ( Int_t iPar = 0; iPar < nPMTAngPars; iPar++ ){
+    
+    if ( iPar == nPMTAngPars - 1 ){
+      roccVals << pmtAngPtr[ iPar ] << " ],\n";
+    }
+    else{
+      roccVals << pmtAngPtr[ iPar ] << ", ";
+    }
+
+  }
+  roccVals << "pmt_angular_response_errors : [ ";
+  for ( Int_t iPar = 0; iPar < nPMTAngPars; iPar++ ){
+    
+    if ( iPar == nPMTAngPars - 1 ){
+      roccVals << TMath::Sqrt( fCovarianceMatrix[ GetPMTAngularResponseParIndex() + iPar ][ GetPMTAngularResponseParIndex() + iPar ] ) << " ],\n";
+    }
+    else{
+      roccVals << TMath::Sqrt( fCovarianceMatrix[ GetPMTAngularResponseParIndex() + iPar ][ GetPMTAngularResponseParIndex() + iPar ] ) << ", ";
+    }
+
+  }
+
+  roccVals << "\n}";
+  roccVals.close();
+
+  cout << "LOCAS::LOCASModelParameterStore: Fitted parameters saved to RATDB file:\n";
   cout << fileName << "\n";
 
 }

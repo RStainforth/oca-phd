@@ -1,5 +1,18 @@
 {
 name : "FITFILE",
+index: "fit_setup",
+
+valid_begin: [0, 0],
+valid_end: [0, 0],
+
+data_set: "oct03",
+fit_name: "420nm_oct03",
+
+}
+
+
+{
+name : "FITFILE",
 index: "run_setup",
 
 valid_begin: [0, 0],
@@ -72,7 +85,7 @@ laserball_distribution_histogram_number_of_cos_theta_bins: 12,
 laserball_distribution_histogram_vary: 1,
 
 // The degree of the polynomial mask function used to model the laserball intensity
-laserball_intensity_mask_number_of_parameters: 4,
+laserball_intensity_mask_number_of_parameters: 5,
 
 // Whether or not to vary the laserball mask function in the fit ( 0: Keep Fixed, 1: Vary )
 laserball_intensity_mask_vary: 1,

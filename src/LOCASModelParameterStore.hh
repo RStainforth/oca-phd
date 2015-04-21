@@ -41,7 +41,7 @@ namespace LOCAS{
   public:
 
     // The constructor and destructor of the LOCASModelParameterStore object.
-    LOCASModelParameterStore ( string storeName = "" );
+    LOCASModelParameterStore ( string storeName = "LOCASModelParameterStore" );
     ~LOCASModelParameterStore(){ }
 
     /////////////////////////////////
@@ -60,7 +60,10 @@ namespace LOCAS{
     void PrintParameterInfo();
     
     // Write the parameters to a .root file
-    void WriteToFile( const char* fileName = "LOCASModelParameterStore.root" );
+    void WriteToROOTFile( const char* fileName = "LOCASModelParameterStore.root" );
+
+    // Write the parameters to a .ratdb file
+    void WriteToRATDBFile( const char* fileName = "LOCASModelParameterStore.root" );
 
     // Allocate the memory for the parameter arrays.
     void AllocateParameterArrays();
