@@ -239,6 +239,7 @@ void LOCASChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersV
   LOCASMath::LOCASFree_Matrix( derivativeMatrix2, 1, 1 );
   LOCASMath::LOCASFree_Vector( betaVec2, 1 );
 
+
 }
 
 //////////////////////////////////////
@@ -261,6 +262,8 @@ void  LOCASChiSquare::FitEvaluateModel( LOCASDataPoint& dPoint, Float_t testPara
 
   // Restore the original, saved parameters
   fModel->GetLOCASModelParameterStore()->SetParametersPtr( tempParameterSave );
+
+  delete tempParameterSave;
   
 }
 

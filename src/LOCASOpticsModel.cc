@@ -101,6 +101,8 @@ void LOCASOpticsModel::IdentifyVaryingPMTAngularResponseBins( LOCASDataStore* lD
     } 
   }
 
+  delete pmtAngValid;
+
 }
 
 //////////////////////////////////////
@@ -159,6 +161,8 @@ void LOCASOpticsModel::IdentifyVaryingLBDistributionBins( LOCASDataStore* lData 
       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 1;
     } 
   }
+
+  delete lbAngValid;
 
 }
 
