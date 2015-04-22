@@ -705,7 +705,10 @@ void LOCASRun::CalculateLBIntensityNorm()
   // Also give these values to every PMT for easy access by
   // LOCASOpticsMode::ModelPrediction.
   for ( iPMT = GetLOCASPMTIterBegin(); iPMT != GetLOCASPMTIterEnd(); iPMT++ ){
+
     ( iPMT->second ).SetLBIntensityNorm( fLBIntensityNorm );
+    ( iPMT->second ).SetTotalNRunPromptCounts( fLBIntensityNorm * nPMTs );
+
     ( iPMT->second ).SetCentralLBIntensityNorm( fCentralLBIntensityNorm );
     ( iPMT->second ).SetWavelengthLBIntensityNorm( fWavelengthLBIntensityNorm );
 

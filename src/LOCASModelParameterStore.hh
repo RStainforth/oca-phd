@@ -267,6 +267,11 @@ namespace LOCAS{
     // of the data point associated with the run from whence it came.
     void SetCurrentLBRunNormalisationBin( const Int_t iBin ) { fCurrentLBRunNormalisationBin = iBin; }
 
+    // Get the 'iPar'-th laserball normalisation parameter.
+    // i.e. The off-axis normalisation value for the 'iPar'-th run in
+    // the list of runs included in the fit from the 'fit-file'.
+    void SetLBRunNormalisationPar( const Int_t iRun, const Float_t runNorm ) { fParametersPtr[ GetLBRunNormalisationParIndex() + iRun ] = runNorm; }
+
     // Set the parameters to be stored by this object to those held in 
     // an vector of other parameters.
     void SetParameters( const vector< LOCAS::LOCASModelParameter >& pars ){ fParameters = pars; }

@@ -18,7 +18,7 @@ index: "run_setup",
 valid_begin: [0, 0],
 valid_end: [0, 0],
 
-run_ids: [ 34766, 34780, 34794, 34806, 34820, 34835, 34875, 34889, 34899, 34916, 34924, 34950, 34956, 34972, 34990 ],
+run_ids: [ 34766, 34780, 34794, 34806, 34916, 34924, 34950, 34956, 34820, 34899, 34990, 34972, 35013, 34889, 34875, 34835, 35148, 35081, 35086, 35169, 35155, 35106, 35112, 35224, 34725, 34707, 34741 ],
 
 }
 
@@ -29,7 +29,7 @@ index: "filter_setup",
 valid_begin: [0, 0],
 valid_end: [0, 0],
 
-filter_list: [ "filter_mpe_occupancy", "filter_mpe_ctr_occupancy", "filter_chi_square" ],
+filter_list: [ "filter_chi_square", "filter_fractional_error" ],
 
 filter_mpe_occupancy_min: 0.0,
 filter_mpe_occupancy_max: 0.3,
@@ -38,7 +38,25 @@ filter_mpe_ctr_occupancy_min: 0.0,
 filter_mpe_ctr_occupancy_max: 0.05,
 
 filter_chi_square_min: 0.0,
-filter_chi_square_max: 100.0,
+filter_chi_square_max: 1000.0,
+
+filter_fractional_error_min: 0.0,
+filter_fractional_error_max: 0.25, 
+
+}
+
+{
+name: "FITFILE",
+index: "bool_filter_setup",
+
+valid_begin: [0, 0],
+valid_end: [0, 0],
+
+filter_list: [ "filter_bad_path", "filter_ctr_bad_path" ],
+
+filter_bad_path: 0,
+
+filter_ctr_bad_path: 0,
 
 }
 
@@ -107,6 +125,7 @@ valid_begin: [0, 0],
 valid_end: [0, 0],
 
 // The sequential chi-square upper limits to cut initial data-points on for each fit
-chisq_lims: [ 1000.0, 100.0, 50.0, 25.0, 25.0 ],
+chisq_lims: [ 1000.0, 100.0, 50.0, 25.0, 16.0, 16.0 ],
+
 }
 

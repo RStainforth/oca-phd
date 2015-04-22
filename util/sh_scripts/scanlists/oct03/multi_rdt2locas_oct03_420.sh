@@ -19,3 +19,20 @@ rdt2locas -r 35013 -c 34760 -w 35010
 rdt2locas -r 34889 -c 34760 -w 34891 
 rdt2locas -r 34875 -c 34760 -w 34873
 rdt2locas -r 34835 -c 34760 -w 34837 
+
+rdt2locas -r 35148 -c 34760 -w 35150
+rdt2locas -r 35081 -c 34760 -w 35069
+rdt2locas -r 35086 -c 34760 -w 35084
+rdt2locas -r 35169 -c 34760 -w 35171
+rdt2locas -r 35155 -c 34760 -w 35153
+
+rdt2locas -r 35106 -c 34760 -w 35108
+rdt2locas -r 35112 -c 34760 -w 35110
+
+rdt2locas -r 35224 -c 34760 -w 35222
+
+rdt2locas -r 34725 -c 34760 -w 34723
+rdt2locas -r 34707 -c 34760 -w 34705
+rdt2locas -r 34741 -c 34760 -w 34743
+
+rdt2locas -r 34760 -c 34760 -w 34762

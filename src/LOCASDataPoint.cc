@@ -62,9 +62,13 @@ LOCASDataPoint::LOCASDataPoint( const LOCASPMT& lPMT )
   SetBadPathFlag( lPMT.GetBadPath() );
   SetCentralBadPathFlag( lPMT.GetCentralBadPath() );
 
+  SetTotalNRunPromptCounts( lPMT.GetTotalNRunPromptCounts() );
+
   SetOccupancyRatio( 0.0 );
   SetOccupancyRatioErr( 0.0 );
   SetModelOccupancyRatio( 0.0 );
+
+  SetEfficiency( -1.0 );
 
 }
 
@@ -118,9 +122,13 @@ LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
   SetBadPathFlag( rhs.GetBadPathFlag() );
   SetCentralBadPathFlag( rhs.GetCentralBadPathFlag() );
 
+  SetTotalNRunPromptCounts( rhs.GetTotalNRunPromptCounts() );
+
   SetOccupancyRatio( rhs.GetOccupancyRatio() );
   SetOccupancyRatioErr( rhs.GetOccupancyRatioErr() );
   SetModelOccupancyRatio( rhs.GetModelOccupancyRatio() );
+
+  SetEfficiency( rhs.GetEfficiency() );
 
   return *this;
 

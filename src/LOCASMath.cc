@@ -84,6 +84,21 @@ void LOCASMath::CalculateMPEOccRatio( const LOCASDataPoint& dPoint, Float_t& occ
   Double_t centralRun2 = TMath::Power( dPoint.GetCentralMPECorrOccupancyErr() / dPoint.GetCentralMPECorrOccupancy(), 2 );
   occRatioErr = occRatio * TMath::Sqrt( offAxisRun2 + centralRun2 );
 
+  // Float_t incTheta = dPoint.GetIncidentAngle() * ( 180.0 / TMath::Pi() );
+  // Float_t sigmaPMT = 0.03973; //- 0.0003951*incTheta + 0.000034063*incTheta*incTheta;
+  //   //cout << "sigmaPMT: " << sigmaPMT << endl;
+
+  // sigmaPMT *= occRatio;
+  // //cout << "sigmaPMT: " << sigmaPMT << endl;
+  // //cout << "sigmaPMT2: " << pow(sigmaPMT,2) << endl;
+  // //Float_t sigmaPMT2 = TMath::Power( sigmaPMT, 2 );
+  // //sigmaPMT2 *= occRatio;
+  // occRatioErr = TMath::Sqrt( pow(occRatioErr1,2) + pow(sigmaPMT,2) );
+  // //cout << "occRatioErr: " << occRatioErr << endl;
+  // //cout << "occRatio: " << occRatio << endl;
+  // //cout << "occRatioErr / occRatio: " << occRatioErr / occRatio << endl;
+  // //cout << "----------" << endl;
+
 }
 
 //////////////////////////////////////

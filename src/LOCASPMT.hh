@@ -149,6 +149,10 @@ namespace LOCAS{
     // off-axis run associated with this PMT.
     Float_t GetLBIntensityNorm() const { return fLBIntensityNorm; }
 
+    // Set the total number of prompt counts within the timing window 
+    // across all PMTs from the run this PMT came from.
+    Float_t GetTotalNRunPromptCounts() const { return fTotalNRunPromptCounts; }
+
     // Get the number of laserball pulses in the off-axis
     // run associated with this PMT.
     Float_t GetNLBPulses() const { return fNLBPulses; }
@@ -516,6 +520,10 @@ namespace LOCAS{
     // off-axis run associated with this PMT.
     void SetLBIntensityNorm( const Float_t intensityNorm ){ fLBIntensityNorm = intensityNorm; }
 
+    // Set the total number of prompt counts within the timing window 
+    // across all PMTs from the run this PMT came from.
+    void SetTotalNRunPromptCounts( const Float_t val ){ fTotalNRunPromptCounts = val; }
+
     // Set the number of laserball pulses in the off-axis
     // run associated with this PMT.
     void SetNLBPulses( const Float_t nPulses ){ fNLBPulses = nPulses; }
@@ -852,6 +860,8 @@ namespace LOCAS{
     Float_t fOccupancy;                           // Prompt Peak Counts 
     Float_t fOccupancyErr;                        // Error on Occupancy of this PMT
     Float_t fLBIntensityNorm;                     // The prompt peak normalisation for the entire run
+
+    Float_t fTotalNRunPromptCounts;               // The total number of prompt counts within the timing window across all PMTs from the run this PMT came from.
 
     Float_t fNLBPulses;                           // Number of LaserBall pulses for this run.
 

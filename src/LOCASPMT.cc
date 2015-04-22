@@ -47,6 +47,8 @@ LOCASPMT::LOCASPMT( const LOCASPMT& rhs )
   fOccupancyErr = rhs.fOccupancyErr;
   fLBIntensityNorm = rhs.fLBIntensityNorm;
 
+  fTotalNRunPromptCounts = rhs.fTotalNRunPromptCounts;
+
   fNLBPulses = rhs.fNLBPulses;
 
   fMPECorrOccupancy = rhs.fMPECorrOccupancy;
@@ -188,6 +190,8 @@ LOCASPMT& LOCASPMT::operator=( const LOCASPMT& rhs )
   fOccupancy = rhs.fOccupancy;
   fOccupancyErr = rhs.fOccupancyErr;
   fLBIntensityNorm = rhs.fLBIntensityNorm;
+
+  fTotalNRunPromptCounts = rhs.fTotalNRunPromptCounts;
 
   fNLBPulses = rhs.fNLBPulses;
 
@@ -331,6 +335,7 @@ void LOCASPMT::ClearPMT()
   SetOccupancyErr( -10.0 );
 
   SetLBIntensityNorm( -10.0 );
+  SetTotalNRunPromptCounts( -10.0 );
   SetNLBPulses( -10.0 );
 
   SetMPECorrOccupancy( -10.0 );

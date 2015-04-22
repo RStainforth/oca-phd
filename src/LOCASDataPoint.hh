@@ -177,6 +177,10 @@ namespace LOCAS{
     // central run.
     Bool_t GetCentralBadPathFlag() const { return fCentralBadPathFlag; }
 
+    // Get the total number of prompt counts within the timing window
+    // across all the PMTs from which this run came.
+    Float_t GetTotalNRunPromptCounts() const { return fTotalNRunPromptCounts; }
+
     // Get the occupancy ratio (MPE corrected value ratio) for this
     // data-point, ( ratio = off-axis / central ).
     Float_t GetOccupancyRatio() const { return fOccupancyRatio; }
@@ -190,6 +194,9 @@ namespace LOCAS{
     // only initialised once a LOCASChiSquare object has computed the 
     // chi-square value for this data point.
     Float_t GetModelOccupancyRatio() const { return fModelOccupancyRatio; }
+
+    // Get the value fo the efficiency as calculated by 'locas2fit2eff'
+    Float_t GetEfficiency() const { return fEfficiency; }
 
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -319,11 +326,14 @@ namespace LOCAS{
     // Set the path flag status for this data point from the
     // off axis run.
     void SetBadPathFlag( const Bool_t val ){ fBadPathFlag = val; }
-
-    
+   
     // Set the path flag status for this data point from the
     // central run.
     void SetCentralBadPathFlag( const Bool_t val ){ fCentralBadPathFlag = val; }
+
+    // Set the total number of prompt counts within the timing window
+    // across all the PMTs from which this run came.
+    void SetTotalNRunPromptCounts( const Float_t val ) { fTotalNRunPromptCounts = val; }
 
     // Set the occupancy ratio (MPE corrected value ratio) for this
     // data-point, ( ratio = off-axis / central ).
@@ -338,6 +348,9 @@ namespace LOCAS{
     // only initialised once a LOCASChiSquare object has computed the 
     // chi-square value for this data point.
     void SetModelOccupancyRatio( const Float_t val ){ fModelOccupancyRatio = val; }
+
+    // Set the value fo the efficiency as calculated by 'locas2fit2eff'
+    void SetEfficiency( const Float_t val ){ fEfficiency = val; }
 
   private:
 
@@ -389,9 +402,14 @@ namespace LOCAS{
     Bool_t fBadPathFlag;                    // The path status from the off-axis run (i.e. shadowed, subject to reflections etc. true: bad, false: good)
     Bool_t fCentralBadPathFlag;             // The path status from the central run (i.e. shadowed, subject to reflections etc. true: bad, false: good)
 
+    Float_t fTotalNRunPromptCounts;         // The total number of prompt counts within the timing window across all PMTs from the run this data point came from.
+
     Float_t fOccupancyRatio;                // The data occupancy ratio for this data point
     Float_t fOccupancyRatioErr;             // The error on the data occupancy ratio for this data point
     Float_t fModelOccupancyRatio;           // The model prediction for the occupancy ratio for this data point
+
+    Float_t fEfficiency;                    // The estimate for the raw efficieny
+                                            // of this data point. ( fMPECorrOccupancy / LOCASOpticsModel::ModelPrediction [after minimisation] ).
 
     ClassDef( LOCASDataPoint, 1 );
     

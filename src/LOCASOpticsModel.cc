@@ -98,7 +98,12 @@ void LOCASOpticsModel::IdentifyVaryingPMTAngularResponseBins( LOCASDataStore* lD
     // then vary the associated parameter in the parameter array.
     else{
       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 1;
-    } 
+    }
+
+    // printf( "AngResp parameter %i (global %i) has %i entries with vary flag %i\n",
+    //         iAng, fModelParameterStore->GetPMTAngularResponseParIndex() + iAng,
+    //         pmtAngValid[ iAng ],
+    //         fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] );
   }
 
   delete pmtAngValid;
@@ -159,7 +164,12 @@ void LOCASOpticsModel::IdentifyVaryingLBDistributionBins( LOCASDataStore* lData 
     // then vary the associated parameter in the parameter array.
     else{
       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 1;
-    } 
+    }
+
+  //   printf( "LBDist parameter %i (global %i) has %i entries with vary flag %i\n",
+  //           iLB, fModelParameterStore->GetLBDistributionParIndex() + iLB,
+  //           lbAngValid[ iLB ],
+  //           fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] );
   }
 
   delete lbAngValid;
@@ -169,7 +179,29 @@ void LOCASOpticsModel::IdentifyVaryingLBDistributionBins( LOCASDataStore* lData 
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint, Float_t* derivativePars )
+void LOCASOpticsModel::InitialiseLBRunNormalisations( LOCASDataStore* lData )
+{
+
+  Int_t previousRunIndex = -1;
+  // Loop over all the data points stored in the LOCASDataStore object.
+  std::vector< LOCASDataPoint >::iterator iDP;
+  for ( iDP = lData->GetLOCASDataPointsIterBegin(); 
+        iDP != lData->GetLOCASDataPointsIterEnd(); 
+        iDP++ ) {
+    
+    if ( iDP->GetRunIndex() != previousRunIndex ){
+      previousRunIndex = iDP->GetRunIndex();
+      fModelParameterStore->SetLBRunNormalisationPar( iDP->GetRunIndex(),
+                                                      iDP->GetLBIntensityNorm() );
+    }
+  }
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASOpticsModel::ModelOccRatioPrediction( const LOCASDataPoint& dataPoint, Float_t* derivativePars )
 {
 
   // Obtain a pointer to the parameters for use in this calculation
@@ -257,10 +289,18 @@ Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint, Floa
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() ] = 0.0;
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() ] = 1.0 / angResp;
 
+    if ( 1.0 / angResp == 0.0 ){
+      cout << "MODEL DLB is ZERO for LB Par: " << parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() << endl;
+    }
+
     // The derivative with respect to the PMT angular response
     // from the central run.
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] = 0.0;
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] -= 1.0 / angRespCtr;
+
+    if ( 1.0 / angRespCtr == 0.0 ){
+      cout << "MODEL CENTER DLB is ZERO for LB Par: " << parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() << endl;
+    }
 
     // The derivative with respect to the laserball 
     // isotropy distribution from the off-axis run.
@@ -316,6 +356,64 @@ Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint, Floa
     }
 
   }
+
+  return modelPrediction;
+  
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint )
+{
+  
+  // Obtain a pointer to the parameters for use in this calculation
+  // for the model prediction of the occupancy ratio.
+  LOCASModelParameterStore* parPtr = GetLOCASModelParameterStore();
+
+  // Obtain the current values for the extinction lengths in the
+  // inner AV, AV and water regions. The extinction lengths
+  // are stored in inverse lengths, mm^-1.
+  Float_t dInnerAVExtinction = parPtr->GetInnerAVExtinctionLengthPar();
+  Float_t dAVExtinction =  parPtr->GetAVExtinctionLengthPar();
+  Float_t dWaterExtinction = parPtr->GetWaterExtinctionLengthPar();
+
+  // Use the obtained normalisation bin obtain the current value for the
+  // intensity normalisation for the off-axis run.
+  Float_t normVal = parPtr->GetLBRunNormalisationPar( dataPoint.GetRunIndex() );
+  //dataPoint.GetTotalNRunPromptCounts();
+
+  // Obtain the distances from the off-axis 
+  // runs for the distances in the inner AV, AV and water regions.
+  Float_t dInnerAV = dataPoint.GetDistInInnerAV();
+  Float_t dAV = dataPoint.GetDistInAV();
+  Float_t dWater = dataPoint.GetDistInWater();
+
+  // Get the solid angle and fresnel transmission coefficients.
+  Float_t solidAngle = dataPoint.GetSolidAngle();
+  Float_t fresnelTCoeff = dataPoint.GetFresnelTCoeff();
+
+  // Model the angular response for this data point for the
+  // off-axis run.
+  Float_t angResp = ModelAngularResponse( dataPoint, "off-axis" );
+  
+  // Model the laserball distribution for this data point
+  // for the off-axis run.
+  Float_t intensity = ModelLBDistribution( dataPoint, "off-axis" );
+
+  // Model the laserball distribution mask for this data point
+  // for the off-axis run.
+  Float_t intensityPoly = ModelLBDistributionMask( dataPoint, "off-axis" );
+
+  // Modify the laserball distribution by this the mask function values.
+  intensity *= intensityPoly;
+  
+  // Using all the above calculated values we can compute
+  // the model prediction.
+  Float_t modelPrediction = normVal * angResp * intensity * solidAngle * fresnelTCoeff
+    * TMath::Exp( - ( dInnerAV * ( dInnerAVExtinction )
+                      + dAV * ( dAVExtinction )
+                      + dWater * ( dWaterExtinction ) ) );
 
   return modelPrediction;
   

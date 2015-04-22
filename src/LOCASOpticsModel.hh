@@ -53,13 +53,21 @@ namespace LOCAS{
     // bin wil be fixed in the fit.
     void IdentifyVaryingLBDistributionBins( LOCASDataStore* lData );
 
+    // Initialise the laserball run normalisation parameters to the initial
+    // off-axis values stored on the data point objects.
+    void InitialiseLBRunNormalisations( LOCASDataStore* lData );
+
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////
 
     // Given access to a data point, compute the model prediction for the occupancy ratio
     // and its associated derivatives with respect to each parameter.
-    Float_t ModelPrediction( const LOCASDataPoint& dataPoint, Float_t* derivativePars = NULL );
+    Float_t ModelOccRatioPrediction( const LOCASDataPoint& dataPoint, Float_t* derivativePars = NULL );
+
+    // Given access to a data point, compute the model prediction for the occupancy
+    // and its associated derivatives with respect to each parameter.
+    Float_t ModelPrediction( const LOCASDataPoint& dataPoint );
 
     // Given access to a data point, compute the model prediction for the laserball distribution
     // based on the run type. runType = "off-axis" or runType = "central"

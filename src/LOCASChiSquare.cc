@@ -31,7 +31,7 @@ Float_t LOCASChiSquare::EvaluateChiSquare( LOCASDataPoint& dPoint )
 
   // Calculate the model predicted value for the occupancy
   // ratio at this data point
-  Float_t modelVal = fModel->ModelPrediction( dPoint );
+  Float_t modelVal = fModel->ModelOccRatioPrediction( dPoint );
   dPoint.SetModelOccupancyRatio( modelVal );
 
   // Calculate the occupancy ratio from the data for this
@@ -163,7 +163,7 @@ void LOCASChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersV
 
   LOCASModelParameterStore* parPtr = new LOCASModelParameterStore();
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
-    
+   
     // Evaluate the model for this data point and calculate the 
     // parameters and the derivative of the this point with respect
     // to each of these parameters.
@@ -200,6 +200,7 @@ void LOCASChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersV
     for ( lVar = 1; lVar <= nVariablePar; lVar++ ) {
 	
       weightVal = dDataValDParameters[ variableParameterIndex[ lVar ] ] * dataError2;
+
       // Now add these 'weightings' by derivative to the corresponding entry
       // in the matrix of derivatives 'derivativeMatrix'
       for ( mVar = 1; mVar <= lVar; mVar++ ) {
@@ -258,7 +259,7 @@ void  LOCASChiSquare::FitEvaluateModel( LOCASDataPoint& dPoint, Float_t testPara
   fModel->GetLOCASModelParameterStore()->SetParametersPtr( testParameters );
 
   // Calculate the model prediction for said trail parameters.
-  *modelVal = fModel->ModelPrediction( dPoint, dDataValDParameters );
+  *modelVal = fModel->ModelOccRatioPrediction( dPoint, dDataValDParameters );
 
   // Restore the original, saved parameters
   fModel->GetLOCASModelParameterStore()->SetParametersPtr( tempParameterSave );
@@ -485,7 +486,7 @@ void LOCASChiSquare::PerformMinimisation( Float_t testParameters[], Int_t parame
   // is achieved.
 
   // Maximum number of iterations for the fit.
-  Int_t maxNIters = 1000;
+  Int_t maxNIters = 100;
 
   // Counter variable for the current number of iterations.
   Int_t numIters = 0;
@@ -597,6 +598,7 @@ void LOCASChiSquare::PerformOpticsFit()
   // entries in both the distributions.
   fModel->IdentifyVaryingPMTAngularResponseBins( fDataStore );
   fModel->IdentifyVaryingLBDistributionBins( fDataStore );
+  fModel->InitialiseLBRunNormalisations( fDataStore );
 
   // Identify the parameters which vary for all the data points.
   // i.e. the global variable parameters such as the extinction lengths.
