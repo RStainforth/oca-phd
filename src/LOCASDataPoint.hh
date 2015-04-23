@@ -195,8 +195,14 @@ namespace LOCAS{
     // chi-square value for this data point.
     Float_t GetModelOccupancyRatio() const { return fModelOccupancyRatio; }
 
-    // Get the value fo the efficiency as calculated by 'locas2fit2eff'
-    Float_t GetEfficiency() const { return fEfficiency; }
+    // Get the value to of the raw efficiency as calculated by 'locas2fit2eff'.
+    Float_t GetRawEfficiency() const { return fRawEfficiency; }
+
+    // Get the value to of the normalised efficiency as calculated by 'locas2fit2eff'.
+    Float_t GetNormalisedEfficiency() const { return fNormalisedEfficiency; }
+
+    // Get the value to of the PMT variability as calculated by 'locas2fit2eff'.
+    Float_t GetPMTVariability() const { return fPMTVariability; }
 
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -349,8 +355,14 @@ namespace LOCAS{
     // chi-square value for this data point.
     void SetModelOccupancyRatio( const Float_t val ){ fModelOccupancyRatio = val; }
 
-    // Set the value fo the efficiency as calculated by 'locas2fit2eff'
-    void SetEfficiency( const Float_t val ){ fEfficiency = val; }
+    // Set the value to of the raw efficiency as calculated by 'locas2fit2eff'.
+    void SetRawEfficiency( const Float_t val ){ fRawEfficiency = val; }
+
+    // Set the value to of the normalised efficiency as calculated by 'locas2fit2eff'.
+    void SetNormalisedEfficiency( const Float_t val ){ fNormalisedEfficiency = val; }
+
+    // Set the value to of the PMT variability as calculated by 'locas2fit2eff'.
+    void SetPMTVariability( const Float_t val ){ fPMTVariability = val; }
 
   private:
 
@@ -408,8 +420,11 @@ namespace LOCAS{
     Float_t fOccupancyRatioErr;             // The error on the data occupancy ratio for this data point
     Float_t fModelOccupancyRatio;           // The model prediction for the occupancy ratio for this data point
 
-    Float_t fEfficiency;                    // The estimate for the raw efficieny
+    Float_t fRawEfficiency;                 // The estimate for the raw efficieny
                                             // of this data point. ( fMPECorrOccupancy / LOCASOpticsModel::ModelPrediction [after minimisation] ).
+
+    Float_t fNormalisedEfficiency;          // The estimate for the normalised efficieny.
+    Float_t fPMTVariability;                // The PMT variability as calculated by 'locas2fit2eff'.   
 
     ClassDef( LOCASDataPoint, 1 );
     

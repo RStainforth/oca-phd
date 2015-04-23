@@ -74,11 +74,33 @@ Double_t LOCASMath::OccRatioErr( const LOCASPMT* pmt ){
 //////////////////////////////////////
 //////////////////////////////////////
 
+Float_t LOCASMath::CalculatePMTVariabilityError( const LOCASDataPoint& dPoint )
+{
+
+  // If the PMT variability has not yet been calculated for this data point
+  // then it will be negative, in which case return 0.0 for this calculation.
+  if( dPoint.GetPMTVariability() < 0.0
+      || dPoint.GetMPECorrOccupancy() == 0.0 ){ return 0.0; }
+  
+  // Otherwise, can calculate the PMT variability term.
+  Float_t varError = dPoint.GetPMTVariability() - 1 / ( TMath::Sqrt( dPoint.GetMPECorrOccupancy() ) );
+  return varError;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 void LOCASMath::CalculateMPEOccRatio( const LOCASDataPoint& dPoint, Float_t& occRatio, Float_t& occRatioErr ){
 
   occRatio = dPoint.GetMPECorrOccupancy() / dPoint.GetCentralMPECorrOccupancy();
+  //cout << "occRatio1: " << occRatio << endl;
   occRatio *= ( dPoint.GetCentralFresnelTCoeff() * dPoint.GetCentralSolidAngle() ) / ( dPoint.GetFresnelTCoeff() * dPoint.GetSolidAngle() );
+  //cout << "occRatio2: " << occRatio << endl;
   occRatio *= dPoint.GetCentralLBIntensityNorm();
+  //cout << "central LB Norm: " << dPoint.GetCentralLBIntensityNorm() << endl;
+  //cout << "occRatio3: " << occRatio << endl;
+
   
   Double_t offAxisRun2 = TMath::Power( dPoint.GetMPECorrOccupancyErr() / dPoint.GetMPECorrOccupancy(), 2 );
   Double_t centralRun2 = TMath::Power( dPoint.GetCentralMPECorrOccupancyErr() / dPoint.GetCentralMPECorrOccupancy(), 2 );

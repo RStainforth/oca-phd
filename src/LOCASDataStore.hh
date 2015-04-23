@@ -26,6 +26,7 @@
 #include "LOCASPMT.hh"
 
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -60,13 +61,13 @@ namespace LOCAS{
     void AddData( LOCASRunReader& lRuns );
 
     // Write the datastore to a .root file.
-    void WriteToFile( const char* fileName = "LOCASDataStore.root" );
+    void WriteToFile( const string fileName = "LOCASDataStore.root" );
     
     // Remove all the datapoints from the current store.
     void ClearData(){ fDataPoints.clear(); }
 
     // Or remove a particular data point.
-    void EraseDataPoint( std::vector< LOCASDataPoint >::iterator iDataPoint ){ fDataPoints.erase( iDataPoint ); }
+    void EraseDataPoint( vector< LOCASDataPoint >::iterator iDataPoint ){ fDataPoints.erase( iDataPoint ); }
 
     /////////////////////////////////
     ////////     GETTERS     ////////
@@ -74,6 +75,9 @@ namespace LOCAS{
 
     // Get the name of the store.
     string GetStoreName() const { return fStoreName; }
+
+    // Get the full system path of the store.
+    string GetStoreFilePath() const { return fStoreFilePath; }
 
     // Get the number of data points in the store.
     Int_t GetNDataPoints(){ return fDataPoints.size(); }
@@ -83,8 +87,8 @@ namespace LOCAS{
     LOCASDataPoint GetDataPoint( Int_t iDP ){ return fDataPoints[ iDP ]; }
 
     // Get the iterators to the beginning and end of the data store
-    std::vector< LOCASDataPoint >::iterator GetLOCASDataPointsIterBegin(){ return fDataPoints.begin(); }
-    std::vector< LOCASDataPoint >::iterator GetLOCASDataPointsIterEnd(){ return fDataPoints.end(); }
+    vector< LOCASDataPoint >::iterator GetLOCASDataPointsIterBegin(){ return fDataPoints.begin(); }
+    vector< LOCASDataPoint >::iterator GetLOCASDataPointsIterEnd(){ return fDataPoints.end(); }
 
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -95,8 +99,12 @@ namespace LOCAS{
 
   private:
 
-    std::string fStoreName;                     // The store name
-    std::vector< LOCASDataPoint > fDataPoints;  // The vector of data point objects
+    string fStoreName;                     // The store name.
+    string fStoreFilePath;                 // The full system path of the file.
+    vector< LOCASDataPoint > fDataPoints;  // The vector of data point objects.
+    
+
+    
 
     ClassDef( LOCASDataStore, 1 );
     

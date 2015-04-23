@@ -94,13 +94,15 @@ int main( int argc, char** argv ){
   lModel->SetLOCASModelParameterStore( lParStore );
 
   // Add all the run files to the LOCASRunReader object
-  std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" ); 
-  std::string dataSet = lDB.GetStringField( "FITFILE", "data_set", "fit_setup" );
-  LOCASRunReader lReader( runIDs, dataSet );
+  //std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" ); 
+  //std::string dataSet = lDB.GetStringField( "FITFILE", "data_set", "fit_setup" );
+  //LOCASRunReader lReader( runIDs, dataSet );
   
   // Create and add the run information to a LOCASDataStore object.
-  LOCASDataStore* lData = new LOCASDataStore();
-  lData->AddData( lReader );
+  LOCASDataStore* lData = new LOCASDataStore( fitName );
+
+  //cout << "LOCASDataStore 1 has: " << lData->GetNDataPoints() << endl;
+  //cout << "LOCASDataStore 2 has: " << lData2->GetNDataPoints() << endl;
 
   // Create a pointer to a new LOCASChiSquare and set a link
   // to each of the data and the model.
@@ -118,8 +120,9 @@ int main( int argc, char** argv ){
 
   // Backup the original data store which is cut on at the top
   // level as part of each loop iteration below.
-  LOCASDataStore* ogStore = new LOCASDataStore();
+  LOCASDataStore* ogStore = new LOCASDataStore( fitName );
   *ogStore = *lData;
+  lModel->InitialiseLBRunNormalisations( lData );
 
   // Retrieve information about the fitting procedure 
   // i.e. what subsequent values of the chisquare to cut on 

@@ -69,6 +69,10 @@ namespace LOCAS{
     // LOCASMath::CalculateMPEOccRatio.
     static Double_t OccRatioErr( const LOCASPMT* pmt );
 
+    // Calculate the error due to the PMT variability on a single
+    // PMT as represented by a LOCASDataPoint object.
+    static Float_t CalculatePMTVariabilityError( const LOCASDataPoint& dPoint );
+
     // Given a LOCASDataPoint object, this calculates both the
     // MPE corrected occupancy ratio and its error. The ratio
     // and the error are assigned to 'occRatio' and 'occRatioErr'

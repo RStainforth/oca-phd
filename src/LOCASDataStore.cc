@@ -2,11 +2,13 @@
 #include "LOCASDataPoint.hh"
 #include "LOCASRun.hh"
 #include "LOCASPMT.hh"
+#include "LOCASDB.hh"
 
 #include "TFile.h"
 #include "TTree.h"
 
 #include <string>
+#include <fstream>
 
 using namespace LOCAS;
 using namespace std;
@@ -19,11 +21,44 @@ ClassImp( LOCASDataStore )
 LOCASDataStore::LOCASDataStore( std::string storeName )
 {
 
-  // Set the store name and ensure the vector of LOCASDataPoints
-  // is empty.
-  fStoreName = storeName;
-  fDataPoints.clear();
- 
+  LOCASDB lDB;
+  string outputDir = lDB.GetOutputDir();
+  string filePath = outputDir + "datastore/" + storeName + ".root";
+  ifstream tmpFile( filePath.c_str() );
+  if ( tmpFile ){
+    
+    // Create a new TFile object to open the LOCASDataStore.
+    TFile* dataFile = TFile::Open( filePath.c_str(), "READ" );
+    TTree* fileTree = new TTree();
+    fileTree = (TTree*)dataFile->Get( ( storeName + ".root;1" ).c_str() );
+    LOCASDataStore* lStore = new LOCASDataStore();
+    fileTree->SetBranchAddress( "LOCASDataStore", &lStore );
+    fileTree->GetEntry( 0 );
+    
+    vector< LOCASDataPoint >::iterator iDP;
+    vector< LOCASDataPoint >::iterator iDPBegin = lStore->GetLOCASDataPointsIterBegin();
+    vector< LOCASDataPoint >::iterator iDPEnd = lStore->GetLOCASDataPointsIterEnd();
+    
+    for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ){
+      
+      LOCASDataPoint dp( *iDP );
+      AddDataPoint( dp );
+      
+    }
+
+    fStoreName = lStore->GetStoreName();
+
+    *this = *lStore;
+
+  }
+
+  else{
+    // Set the store name and ensure the vector of LOCASDataPoints
+    // is empty.
+    fStoreName = storeName;
+    fDataPoints.clear();
+  }
+  
 }
 
 //////////////////////////////////////
@@ -60,6 +95,7 @@ LOCASDataStore& LOCASDataStore::operator=( const LOCASDataStore& rhs )
   // to the properties of this LOCASDataStore. i.e. equal 'this' to 'rhs'.
   fStoreName = rhs.fStoreName;
   fDataPoints = rhs.fDataPoints;
+  fStoreFilePath = rhs.fStoreFilePath;
 
   return *this;
 
@@ -136,7 +172,7 @@ void LOCASDataStore::AddData( LOCASRunReader& lRuns )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void LOCASDataStore::WriteToFile( const char* fileName )
+void LOCASDataStore::WriteToFile( const string fileName )
 {
 
   // Check that a filename has been provided before continuing
@@ -144,11 +180,15 @@ void LOCASDataStore::WriteToFile( const char* fileName )
     cout << "LOCASDataStore::WriteToFile: No filename specified, aborting." << endl; return;
   }
 
+  LOCASDB lDB;
+  string outPutDir = lDB.GetOutputDir();
+  string filePath = outPutDir + "datastore/" + fileName;
+
   // Create a new TFile object
-  TFile* file = TFile::Open( fileName, "RECREATE" );
+  TFile* file = TFile::Open( filePath.c_str(), "RECREATE" );
 
   // Create the store Tree
-  TTree* storeTree = new TTree( fileName, fileName );
+  TTree* storeTree = new TTree( fileName.c_str(), fileName.c_str() );
 
   // Declare a new branch pointing to the data store object
   storeTree->Branch( "LOCASDataStore", (*this).ClassName(), &(*this), 32000, 99 );

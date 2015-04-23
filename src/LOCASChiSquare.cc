@@ -46,6 +46,8 @@ Float_t LOCASChiSquare::EvaluateChiSquare( LOCASDataPoint& dPoint )
   dPoint.SetOccupancyRatio( dataVal );
   dPoint.SetOccupancyRatioErr( error );
 
+  error += LOCASMath::CalculatePMTVariabilityError( dPoint );
+
   // Calculate the difference between the model prediction
   // and the data value ( the residual for the chi-square calculation ).
   Float_t residual = ( dataVal - modelVal );
@@ -616,6 +618,10 @@ void LOCASChiSquare::PerformOpticsFit()
 
   // Get the total number of parameters in the model.
   Int_t nParameters = fModel->GetLOCASModelParameterStore()->GetNParameters();
+
+  for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
+    cout << "Parameter: " << iPar << " is: " << parameters[ iPar ] << " with flag: " << parametersVary[ iPar ] << endl;
+  }
 
   // Get the pointer to the covariance and derivative matrices.
   Float_t** covarianceMatrix = fModel->GetLOCASModelParameterStore()->GetCovarianceMatrix();

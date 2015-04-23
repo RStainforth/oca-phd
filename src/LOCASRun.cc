@@ -668,7 +668,7 @@ void LOCASRun::CalculateLBIntensityNorm()
 
     // Central run: ensure the DQXX flag is 1.
     if ( ( iPMT->second ).GetCentralDQXXFlag() == 1 ){
-      centrallbIntensityNorm += ( iPMT->second ).GetCentralMPECorrOccupancy();
+      centrallbIntensityNorm += ( iPMT->second ).GetCentralMPECorrOccupancy();   
       nCentralPMTs++;
     }
 
@@ -684,16 +684,16 @@ void LOCASRun::CalculateLBIntensityNorm()
   // calculate the average occupancy (Laserball normalisation).
 
   // Off-axis runs.
-  if ( nPMTs != 0 ){ lbIntensityNorm /= nPMTs; }
-  else{ lbIntensityNorm = -10.0; }
+  //if ( nPMTs != 0 ){ lbIntensityNorm /= nPMTs; }
+  //else{ lbIntensityNorm = -10.0; }
 
   // Central runs.
-  if ( nCentralPMTs != 0 ){ centrallbIntensityNorm /= nCentralPMTs; }
-  else{ centrallbIntensityNorm = -10.0; }
+  //if ( nCentralPMTs != 0 ){ centrallbIntensityNorm /= nCentralPMTs; }
+  //else{ centrallbIntensityNorm = -10.0; }
 
   // Wavelength runs.
-  if ( nWavelengthPMTs != 0 ){ wavelengthlbIntensityNorm /= nWavelengthPMTs; }
-  else{ wavelengthlbIntensityNorm = -10.0; }
+  //if ( nWavelengthPMTs != 0 ){ wavelengthlbIntensityNorm /= nWavelengthPMTs; }
+  //else{ wavelengthlbIntensityNorm = -10.0; }
 
   // Define the private member variables which
   // hold the intensity normalisation value for each
@@ -707,7 +707,7 @@ void LOCASRun::CalculateLBIntensityNorm()
   for ( iPMT = GetLOCASPMTIterBegin(); iPMT != GetLOCASPMTIterEnd(); iPMT++ ){
 
     ( iPMT->second ).SetLBIntensityNorm( fLBIntensityNorm );
-    ( iPMT->second ).SetTotalNRunPromptCounts( fLBIntensityNorm * nPMTs );
+    //( iPMT->second ).SetTotalNRunPromptCounts( fLBIntensityNorm * nPMTs );
 
     ( iPMT->second ).SetCentralLBIntensityNorm( fCentralLBIntensityNorm );
     ( iPMT->second ).SetWavelengthLBIntensityNorm( fWavelengthLBIntensityNorm );

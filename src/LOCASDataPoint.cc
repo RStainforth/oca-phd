@@ -68,7 +68,10 @@ LOCASDataPoint::LOCASDataPoint( const LOCASPMT& lPMT )
   SetOccupancyRatioErr( 0.0 );
   SetModelOccupancyRatio( 0.0 );
 
-  SetEfficiency( -1.0 );
+  SetRawEfficiency( -1.0 );
+  SetNormalisedEfficiency( -1.0 );
+
+  SetPMTVariability( -1.0 );
 
 }
 
@@ -128,7 +131,10 @@ LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
   SetOccupancyRatioErr( rhs.GetOccupancyRatioErr() );
   SetModelOccupancyRatio( rhs.GetModelOccupancyRatio() );
 
-  SetEfficiency( rhs.GetEfficiency() );
+  SetRawEfficiency( rhs.GetRawEfficiency() );
+  SetNormalisedEfficiency( rhs.GetNormalisedEfficiency() );
+
+  SetPMTVariability( rhs.GetPMTVariability() );
 
   return *this;
 

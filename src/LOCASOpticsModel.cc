@@ -528,18 +528,16 @@ Float_t LOCASOpticsModel::ModelLBDistributionMask( const LOCASDataPoint& dataPoi
   }
   
   // Initialise the mask value to 1.0 to begin with.
-  Float_t polynomialVal = 1.0;
-
+  Float_t polynomialVal = 0.0;
+  Float_t onePlus = 1.0 + cos( lbRelTheta );
   // Loop through all the laserball mask parameters
   // performing the summation of different degree terms
   // The degree will run from 1 to NLBDistributionMaskParameters.
-  for ( Int_t iPar = 0; 
-        iPar < parPtr->GetNLBDistributionMaskParameters(); 
-        iPar++ ){
+  for ( Int_t iPar = parPtr->GetNLBDistributionMaskParameters() - 1; 
+        iPar >= 0; 
+        iPar-- ){
 
-    polynomialVal += ( ( parPtr->GetLBDistributionMaskPar( iPar ) )
-                       * ( TMath::Power( ( 1 + TMath::Cos( lbRelTheta ) ), 
-                                         ( iPar + 1 ) ) ) );
+    polynomialVal = polynomialVal * onePlus + parPtr->GetLBDistributionMaskPar( iPar );
     
   }
 

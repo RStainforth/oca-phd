@@ -242,7 +242,12 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
       for ( Int_t iPar = 1; iPar <= nParsInGroup; iPar++ ){
 
         angleVal = ( iPar - 0.5 ) * ( 90.0 / fNPMTAngularResponseBins ); // Centre of each bin...
-        if ( angleVal < 36.0 ){ initVal = 1.0 + ( 0.002222 * angleVal ); }
+        if ( angleVal < 36.0 ){ 
+          if ( iPar == 1.0 ){ initVal = 1.0; }
+          else{
+            initVal = 1.0 + ( 0.002222 * angleVal ); 
+          }
+        }
         else{ initVal = 1.0; }
 
         // Fix the bin containing the zero degrees value to 1.0
