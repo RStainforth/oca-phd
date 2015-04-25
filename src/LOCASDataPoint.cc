@@ -21,6 +21,9 @@ LOCASDataPoint::LOCASDataPoint( const LOCASPMT& lPMT )
   // is added to a LOCASDataStore, see LOCASDataStore::AddData.
   // For now set to -1.
 
+  SetNPromptCounts( lPMT.GetOccupancy() );
+  SetCentralNPromptCounts( lPMT.GetCentralOccupancy() );
+
   SetMPECorrOccupancy( lPMT.GetMPECorrOccupancy() );
   SetCentralMPECorrOccupancy( lPMT.GetCentralMPECorrOccupancy() );
 
@@ -84,6 +87,9 @@ LOCASDataPoint& LOCASDataPoint::operator=( const LOCASDataPoint& rhs )
   SetRunID( rhs.GetRunID() );
   SetPMTID( rhs.GetPMTID() );
   SetRunIndex( rhs.GetRunIndex() );
+
+  SetNPromptCounts( rhs.GetNPromptCounts() );
+  SetCentralNPromptCounts( rhs.GetCentralNPromptCounts() );
 
   SetMPECorrOccupancy( rhs.GetMPECorrOccupancy() );
   SetCentralMPECorrOccupancy( rhs.GetCentralMPECorrOccupancy() );

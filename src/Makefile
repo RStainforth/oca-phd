@@ -109,6 +109,9 @@ LOCASL		:= libLOCAS.so
 all: show headers libraries executables
 #LOCAS_positionfit tdiff reflecttime qpath_runner LOCASfit_runner LOCASextract_runner LOCASplots_runner LOCAStitles_runner
 
+test:
+	@cd $(LOCAS_ROOT)
+
 dirs: 
 	@mkdir -p $(LOCAS_LIB)
 	@mkdir -p $(LOCAS_BIN)

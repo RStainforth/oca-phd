@@ -290,7 +290,7 @@ Float_t LOCASOpticsModel::ModelOccRatioPrediction( const LOCASDataPoint& dataPoi
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() ] = 1.0 / angResp;
 
     if ( 1.0 / angResp == 0.0 ){
-      cout << "MODEL DLB is ZERO for LB Par: " << parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() << endl;
+      cout << "MODEL DPMTR is ZERO for LB Par: " << parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() << endl;
     }
 
     // The derivative with respect to the PMT angular response
@@ -299,13 +299,35 @@ Float_t LOCASOpticsModel::ModelOccRatioPrediction( const LOCASDataPoint& dataPoi
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] -= 1.0 / angRespCtr;
 
     if ( 1.0 / angRespCtr == 0.0 ){
-      cout << "MODEL CENTER DLB is ZERO for LB Par: " << parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() << endl;
+      cout << "MODEL CENTER DPMTR is ZERO for LB Par: " << parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() << endl;
     }
 
     // The derivative with respect to the laserball 
     // isotropy distribution from the off-axis run.
     derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] = 0.0;
     derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] = 1.0 / intensity;
+
+    // if ( parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() == 217 ){
+      
+    //   cout << "Bin 217 Info" << endl;
+    //   cout << "dScint, dAV, dWater is: " << dInnerAV << ", " << dAV << ", " << dWater << endl;
+    //   cout << "angResp, angRespCtr is: " << angResp << ", " << angRespCtr << endl;
+    //   cout << "intensity, intensityCtr is: " << intensity << ", " << intensityCtr << endl;
+    //   cout << "intensityPoly, intensityCtrPoly is: " << intensityPoly << ", " << intensityCtrPoly << endl;
+    //   cout << "----------------------" << endl;
+
+    // }
+
+    // if ( parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() == 227 ){
+      
+    //   cout << "Bin 227 Info" << endl;
+    //   cout << "dScint, dAV, dWater is: " << dInnerAV << ", " << dAV << ", " << dWater << endl;
+    //   cout << "angResp, angRespCtr is: " << angResp << ", " << angRespCtr << endl;
+    //   cout << "intensity, intensityCtr is: " << intensity << ", " << intensityCtr << endl;
+    //   cout << "intensityPoly, intensityCtrPoly is: " << intensityPoly << ", " << intensityCtrPoly << endl;
+    //   cout << "----------------------" << endl;
+
+    // }
 
     // The derivative with respect to the laserball 
     // isotropy distribution from the central run.

@@ -726,7 +726,7 @@ void LOCASFit::DataScreen( const Float_t chiSqLimit )
         pmtModel = ModelPrediction( fCurrentRun, fCurrentPMT );
         //cout << "PMT Model is: " << pmtModel << endl;
         pmtResidual = ( pmtData - pmtModel );
-        pmtSigma = sqrt( pow( CalculatePMTSigma( fCurrentPMT ), 2 ) );// + pow( CalculatePMTVariability( fCurrentPMT ), 2 ) );
+        pmtSigma = sqrt( pow( CalculatePMTSigma( fCurrentPMT ), 2 ) + pow( CalculatePMTVariability( fCurrentPMT ), 2 ) );
         Float_t chisquare = ( pmtResidual * pmtResidual ) / ( pmtSigma * pmtSigma );
         //printf("chisquare is: %.5f\n", chisquare );
         //cout << "PMT Residual is: " << ( pmtModel - pmtData ) << endl;
@@ -1659,7 +1659,7 @@ Float_t LOCASFit::CalculatePMTChiSquare( const LOCASRun* iRunPtr, const LOCASPMT
   Float_t modelPred = ModelPrediction( iRunPtr, iPMTPtr );
   Float_t occVal = CalculatePMTData( iPMTPtr );
   Float_t occValErr = CalculatePMTSigma( iPMTPtr );
-  Float_t pmtVar = 0.0;//CalculatePMTVariability( iPMTPtr );
+  Float_t pmtVar = CalculatePMTVariability( iPMTPtr );
   Float_t sigma = sqrt( pow( occValErr, 2 ) + pow( pmtVar, 2 ) );
   Float_t chiSq = ( ( modelPred - occVal ) * ( modelPred - occVal ) ) / ( sigma * sigma );
 

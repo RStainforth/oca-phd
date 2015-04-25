@@ -210,6 +210,9 @@ int main( int argc, char** argv ){
 
   }
 
+  Float_t rawEffMean = effHistoRaw->GetMean();
+  Float_t rawEffStdDev = effHistoRaw->GetStdDev();
+
   effHistoRaw->GetXaxis()->SetTitle( "PMT Raw Efficiency (a.units)" );
   effHistoRaw->GetYaxis()->SetTitle( "N_{PMTs} / 0.01" );
   effHistoRaw->GetXaxis()->SetTitleOffset( 1.4 );
@@ -235,7 +238,8 @@ int main( int argc, char** argv ){
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
     
     Int_t incAngle = (Int_t)iDP->GetIncidentAngle();
-    if ( iDP->GetRawEfficiency() > 2.0 && iDP->GetRawEfficiency() < 6.0
+    if ( iDP->GetRawEfficiency() > ( rawEffMean - 3.0 * rawEffStdDev )
+         && iDP->GetRawEfficiency() < ( rawEffMean + 3.0 * rawEffStdDev )
          && incAngle >= 0 && incAngle < 51 ){
 
       pmtAngleEffMean[ incAngle ] += iDP->GetRawEfficiency();
@@ -263,7 +267,8 @@ int main( int argc, char** argv ){
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
     
     Int_t incAngle = (Int_t)iDP->GetIncidentAngle();
-    if ( iDP->GetRawEfficiency() > 2.0 && iDP->GetRawEfficiency() < 6.0
+    if ( iDP->GetRawEfficiency() > ( rawEffMean - 3.0 * rawEffStdDev )
+         && iDP->GetRawEfficiency() < ( rawEffMean + 3.0 * rawEffStdDev )
          && incAngle >= 0 && incAngle < 51 ){
       
       Float_t sigma = iDP->GetRawEfficiency() - pmtAngleEffMean[ incAngle ];

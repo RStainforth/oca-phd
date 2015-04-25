@@ -115,7 +115,7 @@ namespace LOCAS{
   private:
 
     LOCASDataStore* fDataStore;       // Pointer to the LOCASDataStore object.   
-    LOCASOpticsModel* fModel;         // Pointer to the LOCASOpticsModel object.    
+    LOCASOpticsModel* fModel;         // Pointer to the LOCASOpticsModel object. 
  
     ClassDef( LOCASChiSquare, 0 );
 

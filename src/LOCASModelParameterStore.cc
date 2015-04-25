@@ -59,6 +59,7 @@ LOCASModelParameterStore::LOCASModelParameterStore( string storeName )
   fNParameters = -1;
   fNCurrentVariableParameters = -1;
   fNBaseVariableParameters = -1;
+  fNGlobalVariableParameters = -1;
 
 }
 
@@ -378,6 +379,9 @@ void LOCASModelParameterStore::WriteToROOTFile( const char* fileName )
 
   TH2F* lbDistribution = GetLBDistributionHistogram();
   file->WriteTObject( lbDistribution );
+
+  TH2F* lbDistributionIntensity = GetLBDistributionIntensityHistogram();
+  file->WriteTObject( lbDistributionIntensity );
 
   TH1F* angularResponse = GetPMTAngularResponseHistogram();
   file->WriteTObject( angularResponse );
@@ -773,6 +777,19 @@ void LOCASModelParameterStore::IdentifyBaseVaryingParameters()
 //////////////////////////////////////
 //////////////////////////////////////
 
+void LOCASModelParameterStore::IdentifyGlobalVaryingParameters()
+{
+
+  fNGlobalVariableParameters = 0;
+  for ( Int_t iPar = 1; iPar <= fNParameters; iPar++ ){
+    if ( fParametersVary[ iPar ] == 1 ){ fNGlobalVariableParameters++; }
+  }
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 void LOCASModelParameterStore::CrossCheckParameters()
 {
 
@@ -1151,7 +1168,7 @@ TH2F* LOCASModelParameterStore::GetLBDistributionIntensityHistogram()
   // Decalre a new 2D histogram with 'Float_t' type entries.
   // Set the ranges as phi : ( 0, 2pi ) and
   // cos-theta : ( -1.0, 1.0 ).
-  TH2F* lbDistributionIntHist = new TH2F( "lbDistributionHist", "Laserball Distribution Histogram",
+  TH2F* lbDistributionIntHist = new TH2F( "lbDistributionIntensityHist", "Laserball Distribution Histogram",
                                        nPhiBins, 0.0, 2.0 * TMath::Pi(), 
                                        nCThetaBins, -1.0, 1.0 );
 
@@ -1170,20 +1187,19 @@ TH2F* LOCASModelParameterStore::GetLBDistributionIntensityHistogram()
     for ( Int_t jPhi = 0; jPhi < nPhiBins; jPhi++ ){
 
       // The value of cos-theta.
-      Float_t cTheta = binWidth * iTheta;
+      Float_t cTheta = -1.0 + ( binWidth * iTheta );
+
       // Initialise the mask value to 1.0 to begin with.
-      Float_t polynomialVal = 1.0;
-      
+      Float_t polynomialVal = 0.0;
+      Float_t onePlus = 1.0 + cTheta;
       // Loop through all the laserball mask parameters
       // performing the summation of different degree terms
       // The degree will run from 1 to NLBDistributionMaskParameters.
-      for ( Int_t iPar = 0; 
-            iPar < GetNLBDistributionMaskParameters(); 
-            iPar++ ){
+      for ( Int_t iPar = GetNLBDistributionMaskParameters() - 1; 
+            iPar >= 0; 
+            iPar-- ){
         
-        polynomialVal += ( ( GetLBDistributionMaskPar( iPar ) )
-                           * ( TMath::Power( ( 1 + TMath::Cos( cTheta ) ), 
-                                             ( iPar + 1 ) ) ) );
+        polynomialVal = polynomialVal * onePlus + GetLBDistributionMaskPar( iPar );
         
       }
 
@@ -1191,7 +1207,7 @@ TH2F* LOCASModelParameterStore::GetLBDistributionIntensityHistogram()
       // to apply the intensity correction from the laserball mask
       // parameters to the laserball isotropy distribution.
       lbDistributionIntHist->SetCellContent( jPhi + 1, iTheta + 1, 
-                                          polynomialVal * lbDistPtr[ iTheta * nPhiBins + jPhi ] );
+                                             polynomialVal * lbDistPtr[ iTheta * nPhiBins + jPhi ] );
     }
   }
 

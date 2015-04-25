@@ -81,7 +81,7 @@ int main( int argc, char** argv ){
   gStyle->SetOptStat( 0 );
   canVas3->Print("modelroccvsdatarocc.eps");
 
-  lFit.WriteFitToFile("SLPFIT2_Fit.root");
+  lFit.WriteFitToFile("420nm_oct03_LVM.root");
 
   cout << "\n";
   cout << "#######################################" << endl;

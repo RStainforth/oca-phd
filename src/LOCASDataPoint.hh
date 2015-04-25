@@ -63,6 +63,12 @@ namespace LOCAS{
     // the index would be [3]. 1st Run [0], 2nd Run [1], etc.
     Int_t GetRunIndex() const{ return fRunIndex; }
 
+    // Get the number of prompt counts from the off-axis run.
+    Float_t GetNPromptCounts() const { return fNPromptCounts; }
+
+    // Get the number of prompt counts from the central run.
+    Float_t GetCentralNPromptCounts() const { return fCentralNPromptCounts; }
+
     // Get the Multi-Photoelectron (MPE) corrected occupancy from the
     // off-axis run.
     Float_t GetMPECorrOccupancy() const { return fMPECorrOccupancy; }
@@ -223,6 +229,12 @@ namespace LOCAS{
     // the index would be [3]. 1st Run [0], 2nd Run [1], etc.
     void SetRunIndex( const Int_t val ){ fRunIndex = val; }
 
+    // Set the number of prompt counts from the off-axis run.
+    void SetNPromptCounts( const Float_t val ){ fNPromptCounts = val; }
+
+    // Set the number of prompt counts from the central run.
+    void SetCentralNPromptCounts( const Float_t val ){ fCentralNPromptCounts = val; }
+
     // Set the Multi-Photoelectron (MPE) corrected occupancy from the
     // off-axis run.
     void SetMPECorrOccupancy( const Float_t val ){ fMPECorrOccupancy = val; }
@@ -373,6 +385,9 @@ namespace LOCAS{
                                             // a PMT from the first run loaded into the fit, then the index would be 0.
                                             // If this data point represented a PMT from the second run to be loaded into
                                             // the fit then the index would be 1. etc.
+
+    Float_t fNPromptCounts;                 // The number of prompt counts from the off-axis run.
+    Float_t fCentralNPromptCounts;          // The number of prompt counts from the central run.
 
     Float_t fMPECorrOccupancy;              // The MPE corrected occupancy of the off-axis run
     Float_t fCentralMPECorrOccupancy;       // The MPE corrected occupancy from the central run

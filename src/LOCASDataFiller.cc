@@ -89,6 +89,18 @@ void LOCASDataFiller::FilterData( LOCASFilterStore* lFilterStore,
       
       // Filters to check the occupancy ratio and MPE corrected
       // occupancy from the off-axis and central runs
+
+      else if ( filterName == "filter_prompt_counts" ){ 
+        if ( !iF->CheckCondition( iD->GetNPromptCounts() ) ){ 
+          validPoint = false; break;
+        }
+      }
+
+      else if ( filterName == "filter_ctr_prompt_counts" ){ 
+        if ( !iF->CheckCondition( iD->GetCentralNPromptCounts() ) ){ 
+          validPoint = false; break;
+        }
+      }
       
       else if ( filterName == "filter_mpe_occupancy" ){ 
         if ( !iF->CheckCondition( iD->GetMPECorrOccupancy() ) ){ 

@@ -47,7 +47,8 @@ Float_t LOCASChiSquare::EvaluateChiSquare( LOCASDataPoint& dPoint )
   dPoint.SetOccupancyRatioErr( error );
 
   error += LOCASMath::CalculatePMTVariabilityError( dPoint );
-
+  //Float_t errorVar = LOCASMath::CalculatePMTVariabilityError( dPoint );
+  //Float_t totErr = TMath::Sqrt( pow( error, 2 ) + pow( errorVar, 2 ) );
   // Calculate the difference between the model prediction
   // and the data value ( the residual for the chi-square calculation ).
   Float_t residual = ( dataVal - modelVal );
@@ -637,5 +638,13 @@ void LOCASChiSquare::PerformOpticsFit()
   
   // Set the covariance matrix in the parameter store before finishing.
   fModel->GetLOCASModelParameterStore()->SetCovarianceMatrix( covarianceMatrix );
+
+  fModel->GetLOCASModelParameterStore()->IdentifyGlobalVaryingParameters();
+  Int_t nVaryingParameters = fModel->GetLOCASModelParameterStore()->GetNGlobalVariableParameters();
+  Int_t nDataPoints = fDataStore->GetNDataPoints();
+  // Print the reduced chi-square.
+  printf( "Reduced Chi-Square = %.5f / ( %i - %i ) = %.5f\n-----------------------\n",
+          chiSquare, nDataPoints, nVaryingParameters,
+          chiSquare / ( nDataPoints - nVaryingParameters ) );
   
 }

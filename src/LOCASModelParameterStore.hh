@@ -80,6 +80,9 @@ namespace LOCAS{
     // i.e. the parameters which vary for every data point in the fit. e.g. extinction lengths
     void IdentifyBaseVaryingParameters();
 
+    // Identify all global varying parameters across all points.
+    void IdentifyGlobalVaryingParameters();
+
     // After a fit, ensure both the pointer arrays and vector of 
     // LOCASModelParameter objects hold the same values.
     void CrossCheckParameters();
@@ -105,8 +108,11 @@ namespace LOCAS{
     // Get the number of parameters in the store, and consequently.
     Int_t GetNParameters() const { return fNParameters; }
 
-    // Get the current number of varying parameters.
+    // Get the current number of varying parameters for the last evaluated data point.
     Int_t GetNCurrentVariableParameters() const { return fNCurrentVariableParameters; }
+
+    // Get the number of varying global parameters across all data points.
+    Int_t GetNGlobalVariableParameters() const { return fNGlobalVariableParameters; }
 
     // Get the parameter indices of the parameter which 
     // vary for the last evaluated data point.
@@ -267,6 +273,9 @@ namespace LOCAS{
     // of the data point associated with the run from whence it came.
     void SetCurrentLBRunNormalisationBin( const Int_t iBin ) { fCurrentLBRunNormalisationBin = iBin; }
 
+    // Get the 'iPar'-th laserball distribution parameter.
+    void SetLBDistributionPar( const Int_t iPar, const Float_t lbDist ) { fParametersPtr[ GetLBDistributionParIndex() + iPar ] = lbDist; }
+
     // Get the 'iPar'-th laserball normalisation parameter.
     // i.e. The off-axis normalisation value for the 'iPar'-th run in
     // the list of runs included in the fit from the 'fit-file'.
@@ -306,6 +315,8 @@ namespace LOCAS{
     Int_t fNParameters;                              // The number of parameters in the store.
 
     Int_t fNCurrentVariableParameters;               // The total number of current variable parameters.
+
+    Int_t fNGlobalVariableParameters;                // The total global number of variable parameters.
 
     vector< LOCASModelParameter > fParameters;       // The vector of parameter objects i.e. the store.
 
