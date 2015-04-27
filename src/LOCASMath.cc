@@ -93,33 +93,20 @@ Float_t LOCASMath::CalculatePMTVariabilityError( const LOCASDataPoint& dPoint )
 
 void LOCASMath::CalculateMPEOccRatio( const LOCASDataPoint& dPoint, Float_t& occRatio, Float_t& occRatioErr ){
 
+  // The data occupancy ratio.
   occRatio = dPoint.GetMPECorrOccupancy() / dPoint.GetCentralMPECorrOccupancy();
-  //cout << "occRatio1: " << occRatio << endl;
-  occRatio *= ( dPoint.GetCentralFresnelTCoeff() * dPoint.GetCentralSolidAngle() ) / ( dPoint.GetFresnelTCoeff() * dPoint.GetSolidAngle() );
-  //cout << "occRatio2: " << occRatio << endl;
-  occRatio *= dPoint.GetCentralLBIntensityNorm();
-  //cout << "central LB Norm: " << dPoint.GetCentralLBIntensityNorm() << endl;
-  //cout << "occRatio3: " << occRatio << endl;
 
-  
+  // The correction for the geometric factors (solid angle and Fresnel transmission coefficient).
+  occRatio *= ( dPoint.GetCentralFresnelTCoeff() * dPoint.GetCentralSolidAngle() ) / ( dPoint.GetFresnelTCoeff() * dPoint.GetSolidAngle() );
+
+  // The central laserbll normalisation value.
+  occRatio *= dPoint.GetCentralLBIntensityNorm();
+
+  // Add the errors in quadrature from the occupancy ratio to compute
+  // the total error on the occupancy ratio.
   Double_t offAxisRun2 = TMath::Power( dPoint.GetMPECorrOccupancyErr() / dPoint.GetMPECorrOccupancy(), 2 );
   Double_t centralRun2 = TMath::Power( dPoint.GetCentralMPECorrOccupancyErr() / dPoint.GetCentralMPECorrOccupancy(), 2 );
   occRatioErr = occRatio * TMath::Sqrt( offAxisRun2 + centralRun2 );
-
-  // Float_t incTheta = dPoint.GetIncidentAngle() * ( 180.0 / TMath::Pi() );
-  // Float_t sigmaPMT = 0.03973; //- 0.0003951*incTheta + 0.000034063*incTheta*incTheta;
-  //   //cout << "sigmaPMT: " << sigmaPMT << endl;
-
-  // sigmaPMT *= occRatio;
-  // //cout << "sigmaPMT: " << sigmaPMT << endl;
-  // //cout << "sigmaPMT2: " << pow(sigmaPMT,2) << endl;
-  // //Float_t sigmaPMT2 = TMath::Power( sigmaPMT, 2 );
-  // //sigmaPMT2 *= occRatio;
-  // occRatioErr = TMath::Sqrt( pow(occRatioErr1,2) + pow(sigmaPMT,2) );
-  // //cout << "occRatioErr: " << occRatioErr << endl;
-  // //cout << "occRatio: " << occRatio << endl;
-  // //cout << "occRatioErr / occRatio: " << occRatioErr / occRatio << endl;
-  // //cout << "----------" << endl;
 
 }
 

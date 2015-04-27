@@ -403,7 +403,6 @@ Float_t LOCASOpticsModel::ModelPrediction( const LOCASDataPoint& dataPoint )
   // Use the obtained normalisation bin obtain the current value for the
   // intensity normalisation for the off-axis run.
   Float_t normVal = parPtr->GetLBRunNormalisationPar( dataPoint.GetRunIndex() );
-  //dataPoint.GetTotalNRunPromptCounts();
 
   // Obtain the distances from the off-axis 
   // runs for the distances in the inner AV, AV and water regions.

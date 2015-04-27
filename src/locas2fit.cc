@@ -56,15 +56,15 @@ int main( int argc, char** argv ){
 
   // Check that the 'locas2minuit' executable has been used properly 
   if ( argc != 2 ){
-    cout << "locasfit: Error! No path specified for the LOCAS fit-file.\n";
-    cout << "Usage: locas2minuit /path/to/fit-file.ratdb\n";
+    cout << "locas2fit: Error! No path specified for the LOCAS fit-file.\n";
+    cout << "Usage: locas2fit /path/to/fit-file.ratdb\n";
     return 1;
   }
 
   cout << "\n";
-  cout << "############################" << endl;
-  cout << "###### LOCASFIT START ######" << endl;
-  cout << "############################" << endl;
+  cout << "#############################" << endl;
+  cout << "###### LOCAS2FIT START ######" << endl;
+  cout << "#############################" << endl;
   cout << "\n";
 
   /////////////////////////////////////////////////////////////
@@ -93,10 +93,14 @@ int main( int argc, char** argv ){
   // object.
   lModel->SetLOCASModelParameterStore( lParStore );
 
-  // Add all the run files to the LOCASRunReader object
-  //std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" ); 
-  //std::string dataSet = lDB.GetStringField( "FITFILE", "data_set", "fit_setup" );
-  //LOCASRunReader lReader( runIDs, dataSet );
+  // Get the minimum number of PMT angular response and Laserball
+  // distribution bin entires required for the parameter associated
+  // with each bin to vary in the fit.
+  Int_t minPMTEntries = lDB.GetIntField( "FITFILE", "pmt_angular_response_min_bin_entries", "parameter_setup" );
+  cout << "minPMT Entries is: " << minPMTEntries << endl;
+  Int_t minLBDistEntries = lDB.GetIntField( "FITFILE", "laserball_distribution_histogram_min_bin_entries", "parameter_setup" );
+  lModel->SetRequiredNLBDistributionEntries( minLBDistEntries );
+  lModel->SetRequiredNPMTAngularRepsonseEntries( minPMTEntries );  
   
   // Create and add the run information to a LOCASDataStore object.
   LOCASDataStore* lData = new LOCASDataStore( fitName );
@@ -150,15 +154,20 @@ int main( int argc, char** argv ){
     lChiSq->PerformOpticsFit();
 
     // Set the data to the original set of data point values.
-    *lData = *ogStore;
-    
+    if ( iFit != chiSqLims.size() - 1 ){
+      *lData = *ogStore;
+    }    
   }
+
+  lChiSq->EvaluateGlobalChiSquare();
 
   // After performing all the iterations and fits with different chi-square
   // limit cross check all the parameters in the LOCASModelParameterStore.
   // This essentially ensures that all the values are correct before finishing
   // the fit.
   lParStore->CrossCheckParameters();
+
+  lData->WriteToFile( "example_finished_data.root" );
 
   // Create the full file path for the output fit file.
   string fitROOTPath = lDB.GetOutputDir() + "fits/" + fitName + ".root";
@@ -171,9 +180,9 @@ int main( int argc, char** argv ){
   lParStore->WriteToRATDBFile( fitRATDBPath.c_str() );
     
   cout << "\n";
-  cout << "##########################" << endl;
-  cout << "###### LOCASFIT END ######" << endl;
-  cout << "##########################" << endl;
+  cout << "###############################" << endl;
+  cout << "###### LOCAS2FIT END ######" << endl;
+  cout << "###############################" << endl;
   cout << "\n";
   
 }

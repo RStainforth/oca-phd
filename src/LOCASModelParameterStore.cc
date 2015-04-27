@@ -323,7 +323,7 @@ void LOCASModelParameterStore::AddParameters( const char* fileName )
       nParsInGroup = fNLBRunNormalisations;
 
       vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" );
-      initVal = lDB.GetDoubleField( "FITFILE", (string)( paramList[ iStr ] + "_initial_value" ), "parameter_setup" );
+      initVal = 1.0;
       varyBool = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
 
       // Now loop over each angular response parameter and initialise its initial values;

@@ -96,6 +96,15 @@ int main( int argc, char** argv ){
   // object.
   lModel->SetLOCASModelParameterStore( lParStore );
 
+  // Get the minimum number of PMT angular response and Laserball
+  // distribution bin entires required for the parameter associated
+  // with each bin to vary in the fit.
+  //Int_t minPMTEntries = lDB.GetIntField( "FITFILE", "pmt_angular_response_vary", "parameter_setup" );
+  //cout << "minPMT Entries is: " << minPMTEntries << endl;
+  //Int_t minLBDistEntries = lDB.GetIntField( "FITFILE", "laserball_distribution_histogram_min_bin_entries", "parameter_setup" );
+  //lModel->SetRequiredNLBDistributionEntries( minLBDistEntries );
+  //lModel->SetRequiredNPMTAngularRepsonseEntries( minPMTEntries ); 
+
   // Add all the run files to the LOCASRunReader object
   std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" ); 
   std::string dataSet = lDB.GetStringField( "FITFILE", "data_set", "fit_setup" );
@@ -155,33 +164,47 @@ int main( int argc, char** argv ){
     
   }
 
+  lChiSq->EvaluateGlobalChiSquare();
+
   // After performing all the iterations and fits with different chi-square
   // limit cross check all the parameters in the LOCASModelParameterStore.
   // This essentially ensures that all the values are correct before finishing
   // the fit.
   lParStore->CrossCheckParameters();
 
-  // Now begin the calculation of the relative PMT efficiencies.
+  // Now begin the calculation of the relative PMT efficiencies,
+  // the PMT variability and the normalised PMT efficiencies.
 
   // First calculate the raw efficiencies which is:
   // MPE-Corrected-Occupancy / Model Prediction.
+
 
   vector< LOCASDataPoint >::iterator iDP;
   vector< LOCASDataPoint >::iterator iDPBegin = lData->GetLOCASDataPointsIterBegin();
   vector< LOCASDataPoint >::iterator iDPEnd = lData->GetLOCASDataPointsIterEnd();
   
+  // Iterate over all the data points and calculate
+  // the estimator of the raw efficiency.
   Float_t modelPrediction = 1.0;
   Float_t dataValue = 1.0;
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
 
+    // Calculate the model prediction and the data value
+    // of the occupancy.
     modelPrediction = lModel->ModelPrediction( *iDP );
     dataValue = iDP->GetMPECorrOccupancy();
+
+    // Set the ratio of the model / data to be the raw estimator
+    // for the PMT efficiency.
     iDP->SetRawEfficiency( modelPrediction / dataValue );
 
   }
 
   // Now need to calculate the average of each PMT efficiency across each run.
   Int_t nRuns = (Int_t)runIDs.size();
+
+  // Initialise arrays which are used to calculate the average
+  // of the raw efficiency across each run.
   Float_t* rawEffSum = new Float_t[ nRuns ];
   Float_t* rawEffAvg = new Float_t[ nRuns ];
   Int_t* nPMTsPerRun = new Int_t [ nRuns ];
@@ -191,7 +214,10 @@ int main( int argc, char** argv ){
     nPMTsPerRun[ iRun ] = 0;
   }
 
-  TCanvas* tCanvasRaw = new TCanvas( "c2", "PMT Raw Efficiencies", 400, 600 );
+  // We can use a histogram to store all of the raw efficiencies,
+  // and then use the standard deviation from the mean of the histogram
+  // distribution to provide a dynamic cut for the PMT variability
+  // calculation.
   TH1F* effHistoRaw = new TH1F( "effHistoRaw", "PMT Raw Efficiencies", 1000, 0.0, 10.0 );
 
   // Now loop over all the data points and add their raw efficiencies to 
@@ -200,28 +226,17 @@ int main( int argc, char** argv ){
   // total number of PMTs, i.e. rawEffAvg[ iRun ] = rawEffSum[ iRun ] / nPMTsPerRun[ iRun ].
 
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
-
     if ( iDP->GetRawEfficiency() > 0.0 && iDP->GetRawEfficiency() < 10.0 ){
       rawEffSum[ iDP->GetRunIndex() ] += iDP->GetRawEfficiency();
       nPMTsPerRun[ iDP->GetRunIndex() ]++;
-      effHistoRaw->Fill( iDP->GetRawEfficiency() );
-      
+      effHistoRaw->Fill( iDP->GetRawEfficiency() );      
     }
-
   }
 
+  // The mean and stadnard deviation of the raw efficiency
+  // distribution.
   Float_t rawEffMean = effHistoRaw->GetMean();
   Float_t rawEffStdDev = effHistoRaw->GetStdDev();
-
-  effHistoRaw->GetXaxis()->SetTitle( "PMT Raw Efficiency (a.units)" );
-  effHistoRaw->GetYaxis()->SetTitle( "N_{PMTs} / 0.01" );
-  effHistoRaw->GetXaxis()->SetTitleOffset( 1.4 );
-  effHistoRaw->GetYaxis()->SetTitleOffset( 1.4 );
-  
-  effHistoRaw->SetLineColor( 1 );
-  effHistoRaw->SetLineWidth( 1 );
-  effHistoRaw->Draw();
-  tCanvasRaw->Print( "eff_pmt_histo_raw.eps" );
 
   // Now we calculate the distribution of the raw efficiencies by
   // incident PMT angle.
@@ -235,8 +250,12 @@ int main( int argc, char** argv ){
     pmtNAngle[ iIndex ] = 0; 
   }
 
+  // Loop over all the data points, and for efficiencies within
+  // 3 standard deviations from the mean either side, include them
+  // in the sum for the calculation of the PMT variability.
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
     
+    // The incident angle.
     Int_t incAngle = (Int_t)iDP->GetIncidentAngle();
     if ( iDP->GetRawEfficiency() > ( rawEffMean - 3.0 * rawEffStdDev )
          && iDP->GetRawEfficiency() < ( rawEffMean + 3.0 * rawEffStdDev )
@@ -249,6 +268,8 @@ int main( int argc, char** argv ){
     
   }
 
+  // Now calculate the mean of each of the raw efficiency distributions
+  // by PMT incident angle.
   for ( Int_t iIndex = 0; iIndex < 51; iIndex++ ){
     if ( pmtNAngle != 0 ){
       pmtAngleEffMean[ iIndex ] /= pmtNAngle[ iIndex ];
@@ -258,12 +279,14 @@ int main( int argc, char** argv ){
     }
   }
 
-  // Now we create the variance
+  // Now we calculate the variance of the efficiency distributions
+  // in each of the incident angle bins.
   Float_t* pmtAngleEffSigma = new Float_t[ 51 ];
   for ( Int_t iIndex = 0; iIndex < 51; iIndex++ ){
     pmtAngleEffSigma[ iIndex ] = 0.0;
   }
 
+  // The sum of the individual variances for each data point...
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
     
     Int_t incAngle = (Int_t)iDP->GetIncidentAngle();
@@ -275,25 +298,22 @@ int main( int argc, char** argv ){
       Float_t sigma2 = sigma * sigma;
       pmtAngleEffSigma[ incAngle ] += sigma2;
       
-    }
-    
+    }   
   }
 
+  // ...dividing through and square-rooting to compute the
+  // standard deviation for each PMT incident angle bin.
   for ( Int_t iIndex = 0; iIndex < 51; iIndex++ ){
 
     if ( pmtNAngle[ iIndex ] != 0 ){
       pmtAngleEffSigma[ iIndex ] /= pmtNAngle[ iIndex ];
+      pmtAngleEffSigma[ iIndex ] = TMath::Sqrt( pmtAngleEffSigma[ iIndex ] );
     }
     else{
       pmtAngleEffSigma[ iIndex ] = 0.0;
     }
 
   }
-
-  for ( Int_t iIndex = 0; iIndex < 51; iIndex++ ){
-    cout << "PMT Variability Mean index: " << iIndex << " has mean: " << pmtAngleEffMean[ iIndex ] << endl;
-    cout << "PMT Variability Sigma index: " << iIndex << " has sigma: " << pmtAngleEffSigma[ iIndex ] << endl;
-  } 
 
   TGraph* myPlot = new TGraph();
 
@@ -414,16 +434,6 @@ int main( int argc, char** argv ){
   // effHisto->SetLineWidth( 1 );
   // effHisto->Draw();
   // tCanvas->Print( "eff_pmt_histo.eps" );
-
-  // Create the full file path for the output fit file.
-  string fitROOTPath = lDB.GetOutputDir() + "fits/" + fitName + ".root";
-  string fitRATDBPath = lDB.GetOutputDir() + "fits/" + fitName + ".ratdb";
-
-  // Write the fit to a .root file.
-  // These .root files are typically held in the
-  // '$LOCAS_ROOT/output/fits/' directory.
-  lParStore->WriteToROOTFile( fitROOTPath.c_str() );
-  lParStore->WriteToRATDBFile( fitRATDBPath.c_str() );
     
   cout << "\n";
   cout << "###############################" << endl;
