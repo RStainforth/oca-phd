@@ -46,7 +46,9 @@ Float_t LOCASChiSquare::EvaluateChiSquare( LOCASDataPoint& dPoint )
   dPoint.SetOccupancyRatio( dataVal );
   dPoint.SetOccupancyRatioErr( error );
 
-  error += LOCASMath::CalculatePMTVariabilityError( dPoint );
+  //cout << "PMT Variability: " << dPoint.GetMPECorrOccupancy() * dPoint.GetMPECorrOccupancy() * LOCASMath::CalculatePMTVariabilityError( dPoint ) << endl;
+  error += dataVal * dataVal * LOCASMath::CalculatePMTVariabilityError( dPoint );
+
   //Float_t errorVar = LOCASMath::CalculatePMTVariabilityError( dPoint );
   //Float_t totErr = TMath::Sqrt( pow( error, 2 ) + pow( errorVar, 2 ) );
   // Calculate the difference between the model prediction
@@ -175,8 +177,9 @@ void LOCASChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersV
                       nParameters );
     
     // Compute the 1 / sigma^2 value for this particular data point
-    dataError2 = 1.0 / ( iDP->GetOccupancyRatioErr() 
-                         * iDP->GetOccupancyRatioErr() );
+    dataError2 = 1.0 / TMath::Sqrt(( ( iDP->GetOccupancyRatioErr() 
+                           * iDP->GetOccupancyRatioErr() )
+                                     + ( iDP->GetOccupancyRatio() * iDP->GetOccupancyRatio() * LOCASMath::CalculatePMTVariabilityError( *iDP ) ) ));
 
     // And compute the difference between the model 
     // prediction and the data value.
@@ -620,13 +623,13 @@ void LOCASChiSquare::PerformOpticsFit()
   // Get the total number of parameters in the model.
   Int_t nParameters = fModel->GetLOCASModelParameterStore()->GetNParameters();
 
-  for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
-    cout << "Parameter: " << iPar << " is: " << parameters[ iPar ] << " with flag: " << parametersVary[ iPar ] << endl;
-  }
-
   // Get the pointer to the covariance and derivative matrices.
   Float_t** covarianceMatrix = fModel->GetLOCASModelParameterStore()->GetCovarianceMatrix();
   Float_t** derivativeMatrix = fModel->GetLOCASModelParameterStore()->GetDerivativeMatrix();
+
+  for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
+    cout << "Parameter: " << iPar << " is: " << parameters[ iPar ] << " with flag: " << parametersVary[ iPar ] << " and error: " << TMath::Sqrt( covarianceMatrix[ iPar ][ iPar ] ) << endl;
+  }
   
   // Perform the minimisation for the optics fit.
   PerformMinimisation( parameters, parametersVary, 

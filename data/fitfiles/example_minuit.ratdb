@@ -18,7 +18,7 @@ index: "run_setup",
 valid_begin: [0, 0],
 valid_end: [0, 0],
 
-run_ids: [ 34766, 34780, 34794, 34806, 34916, 34924, 34950, 34956, 34820, 34899, 34990, 34972, 35013, 34889, 34875, 34835, 35148, 35081, 35086, 35169, 35155, 35106, 35112, 35224, 34725, 34707, 34741 ],
+run_ids: [ 34766, 34780, 34794, 34806, 34916, 34924, 34950, 34956, 34820, 34899, 34990, 34972, 35013, 34889, 34875, 34835, 35148, 35081, 35086, 35169, 35155, 35106, 35112, 35224 ],
 
 }
 
@@ -29,7 +29,7 @@ index: "filter_setup",
 valid_begin: [0, 0],
 valid_end: [0, 0],
 
-filter_list: [ "filter_chi_square", "filter_fractional_error" ],
+filter_list: [ "filter_chi_square", "filter_fractional_error", "filter_prompt_counts" ],
 
 filter_mpe_occupancy_min: 0.0,
 filter_mpe_occupancy_max: 0.3,
@@ -37,11 +37,17 @@ filter_mpe_occupancy_max: 0.3,
 filter_mpe_ctr_occupancy_min: 0.0,
 filter_mpe_ctr_occupancy_max: 0.05,
 
+filter_prompt_counts_min: 100.0,
+filter_prompt_counts_max: 4000.0,
+
+filter_ctr_prompt_counts_min: 100.0,
+filter_ctr_prompt_counts_max: 100000.0,                      
+
 filter_chi_square_min: 0.0,
 filter_chi_square_max: 1000.0,
 
-filter_fractional_error_min: 0.0,
-filter_fractional_error_max: 0.25, 
+filter_fractional_error_min: 0.0000001,
+filter_fractional_error_max: 0.25,
 
 }
 
@@ -93,6 +99,10 @@ pmt_angular_response_number_of_bins: 90,
 // Whether or not to vary the pmt angular response in the fit ( 0: Keep Fixed, 1: Vary )
 pmt_angular_response_vary: 1,
 
+// The minimum number of entries required in each PMT angular response
+// bin for the parameter associated with that parameter to vary in the fit
+pmt_angular_response_min_bin_entries: 25,
+
 // The number of bins distributed between 0 - 360 degrees for the laserball phi distribution
 laserball_distribution_histogram_number_of_phi_bins: 36,
 
@@ -102,15 +112,18 @@ laserball_distribution_histogram_number_of_cos_theta_bins: 12,
 // Whether or not to vary the laserball distribution in the fit ( 0: Keep Fixed, 1: Vary )
 laserball_distribution_histogram_vary: 1,
 
+// The minimum number of laserball distribution entries in each bin
+// required for the parameter associated with that bin to vary
+laserball_distribution_histogram_min_bin_entries: 10,
+
 // The degree of the polynomial mask function used to model the laserball intensity
-laserball_intensity_mask_number_of_parameters: 5,
+laserball_intensity_mask_number_of_parameters: 4,
 
 // Whether or not to vary the laserball mask function in the fit ( 0: Keep Fixed, 1: Vary )
 laserball_intensity_mask_vary: 1,
 
 // The initial value for the laserball normalisation for the off-axis runs
-// The central runs are already pre-normalised
-laserball_run_normalisation_initial_value: 0.03,
+// are calculate by LOCASOpticsModel::InitialiseLBRunNormalisations.
 
 // Whether or not to vary the laserball run normalisation in the fit ( 0: Keep Fixed, 1: Vary )
 laserball_run_normalisation_vary: 1,

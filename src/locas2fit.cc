@@ -38,6 +38,8 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TClass.h"
+#include "TH2F.h"
+#include "TCanvas.h"
 
 #include <iostream>
 #include <string>
@@ -166,6 +168,22 @@ int main( int argc, char** argv ){
   // This essentially ensures that all the values are correct before finishing
   // the fit.
   lParStore->CrossCheckParameters();
+
+  Float_t** covMatrix = lParStore->GetCovarianceMatrix();
+  Int_t nParameters = lParStore->GetNParameters();
+
+  TH2F* testHisto = new TH2F( "2dHisto", "Covariance Matrix", 90, 1, 90, 90, 1, 90 );
+  for ( Int_t iPar = 1; iPar <= 90; iPar++ ){
+    for ( Int_t jPar = 1; jPar <= 90; jPar++ ){
+      testHisto->SetCellContent( iPar, jPar, covMatrix[ iPar ][ jPar ] );
+      
+    }
+  }
+
+  TCanvas* c1 = new TCanvas( "c1", "2d-histo", 600, 400 );
+
+  testHisto->Draw("COLZ");
+  c1->Print("test_histo_gram.eps");
 
   lData->WriteToFile( "example_finished_data.root" );
 

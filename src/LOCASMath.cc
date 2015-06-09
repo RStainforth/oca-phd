@@ -83,7 +83,7 @@ Float_t LOCASMath::CalculatePMTVariabilityError( const LOCASDataPoint& dPoint )
       || dPoint.GetMPECorrOccupancy() == 0.0 ){ return 0.0; }
   
   // Otherwise, can calculate the PMT variability term.
-  Float_t varError = dPoint.GetPMTVariability() - 1 / ( TMath::Sqrt( dPoint.GetMPECorrOccupancy() ) );
+  Float_t varError = dPoint.GetPMTVariability() - ( dPoint.GetMPECorrOccupancyErr() * dPoint.GetMPECorrOccupancyErr() );
   return varError;
 
 }
@@ -100,7 +100,7 @@ void LOCASMath::CalculateMPEOccRatio( const LOCASDataPoint& dPoint, Float_t& occ
   occRatio *= ( dPoint.GetCentralFresnelTCoeff() * dPoint.GetCentralSolidAngle() ) / ( dPoint.GetFresnelTCoeff() * dPoint.GetSolidAngle() );
 
   // The central laserbll normalisation value.
-  occRatio *= dPoint.GetCentralLBIntensityNorm();
+  //occRatio *= dPoint.GetCentralLBIntensityNorm();
 
   // Add the errors in quadrature from the occupancy ratio to compute
   // the total error on the occupancy ratio.

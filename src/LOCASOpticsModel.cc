@@ -230,7 +230,7 @@ Float_t LOCASOpticsModel::ModelOccRatioPrediction( const LOCASDataPoint& dataPoi
   // Use the obtained normalisation bin obtain the current value for the
   // intensity normalisation for the off-axis run.
   Float_t normVal = parPtr->GetLBRunNormalisationPar( dataPoint.GetRunIndex() );
-
+  Float_t normCtrVal = dataPoint.GetCentralLBIntensityNorm();
   // Obtain the differences between the off-axis and central
   // runs for the distances in the inner AV, AV and water regions.
   Float_t dInnerAV = dataPoint.GetDistInInnerAV() 
@@ -267,7 +267,7 @@ Float_t LOCASOpticsModel::ModelOccRatioPrediction( const LOCASDataPoint& dataPoi
   
   // Using all the above calculated values we can compute
   // the model prediction for the occuapncy ratio.
-  Float_t modelPrediction = normVal * angRespRatio * intensityRatio * 
+  Float_t modelPrediction = ( normVal / normCtrVal ) * angRespRatio * intensityRatio * 
     TMath::Exp( - ( dInnerAV * ( dInnerAVExtinction )
                     + dAV * ( dAVExtinction )
                     + dWater * ( dWaterExtinction ) ) );

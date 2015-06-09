@@ -618,7 +618,7 @@ void LOCASFit::DataScreen( const Float_t chiSqLimit )
 
   cout << "HELLO THERE!" << endl;
   for ( Int_t iX = 1; iX <= fNParametersInFit; iX++ ){
-    printf("Parameter %i is: %.5f with flag %i\n", iX, fMrqParameters[ iX ], fMrqVary[ iX ] );
+    printf("Parameter %i is: %.5f with flag %i and error: %.5f\n", iX, fMrqParameters[ iX ], fMrqVary[ iX ], TMath::Sqrt( fMrqCovariance[ iX ][ iX ] ) );
   }
 
 
