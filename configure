@@ -1,13 +1,13 @@
 #!/bin/bash
-# Configure script for fresh LOCAS code release
+# Configure script for fresh OCA code release
 # authored by Robert Stainforth at University of Liverpool
 # rpfs@liv.ac.uk
 
-# Obtain the path to the user's RAT envrionment file
+# Obtain the path to the user's RAT environment file
 # If you are using a Snoing installation, this is
 # likely to be env_rat-dev.sh NOT rat-dev/env.sh
 
-printf "\nEnter the FULL system path to your RAT envrionment file\n(no use of '~' to shortcut to home directory!).\nIf you use a 'snoing' installation of RAT, this is likely\nto be located somewhere such as\n\${SOME-PATH}/snoing/install/env_rat-dev.sh. \n\n"
+printf "\nWelcome to the OCA software setup for SNO+.\n\nEnter the FULL system path to your RAT environment file\n(no use of '~' to shortcut to home directory!).\nIf you use a 'snoing' installation of RAT, this is likely\nto be located somewhere such as\n\${SOME-PATH}/snoing/install/env_rat-dev.sh. \n\n"
 RATFILE=""
 printf "Enter Path: " 
 read -e ratenvpath
@@ -16,79 +16,44 @@ if [ -e "$ratenvpath" ]
 then
  RATFILE="$ratenvpath"
  printf "\n"
- printf "RAT envrionment file path to be used:\n"
+ printf "RAT environment file path to be used:\n"
  printf ${RATFILE}
 else
- printf "RAT envrionment file (or path) does not exist!\nCheck and try again. \n\n"
+ printf "RAT environment file (or path) does not exist!\nCheck and try again. \n\n"
  exit 1
 fi 
-
-printf "\n\n"
-
-# Obtain the path to the directory the user wants to
-# store temporary data used when similating data
-# for PMT shadowing
-
-printf "Enter the full path to the directory you would like LOCAS\nutilities to temporarily store data. Directory path should\nnot end with a '/'.\ni.e. '/store/my/data/here is valid\nwhereas '/store/my/data/here/' is NOT. \n\n"
-TMPDIR=""
-printf "Enter Path: "
-read -e locastmpdir
-
-if [ -d $locastmpdir ]
-then
- TMPDIR=$locastmpdir
- printf "\n"
- printf "Temporary data directory used by LOCAS:\n"
- printf ${TMPDIR}
-else
- printf "Directory path does not exist! Check and try again.\n\n"
- exit 1
-fi 
-
-printf "\n\n"
-
-printf "If you are on your university machine, you may have access to batch computing via 'qsub'.\n\n Please specify the machine name. For example at Liverpool this is 'medium64', or at QMUL this is 'snoplusSL6'. \n\n"
-MACHINENAME=""
-printf "Enter Machine Name: "
-read -e machinename
-
- MACHINENAME=$machinename
- printf "\n"
- printf "qsub machine name to be used:\n"
- printf ${MACHINENAME}
 
 printf "\n\n"
 
 # Obtain the current directory which will be used as
 # the installation directory and the data directory where
-# files generalted by locas will be stored
-LOCASROOT=`pwd`
-LOCASDATA=${LOCASROOT}/data
+# files generalted by oca will be stored
+OCAROOT=`pwd`
+OCADATA=${OCAROOT}/data
 
-# Now create the env_locas.sh and env_locas.csh files
-printf "%-25s" "Generating locas_env.sh..."
-cat > env_locas.sh << EOF
+# Now create the env_oca.sh and env_oca.csh files
+printf "%-25s" "Generating oca_env.sh..."
+cat > env_oca.sh << EOF
 #!/bin/bash
 
-export LOCAS_ROOT=$LOCASROOT
-export LOCAS_DATA=$LOCASDATA
+export OCA_ROOT=$OCAROOT
+export OCA_DATA=$OCADATA
 
-export LOCAS_DATA_TMP=$TMPDIR
-export LOCAS_BATCH_MACHINE_NAME=$MACHINENAME
 export RATENVFILE=$RATFILE
 source $RATFILE
 
 # These are just to avoid having to move to the bin directory.
-export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$LOCAS_ROOT/lib
+export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$OCA_ROOT/lib
 system=\`uname -s\`
 if [ "\$system" == "Darwin" ]; then
-    export DYLD_LIBRARY_PATH=\$DYLD_LIBRARY_PATH:\$LOCAS_ROOT/lib
+    export DYLD_LIBRARY_PATH=\$DYLD_LIBRARY_PATH:\$OCA_ROOT/lib
 fi
 
-export PATH=\$PATH:\$LOCAS_ROOT/bin 
+export PATH=\$PATH:\$OCA_ROOT/bin 
 EOF
 
 printf "\n"
-[[ -e env_locas.sh ]] && chmod +x env_locas.sh && printf "env_locas.sh has been created, please type 'source env_locas.sh'\nat the command line here.\n\nHenceforth, each time yousource env_locas.sh\nthe RAT envrionment file you provided here\nwill be sourced automatically.\n\nYou may now install LOCAS by typing\n'make clean', 'make' and 'make install' respectively at the\ncommand line in the '"
+[[ -e env_oca.sh ]] && chmod +x env_oca.sh && printf "env_oca.sh has been created!\n\nPlease type 'source env_oca.sh' at the command line here and then install OCA by typing:\n\n'make clean', 'make' and 'make install'\n\nrespectively at the command line in the '"
 printf `pwd`
 printf "/src' directory.\n\n"
+printf "Remember: You need to 'source env_oca.sh' each time you use OCA\n\n"

@@ -1,9 +1,9 @@
 The Fit Configuration File are Stored in this Directory
 ==========
 
-There are currently two fitting methods; 'locas2marquardt' and 'locas2minuit'. Their fit files are slightly different. See below.
+There are currently two fitting methods; 'oca2marquardt' and 'oca2minuit'. Their fit files are slightly different. See below.
 
-locas2marquardt fitfile
+oca2marquardt fitfile
 ==========
 
 When fitting data, the options for the fit are provided in the fit files contained here. The entries on the fit file are as follows:
@@ -67,9 +67,9 @@ When fitting data, the options for the fit are provided in the fit files contain
      run_norm_vary - Whether the individual run normalisations should in the fit
      run_norm_init - The initial values for all normalisations
 
-locas2minuit fitfile
+oca2minuit fitfile
 ==========
-The fields on the 'locas2minuit' file are as follows:
+The fields on the 'oca2minuit' file are as follows:
 
     run_ids - The list of run ids whose data is to be used in the fit.
 

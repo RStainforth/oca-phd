@@ -22,7 +22,7 @@
 ///              e.g. db2soc -r 12121953
 ///
 ///         where '12121953' is the Run-ID of the run SOC file
-///         located in ${LOCAS_DATA}/runs/soc whose name is
+///         located in ${OCA_DATA}/runs/soc whose name is
 ///         "12121953_Run.root". This would udpdate the 'runID'
 ///         private member variable on the soc file.
 ///
@@ -48,7 +48,7 @@
 #include "RAT/DS/SOC.hh"
 #include "RAT/DS/Run.hh"
 
-#include "LOCASDB.hh"
+#include "OCADB.hh"
 
 #include "TFile.h"
 #include "TTree.h"
@@ -63,19 +63,19 @@
 
 using namespace std;
 using namespace RAT;
-using namespace LOCAS;
+using namespace OCA;
 
 // Utility class to parse the command line arguments for this executable
-class LOCASCmdOptions 
+class OCACmdOptions 
 {
 public:
-  LOCASCmdOptions( ) : fRID( -1 ), fRIDStr( "" ) { }
+  OCACmdOptions( ) : fRID( -1 ), fRIDStr( "" ) { }
   UInt_t fRID;
   std::string fRIDStr;
 };
 
 // Declare the three function prototypes used
-LOCASCmdOptions ParseArguments( int argc, char** argv );
+OCACmdOptions ParseArguments( int argc, char** argv );
 void help();
 
 int main( int argc, char** argv );
@@ -86,7 +86,7 @@ int main( int argc, char** argv );
 int main( int argc, char** argv ){
 
   // Parse arguments passed to the command line
-  LOCASCmdOptions Opts = ParseArguments( argc, argv );
+  OCACmdOptions Opts = ParseArguments( argc, argv );
 
   // Define the run-ID in Long64_t and string format
   UInt_t rID = Opts.fRID;
@@ -95,7 +95,7 @@ int main( int argc, char** argv ){
   // Obtain the directory path where the SOC files are located
   // from the environment and create the full filename path.
   // SOC run filenames currently of the form "[Run-ID]_Run.root"
-  LOCASDB lDB;
+  OCADB lDB;
   string socRunDir = lDB.GetSOCRunDir();
   string fExt = "_Run.root";
   string filename = ( socRunDir + rIDStr + fExt ).c_str();
@@ -166,14 +166,14 @@ int main( int argc, char** argv ){
 ///                     ///
 ///////////////////////////
 
-LOCASCmdOptions ParseArguments( int argc, char** argv) 
+OCACmdOptions ParseArguments( int argc, char** argv) 
 {
   static struct option opts[] = { {"help", 0, NULL, 'h'},
                                        {"run-id", 1, NULL, 'r'},
                                        {0,0,0,0} };
 
   
-  LOCASCmdOptions options;
+  OCACmdOptions options;
   int option_index = 0;
   int c = getopt_long(argc, argv, "h:r:", opts, &option_index);
   while (c != -1) {
@@ -200,7 +200,7 @@ LOCASCmdOptions ParseArguments( int argc, char** argv)
 void help(){
 
   cout << "\n";
-  cout << "SNO+ LOCAS - db2soc" << "\n";
+  cout << "SNO+ OCA - db2soc" << "\n";
   cout << "Description: Executable to update the runID on the SOC object in the SOC file.\n";
   cout << "Usage: db2soc [-h] [-r run-id]\n";
   cout << " -h, --help                            Display this help message and exit \n";

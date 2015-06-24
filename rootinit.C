@@ -12,18 +12,18 @@
   cout << "RAT: Libraries loaded." << endl;
   gSystem->AddIncludePath(" -I$RATROOT/include");
 	
-  char *LOCASROOT = getenv("LOCAS_ROOT");
-  if (LOCASROOT != NULL) {
-	gSystem->Load("libLOCAS.so");
-	cout << "LOCAS: Libraries loaded." << endl;
-	gSystem->AddIncludePath(" -I$LOCAS_ROOT/lib");
+  char *OCAROOT = getenv("OCA_ROOT");
+  if (OCAROOT != NULL) {
+	gSystem->Load("libOCA.so");
+	cout << "OCA: Libraries loaded." << endl;
+	gSystem->AddIncludePath(" -I$OCA_ROOT/lib");
   }
 
-  char *QLOCASROOT = getenv("QLOCAS_ROOT");
-  if (QLOCASROOT != NULL) {
-	gSystem->Load("libQLOCAS.so");
-	cout << "QLOCAS: Libraries loaded." << endl;
-	gSystem->AddIncludePath(" -I$QLOCAS_ROOT/include");
+  char *QOCAROOT = getenv("QOCA_ROOT");
+  if (QOCAROOT != NULL) {
+	gSystem->Load("libQOCA.so");
+	cout << "QOCA: Libraries loaded." << endl;
+	gSystem->AddIncludePath(" -I$QOCA_ROOT/include");
   }
 }
 

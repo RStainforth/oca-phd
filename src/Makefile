@@ -1,8 +1,8 @@
-# Makefile for LOCAS
+# Makefile for OCA
 #
 # Do 'make clean' at the command line after modifications to this makefile
 #
-# LOCAS depends solely on ROOT. It therefore tries to get as
+# OCA depends solely on ROOT. It therefore tries to get as
 # much information from ROOT as possible through 'root-config'
 
 # Compile and link flags imported from ROOT 
@@ -30,19 +30,9 @@ DEPLIBS     := ${ROOTLIB} ${GEANT4LIB} ${CLHEPLIB} ${CURLLIB}
 RATCFLAGS   := -I$(RATROOT)/include -I$(RATROOT)/include/RAT -I$(RATROOT)/include/RAT/DS
 RATLIB		:= -L$(RATROOT)/lib -lRATEvent_$(RATSYSTEM) -lrat_$(RATSYSTEM)
 
-QLOCASCFLAGS  := -I$(QLOCAS_ROOT)/include
-QLOCASLIB     := -L$(QLOCAS_ROOT)/lib -lQLOCAS
-QBANK         := $(QLOCAS_ROOT)/include/QBank.h
-QDBHDR         := $(QLOCAS_ROOT)/include/QDBHDR.h
-QSNO         := $(QLOCAS_ROOT)/include/QSNO.h
-QDQXX        := $(QLOCAS_ROOT)/include/QDQXX.h
-QSNOO        := $(pathsubst %.h, %.o, $($(QBANK) $(QDBHDR) $(QDQXX) $(QSNO)))
-QLOCASH       := $(addprefix $(QLOCAS_ROOT)/include/, $(notdir $(shell find $(QLOCAS_ROOT)/include -name "*.h")))
-QLOCASHNODIR  := $(notdir $(QLOCASH))
-
-# Compile and link flags for LOCAS
-LOCASCFLAGS := -I./
-LOCASLIB    := -L. -lLOCAS
+# Compile and link flags for OCA
+OCACFLAGS := -I./
+OCALIB    := -L. -lOCA
 
 PICFLAG	:= -fPIC
 
@@ -58,7 +48,7 @@ ifneq ($(findstring macosx, $(ARCH)),)
 	LDOPTS  := -dynamiclib -single_module -undefined dynamic_lookup
 
 # Shouldn't need the below statement anymore - will keep it here for legacy control.
-#LINKCMD := install_name_tool -change lib/libRATEvent_$(RATSYSTEM).so @rpath/libRATEvent_$(RATSYSTEM).so libLOCAS.so
+#LINKCMD := install_name_tool -change lib/libRATEvent_$(RATSYSTEM).so @rpath/libRATEvent_$(RATSYSTEM).so libOCA.so
 endif
 ifneq ($(findstring $(ARCH), $(strip linux debian redhat)),)
 	LDOPTS := -shared
@@ -69,37 +59,37 @@ ifeq ($(strip $(LDOPTS)),)
 endif
 
 ### Some options for this package
-LOCAS_VERSION:= "1.0.0" # The LOCAS version
-LOCAS_COMPATIBILITY:= "1.0.0" 
-LOCAS_ROOT 	:= $(LOCAS_ROOT)
-LOCAS_LIB	:= $(LOCAS_ROOT)/lib 
-LOCAS_SRC	:= $(LOCAS_ROOT)/src
-LOCAS_INC	:= $(LOCAS_ROOT)/include
-LOCAS_BIN	:= $(LOCAS_ROOT)/bin
-LOCAS_OBJ   := $(LOCAS_ROOT)/obj
+OCA_VERSION:= "1.0.0" # The OCA version
+OCA_COMPATIBILITY:= "1.0.0" 
+OCA_ROOT 	:= $(OCA_ROOT)
+OCA_LIB	:= $(OCA_ROOT)/lib 
+OCA_SRC	:= $(OCA_ROOT)/src
+OCA_INC	:= $(OCA_ROOT)/include
+OCA_BIN	:= $(OCA_ROOT)/bin
+OCA_OBJ   := $(OCA_ROOT)/obj
 
 # Dictionary
-DICT_H	:= LOCAS_LinkDef.h
-DICT_C	:= LOCAS_Dict.C
+DICT_H	:= OCA_LinkDef.h
+DICT_C	:= OCA_Dict.C
 DICT_O	:= $(patsubst %.C,%.o,$(DICT_C))
 
-LOCAS_EXE	:= soc2locas db2soc locas2fit locas2marquardt locas2fit2eff rdt2locas
+OCA_EXE	:= soc2oca oca2fit oca2marquardt oca2fit2eff
 
 # N. Barros - 22-11-2011 : Removed from the targets as the source file seems to be missing. Maybe a missing commit?
 # sjmptest
 
 # Creates a list of all of the *.hh files in the current directory (same directory as the Makefile) EXCEPT the filenames
 # defined by the values of $DICT_H, and $DICT_C but with the .C extension replaced by .h
-# i.e. Not the files LOCAS_LinkDef.h and LOCAS_Dict.C
-LOCASH		:= $(filter-out $(DICT_H) $(patsubst %.C,%.h,$(DICT_C)),$(notdir $(shell find $(LOCAS_SRC) -name "*.hh")))
+# i.e. Not the files OCA_LinkDef.h and OCA_Dict.C
+OCAH		:= $(filter-out $(DICT_H) $(patsubst %.C,%.h,$(DICT_C)),$(notdir $(shell find $(OCA_SRC) -name "*.hh")))
 # Creates a list of all of the *.cc files in the current directory (same directory as the Makefile) EXCEPT the filenames
-# defined by the values of $LOCAS_EXE, with .cc attached i.e. Not locas.cc
-LOCASC		:= $(filter-out $(addsuffix .cc,$(LOCAS_EXE)),$(notdir $(shell find $(LOCAS_SRC) -name "*.cc")))
+# defined by the values of $OCA_EXE, with .cc attached i.e. Not oca.cc
+OCAC		:= $(filter-out $(addsuffix .cc,$(OCA_EXE)),$(notdir $(shell find $(OCA_SRC) -name "*.cc")))
 
-# List of the LOCAS objects, i.e. all those files attached in $LOCASC but with the extensions .cc replaced
+# List of the OCA objects, i.e. all those files attached in $OCAC but with the extensions .cc replaced
 # with .o
-LOCASO	    := $(patsubst %.cc,%.o,$(LOCASC))
-LOCASL		:= libLOCAS.so
+OCAO	    := $(patsubst %.cc,%.o,$(OCAC))
+OCAL		:= libOCA.so
 
 ### Below are the building commands. Don't touch if you don't know what you're doing.
 
@@ -107,53 +97,52 @@ LOCASL		:= libLOCAS.so
 
 
 all: show headers libraries executables
-#LOCAS_positionfit tdiff reflecttime qpath_runner LOCASfit_runner LOCASextract_runner LOCASplots_runner LOCAStitles_runner
+#OCA_positionfit tdiff reflecttime qpath_runner OCAfit_runner OCAextract_runner OCAplots_runner OCAtitles_runner
 
 test:
-	@cd $(LOCAS_ROOT)
+	@cd $(OCA_ROOT)
 
 dirs: 
-	@mkdir -p $(LOCAS_LIB)
-	@mkdir -p $(LOCAS_BIN)
-	@mkdir -p $(LOCAS_INC)
-	@mkdir -p $(LOCAS_OBJ)
+	@mkdir -p $(OCA_LIB)
+	@mkdir -p $(OCA_BIN)
+	@mkdir -p $(OCA_INC)
+	@mkdir -p $(OCA_OBJ)
 
 show:
 	@echo "Build options:"
 	@echo " * ARCH  	: $(ARCH)"
 	@echo " * LDOPT 	: $(LDOPTS)"
-	@echo " * QLOCASH   : $(QLOCASH)"
 
-headers: $(LOCASH)
+headers: $(OCAH)
 	@echo " == Executing $@ =="	
 
-libraries: $(LOCASL)
+libraries: $(OCAL)
 		@echo " == Executing $@ =="
 
-executables: $(LOCAS_EXE)
+executables: $(OCA_EXE)
 		@echo " == Executing $@ =="
 
 install: install_libraries install_executables install_headers
 
 install_headers: headers
 		@echo " == Executing $@ =="
-		@echo "copying LOCAS headers to $(LOCAS_INC)"
-		@cp $(LOCASH) $(LOCAS_INC)
+		@echo "copying OCA headers to $(OCA_INC)"
+		@cp $(OCAH) $(OCA_INC)
 		@echo "Done."
 
 install_libraries: libraries dirs
 		@echo " == Executing $@ =="
-		@echo "copying $(LOCASL) to $(LOCAS_LIB)"
-		@cp $(LOCASL) $(LOCAS_LIB)
-		@cp $(LOCASO) $(LOCAS_OBJ)
+		@echo "copying $(OCAL) to $(OCA_LIB)"
+		@cp $(OCAL) $(OCA_LIB)
+		@cp $(OCAO) $(OCA_OBJ)
 		@echo "Done."
 
 install_executables: executables dirs
 		@echo " == Executing $@ =="
-		@echo "copying LOCAS executables to $(LOCAS_BIN)"
-		@cd $(LOCAS_SRC)
-		@cp $(LOCAS_EXE) $(LOCAS_ROOT)/bin
-		@cd $(LOCAS_ROOT)
+		@echo "copying OCA executables to $(OCA_BIN)"
+		@cd $(OCA_SRC)
+		@cp $(OCA_EXE) $(OCA_ROOT)/bin
+		@cd $(OCA_ROOT)
 		@echo "Done"
 
 
@@ -164,67 +153,57 @@ clean:
 	@rm -f *Dict.h
 	@rm -f *.o
 	@rm -f *.so
-	@rm -f $(LOCAS_EXE)
+	@rm -f $(OCA_EXE)
 	@echo "Done."
 
-soc2locas: soc2locas.o $(LOCASL)
+soc2oca: soc2oca.o $(OCAL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB}
+	 $< ${DEPLIBS} ${RATLIB} ${OCALIB}
 
-db2soc: db2soc.o $(LOCASL)
+oca2fit: oca2fit.o $(OCAL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB}
+	 $< ${DEPLIBS} ${RATLIB} ${OCALIB}
 
-locas2fit: locas2fit.o $(LOCASL)
+oca2marquardt: oca2marquardt.o $(OCAL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB}
+	 $< ${DEPLIBS} ${RATLIB} ${OCALIB}
 
-locas2marquardt: locas2marquardt.o $(LOCASL)
+oca2fit2eff: oca2fit2eff.o $(OCAL)
 	@echo " == Executing $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB}
+	 $< ${DEPLIBS} ${RATLIB} ${OCALIB}
 
-locas2fit2eff: locas2fit2eff.o $(LOCASL)
+$(OCAL): $(OCAO) $(DICT_O)
 	@echo " == Executing $@ =="
-	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB}
-
-rdt2locas: rdt2locas.o $(LOCASL)
-	@echo " == Executing $@ =="
-	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${LOCASLIB} ${QLOCASLIB}
-
-$(LOCASL): $(LOCASO) $(DICT_O)
-	@echo " == Executing $@ =="
-	@echo "linking $(LOCASL)"
+	@echo "linking $(OCAL)"
 	$(CXX) $(LDFLAGS) $(LDOPTS) \
-	-o $@ ${DEPLIBS} ${RATLIB} ${QLOCASLIB} $(LOCASO) $(DICT_O) $(LINKCMD)
+	-o $@ ${DEPLIBS} ${RATLIB} $(OCAO) $(DICT_O) $(LINKCMD)
 
-# not sure if we really need ${DEPLIBS} up above here, we're only linking all the LOCAS object files
+# not sure if we really need ${DEPLIBS} up above here, we're only linking all the OCA object files
 
-$(DICT_C): $(DICT_H) $(LOCASO) $(LOCASH)
+$(DICT_C): $(DICT_H) $(OCAO) $(OCAH)
 	@echo " == Executing $@ =="
 	@rm -f $@
 	@echo "Generating $@ dictionary"
-	rootcint -f $@ -c -p $(RATCFLAGS) $(LOCASH) $<
+	rootcint -f $@ -c -p $(RATCFLAGS) $(OCAH) $<
 	@echo "Done with $@ ..."
 
 
 %.o:	%.cc %.hh
 #	@echo Special rule for .cc files with headers
-	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} ${QLOCASCFLAGS} -DCOMPILED_ROOT -c $<
+	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${OCACFLAGS} -DCOMPILED_ROOT -c $<
 
 %.o:	%.C %.h
 #	@echo Special rule for .C files with headers
-	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} ${QLOCASCFLAGS} -DCOMPILED_ROOT -c $<
+	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${OCACFLAGS} -DCOMPILED_ROOT -c $<
 
 %.o:	%.C
 #	@echo Rule for .C files
-	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} ${QLOCASCFLAGS} -DCOMPILED_ROOT -c $<
+	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${OCACFLAGS} -DCOMPILED_ROOT -c $<
 
 %.o:	%.cc
 #	@echo Rule for .cc files
-	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${LOCASCFLAGS} ${QLOCASCFLAGS} -DCOMPILED_ROOT -c $<
+	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${OCACFLAGS} -DCOMPILED_ROOT -c $<

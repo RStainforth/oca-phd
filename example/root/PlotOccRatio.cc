@@ -3,23 +3,23 @@
 #include "TStyle.h"
 #include "TMath.h"
 
-#include "LOCASDataStore.hh"
-#include "LOCASDataPoint.hh"
+#include "OCADataStore.hh"
+#include "OCADataPoint.hh"
 
 #include <string>
 #include <vector>
 
 using namespace std;
-using namespace LOCAS;
+using namespace OCA;
 
 void PlotNPromptCountsRatio( std::string storeName, const char* plotName )
 {
 
-  LOCASDataStore* lStore = new LOCASDataStore( storeName );
+  OCADataStore* lStore = new OCADataStore( storeName );
 
-  vector< LOCASDataPoint >::iterator iDP;
-  vector< LOCASDataPoint >::iterator iDPBegin = lStore->GetLOCASDataPointsIterBegin();
-  vector< LOCASDataPoint >::iterator iDPEnd = lStore->GetLOCASDataPointsIterEnd();
+  vector< OCADataPoint >::iterator iDP;
+  vector< OCADataPoint >::iterator iDPBegin = lStore->GetOCADataPointsIterBegin();
+  vector< OCADataPoint >::iterator iDPEnd = lStore->GetOCADataPointsIterEnd();
 
   TH1F* rOccHisto = new TH1F( "NPrompt Ratio", "NPrompt Counts Ratio Histogram", 71, -0.02, 1.42 );
 
@@ -53,11 +53,11 @@ void PlotNPromptCountsRatio( std::string storeName, const char* plotName )
 void PlotOccRatio( std::string storeName, const char* plotName, Float_t nPromptLow, Float_t nPromptHigh )
 {
 
-  LOCASDataStore* lStore = new LOCASDataStore( storeName );
+  OCADataStore* lStore = new OCADataStore( storeName );
 
-  vector< LOCASDataPoint >::iterator iDP;
-  vector< LOCASDataPoint >::iterator iDPBegin = lStore->GetLOCASDataPointsIterBegin();
-  vector< LOCASDataPoint >::iterator iDPEnd = lStore->GetLOCASDataPointsIterEnd();
+  vector< OCADataPoint >::iterator iDP;
+  vector< OCADataPoint >::iterator iDPBegin = lStore->GetOCADataPointsIterBegin();
+  vector< OCADataPoint >::iterator iDPEnd = lStore->GetOCADataPointsIterEnd();
 
   TH1F* rOccHisto = new TH1F( "Occ Ratio", "Occ Ratio Histogram", 101, -0.02, 2.0 );
 
@@ -104,11 +104,11 @@ void PlotNPromptCounts( std::string storeName, const char* plotName,
                         Float_t histoXLow, Float_t histoXHigh, Int_t nBins )
 {
 
-  LOCASDataStore* lStore = new LOCASDataStore( storeName );
+  OCADataStore* lStore = new OCADataStore( storeName );
 
-  vector< LOCASDataPoint >::iterator iDP;
-  vector< LOCASDataPoint >::iterator iDPBegin = lStore->GetLOCASDataPointsIterBegin();
-  vector< LOCASDataPoint >::iterator iDPEnd = lStore->GetLOCASDataPointsIterEnd();
+  vector< OCADataPoint >::iterator iDP;
+  vector< OCADataPoint >::iterator iDPBegin = lStore->GetOCADataPointsIterBegin();
+  vector< OCADataPoint >::iterator iDPEnd = lStore->GetOCADataPointsIterEnd();
 
   TH1F* rOccHisto = new TH1F( "NPrompt Counts", "NPrompt Counts Histogram", nBins, histoXLow, histoXHigh );
 

@@ -5,8 +5,8 @@ index: "fit_setup",
 valid_begin: [0, 0],
 valid_end: [0, 0],
 
-data_set: "oct03",
-fit_name: "420nm_oct03",
+data_set: "junmc15",
+fit_name: "337nm_jun15mc",
 
 }
 
@@ -18,7 +18,13 @@ index: "run_setup",
 valid_begin: [0, 0],
 valid_end: [0, 0],
 
-run_ids: [ 34766, 34780, 34794, 34806, 34916, 34924, 34950, 34956, 34820, 34899, 34990, 34972, 35013, 34889, 34875, 34835, 35148, 35081, 35086, 35169, 35155, 35106, 35112, 35224 ],
+run_ids: [ 10001, 10002, 10003, 10004, 10005, 10006,
+           10007, 10008, 10009, 10010, 10011, 10012,
+           10013, 10014, 10015, 10016, 10017, 10018,
+           10019, 10020, 10021, 10022, 10023, 10024,
+           10025, 10026, 10027, 10028, 10029, 10030,
+           10031, 10032, 10033, 10034, 10035, 10036,
+           10037, 10038, 10039 ],
 
 }
 
@@ -32,7 +38,7 @@ valid_end: [0, 0],
 filter_list: [ "filter_chi_square", "filter_fractional_error", "filter_prompt_counts" ],
 
 filter_mpe_occupancy_min: 0.0,
-filter_mpe_occupancy_max: 0.3,
+filter_mpe_occupancy_max: 0.1,
 
 filter_mpe_ctr_occupancy_min: 0.0,
 filter_mpe_ctr_occupancy_max: 0.05,
@@ -123,7 +129,7 @@ laserball_intensity_mask_number_of_parameters: 4,
 laserball_intensity_mask_vary: 1,
 
 // The initial value for the laserball normalisation for the off-axis runs
-// are calculate by OCAOpticsModel::InitialiseLBRunNormalisations.
+// are calculate by LOCASOpticsModel::InitialiseLBRunNormalisations.
 
 // Whether or not to vary the laserball run normalisation in the fit ( 0: Keep Fixed, 1: Vary )
 laserball_run_normalisation_vary: 1,
@@ -138,7 +144,7 @@ valid_begin: [0, 0],
 valid_end: [0, 0],
 
 // The sequential chi-square upper limits to cut initial data-points on for each fit
-chisq_lims: [ 1000.0, 100.0, 50.0, 25.0, 16.0, 16.0 ],
+chisq_lims: [ 1000.0, 100.0, 50.0, 25.0, 25.0 ],
 
 }
 
