@@ -6,6 +6,7 @@
 #include "RAT/DU/PMTInfo.hh"
 #include "RAT/DU/LightPathCalculator.hh"
 #include "RAT/DU/ShadowingCalculator.hh"
+#include "RAT/DU/ChanHWStatus.hh"
 
 #include "OCARun.hh"
 #include "OCADB.hh"
@@ -50,12 +51,18 @@ OCARun::OCARun( const OCARun& ocaRHS )
 
   fLambda = ocaRHS.fLambda;
   fNLBPulses = ocaRHS.fNLBPulses;
+  fIntensity = ocaRHS.fIntensity;
+  fGlobalTimeOffset = ocaRHS.fGlobalTimeOffset;
 
   fCentralLambda = ocaRHS.fCentralLambda;
   fCentralNLBPulses = ocaRHS.fCentralNLBPulses;
+  fCentralIntensity = ocaRHS.fCentralIntensity;
+  fCentralGlobalTimeOffset = ocaRHS.fCentralGlobalTimeOffset;
 
   fWavelengthLambda = ocaRHS.fWavelengthLambda;
   fWavelengthNLBPulses = ocaRHS.fWavelengthNLBPulses;
+  fWavelengthIntensity = ocaRHS.fWavelengthIntensity;
+  fWavelengthGlobalTimeOffset = ocaRHS.fWavelengthGlobalTimeOffset;
 
   fLBIntensityNorm = ocaRHS.fLBIntensityNorm;
   fCentralLBIntensityNorm = ocaRHS.fCentralLBIntensityNorm;
@@ -117,12 +124,18 @@ OCARun& OCARun::operator=( const OCARun& ocaRHS )
 
   fLambda = ocaRHS.fLambda;
   fNLBPulses = ocaRHS.fNLBPulses;
+  fIntensity = ocaRHS.fIntensity;
+  fGlobalTimeOffset = ocaRHS.fGlobalTimeOffset;
 
   fCentralLambda = ocaRHS.fCentralLambda;
   fCentralNLBPulses = ocaRHS.fCentralNLBPulses;
+  fCentralIntensity = ocaRHS.fCentralIntensity;
+  fCentralGlobalTimeOffset = ocaRHS.fCentralGlobalTimeOffset;
 
   fWavelengthLambda = ocaRHS.fWavelengthLambda;
   fWavelengthNLBPulses = ocaRHS.fWavelengthNLBPulses;
+  fWavelengthIntensity = ocaRHS.fWavelengthIntensity;
+  fWavelengthGlobalTimeOffset = ocaRHS.fWavelengthGlobalTimeOffset;
 
   fLBIntensityNorm = ocaRHS.fLBIntensityNorm;
   fCentralLBIntensityNorm = ocaRHS.fCentralLBIntensityNorm;
@@ -181,11 +194,17 @@ void OCARun::ClearRun()
   SetIsWavelengthRun( false );
 
   SetLambda( -10.0 );
-  SetNLBPulses( -10.0 );  
+  SetNLBPulses( -10.0 );
+  SetIntensity( -10.0 );
+  SetGlobalTimeOffset ( -10.0 );
   SetCentralLambda( -10.0 );
   SetCentralNLBPulses( -10.0 );
+  SetCentralIntensity( -10.0 );
+  SetCentralGlobalTimeOffset ( -10.0 );
   SetWavelengthLambda( -10.0 );
   SetWavelengthNLBPulses( -10.0 );
+  SetWavelengthIntensity( -10.0 );
+  SetWavelengthGlobalTimeOffset( -10.0 );
 
   SetLBIntensityNorm( -10.0 );
   SetCentralLBIntensityNorm( -10.0 );
@@ -226,6 +245,7 @@ void OCARun::ClearRun()
 void OCARun::Fill( RAT::DU::SOCReader& socR, 
                    RAT::DU::LightPathCalculator& lLP,
                    RAT::DU::ShadowingCalculator& lSC,
+                   RAT::DU::ChanHWStatus& lCHS,
                    RAT::DU::PMTInfo& lDB,
                    UInt_t runID )
 {
@@ -256,17 +276,12 @@ void OCARun::Fill( RAT::DU::SOCReader& socR,
   // Now that a SOC file which matches the run ID specified has been
   // found. We can now begin to fill the OCARun object with all the
   // neccessary information.
-  
+
   // The run information from the SOC file...
   CopySOCRunInfo( *socPtr );
+
   // ... and the PMT information from the SOC file.
   CopySOCPMTInfo( *socPtr );
-
-  // Note: The orientation of the laserball isn't held
-  // on the SOC file currently. So will need to implement
-  // this in the future.
-  SetLBTheta( 0.0 );
-  SetLBPhi( 0.0 );
 
   // Create an iterator to loop over the PMTs...
   map< Int_t, OCAPMT >::iterator iLP;
@@ -290,6 +305,7 @@ void OCARun::Fill( RAT::DU::SOCReader& socR,
 
     // Set the PMT positions, normals and types.
     ( iLP->second ).SetPos( lDB.GetPosition( pmtID ) );
+    ( iLP->second ).SetLBPos( GetLBPos() );
     ( iLP->second ).SetNorm( lDB.GetDirection( pmtID ) );
     ( iLP->second ).SetType( lDB.GetType( pmtID ) );
 
@@ -308,9 +324,9 @@ void OCARun::Fill( RAT::DU::SOCReader& socR,
     // calculated to the PMT.
     lLP.CalcByPosition( GetLBPos(), GetPMT( iLP->first ).GetPos(), 
                         wavelengthMeV, 10.0 );
-    
+
     // 'feed' the light path to the PMT
-    ( iLP->second ).ProcessLightPath( lLP, lSC );
+    ( iLP->second ).ProcessLightPath( lLP, lSC, lCHS );
 
     ///////// Off-Axis Laserball Theta and Phi Angles //////////
     TVector3 lbAxis( 0.0, 0.0, 1.0 );
@@ -347,16 +363,26 @@ void OCARun::CopySOCRunInfo( RAT::DS::SOC& socRun )
   SetRunID( socRun.GetRunID() );
   SetSourceID( socRun.GetSourceID() );
   SetLambda( (Double_t)socRun.GetCalib().GetMode() );
+  SetIntensity( (Double_t)socRun.GetCalib().GetIntensity() );
+
+  // The number of pulses.
+  SetNLBPulses( socRun.GetNPulsesTriggered() );
 
   // The fitted laserball position.
   RAT::DS::FitResult lbFit = socRun.GetFitResult( "lbfit" );
   RAT::DS::FitVertex lbVertex = lbFit.GetVertex( 0 );
-   
+  
   SetLBPos( lbVertex.GetPosition() );
-
+  
   SetLBXPosErr( lbVertex.GetPositivePositionError().X() );
   SetLBXPosErr( lbVertex.GetPositivePositionError().Y() );
   SetLBXPosErr( lbVertex.GetPositivePositionError().Z() );
+
+
+  SetGlobalTimeOffset( socRun.GetGlobalTimeOffset() );
+  
+  SetLBTheta( socRun.GetCalib().GetDir().Theta() );
+  SetLBPhi( socRun.GetCalib().GetDir().Phi() );
 
 }
 
@@ -527,6 +553,12 @@ void OCARun::CrossRunFill( OCARun* cRun, OCARun* wRun )
     
     fWavelengthLBTheta = wRun->GetLBTheta();
     fWavelengthLBPhi = wRun->GetLBPhi();
+
+    // Special Instance: We want to use the wavelength as the position of the laserball
+    fLBPos = wRun->GetLBPos();
+    fLBXPosErr = wRun->GetLBXPosErr();
+    fLBYPosErr = wRun->GetLBYPosErr();
+    fLBZPosErr = wRun->GetLBZPosErr();
     
   }
 
@@ -662,19 +694,22 @@ void OCARun::CalculateLBIntensityNorm()
   for ( iPMT = GetOCAPMTIterBegin(); iPMT != GetOCAPMTIterEnd(); iPMT++ ){
 
     // Off-axis run: ensure the DQXX flag is 1.
-    if ( ( iPMT->second ).GetDQXXFlag() == 1 ){
+    if ( ( iPMT->second ).GetDQXXFlag() == 1 
+         && ( iPMT->second ).GetMPECorrOccupancy() >= 0.0 ){
       lbIntensityNorm += ( iPMT->second ).GetMPECorrOccupancy();
       nPMTs++;
     }
 
     // Central run: ensure the DQXX flag is 1.
-    if ( ( iPMT->second ).GetCentralDQXXFlag() == 1 ){
+    if ( ( iPMT->second ).GetCentralDQXXFlag() == 1
+         && ( iPMT->second ).GetCentralMPECorrOccupancy() >= 0.0 ){
       centrallbIntensityNorm += ( iPMT->second ).GetCentralMPECorrOccupancy();   
       nCentralPMTs++;
     }
 
     // Wavelength run: ensure the DQXX flag is 1.
-    if ( ( iPMT->second ).GetWavelengthDQXXFlag() == 1 ){
+    if ( ( iPMT->second ).GetWavelengthDQXXFlag() == 1
+         && ( iPMT->second ).GetWavelengthMPECorrOccupancy() >= 0.0 ){
       wavelengthlbIntensityNorm += ( iPMT->second ).GetWavelengthMPECorrOccupancy();
       nWavelengthPMTs++;
     }
@@ -708,8 +743,6 @@ void OCARun::CalculateLBIntensityNorm()
   for ( iPMT = GetOCAPMTIterBegin(); iPMT != GetOCAPMTIterEnd(); iPMT++ ){
 
     ( iPMT->second ).SetLBIntensityNorm( fLBIntensityNorm );
-    //( iPMT->second ).SetTotalNRunPromptCounts( fLBIntensityNorm * nPMTs );
-
     ( iPMT->second ).SetCentralLBIntensityNorm( fCentralLBIntensityNorm );
     ( iPMT->second ).SetWavelengthLBIntensityNorm( fWavelengthLBIntensityNorm );
 

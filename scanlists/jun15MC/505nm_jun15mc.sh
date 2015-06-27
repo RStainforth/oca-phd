@@ -59,10 +59,11 @@ soc2oca -r 10159 -c 10177 -d jun15MC
 soc2oca -r 10160 -c 10177 -d jun15MC
 
 soc2oca -r 10161 -c 10177 -d jun15MC
-soc2oca -r 10161 -c 10177 -d jun15MC
+soc2oca -r 10162 -c 10177 -d jun15MC
 soc2oca -r 10163 -c 10177 -d jun15MC
 soc2oca -r 10164 -c 10177 -d jun15MC
 
+soc2oca -r 10171 -c 10177 -d jun15MC
 soc2oca -r 10172 -c 10177 -d jun15MC
 soc2oca -r 10173 -c 10177 -d jun15MC
 soc2oca -r 10179 -c 10177 -d jun15MC

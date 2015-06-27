@@ -35,6 +35,7 @@
 #include "RAT/DS/SOCPMT.hh"
 #include "RAT/DU/LightPathCalculator.hh"
 #include "RAT/DU/ShadowingCalculator.hh"
+#include "RAT/DU/ChanHWStatus.hh"
 
 #include "TVector3.h"
 #include "TObject.h"
@@ -72,7 +73,8 @@ namespace OCA{
     // Process a light path to calculate the distances, solidangle
     // and Fresnel transmission coefficient.
     void ProcessLightPath( RAT::DU::LightPathCalculator& lPath,
-                           RAT::DU::ShadowingCalculator& shadCalc );
+                           RAT::DU::ShadowingCalculator& shadCalc,
+                           RAT::DU::ChanHWStatus& chanHW );
 
     // Verify that the fields of the PMT 
     // are complete and have 'reasonable' values. See the method
@@ -122,6 +124,10 @@ namespace OCA{
     // Get the position of this PMT as determined by the
     // RAT::DU::PMTInfo::GetPosition utility.
     TVector3 GetPos() const { return fPos; }
+
+    // Get the position of the laserball from the run
+    // this PMT came from.
+    TVector3 GetLBPos() const { return fLBPos; }
 
     // Get the normal direction of the PMT face as determined
     // be the RAT::DU::PMTInfo::GetDirection utility.
@@ -494,6 +500,10 @@ namespace OCA{
     // RAT::DU::PMTInfo::GetPosition utility.
     void SetPos( const TVector3 xyzPos ){ fPos = xyzPos; }
 
+    // Set the position of the laserball from the run
+    // this PMT came from.
+    void SetLBPos( const TVector3 lbPos ){ fLBPos = lbPos; }
+
     // Set the normal direction of the PMT face as determined
     // be the RAT::DU::PMTInfo::GetDirection utility.
     void SetNorm( const TVector3 uvwOri ){ fNorm = uvwOri; }                
@@ -854,6 +864,7 @@ namespace OCA{
     Int_t fWavelengthDQXXFlag;                    // Integer status for DQXX KCCC_TUBE_ON_LINE the PMT from wavelength run
     
     TVector3 fPos;                                // PMT Position
+    TVector3 fLBPos;                              // Laserball position.
     TVector3 fNorm;                               // PMT Orientation
     
     Float_t fPromptPeakTime;                      // Time of Prompt Peak [ns] 

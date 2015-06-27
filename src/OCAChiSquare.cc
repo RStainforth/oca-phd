@@ -45,18 +45,17 @@ Float_t OCAChiSquare::EvaluateChiSquare( OCADataPoint& dPoint )
   OCAMath::CalculateMPEOccRatio( dPoint, dataVal, error );
   dPoint.SetOccupancyRatio( dataVal );
   dPoint.SetOccupancyRatioErr( error );
+  Float_t error2 = error * error;
+  Float_t variability2 = OCAMath::CalculatePMTVariabilityError( dPoint ) * OCAMath::CalculatePMTVariabilityError( dPoint );
+  error2 += dataVal * dataVal * variability2;
 
-  //cout << "PMT Variability: " << dPoint.GetMPECorrOccupancy() * dPoint.GetMPECorrOccupancy() * OCAMath::CalculatePMTVariabilityError( dPoint ) << endl;
-  error += dataVal * dataVal * OCAMath::CalculatePMTVariabilityError( dPoint );
-
-  //Float_t errorVar = OCAMath::CalculatePMTVariabilityError( dPoint );
-  //Float_t totErr = TMath::Sqrt( pow( error, 2 ) + pow( errorVar, 2 ) );
   // Calculate the difference between the model prediction
   // and the data value ( the residual for the chi-square calculation ).
   Float_t residual = ( dataVal - modelVal );
-
+  //cout << "residual2: " << residual * residual << ", error2: " << error2 << endl;
+  //cout << "model: " << modelVal << ", dataVal: " << dataVal << endl;
   // Calculate the chi-square value.
-  Float_t chiSq =  ( residual * residual ) / ( error * error );
+  Float_t chiSq =  ( residual * residual ) / ( error2 );
 
   // Return the chi-square value.
   return chiSq;
@@ -94,8 +93,8 @@ Float_t OCAChiSquare::EvaluateGlobalChiSquare()
 //////////////////////////////////////
 
 void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVary[], 
-                                     Int_t nParameters, Float_t **derivativeMatrix, 
-                                     Float_t betaVec[], Float_t *chiSquareVal )
+                                   Int_t nParameters, Float_t **derivativeMatrix, 
+                                   Float_t betaVec[], Float_t *chiSquareVal )
 {
 
   // This routine is inspired by the original 
@@ -175,12 +174,20 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
     FitEvaluateModel( *iDP, testParameters, 
                       &yMod, dDataValDParameters, 
                       nParameters );
-    
-    // Compute the 1 / sigma^2 value for this particular data point
-    dataError2 = 1.0 / TMath::Sqrt(( ( iDP->GetOccupancyRatioErr() 
-                           * iDP->GetOccupancyRatioErr() )
-                                     + ( iDP->GetOccupancyRatio() * iDP->GetOccupancyRatio() * OCAMath::CalculatePMTVariabilityError( *iDP ) ) ));
 
+    // Variability error
+    double varErr2 = iDP->GetOccupancyRatioErr() * iDP->GetOccupancyRatioErr();
+    Float_t variability2 = OCAMath::CalculatePMTVariabilityError( *iDP ) * OCAMath::CalculatePMTVariabilityError( *iDP );
+    varErr2 += iDP->GetOccupancyRatio() * iDP->GetOccupancyRatio() * variability2;
+    //cout << "varErr is: " << varErr << endl;
+    //cout << "OccRatioErr2 is: " << iDP->GetOccupancyRatioErr() * iDP->GetOccupancyRatioErr() << endl;
+    dataError2 = 1.0 / varErr2;
+    
+    // // Compute the 1 / sigma^2 value for this particular data point
+    // dataError2 = 1.0 / TMath::Sqrt(( ( iDP->GetOccupancyRatioErr() 
+    //                                    * iDP->GetOccupancyRatioErr() )
+    //                                  + ( iDP->GetOccupancyRatio() * iDP->GetOccupancyRatio() * OCAMath::CalculatePMTVariabilityError( *iDP ) ) ));
+    
     // And compute the difference between the model 
     // prediction and the data value.
     deltaDataVal = iDP->GetOccupancyRatio() - yMod;
@@ -201,23 +208,23 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
 
     // Now loop over all the variable parameters for this data point using the
     // look-up index, 'variableParameterIndex' and calculate their weightings
-    // 'weightVal', i.e. the derivative with respect to a particualr parameter
+    // 'weightVal', i.e. the derivative with respect to a particular parameter
     // multiplied by the error on that data point
     for ( lVar = 1; lVar <= nVariablePar; lVar++ ) {
 	
       weightVal = dDataValDParameters[ variableParameterIndex[ lVar ] ] * dataError2;
-
       // Now add these 'weightings' by derivative to the corresponding entry
       // in the matrix of derivatives 'derivativeMatrix'
       for ( mVar = 1; mVar <= lVar; mVar++ ) {
         // Identify the respective indices for the parameters being looked at
     	jVar = variableParameterIndex[ lVar ];
     	kVar = variableParameterIndex[ mVar ];
-        
+
         // Fill the upper diagonal only (kVar <= jVar)
     	if ( kVar <= jVar ){ 
           Int_t varj = variableParameterMap[ jVar ];
           Int_t vark = variableParameterMap[ kVar ];
+
           derivativeMatrix[ varj ][ vark ] += weightVal * dDataValDParameters[ kVar ];
         }
 
@@ -253,8 +260,8 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
 //////////////////////////////////////
 
 void  OCAChiSquare::FitEvaluateModel( OCADataPoint& dPoint, Float_t testParameters[],
-                                        Float_t *modelVal, Float_t dDataValDParameters[], 
-                                        Int_t nParameters )
+                                      Float_t *modelVal, Float_t dDataValDParameters[], 
+                                      Int_t nParameters )
 {
  
   // Save the current parameters in the model...
@@ -278,9 +285,9 @@ void  OCAChiSquare::FitEvaluateModel( OCADataPoint& dPoint, Float_t testParamete
 //////////////////////////////////////
 
 Int_t OCAChiSquare::Minimise( Float_t testParameters[], Int_t parametersVary[], 
-                                Int_t nParameters, Float_t **covarianceMatrix, 
-                                Float_t **derivativeMatrix, Float_t *chiSquareVal, 
-                                Float_t *aLambdaPar )
+                              Int_t nParameters, Float_t **covarianceMatrix, 
+                              Float_t **derivativeMatrix, Float_t *chiSquareVal, 
+                              Float_t *aLambdaPar )
 {
 
   // This routine is inspired by the original 
@@ -384,7 +391,7 @@ Int_t OCAChiSquare::Minimise( Float_t testParameters[], Int_t parametersVary[],
           kVar++;
           covarianceMatrix[ jVar ][ kVar ] = derivativeMatrix[ jVar ][ kVar ];
         }
-
+        
       }
 
       covarianceMatrix[ jVar ][ jVar ] = derivativeMatrix[ jVar ][ jVar ] 
@@ -413,7 +420,7 @@ Int_t OCAChiSquare::Minimise( Float_t testParameters[], Int_t parametersVary[],
 
   // Perform the Guass Jordan elimination sorting.
   retval = OCAMath::GaussJordanElimination( covarianceMatrix, mFit,
-                                              oneMatrixLine, 1 );
+                                            oneMatrixLine, 1 );
   
   for ( jVar = 1; jVar <= mFit; jVar++ ){ 
     matrixLine[ jVar ] = oneMatrixLine[ jVar ][ 1 ];
@@ -627,9 +634,9 @@ void OCAChiSquare::PerformOpticsFit()
   Float_t** covarianceMatrix = fModel->GetOCAModelParameterStore()->GetCovarianceMatrix();
   Float_t** derivativeMatrix = fModel->GetOCAModelParameterStore()->GetDerivativeMatrix();
 
-  for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
-    cout << "Parameter: " << iPar << " is: " << parameters[ iPar ] << " with flag: " << parametersVary[ iPar ] << " and error: " << TMath::Sqrt( covarianceMatrix[ iPar ][ iPar ] ) << endl;
-  }
+  // for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
+  //   cout << "Parameter: " << iPar << " is: " << parameters[ iPar ] << " with flag: " << parametersVary[ iPar ] << " and error: " << TMath::Sqrt( covarianceMatrix[ iPar ][ iPar ] ) << endl;
+  // }
   
   // Perform the minimisation for the optics fit.
   PerformMinimisation( parameters, parametersVary, 

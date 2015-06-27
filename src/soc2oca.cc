@@ -42,6 +42,8 @@
 
 #include "RAT/DU/Utility.hh"
 #include "RAT/DU/LightPathCalculator.hh"
+#include "RAT/DU/ShadowingCalculator.hh"
+#include "RAT/DU/ChanHWStatus.hh"
 #include "RAT/DU/SOCReader.hh"
 #include "RAT/DS/SOC.hh"
 #include "RAT/DS/SOCPMT.hh"
@@ -202,7 +204,6 @@ int main( int argc, char** argv ){
   OCARun* lRunPtr = new OCARun();
   // Set Default run-IDs and Run-Types
   lRunPtr->SetRunID( rID );
-  lRunPtr->SetNLBPulses( 7500.0 );
 
   OCARun* lCRunPtr = NULL;
   OCARun* lWRunPtr = NULL;
@@ -220,7 +221,6 @@ int main( int argc, char** argv ){
 
     lCRunPtr = new OCARun();
     lCRunPtr->SetRunID( crID );
-    lCRunPtr->SetNLBPulses( 7500.0 );
 
     cout << "Adding central-run SOC file: " << endl;
     cout << crIDStr + (string)"_Run.root" << endl;
@@ -235,7 +235,6 @@ int main( int argc, char** argv ){
 
     lWRunPtr = new OCARun();
     lWRunPtr->SetRunID( crID );
-    lWRunPtr->SetNLBPulses( 7500.0 );
 
     cout << "Adding wavelength-run SOC file: " << endl;
     cout << wrIDStr + (string)"_Run.root" << endl;
@@ -248,18 +247,26 @@ int main( int argc, char** argv ){
   RAT::DU::LightPathCalculator lightPath = RAT::DU::Utility::Get()->GetLightPathCalculator();
   RAT::DU::ShadowingCalculator shadowCalc = RAT::DU::Utility::Get()->GetShadowingCalculator();
   RAT::DU::PMTInfo pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
+  RAT::DU::ChanHWStatus chanHW = RAT::DU::Utility::Get()->GetChanHWStatus();
+  shadowCalc.SetAllGeometryTolerances( 150.0 );
 
   // Now fill the OCARuns objects with the respective information
   // from the SOC files in the SOC reader
   cout << "Now filling run information from SOC file..." << endl;
-  lRunPtr->Fill( soc, lightPath, shadowCalc, pmtInfo, rID );
+  lRunPtr->Fill( soc, lightPath, shadowCalc, chanHW, pmtInfo, rID );
   if ( crBool ){ 
     cout << "Now filling central run information from SOC file..." << endl;
-    lCRunPtr->Fill( soc, lightPath, shadowCalc, pmtInfo, crID ); 
+    lCRunPtr->Fill( soc, lightPath, shadowCalc, chanHW, pmtInfo, crID ); 
   }
   if ( wrBool ){ 
     cout << "Now filling wavelength run information from SOC file..." << endl;
-    lWRunPtr->Fill( soc, lightPath, shadowCalc, pmtInfo, wrID );
+    lWRunPtr->Fill( soc, lightPath, shadowCalc, chanHW, pmtInfo, wrID );
+
+    // Set Wavelength position to off-axis:
+    lRunPtr->SetLBPos( lWRunPtr->GetLBPos() );
+    lRunPtr->SetLBXPosErr( lWRunPtr->GetLBXPosErr() );
+    lRunPtr->SetLBYPosErr( lWRunPtr->GetLBYPosErr() );
+    lRunPtr->SetLBZPosErr( lWRunPtr->GetLBZPosErr() );
   }
   
 
@@ -279,8 +286,8 @@ int main( int argc, char** argv ){
 
   // Get the directory to where the OCARun file will be written
   // Currently this is ${OCA_DATA}/runs/ocarun
-  std::string ocaRunDir = lDB.GetOCARunDir();
-  TFile* file = TFile::Open( ( ocaRunDir + rIDStr + (string)"_OCARun.root" ).c_str(), "RECREATE" );
+  std::string ocaRunDir = lDB.GetOCARunDir( dirMMYY );
+  TFile* file = new TFile( ( ocaRunDir + rIDStr + (string)"_OCARun.root" ).c_str(), "RECREATE" );
 
   // Create the Run Tree
   TTree* runTree = new TTree( "OCARunT", "OCA Run Tree" );

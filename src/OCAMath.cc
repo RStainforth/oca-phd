@@ -24,7 +24,7 @@ using namespace OCA;
 //////////////////////////////////////
 
 Double_t OCAMath::MPECorrectedNPrompt( const Double_t nPrompt, 
-                                         const Double_t nPulses )
+                                       const Double_t nPulses )
 {
 
   // This is the equation as featured in eqn 4.13, 
@@ -81,10 +81,9 @@ Float_t OCAMath::CalculatePMTVariabilityError( const OCADataPoint& dPoint )
   // then it will be negative, in which case return 0.0 for this calculation.
   if( dPoint.GetPMTVariability() < 0.0
       || dPoint.GetMPECorrOccupancy() == 0.0 ){ return 0.0; }
-  
+
   // Otherwise, can calculate the PMT variability term.
-  Float_t varError = dPoint.GetPMTVariability() - ( dPoint.GetMPECorrOccupancyErr() * dPoint.GetMPECorrOccupancyErr() );
-  return varError;
+  return dPoint.GetPMTVariability();
 
 }
 
@@ -100,7 +99,7 @@ void OCAMath::CalculateMPEOccRatio( const OCADataPoint& dPoint, Float_t& occRati
   occRatio *= ( dPoint.GetCentralFresnelTCoeff() * dPoint.GetCentralSolidAngle() ) / ( dPoint.GetFresnelTCoeff() * dPoint.GetSolidAngle() );
 
   // The central laserbll normalisation value.
-  //occRatio *= dPoint.GetCentralLBIntensityNorm();
+  occRatio *= dPoint.GetCentralLBIntensityNorm();
 
   // Add the errors in quadrature from the occupancy ratio to compute
   // the total error on the occupancy ratio.

@@ -720,9 +720,9 @@ void OCAModelParameterStore::IdentifyVaryingParameters()
     if ( fParametersVary[ parnum ] ){ 
       fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum;
     }
-    
+
     parnum = GetLBDistributionParIndex() + second;
-    if ( fParametersVary[ parnum ] ){
+    if ( fParametersVary[ parnum ] ){ 
       fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum;
     }
   }
@@ -745,7 +745,7 @@ void OCAModelParameterStore::IdentifyBaseVaryingParameters()
   if ( fVariableParameterIndex != NULL ) { delete[] fVariableParameterIndex; }
   // The number of unique parameters is guaranteed to be less than 
   // the number of total parameters.
-  fVariableParameterIndex = new Int_t[ fNParameters ];
+  fVariableParameterIndex = new Int_t[ fNParameters + 1 ];
 
   // First set the number of base varying parameters to zero.
   fNBaseVariableParameters = 0;

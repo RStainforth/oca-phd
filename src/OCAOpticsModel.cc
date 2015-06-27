@@ -156,6 +156,7 @@ void OCAOpticsModel::IdentifyVaryingLBDistributionBins( OCADataStore* lData )
     // or if the bin is the first in the laserball
     // distribution ( i.e. iLB = 0 ) then keep the associated
     // parameter fixed in the fit.
+
     if ( lbAngValid[ iLB ] < fRequiredNLBDistributionEntries ){ 
       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 0;
     }
@@ -267,7 +268,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCADataPoint& dataPoint, 
   
   // Using all the above calculated values we can compute
   // the model prediction for the occuapncy ratio.
-  Float_t modelPrediction = ( normVal / normCtrVal ) * angRespRatio * intensityRatio * 
+  Float_t modelPrediction = ( normVal / 1.0 ) * angRespRatio * intensityRatio * 
     TMath::Exp( - ( dInnerAV * ( dInnerAVExtinction )
                     + dAV * ( dAVExtinction )
                     + dWater * ( dWaterExtinction ) ) );
@@ -304,12 +305,15 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCADataPoint& dataPoint, 
 
     // The derivative with respect to the laserball 
     // isotropy distribution from the off-axis run.
-    derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] = 0.0;
-    derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] = 1.0 / intensity;
+    Int_t index = parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin();
+    derivativePars[ index ] = 0.0;
+    derivativePars[ index ] = 1.0 / intensity;
 
-    // if ( parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() == 217 ){
+    // if ( parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() == 505
+    //      && 
+    //      derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] == 0 ){
       
-    //   cout << "Bin 217 Info" << endl;
+    //   cout << "Bin 505  Info" << endl;
     //   cout << "dScint, dAV, dWater is: " << dInnerAV << ", " << dAV << ", " << dWater << endl;
     //   cout << "angResp, angRespCtr is: " << angResp << ", " << angRespCtr << endl;
     //   cout << "intensity, intensityCtr is: " << intensity << ", " << intensityCtr << endl;
@@ -318,16 +322,13 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCADataPoint& dataPoint, 
 
     // }
 
-    // if ( parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() == 227 ){
-      
-    //   cout << "Bin 227 Info" << endl;
-    //   cout << "dScint, dAV, dWater is: " << dInnerAV << ", " << dAV << ", " << dWater << endl;
-    //   cout << "angResp, angRespCtr is: " << angResp << ", " << angRespCtr << endl;
-    //   cout << "intensity, intensityCtr is: " << intensity << ", " << intensityCtr << endl;
-    //   cout << "intensityPoly, intensityCtrPoly is: " << intensityPoly << ", " << intensityCtrPoly << endl;
-    //   cout << "----------------------" << endl;
-
-    // }
+    if ( derivativePars[ 505 ] == 0.0 
+         && ( parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() == 505 ) ){
+      cout << "HELLO!" << endl;
+      cout << "parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin(): " << parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() << endl;
+      cout << "parPtr->GetLBDistributionParIndex(): " << parPtr->GetLBDistributionParIndex() << endl;
+      cout << "parPtr->GetCurrentLBDistributionBin(): " << parPtr->GetCurrentLBDistributionBin() << endl;
+    }
 
     // The derivative with respect to the laserball 
     // isotropy distribution from the central run.
@@ -377,7 +378,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCADataPoint& dataPoint, 
       derivativePars[ variableParameterIndex[ iPar ] ] *= modelPrediction;
     }
 
-  }
+  } 
 
   return modelPrediction;
   

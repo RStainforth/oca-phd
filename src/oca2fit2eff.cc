@@ -66,9 +66,9 @@ int main( int argc, char** argv ){
   }
 
   cout << "\n";
-  cout << "#################################" << endl;
+  cout << "###############################" << endl;
   cout << "###### OCA2FIT2EFF START ######" << endl;
-  cout << "#################################" << endl;
+  cout << "###############################" << endl;
   cout << "\n";
 
   /////////////////////////////////////////////////////////////
@@ -80,7 +80,6 @@ int main( int argc, char** argv ){
   OCADB lDB;
   lDB.SetFile( argv[1] );
   std::string fitName = lDB.GetStringField( "FITFILE", "fit_name", "fit_setup" );
-
   // Create the OCAModelParameterStore object which stores
   // the parameters for the optics model.
   OCAModelParameterStore* lParStore = new OCAModelParameterStore( fitName );
@@ -96,15 +95,6 @@ int main( int argc, char** argv ){
   // Set a link to the pointer to the OCAModelParameterStore
   // object.
   lModel->SetOCAModelParameterStore( lParStore );
-
-  // Get the minimum number of PMT angular response and Laserball
-  // distribution bin entires required for the parameter associated
-  // with each bin to vary in the fit.
-  //Int_t minPMTEntries = lDB.GetIntField( "FITFILE", "pmt_angular_response_vary", "parameter_setup" );
-  //cout << "minPMT Entries is: " << minPMTEntries << endl;
-  //Int_t minLBDistEntries = lDB.GetIntField( "FITFILE", "laserball_distribution_histogram_min_bin_entries", "parameter_setup" );
-  //lModel->SetRequiredNLBDistributionEntries( minLBDistEntries );
-  //lModel->SetRequiredNPMTAngularRepsonseEntries( minPMTEntries ); 
 
   // Add all the run files to the OCARunReader object
   std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" ); 
@@ -132,6 +122,7 @@ int main( int argc, char** argv ){
   // Backup the original data store which is cut on at the top
   // level as part of each loop iteration below.
   OCADataStore* ogStore = new OCADataStore();
+  OCADataStore* finalStore = new OCADataStore();
   *ogStore = *lData;
   lModel->InitialiseLBRunNormalisations( lData );
 
@@ -161,6 +152,9 @@ int main( int argc, char** argv ){
     lChiSq->PerformOpticsFit();
 
     // Set the data to the original set of data point values.
+    if ( iFit == chiSqLims.size() - 1 ){
+      *finalStore = *lData;
+    }
     *lData = *ogStore;
     
   }
@@ -359,6 +353,7 @@ int main( int argc, char** argv ){
   }
 
   lData->WriteToFile( ( fitName + ".root" ).c_str() );
+  finalStore->WriteToFile( ( fitName + "_filtered.root" ).c_str() );
 
   // Now divide through to calculate the average.  
   for ( Int_t iRun = 0; iRun < nRuns; iRun++ ){
@@ -452,9 +447,9 @@ int main( int argc, char** argv ){
   tCanvasRaw->Print( (filePath + fitName + "_raw_eff.eps").c_str() );
     
   cout << "\n";
-  cout << "###############################" << endl;
+  cout << "#############################" << endl;
   cout << "###### OCA2FIT2EFF END ######" << endl;
-  cout << "###############################" << endl;
+  cout << "#############################" << endl;
   cout << "\n";
   
 }

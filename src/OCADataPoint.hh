@@ -61,7 +61,10 @@ namespace OCA{
     // For example, if the data point represents
     // a PMT from the 4th run in a list of runs to be used in a fit, 
     // the index would be [3]. 1st Run [0], 2nd Run [1], etc.
-    Int_t GetRunIndex() const{ return fRunIndex; }
+    Int_t GetRunIndex() const { return fRunIndex; }
+
+    // Get the laserball position from whence this data point came.
+    TVector3 GetLBPos() const { return fLBPos; }
 
     // Get the number of prompt counts from the off-axis run.
     Float_t GetNPromptCounts() const { return fNPromptCounts; }
@@ -229,6 +232,9 @@ namespace OCA{
     // the index would be [3]. 1st Run [0], 2nd Run [1], etc.
     void SetRunIndex( const Int_t val ){ fRunIndex = val; }
 
+    // Set the laserball position from whence this data point came.
+    void SetLBPos( const TVector3 lbpos ) { fLBPos = lbpos; }
+
     // Set the number of prompt counts from the off-axis run.
     void SetNPromptCounts( const Float_t val ){ fNPromptCounts = val; }
 
@@ -385,6 +391,7 @@ namespace OCA{
                                             // a PMT from the first run loaded into the fit, then the index would be 0.
                                             // If this data point represented a PMT from the second run to be loaded into
                                             // the fit then the index would be 1. etc.
+    TVector3 fLBPos;                        // The Laserball Position
 
     Float_t fNPromptCounts;                 // The number of prompt counts from the off-axis run.
     Float_t fCentralNPromptCounts;          // The number of prompt counts from the central run.

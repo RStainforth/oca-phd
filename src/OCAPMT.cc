@@ -471,7 +471,8 @@ void OCAPMT::AddSOCPMTData( RAT::DS::SOCPMT& socPMT )
 //////////////////////////////////////
 
 void OCAPMT::ProcessLightPath( RAT::DU::LightPathCalculator& lPath,
-                               RAT::DU::ShadowingCalculator& shadCalc )
+                               RAT::DU::ShadowingCalculator& shadCalc,
+                               RAT::DU::ChanHWStatus& chanHW )
 {
 
   // First check that the PMT is a normal type PMT i.e. fType == 1.
@@ -526,7 +527,7 @@ void OCAPMT::ProcessLightPath( RAT::DU::LightPathCalculator& lPath,
 
     // Calculate and set the solid angle subtended by this PMT
     // as viewed from the laserball position.
-    lPath.CalculateSolidAngle( fNorm, 0 );
+    lPath.CalculateSolidAngle( -fNorm, 0 );
     SetSolidAngle( lPath.GetSolidAngle() );
 
     // Set the cosine of the incident angle of the light
@@ -539,7 +540,12 @@ void OCAPMT::ProcessLightPath( RAT::DU::LightPathCalculator& lPath,
 
     // Set the DQXX flag (=1 by default whilst RAT functionality
     // for the SOCPMTs is made compatible with the flags).
-    SetDQXXFlag( 1 );
+    if ( chanHW.IsChannelOnline( GetID() ) ){
+      SetDQXXFlag( 1 );
+    }
+    else{
+      SetDQXXFlag( 0 );
+    }
 
   }
 
@@ -557,66 +563,70 @@ void OCAPMT::VerifyPMT()
   // Check that the PMT ID is a sensible value and that
   // the PMT is of type 'normal' (i.e. fType == 1).
   if ( fID < 0 || fID > 10000 ){ 
-    SetIsVerified( false ); 
+    SetIsVerified( false ); return; 
   }
   if ( fType != 1 ){ 
-    SetIsVerified( false ); 
+    SetIsVerified( false ); return;
   }
   
   // Check the magnitudes of the PMT position and direction normals.
   // The PMT should be in the PSUP so shouldn't have a radii less than
   // 8000.0 mm or greater than 9000.0. (relaxed limits).
   if ( fPos.Mag() < 8000.0 || fPos.Mag() > 9000.0  ){ 
-    SetIsVerified( false ); 
+    SetIsVerified( false ); return; 
   }
   if ( fNorm.Mag() < 0.9 || fNorm.Mag() > 1.1 ){ 
-    SetIsVerified( false ); 
+    SetIsVerified( false ); return;
   }
   
   // Ensure the prompt peak time is non-zero.
   if ( fPromptPeakTime == 0.0 || fPromptPeakTime > 500.0 ){ 
-    SetIsVerified( false ); 
+    SetIsVerified( false ); return; 
   }
 
   // Ensure the time of flight isn't larger than a typical
   // event window.
   if ( fTimeOfFlight <= 0.1 || fTimeOfFlight > 500.0 ){ 
-    SetIsVerified( false ); 
+    SetIsVerified( false ); return; 
   }
 
   // Ensure the occupancy is non-zero.
-  if ( fOccupancy <= 0.1 ){ SetIsVerified( false ); }
+  if ( fOccupancy < 0.0 ){ SetIsVerified( false ); return; }
 
   // Ensure the multi-photoelectron corrected occupancy is non-zero.
-  if ( fMPECorrOccupancy <= 0.0 ){ SetIsVerified( false ); }
+  if ( fMPECorrOccupancy < 0.0 ){ SetIsVerified( false ); return; }
 
   // Ensure the Fresnel transmission coefficients are between
   // 0.0 and 1.0. i.e. (0.0, 1.0]
   if ( fFresnelTCoeff == 0.0 || fFresnelTCoeff > 1.0 ){ 
-    SetIsVerified( false ); 
+    SetIsVerified( false ); return;
   }
 
   // Check that the distances in the inner AV, AV 
   // and water regions have sensible values.
   if ( fDistInInnerAV < 0.0 || fDistInInnerAV > 13000.0 ){ 
-    SetIsVerified( false ); 
+    SetIsVerified( false ); return; 
   }
   if ( fDistInAV < 0.0 || fDistInAV > 1000.0 ){ 
-    SetIsVerified( false ); 
+    SetIsVerified( false ); return; 
   }
   if ( fDistInWater < 0.0 || fDistInWater > 10000.0 ){ 
-    SetIsVerified( false ); 
+    SetIsVerified( false ); return; 
   }
   
   // Ensure the solid angle is non-zero.
   if ( fSolidAngle == 0.0 ){ 
-    SetIsVerified( false ); 
+    SetIsVerified( false ); return; 
   }
 
   // Ensure the cosine of the incident angle at the PMT bucket
   // is within the correct boundaries [0.0, 1.0].
   if ( fCosTheta < 0.0 || fCosTheta > 1.0 ){ 
-    SetIsVerified( false ); 
+    SetIsVerified( false ); return; 
+  }
+
+  if ( fDQXXFlag != 1 ){
+    SetIsVerified( false ); return;
   }
   
 }

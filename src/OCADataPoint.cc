@@ -21,6 +21,8 @@ OCADataPoint::OCADataPoint( const OCAPMT& lPMT )
   // is added to a OCADataStore, see OCADataStore::AddData.
   // For now set to -1.
 
+  SetLBPos( lPMT.GetLBPos() );
+
   SetNPromptCounts( lPMT.GetOccupancy() );
   SetCentralNPromptCounts( lPMT.GetCentralOccupancy() );
 
@@ -87,6 +89,8 @@ OCADataPoint& OCADataPoint::operator=( const OCADataPoint& rhs )
   SetRunID( rhs.GetRunID() );
   SetPMTID( rhs.GetPMTID() );
   SetRunIndex( rhs.GetRunIndex() );
+
+  SetLBPos( rhs.GetLBPos() );
 
   SetNPromptCounts( rhs.GetNPromptCounts() );
   SetCentralNPromptCounts( rhs.GetCentralNPromptCounts() );

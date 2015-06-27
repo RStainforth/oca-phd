@@ -30,6 +30,8 @@
 #define _OCARUN_
 
 #include "RAT/DU/LightPathCalculator.hh"
+#include "RAT/DU/ShadowingCalculator.hh"
+#include "RAT/DU/ChanHWStatus.hh"
 #include "RAT/DU/PMTInfo.hh"
 #include "RAT/DS/SOC.hh"
 #include "RAT/DU/SOCReader.hh"
@@ -75,6 +77,7 @@ namespace OCA{
     void Fill( RAT::DU::SOCReader& socR,
                RAT::DU::LightPathCalculator& lLP,
                RAT::DU::ShadowingCalculator& lSC,
+               RAT::DU::ChanHWStatus& lCHS,
                RAT::DU::PMTInfo& lDB,
                UInt_t runID );
     
@@ -155,6 +158,12 @@ namespace OCA{
     
     // Get the number of pulses from the laser from the off-axis run.
     Float_t GetNLBPulses() const { return fNLBPulses; }
+
+    // Get the number of photons per pulse from the off-axis run.
+    Float_t GetIntensity() const { return fIntensity; }
+
+    // Get the global time off-set from the off-axis run.
+    Float_t GetGlobalTimeOffset() const { return fGlobalTimeOffset; }
     
     // Get the wavelength of the laser (nm) from the central run.
     Float_t GetCentralLambda() const { return fCentralLambda; }
@@ -162,17 +171,30 @@ namespace OCA{
     // Get the number of pulses from the laser from the central run. 
     Float_t GetCentralNLBPulses() const { return fCentralNLBPulses; }
 
+    // Get the number of photons per pulse from the central run.
+    Float_t GetCentralIntensity() const { return fCentralIntensity; }
+
+    // Get the global time off-set from the central run.
+    Float_t GetCentralGlobalTimeOffset() const { return fCentralGlobalTimeOffset; }
+
     // Get the wavelength of the laser (nm) from the wavelength run.
     Float_t GetWavelengthLambda() const { return fWavelengthLambda; }
 
     // Get the number of pulses from the laser from the wavelength run.
     Float_t GetWavelengthNLBPulses() const { return fWavelengthNLBPulses; }
 
+    // Get the number of photons per pulse from the wavelength run.
+    Float_t GetWavelengthIntensity() const { return fWavelengthIntensity; }
+
+    // Get the global time off-set from the wavelength run.
+    Float_t GetWavelengthGlobalTimeOffset() const { return fWavelengthGlobalTimeOffset; }
+
     // Get the laserball intensity normalisation value from the off-axis run.
     Float_t GetLBIntensityNorm() const { return fLBIntensityNorm; }
 
     // Get the laserball intensity normalisation value from the central run.
-    Float_t GetCentralLBIntensityNorm() const { return fCentralLBIntensityNorm; }  
+    Float_t GetCentralLBIntensityNorm() const { return fCentralLBIntensityNorm; }
+ 
     // Get the laserball intensity normalisation value from the wavelength run.
     Float_t GetWavelengthLBIntensityNorm() const { return fWavelengthLBIntensityNorm; }  
     
@@ -270,8 +292,7 @@ namespace OCA{
     void SetIsCentralRun( const Bool_t isCentral ){ fIsCentralRun = isCentral; }
 
     // Set whether this LOCAsRun object represents a wavelength run.
-    void SetIsWavelengthRun( const Bool_t isWavelength ){ fIsWavelengthRun = isWavelength; }
-    
+    void SetIsWavelengthRun( const Bool_t isWavelength ){ fIsWavelengthRun = isWavelength; }    
 
     // Set the wavelength of the laser (nm) from the off-axis run.
     void SetLambda( const Float_t lambda ){ fLambda = lambda; } 
@@ -279,17 +300,35 @@ namespace OCA{
     // Set the number of pulses from the laser from the off-axis run.
     void SetNLBPulses( const Float_t nPulses ){ fNLBPulses = nPulses; }
 
+    // Set the number of photons per pulse from the off-axis run.
+    void SetIntensity( const Float_t intensity ){ fIntensity = intensity; }
+
+    // Set the global time off-set from the off-axis run.
+    void SetGlobalTimeOffset( const Float_t gtOffset ){ fGlobalTimeOffset = gtOffset; }
+
     // Set the wavelength of the laser (nm) from the central run.
     void SetCentralLambda( const Float_t lambda ){ fCentralLambda = lambda; }
 
     // Set the number of pulses from the laser from the central run.
     void SetCentralNLBPulses( const Float_t nPulses ){ fCentralNLBPulses = nPulses; }
 
+    // Set the number of photons per pulse from the central run.
+    void SetCentralIntensity( const Float_t intensity ){ fCentralIntensity = intensity; }
+
+    // Set the global time off-set from the central run.
+    void SetCentralGlobalTimeOffset( const Float_t gtOffset ){ fCentralGlobalTimeOffset = gtOffset; }
+
     // Set the wavelength of the laser (nm) from the wavelength run.
     void SetWavelengthLambda( const Float_t lambda ){ fWavelengthLambda = lambda; } 
 
     // Set the number of pulses from the laser from the wavelength run.
     void SetWavelengthNLBPulses( const Float_t nPulses ){ fWavelengthNLBPulses = nPulses; }
+
+    // Set the number of photons per pulse from the wavelength run.
+    void SetWavelengthIntensity( const Float_t intensity ){ fWavelengthIntensity = intensity; }
+
+    // Set the global time off-set from the wavelength run.
+    void SetWavelengthGlobalTimeOffset( const Float_t gtOffset ){ fWavelengthGlobalTimeOffset = gtOffset; }
 
     // Set the laserball intensity normalisation value from the off-axis run.
     void SetLBIntensityNorm( const Float_t mRunLI ){ fLBIntensityNorm = mRunLI; }
@@ -403,12 +442,18 @@ namespace OCA{
     
     Float_t fLambda;                       // The wavelength of the laser in this run
     Float_t fNLBPulses;                    // Number of laserball pulses in this run
+    Float_t fIntensity;                    // Number of photons per pulse.      
+    Float_t fGlobalTimeOffset;             // Global time offset in this run.
 
     Float_t fCentralLambda;                // The wavelength of the laser in the central run
     Float_t fCentralNLBPulses;             // Number of laserball pulses in the central run
+    Float_t fCentralIntensity;             // Number of photons per pulse in the central run      
+    Float_t fCentralGlobalTimeOffset;      // Global time offset in the central run
 
     Float_t fWavelengthLambda;             // The wavelength of the laser in the wavelength run
     Float_t fWavelengthNLBPulses;          // Number of laserball pulses in the wavelength run
+    Float_t fWavelengthIntensity;          // Number of photons per pulse in the wavelength run     
+    Float_t fWavelengthGlobalTimeOffset;   // Global time offset in the wavelength run
 
     Float_t fLBIntensityNorm;              // Number of total hits in prompt timing window (for main run)
     Float_t fCentralLBIntensityNorm;       // Number of total hits in prompt timing window (for central run)
