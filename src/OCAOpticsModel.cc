@@ -184,7 +184,7 @@ void OCAOpticsModel::InitialiseLBRunNormalisations( OCAPMTStore* lData )
     if ( iDP->GetRunIndex() != previousRunIndex ){
       previousRunIndex = iDP->GetRunIndex();
       fModelParameterStore->SetLBRunNormalisationPar( iDP->GetRunIndex(),
-                                                      iDP->GetLBIntensityNorm() );
+                                                      ( iDP->GetLBIntensityNorm() / iDP->GetCentralLBIntensityNorm() ) );
     }
   }
 
@@ -222,7 +222,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
   // Use the obtained normalisation bin obtain the current value for the
   // intensity normalisation for the off-axis run.
   Float_t normVal = parPtr->GetLBRunNormalisationPar( dataPoint.GetRunIndex() );
-  Float_t normCtrVal = dataPoint.GetCentralLBIntensityNorm();
+  //Float_t normCtrVal = dataPoint.GetCentralLBIntensityNorm();
   // Obtain the differences between the off-axis and central
   // runs for the distances in the inner AV, AV and water regions.
   Float_t dInnerAV = dataPoint.GetDistInInnerAV() 
@@ -259,7 +259,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
   
   // Using all the above calculated values we can compute
   // the model prediction for the occuapncy ratio.
-  Float_t modelPrediction = ( normVal / normCtrVal ) * angRespRatio * intensityRatio * 
+  Float_t modelPrediction = normVal * angRespRatio * intensityRatio * 
     TMath::Exp( - ( dInnerAV * ( dInnerAVExtinction )
                     + dAV * ( dAVExtinction )
                     + dWater * ( dWaterExtinction ) ) );
@@ -285,7 +285,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
     // from the central run.
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] = 0.0;
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] -= 1.0 / angRespCtr;
-
+         
     // The derivative with respect to the laserball 
     // isotropy distribution from the off-axis run.
     derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] = 0.0;
@@ -365,6 +365,7 @@ Float_t OCAOpticsModel::ModelPrediction( const OCAPMT& dataPoint )
   // Use the obtained normalisation bin obtain the current value for the
   // intensity normalisation for the off-axis run.
   Float_t normVal = parPtr->GetLBRunNormalisationPar( dataPoint.GetRunIndex() );
+  normVal *= dataPoint.GetCentralLBIntensityNorm();
 
   // Obtain the distances from the off-axis 
   // runs for the distances in the inner AV, AV and water regions.
@@ -570,7 +571,7 @@ Float_t OCAOpticsModel::ModelAngularResponse( const OCAPMT& dataPoint, std::stri
     angle = TMath::ACos( dataPoint.GetCosTheta() ) * 180.0 / TMath::Pi();
   }
   else if ( runType == "central" ){ 
-    angle = TMath::ACos( dataPoint.GetCosTheta() ) * 180.0 / TMath::Pi(); 
+    angle = TMath::ACos( dataPoint.GetCentralCosTheta() ) * 180.0 / TMath::Pi(); 
   }
 
   // Calculate the associated bin representative of this angle.

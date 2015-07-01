@@ -712,6 +712,9 @@ void OCARun::CalculateLBIntensityNorm()
   // (very unlikely), divide through by the number of PMTs to 
   // calculate the average occupancy (Laserball normalisation).
 
+  lbIntensityNorm *= (Float_t)( 10000.0 / nPMTs );
+  centrallbIntensityNorm *= (Float_t)( 10000.0 / nCentralPMTs );
+
   // // Off-axis runs.
   // if ( nPMTs != 0 ){ lbIntensityNorm /= nPMTs; }
   // else{ lbIntensityNorm = -10.0; }
@@ -727,8 +730,10 @@ void OCARun::CalculateLBIntensityNorm()
   // Define the private member variables which
   // hold the intensity normalisation value for each
   // of the off-axis, central and wavelength runs.
-  fLBIntensityNorm = lbIntensityNorm;
-  fCentralLBIntensityNorm = centrallbIntensityNorm;
+  if ( lbIntensityNorm > 0.0 ){ fLBIntensityNorm = lbIntensityNorm; }
+  else{ fLBIntensityNorm = 0.0; }
+  if ( centrallbIntensityNorm > 0.0 ){ fCentralLBIntensityNorm = centrallbIntensityNorm; }
+  else{ fCentralLBIntensityNorm = 0.0; }
 
   // Also give these values to every PMT for easy access by
   // OCAOpticsMode::ModelPrediction.

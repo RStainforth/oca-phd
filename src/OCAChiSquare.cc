@@ -31,8 +31,8 @@ Float_t OCAChiSquare::EvaluateChiSquare( OCAPMT& dPoint )
 
   // Calculate the model predicted value for the occupancy
   // ratio at this data point
-  Float_t modelVal = fModel->ModelOccRatioPrediction( dPoint );
-  dPoint.SetModelOccupancyRatio( modelVal );
+  Float_t modelOccRatio = fModel->ModelOccRatioPrediction( dPoint );
+  dPoint.SetModelOccupancyRatio( modelOccRatio );
 
   // Calculate the occupancy ratio from the data for this
   // data point.
@@ -40,18 +40,17 @@ Float_t OCAChiSquare::EvaluateChiSquare( OCAPMT& dPoint )
   // on the occupancy ratio. It does not account for the correction
   // due to the PMT incident angle. This will need to be implemented
   // in the future.
-  Float_t dataVal = dPoint.GetOccupancyRatio();
-  Float_t error = dPoint.GetOccupancyRatioErr();
+  Float_t occRatio = 0.0;
+  Float_t occRatioErr = 0.0;
+  OCAMath::CalculateMPEOccRatio( dPoint, occRatio, occRatioErr );
 
-  Float_t totalError2 = error * error;
-  Float_t variabilityError = dataVal * OCAMath::CalculatePMTVariabilityError( dPoint );
-  totalError2 += ( variabilityError * variabilityError );
+  Float_t occRatioError2 = occRatioErr * occRatioErr;
+  Float_t variabilityError2 = 0.03*0.03;//TMath::Power( occRatio * (OCAMath::CalculatePMTVariabilityError( dPoint ) - dPoint.GetMPECorrOccupancyErr()), 2 );
 
   // Calculate the difference between the model prediction
   // and the data value ( the residual for the chi-square calculation ).
-  Float_t residual = ( dataVal - modelVal );
-  // Calculate the chi-square value.
-  Float_t chiSq =  ( residual * residual ) / ( totalError2 );
+  Float_t residual = ( occRatio - modelOccRatio );
+  Float_t chiSq =  ( residual * residual ) / ( occRatioError2 + variabilityError2 );
 
   // Return the chi-square value.
   return chiSq;
@@ -172,19 +171,21 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
                       nParameters );
 
     // Variability error
-    double varErr2 = iDP->GetOccupancyRatioErr() * iDP->GetOccupancyRatioErr();
-    Float_t variability2 = OCAMath::CalculatePMTVariabilityError( *iDP ) * OCAMath::CalculatePMTVariabilityError( *iDP );
-    varErr2 += iDP->GetOccupancyRatio() * iDP->GetOccupancyRatio() * variability2;
-    //cout << "varErr is: " << varErr << endl;
-    //cout << "OccRatioErr2 is: " << iDP->GetOccupancyRatioErr() * iDP->GetOccupancyRatioErr() << endl;
-    dataError2 = 1.0 / varErr2;
+    Float_t occRatioErr = 0.0;
+    Float_t occRatio = 0.0;
+    OCAMath::CalculateMPEOccRatio( *iDP, occRatio, occRatioErr );
+    Float_t occRatioErr2 = occRatioErr * occRatioErr;
+    Float_t variabilityErr2 = (0.03*0.03);//TMath::Power( occRatio * ( OCAMath::CalculatePMTVariabilityError( *iDP ) - iDP->GetMPECorrOccupancyErr() ), 2 );
+    //cout << "variabilityErr2: " << variabilityErr2 << endl;
+    //cout << "occRatioErr2: " << occRatioErr2 << endl;
+    dataError2 = 1.0 / ( occRatioErr2 + variabilityErr2 );
     
     // And compute the difference between the model 
     // prediction and the data value.
-    deltaDataVal = iDP->GetOccupancyRatio() - yMod;
+    deltaDataVal = occRatio - yMod;
 
     // Add the chisqure entry to the overall chisquared value
-    chiSquareEntry = deltaDataVal * deltaDataVal * dataError2;
+    chiSquareEntry = ( deltaDataVal * deltaDataVal ) * dataError2;
     *chiSquareVal += chiSquareEntry;
 
     // Now set the parameter pointer to the parameters in the

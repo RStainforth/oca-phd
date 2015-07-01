@@ -35,7 +35,7 @@ index: "filter_setup",
 valid_begin: [0, 0],
 valid_end: [0, 0],
 
-filter_list: [ "filter_prompt_counts", "filter_ctr_prompt_counts", "filter_chi_square", "filter_mpe_occupancy", "filter_mpe_ctr_occupancy", "filter_fractional_error" ],
+filter_list: [ "filter_prompt_counts", "filter_ctr_prompt_counts", "filter_chi_square", "filter_mpe_occupancy", "filter_mpe_ctr_occupancy" ],
 
 filter_mpe_occupancy_min: 0.01,
 filter_mpe_occupancy_max: 0.06,
@@ -43,10 +43,10 @@ filter_mpe_occupancy_max: 0.06,
 filter_mpe_ctr_occupancy_min: 0.02,
 filter_mpe_ctr_occupancy_max: 0.05,
 
-filter_prompt_counts_min: 200.0,
+filter_prompt_counts_min: 500.0,
 filter_prompt_counts_max: 2000.0,
 
-filter_ctr_prompt_counts_min: 700.0,
+filter_ctr_prompt_counts_min: 500.0,
 filter_ctr_prompt_counts_max: 2000.0,                      
 
 filter_chi_square_min: 0.0,
@@ -82,10 +82,10 @@ valid_end: [0, 0],
 parameters_list: [ "inner_av_extinction_length", "acrylic_extinction_length", "water_extinction_length", "laserball_intensity_mask", "pmt_angular_response", "laserball_distribution_histogram", "laserball_run_normalisation" ],
 
 // The extinction length of the inner_av volume in mm-1
-inner_av_extinction_length_initial_value: 0.00005,
+inner_av_extinction_length_initial_value: 5.91484e-05,
 
 // Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
-inner_av_extinction_length_vary: 1,
+inner_av_extinction_length_vary: 0,
 
 // The extinction length of the av volume in mm-1
 acrylic_extinction_length_initial_value: 0.000707,
@@ -94,7 +94,7 @@ acrylic_extinction_length_initial_value: 0.000707,
 acrylic_extinction_length_vary: 0,
 
 // The extinction length of the water volume in mm-1
-water_extinction_length_initial_value: 0.00005,
+water_extinction_length_initial_value: 0.00000001,
 
 // Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
 water_extinction_length_vary: 1,
@@ -103,7 +103,7 @@ water_extinction_length_vary: 1,
 pmt_angular_response_number_of_bins: 90,
 
 // Whether or not to vary the pmt angular response in the fit ( 0: Keep Fixed, 1: Vary )
-pmt_angular_response_vary: 1,
+pmt_angular_response_vary: 0,
 
 // The minimum number of entries required in each PMT angular response
 // bin for the parameter associated with that parameter to vary in the fit
@@ -116,7 +116,7 @@ laserball_distribution_histogram_number_of_phi_bins: 36,
 laserball_distribution_histogram_number_of_cos_theta_bins: 12,
 
 // Whether or not to vary the laserball distribution in the fit ( 0: Keep Fixed, 1: Vary )
-laserball_distribution_histogram_vary: 1,
+laserball_distribution_histogram_vary: 0,
 
 // The minimum number of laserball distribution entries in each bin
 // required for the parameter associated with that bin to vary

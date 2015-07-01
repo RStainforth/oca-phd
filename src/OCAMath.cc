@@ -92,18 +92,35 @@ Float_t OCAMath::CalculatePMTVariabilityError( const OCAPMT& dPoint )
 
 void OCAMath::CalculateMPEOccRatio( const OCAPMT& dPoint, Float_t& occRatio, Float_t& occRatioErr ){
 
+  Float_t occ = dPoint.GetMPECorrOccupancy();
+  Float_t occCtr = dPoint.GetCentralMPECorrOccupancy();
+  Float_t occErr = dPoint.GetMPECorrOccupancyErr();
+  Float_t occCtrErr = dPoint.GetCentralMPECorrOccupancyErr();
+
+  Float_t solidA = dPoint.GetSolidAngle();
+  Float_t solidACtr = dPoint.GetCentralSolidAngle();
+
+  Float_t fresnelT = dPoint.GetFresnelTCoeff();
+  Float_t fresnelTCtr = dPoint.GetFresnelTCoeff();
+
+  Float_t geomRatio = solidACtr/solidA * fresnelTCtr/fresnelT;
+
+  occRatio = ( occ / occCtr ) * geomRatio;
+  occRatioErr = occRatio;
+  occRatioErr *= sqrt( pow( occErr/occ,2 ) + pow( occCtrErr/occCtr,2 ) );
+
   // The data occupancy ratio.
-  occRatio = dPoint.GetMPECorrOccupancy() / dPoint.GetCentralMPECorrOccupancy();
+  //occRatio = dPoint.GetMPECorrOccupancy() / ( dPoint.GetCentralMPECorrOccupancy() );
 
-  // The correction for the geometric factors (solid angle and Fresnel transmission coefficient).
-  occRatio *= ( dPoint.GetCentralFresnelTCoeff() * dPoint.GetCentralSolidAngle() ) 
-    / ( dPoint.GetFresnelTCoeff() * dPoint.GetSolidAngle() );
+  // // The correction for the geometric factors (solid angle and Fresnel transmission coefficient).
+  // occRatio *= ( dPoint.GetCentralFresnelTCoeff() * dPoint.GetCentralSolidAngle() ) 
+  //   / ( dPoint.GetFresnelTCoeff() * dPoint.GetSolidAngle() );
 
-  // Add the errors in quadrature from the occupancy ratio to compute
-  // the total error on the occupancy ratio.
-  Double_t offAxisRun2 = TMath::Power( dPoint.GetMPECorrOccupancyErr() / dPoint.GetMPECorrOccupancy(), 2 );
-  Double_t centralRun2 = TMath::Power( dPoint.GetCentralMPECorrOccupancyErr() / dPoint.GetCentralMPECorrOccupancy(), 2 );
-  occRatioErr = occRatio * TMath::Sqrt( offAxisRun2 + centralRun2 );
+  // // Add the errors in quadrature from the occupancy ratio to compute
+  // // the total error on the occupancy ratio.
+  // Double_t offAxisRun2 = TMath::Power( dPoint.GetMPECorrOccupancyErr() / dPoint.GetMPECorrOccupancy(), 2 );
+  // Double_t centralRun2 = TMath::Power( dPoint.GetCentralMPECorrOccupancyErr() / dPoint.GetCentralMPECorrOccupancy(), 2 );
+  // occRatioErr = occRatio * TMath::Sqrt( offAxisRun2 + centralRun2 );
 
 }
 
