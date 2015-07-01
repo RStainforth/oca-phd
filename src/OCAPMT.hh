@@ -203,11 +203,11 @@ namespace OCA{
     
     // Get the value the theta value of the light path from the laserball
     // in the off-axis run relative to the laserball axis.
-    Float_t GetLBTheta() const { return fLBTheta; }
+    Float_t GetRelLBTheta() const { return fRelLBTheta; }
 
     // Get the value the phi value of the light path from the laserball
     // in the off-axis run relative to the laserball axis.
-    Float_t GetLBPhi() const { return fLBPhi; }
+    Float_t GetRelLBPhi() const { return fRelLBPhi; }
     
     // Get the CHS flag for this PMT from the off-axis run.
     // Note: Same as DQXX for now. Will deprecate one depending
@@ -303,11 +303,11 @@ namespace OCA{
     
     // Get the value the theta value of the light path from the laserball
     // in the central run relative to the laserball axis.
-    Float_t GetCentralLBTheta() const { return fCentralLBTheta; }
+    Float_t GetCentralRelLBTheta() const { return fCentralRelLBTheta; }
 
     // Get the value the phi value of the light path from the laserball
     // in the central run relative to the laserball axis.
-    Float_t GetCentralLBPhi() const { return fCentralLBPhi; }
+    Float_t GetCentralRelLBPhi() const { return fCentralRelLBPhi; }
     
     // Get the CHS flag for this PMT from the central run.
     // Note: Same as DQXX for now. Will deprecate one depending
@@ -349,6 +349,9 @@ namespace OCA{
 
     // Get the error on the occupancy ratio for this PMT
     Float_t GetOccupancyRatioErr() const { return fOccupancyRatioErr; }
+
+    // Get the model predicted occupancy for this PMT
+    Float_t GetModelOccupancy() const { return fModelOccupancy; }
 
     // Get the systematic PMT variability error for this PMT.
     Float_t GetPMTVariability() const { return fPMTVariability; }
@@ -481,11 +484,11 @@ namespace OCA{
     
     // Set the value the theta value of the light path from the laserball
     // in the off-axis run relative to the laserball axis.
-    void SetLBTheta( const Float_t theta ){ fLBTheta = theta; }
+    void SetRelLBTheta( const Float_t theta ){ fRelLBTheta = theta; }
 
     // Set the value the phi value of the light path from the laserball
     // in the off-axis run relative to the laserball axis.
-    void SetLBPhi( const Float_t phi ){ fLBPhi = phi; }
+    void SetRelLBPhi( const Float_t phi ){ fRelLBPhi = phi; }
 
     // Set the CHS flag for this PMT from the off-axis run.
     // Note: Same as DQXX for now. Will deprecate one depending
@@ -581,11 +584,11 @@ namespace OCA{
     
     // Set the value the theta value of the light path from the laserball
     // in the central run relative to the laserball axis.
-    void SetCentralLBTheta( const  Float_t theta ){ fCentralLBTheta = theta; }
+    void SetCentralRelLBTheta( const  Float_t theta ){ fCentralRelLBTheta = theta; }
 
     // Set the value the phi value of the light path from the laserball
     // in the central run relative to the laserball axis.
-    void SetCentralLBPhi( const  Float_t phi ){ fCentralLBPhi = phi; }
+    void SetCentralRelLBPhi( const  Float_t phi ){ fCentralRelLBPhi = phi; }
 
     // Set the CHS flag for this PMT from the central run.
     // Note: Same as DQXX for now. Will deprecate one depending
@@ -627,6 +630,9 @@ namespace OCA{
 
     // Set the error on the occupancy ratio for this PMT
     void SetOccupancyRatioErr( const Float_t occRatioErr ){ fOccupancyRatioErr = occRatioErr; }
+
+    // Set the model predicted occupancy for this PMT
+    void SetModelOccupancy( const Float_t modelOcc ) { fModelOccupancy = modelOcc; }
 
     // Set the systematic PMT variability error for this PMT.
     void SetPMTVariability( const Float_t pmtVar ){ fPMTVariability = pmtVar; }
@@ -694,8 +700,8 @@ namespace OCA{
     Float_t fSolidAngle;                          // Solid Angle subtended by this PMT from source (LaserBall) position
     Float_t fCosTheta;                            // Cosine of light vector incident on the the PMT face
 
-    Float_t fLBTheta;                             // LaserBall Theta value for this PMT from the Laserball position
-    Float_t fLBPhi;                               // LaserBall Phi value for this PMT from the LaserBall position
+    Float_t fRelLBTheta;                          // LaserBall Theta value for this PMT from the Laserball position
+    Float_t fRelLBPhi;                            // LaserBall Phi value for this PMT from the LaserBall position
     
     Bool_t fCHSFlag;                              // (DQXX Flag) TRUE: Bad Channel FALSE: Good Channel
     Bool_t fCSSFlag;                              // (ANXX Flag) TRUE: Bad Channel FALSE: Good Channel
@@ -733,8 +739,8 @@ namespace OCA{
     Float_t fCentralSolidAngle;                   // Solid Angle subtended by this PMT from source (LaserBall) position - From the central run
     Float_t fCentralCosTheta;                     // Cosine of light vector incident on the the PMT face - From the central run
 
-    Float_t fCentralLBTheta;                      // LaserBall Theta value for this PMT from the Laserball position - From the central run
-    Float_t fCentralLBPhi;                        // LaserBall Phi value for this PMT from the LaserBall position - From the central run
+    Float_t fCentralRelLBTheta;                   // LaserBall Theta value for this PMT from the Laserball position - From the central run
+    Float_t fCentralRelLBPhi;                     // LaserBall Phi value for this PMT from the LaserBall position - From the central run
     
     Bool_t fCentralCHSFlag;                       // (DQXX Flag) TRUE: Bad Channel FALSE: Good Channel - From the central run
     Bool_t fCentralCSSFlag;                       // (ANXX Flag) TRUE: Bad Channel FALSE: Good Channel - From the central run
@@ -752,6 +758,8 @@ namespace OCA{
     Float_t fOccupancyRatio;                       // Occupancy ratio of fMPECorrOccupancy / fCentralMPECorrOccupancy
     Float_t fModelOccupancyRatio;                  // Model Occupancy ratio
     Float_t fOccupancyRatioErr;                    // Error on the (data) occupancy ratio
+
+    Float_t fModelOccupancy;                       // Model predicted occupancy.
     
     Float_t fPMTVariability;                       // Systematic PMT variability error.
 

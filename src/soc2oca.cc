@@ -252,21 +252,40 @@ int main( int argc, char** argv ){
 
   // Now fill the OCARuns objects with the respective information
   // from the SOC files in the SOC reader
-  cout << "Now filling run information from SOC file..." << endl;
-  lRunPtr->Fill( soc, lightPath, shadowCalc, chanHW, pmtInfo, rID );
+  cout << "Now filling run information from off-axis SOC file...";
+  lRunPtr->FillRunInfo( soc, rID );
+  cout << "done." << endl;
   if ( crBool ){ 
-    cout << "Now filling central run information from SOC file..." << endl;
-    lCRunPtr->Fill( soc, lightPath, shadowCalc, chanHW, pmtInfo, crID ); 
+    cout << "Now filling run information from central SOC file...";
+    lCRunPtr->FillRunInfo( soc, crID ); 
+    cout << "done." << endl;
   }
   if ( wrBool ){ 
-    cout << "Now filling wavelength run information from SOC file..." << endl;
-    lWRunPtr->Fill( soc, lightPath, shadowCalc, chanHW, pmtInfo, wrID );
+    cout << "Now filling run information from wavelength SOC file...";
+    lWRunPtr->FillRunInfo( soc, wrID );
+    cout << "done." << endl;
 
     // Set Wavelength position to off-axis:
+    cout << "Setting off-axis laserball position+errors to wavelength run laserball position+errors...";
     lRunPtr->SetLBPos( lWRunPtr->GetLBPos() );
     lRunPtr->SetLBXPosErr( lWRunPtr->GetLBXPosErr() );
     lRunPtr->SetLBYPosErr( lWRunPtr->GetLBYPosErr() );
     lRunPtr->SetLBZPosErr( lWRunPtr->GetLBZPosErr() );
+    cout << "done." << endl;
+  }
+
+  cout << "Now filling PMT information from off-axis SOC file...";
+  lRunPtr->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, rID );
+  cout << "done." << endl;
+  if ( crBool ){
+  cout << "Now filling PMT information from central SOC file...";
+  lCRunPtr->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, rID );
+  cout << "done." << endl;
+  }
+  if ( wrBool ){
+  cout << "Now filling PMT information from wavelength SOC file...";
+  lWRunPtr->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, rID );
+  cout << "done." << endl;
   }
   
 
@@ -275,11 +294,9 @@ int main( int argc, char** argv ){
   // using information from the other two files. The CrossRunFill function will
   // check the Run-IDs of both the central- and wavelength- OCARun objects
   // to see if their data has been entered following the above 'if' statements
-  cout << "Now Performing CrossRunFill" << endl;
-  // // CALCULATION OF CROSS-RUN INFORMATION GOES HERE //
-  // // START //
+  cout << "Now Performing CrossRunFill...";
   lRunPtr->CrossRunFill( lCRunPtr, lWRunPtr );
-  // // END //
+  cout << "done." << endl;
 
 
   // Now create a OCARun (.root) file to store the information of the main-run

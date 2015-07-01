@@ -1316,8 +1316,8 @@ Float_t OCAFit::ModelLBDistribution( const OCARun* iRunPtr, const OCAPMT* iPMTPt
   if ( runType == 0 ){
     lbTheta = iRunPtr->GetLBTheta();
     lbPhi = iRunPtr->GetLBPhi();
-    lbRelTheta = iPMTPtr->GetLBTheta();
-    lbRelPhi = iPMTPtr->GetLBPhi();
+    lbRelTheta = iPMTPtr->GetRelLBTheta();
+    lbRelPhi = iPMTPtr->GetRelLBPhi();
     //cout << "lbTheta: " << lbTheta << " lbPhi: " << lbPhi << endl;
     //cout << "lbRelTheta: " << lbRelTheta << " lbRelPhi: " << lbRelPhi << endl;
   }
@@ -1325,8 +1325,8 @@ Float_t OCAFit::ModelLBDistribution( const OCARun* iRunPtr, const OCAPMT* iPMTPt
   if ( runType == 1 ){
     lbTheta = iRunPtr->GetCentralLBTheta();
     lbPhi = iRunPtr->GetCentralLBPhi();
-    lbRelTheta = iPMTPtr->GetCentralLBTheta();
-    lbRelPhi = iPMTPtr->GetCentralLBPhi();
+    lbRelTheta = iPMTPtr->GetCentralRelLBTheta();
+    lbRelPhi = iPMTPtr->GetCentralRelLBPhi();
     //cout << "CtrlbTheta: " << lbTheta << " CtrlbPhi: " << lbPhi << endl;
     //cout << "CtrlbRelTheta: " << lbRelTheta << " CtrlbRelPhi: " << lbRelPhi << endl;
   }
@@ -1418,8 +1418,8 @@ Float_t OCAFit::ModelLBDistributionMask( const OCAPMT* iPMTPtr, const Int_t runT
 {
 
   Float_t lbTheta = 0.0;
-  if ( runType == 0 ){ lbTheta = iPMTPtr->GetLBTheta(); }
-  if ( runType == 1 ){ lbTheta = iPMTPtr->GetCentralLBTheta(); }
+  if ( runType == 0 ){ lbTheta = iPMTPtr->GetRelLBTheta(); }
+  if ( runType == 1 ){ lbTheta = iPMTPtr->GetCentralRelLBTheta(); }
   Float_t cosLBTheta = cos( lbTheta );
 
   return ModelLBDistributionMask( cosLBTheta );
@@ -1840,8 +1840,8 @@ Float_t OCAFit::ModelPrediction( const OCARun* iRunPtr, const OCAPMT* iPMTPtr, I
   Float_t lbPhi = fCurrentRun->GetLBPhi();
 
   TVector3 pmtRelVec( 0.0, 0.0, 1.0 );
-  Float_t lbRelTheta = fCurrentPMT->GetLBTheta();
-  Float_t lbRelPhi = fCurrentPMT->GetLBPhi();
+  Float_t lbRelTheta = fCurrentPMT->GetRelLBTheta();
+  Float_t lbRelPhi = fCurrentPMT->GetRelLBPhi();
   if ( lbTheta == 0.0 ){
     cosLB = cos( lbRelTheta );
     phi = fmod( (Double_t)( lbRelPhi + lbPhi ), 2.0 * M_PI );
@@ -1925,8 +1925,8 @@ Float_t OCAFit::ModelPrediction( const OCARun* iRunPtr, const OCAPMT* iPMTPtr, I
   lbTheta = fCurrentRun->GetCentralLBTheta();
   lbPhi = fCurrentRun->GetCentralLBPhi();
 
-  lbRelTheta = fCurrentPMT->GetCentralLBTheta();
-  lbRelPhi = fCurrentPMT->GetCentralLBPhi();
+  lbRelTheta = fCurrentPMT->GetCentralRelLBTheta();
+  lbRelPhi = fCurrentPMT->GetCentralRelLBPhi();
 
   if ( lbTheta == 0.0 ){
     cosLB = cos( lbRelTheta );
@@ -2026,7 +2026,7 @@ void OCAFit::PerformFit()
     cout << "Some Parameter Values..." << endl;
     for ( Int_t iPar = 1; iPar <= fNParametersInFit; iPar++ ){
       if ( fMrqVary[ iPar ] ){
-        //cout << " Parameter: " << iPar << " || Value: " << fMrqParameters[ iPar ] << endl;
+        cout << " Parameter: " << iPar << " || Value: " << fMrqParameters[ iPar ] << endl;
       }
     }
     cout << " ------------- " << endl;

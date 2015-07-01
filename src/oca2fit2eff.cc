@@ -188,8 +188,7 @@ int main( int argc, char** argv ){
     // of the occupancy.
     modelPrediction = lModel->ModelPrediction( *iDP );
     dataValue = iDP->GetMPECorrOccupancy();
-    cout << "modelPrediction: " << modelPrediction << endl;
-    cout << "dataValue: " << dataValue << endl;
+
     // Set the ratio of the model / data to be the raw estimator
     // for the PMT efficiency.
     iDP->SetRawEfficiency( dataValue / modelPrediction );

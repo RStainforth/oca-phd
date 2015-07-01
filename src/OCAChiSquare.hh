@@ -98,7 +98,7 @@ namespace OCA{
                               Int_t nParameters, Float_t **covarianceMatrix, 
                               Float_t **derivativeMatrix, Float_t *chiSquareVal );
     // Performs the optics fit.
-    void PerformOpticsFit( const int pass );
+    void PerformOpticsFit( const Int_t passNum );
 
     /////////////////////////////////
     ////////     SETTERS     ////////

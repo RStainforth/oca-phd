@@ -65,8 +65,8 @@ OCAPMT::OCAPMT( const OCAPMT& rhs )
   fSolidAngle = rhs.fSolidAngle;
   fCosTheta = rhs.fCosTheta;
 
-  fLBTheta = rhs.fLBTheta;
-  fLBPhi = rhs.fLBPhi;
+  fRelLBTheta = rhs.fRelLBTheta;
+  fRelLBPhi = rhs.fRelLBPhi;
 
   fCHSFlag = rhs.fCHSFlag;
   fCSSFlag = rhs.fCSSFlag;
@@ -101,8 +101,8 @@ OCAPMT::OCAPMT( const OCAPMT& rhs )
   fCentralSolidAngle = rhs.fCentralSolidAngle;
   fCentralCosTheta = rhs.fCentralCosTheta;
 
-  fCentralLBTheta = rhs.fCentralLBTheta;
-  fCentralLBPhi = rhs.fCentralLBPhi;
+  fCentralRelLBTheta = rhs.fCentralRelLBTheta;
+  fCentralRelLBPhi = rhs.fCentralRelLBPhi;
 
   fCentralCHSFlag = rhs.fCentralCHSFlag;
   fCentralCSSFlag = rhs.fCentralCSSFlag;
@@ -181,8 +181,8 @@ OCAPMT& OCAPMT::operator=( const OCAPMT& rhs )
   fSolidAngle = rhs.fSolidAngle;
   fCosTheta = rhs.fCosTheta;
 
-  fLBTheta = rhs.fLBTheta;
-  fLBPhi = rhs.fLBPhi;
+  fRelLBTheta = rhs.fRelLBTheta;
+  fRelLBPhi = rhs.fRelLBPhi;
 
   fCHSFlag = rhs.fCHSFlag;
   fCSSFlag = rhs.fCSSFlag;
@@ -217,8 +217,8 @@ OCAPMT& OCAPMT::operator=( const OCAPMT& rhs )
   fCentralSolidAngle = rhs.fCentralSolidAngle;
   fCentralCosTheta = rhs.fCentralCosTheta;
 
-  fCentralLBTheta = rhs.fCentralLBTheta;
-  fCentralLBPhi = rhs.fCentralLBPhi;
+  fCentralRelLBTheta = rhs.fCentralRelLBTheta;
+  fCentralRelLBPhi = rhs.fCentralRelLBPhi;
 
   fCentralCHSFlag = rhs.fCentralCHSFlag;
   fCentralCSSFlag = rhs.fCentralCSSFlag;
@@ -296,8 +296,8 @@ void OCAPMT::ClearPMT()
   SetSolidAngle( -10.0 );
   SetCosTheta( -10.0 );
 
-  SetLBTheta( -10.0 );
-  SetLBPhi( -10.0 );
+  SetRelLBTheta( -10.0 );
+  SetRelLBPhi( -10.0 );
 
   SetCHSFlag( false );
   SetCSSFlag( false );
@@ -332,8 +332,8 @@ void OCAPMT::ClearPMT()
   SetCentralSolidAngle( -10.0 );
   SetCentralCosTheta( -10.0 );
 
-  SetCentralLBTheta( -10.0 );
-  SetCentralLBPhi( -10.0 );
+  SetCentralRelLBTheta( -10.0 );
+  SetCentralRelLBPhi( -10.0 );
 
   SetCentralCHSFlag( false );
   SetCentralCSSFlag( false );

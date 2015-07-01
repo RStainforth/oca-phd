@@ -240,12 +240,8 @@ void OCARun::ClearRun()
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCARun::Fill( RAT::DU::SOCReader& socR, 
-                   RAT::DU::LightPathCalculator& lLP,
-                   RAT::DU::ShadowingCalculator& lSC,
-                   RAT::DU::ChanHWStatus& lCHS,
-                   RAT::DU::PMTInfo& lDB,
-                   UInt_t runID )
+void OCARun::FillRunInfo( RAT::DU::SOCReader& socR,
+                          UInt_t runID )
 {
 
   // Create a new RAT::DS::SOC object to be used
@@ -281,6 +277,42 @@ void OCARun::Fill( RAT::DU::SOCReader& socR,
   // ... and the PMT information from the SOC file.
   CopySOCPMTInfo( *socPtr );
 
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void OCARun::FillPMTInfo( RAT::DU::SOCReader& socR,
+                          RAT::DU::LightPathCalculator& lLP,
+                          RAT::DU::ShadowingCalculator& lSC,
+                          RAT::DU::ChanHWStatus& lCHS,
+                          RAT::DU::PMTInfo& lDB,
+                          UInt_t runID )
+{
+
+  // Create a new RAT::DS::SOC object to be used
+  // in the loop below.
+  RAT::DS::SOC* socPtr = new RAT::DS::SOC;
+  
+  // First check that a SOC file with the 
+  // specified runID exists in the SOCReader.
+  for ( Int_t iSOC = 0; iSOC < (Int_t)socR.GetSOCCount(); iSOC++ ){
+
+    // Get the SOC entry.
+    *socPtr = socR.GetSOC( iSOC );
+
+    // Check for the run ID on the SOC file.
+    if ( socPtr->GetRunID() == runID ){ break; }
+    else{ continue; }
+    
+    // If the SOC object with the required run ID cannot be found
+    // then return an error.
+    if ( iSOC == ( (Int_t)socR.GetSOCCount() - 1 ) ){
+      cout << "OCARun::Fill: Error: No SOC file with specified run-ID found" << endl;
+      return;
+    }
+  }
+
   // Create an iterator to loop over the PMTs...
   map< Int_t, OCAPMT >::iterator iLP;
 
@@ -304,6 +336,7 @@ void OCARun::Fill( RAT::DU::SOCReader& socR,
     // Set the PMT positions, normals and types.
     ( iLP->second ).SetPos( lDB.GetPosition( pmtID ) );
     ( iLP->second ).SetLBPos( GetLBPos() );
+    ( iLP->second ).SetLBOrientation( GetLBOrientation() );
     ( iLP->second ).SetNorm( lDB.GetDirection( pmtID ) );
     ( iLP->second ).SetType( lDB.GetType( pmtID ) );
 
@@ -333,11 +366,11 @@ void OCARun::Fill( RAT::DU::SOCReader& socR,
     
     // Set the relative theta and phi coordinates of the light
     // in the local frame of the laserball as it left the source.
-    ( iLP->second ).SetLBTheta( ( ( iLP->second ).GetInitialLBVec() ).Angle( lbAxis ) );
+    ( iLP->second ).SetRelLBTheta( ( ( iLP->second ).GetInitialLBVec() ).Angle( lbAxis ) );
 
     TVector3 vec = ( ( iLP->second ).GetInitialLBVec() );
     vec.Rotate( -1*GetLBPhi(), lbAxis ); 
-    ( iLP->second ).SetLBPhi( vec.Phi() );
+    ( iLP->second ).SetRelLBPhi( vec.Phi() );
   
     // Reset the light path object
     lLP.Clear();
@@ -553,12 +586,6 @@ void OCARun::CrossRunFill( OCARun* cRun, OCARun* wRun )
     
     fWavelengthLBTheta = wRun->GetLBTheta();
     fWavelengthLBPhi = wRun->GetLBPhi();
-
-    // Special Instance: We want to use the wavelength as the position of the laserball
-    fLBPos = wRun->GetLBPos();
-    fLBXPosErr = wRun->GetLBXPosErr();
-    fLBYPosErr = wRun->GetLBYPosErr();
-    fLBZPosErr = wRun->GetLBZPosErr();
     
   }
 
@@ -600,14 +627,20 @@ void OCARun::CrossRunFill( OCARun* cRun, OCARun* wRun )
       ( fOCAPMTs[ pmtID ] ).SetCentralSolidAngle( ( iCPMT->second ).GetSolidAngle() );
       ( fOCAPMTs[ pmtID ] ).SetCentralCosTheta( ( iCPMT->second ).GetCosTheta() );
       
-      ( fOCAPMTs[ pmtID ] ).SetCentralLBTheta( ( iCPMT->second ).GetLBTheta() );
-      ( fOCAPMTs[ pmtID ] ).SetCentralLBPhi( ( iCPMT->second ).GetLBPhi() );
+      ( fOCAPMTs[ pmtID ] ).SetCentralRelLBTheta( ( iCPMT->second ).GetRelLBTheta() );
+      ( fOCAPMTs[ pmtID ] ).SetCentralRelLBPhi( ( iCPMT->second ).GetRelLBPhi() );
       
       ( fOCAPMTs[ pmtID ] ).SetCentralCHSFlag( ( iCPMT->second ).GetCHSFlag() );
       ( fOCAPMTs[ pmtID ] ).SetCentralCSSFlag( ( iCPMT->second ).GetCSSFlag() );
       
       ( fOCAPMTs[ pmtID ] ).SetCentralBadPath( ( iCPMT->second ).GetBadPath() );
       ( fOCAPMTs[ pmtID ] ).SetCentralNeckFlag( ( iCPMT->second ).GetNeckFlag() );
+
+      Float_t occRatio = 0.0;
+      Float_t occRatioErr = 0.0;
+      OCAMath::CalculateMPEOccRatio( ( fOCAPMTs[ pmtID ] ), occRatio, occRatioErr );
+      ( fOCAPMTs[ pmtID ] ).SetOccupancyRatio( occRatio );
+      ( fOCAPMTs[ pmtID ] ).SetOccupancyRatioErr( occRatioErr );
       
     }
   }

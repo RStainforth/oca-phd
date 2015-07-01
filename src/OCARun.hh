@@ -72,14 +72,19 @@ namespace OCA{
     // using OCARun::Fill.
     void ClearRun();
 
-    // Fill information from a SOC file with run ID 'runID'
+    // Fill Run information from a SOC file with run ID 'runID'
     // into the run information stored here (OCARun object).
-    void Fill( RAT::DU::SOCReader& socR,
-               RAT::DU::LightPathCalculator& lLP,
-               RAT::DU::ShadowingCalculator& lSC,
-               RAT::DU::ChanHWStatus& lCHS,
-               RAT::DU::PMTInfo& lDB,
-               UInt_t runID );
+    void FillRunInfo( RAT::DU::SOCReader& socR,
+                      UInt_t runID );
+
+    // Fill PMT information from a SOC file with run ID 'runID'
+    // into the PMT information stored here (OCAPMT objects).
+    void FillPMTInfo( RAT::DU::SOCReader& socR,
+                      RAT::DU::LightPathCalculator& lLP,
+                      RAT::DU::ShadowingCalculator& lSC,
+                      RAT::DU::ChanHWStatus& lCHS,
+                      RAT::DU::PMTInfo& lDB,
+                      UInt_t runID );
     
     // Copy the SOCRun information from a SOC object
     // into the run information here.

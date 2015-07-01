@@ -100,10 +100,6 @@ void OCAOpticsModel::IdentifyVaryingPMTAngularResponseBins( OCAPMTStore* lData )
       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 1;
     }
 
-    // printf( "AngResp parameter %i (global %i) has %i entries with vary flag %i\n",
-    //         iAng, fModelParameterStore->GetPMTAngularResponseParIndex() + iAng,
-    //         pmtAngValid[ iAng ],
-    //         fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] );
   }
 
   delete pmtAngValid;
@@ -166,11 +162,6 @@ void OCAOpticsModel::IdentifyVaryingLBDistributionBins( OCAPMTStore* lData )
     else{
       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 1;
     }
-
-  //   printf( "LBDist parameter %i (global %i) has %i entries with vary flag %i\n",
-  //           iLB, fModelParameterStore->GetLBDistributionParIndex() + iLB,
-  //           lbAngValid[ iLB ],
-  //           fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] );
   }
 
   delete lbAngValid;
@@ -247,7 +238,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
   Float_t angRespCtr = ModelAngularResponse( dataPoint, "central" );
 
   // Compute the PMT angular response ratio.
-  angRespRatio = angResp / angRespCtr; 
+  angRespRatio = angResp / angRespCtr;
   
   // Model the laserball distribution for this data point
   // for the off-axis and central runs.
@@ -268,7 +259,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
   
   // Using all the above calculated values we can compute
   // the model prediction for the occuapncy ratio.
-  Float_t modelPrediction = ( normVal / 1.0 ) * angRespRatio * intensityRatio * 
+  Float_t modelPrediction = ( normVal / normCtrVal ) * angRespRatio * intensityRatio * 
     TMath::Exp( - ( dInnerAV * ( dInnerAVExtinction )
                     + dAV * ( dAVExtinction )
                     + dWater * ( dWaterExtinction ) ) );
@@ -290,45 +281,15 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() ] = 0.0;
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() ] = 1.0 / angResp;
 
-    if ( 1.0 / angResp == 0.0 ){
-      cout << "MODEL DPMTR is ZERO for LB Par: " << parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() << endl;
-    }
-
     // The derivative with respect to the PMT angular response
     // from the central run.
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] = 0.0;
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] -= 1.0 / angRespCtr;
 
-    if ( 1.0 / angRespCtr == 0.0 ){
-      cout << "MODEL CENTER DPMTR is ZERO for LB Par: " << parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() << endl;
-    }
-
     // The derivative with respect to the laserball 
     // isotropy distribution from the off-axis run.
-    Int_t index = parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin();
-    derivativePars[ index ] = 0.0;
-    derivativePars[ index ] = 1.0 / intensity;
-
-    // if ( parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() == 505
-    //      && 
-    //      derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] == 0 ){
-      
-    //   cout << "Bin 505  Info" << endl;
-    //   cout << "dScint, dAV, dWater is: " << dInnerAV << ", " << dAV << ", " << dWater << endl;
-    //   cout << "angResp, angRespCtr is: " << angResp << ", " << angRespCtr << endl;
-    //   cout << "intensity, intensityCtr is: " << intensity << ", " << intensityCtr << endl;
-    //   cout << "intensityPoly, intensityCtrPoly is: " << intensityPoly << ", " << intensityCtrPoly << endl;
-    //   cout << "----------------------" << endl;
-
-    // }
-
-    if ( derivativePars[ 505 ] == 0.0 
-         && ( parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() == 505 ) ){
-      cout << "HELLO!" << endl;
-      cout << "parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin(): " << parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() << endl;
-      cout << "parPtr->GetLBDistributionParIndex(): " << parPtr->GetLBDistributionParIndex() << endl;
-      cout << "parPtr->GetCurrentLBDistributionBin(): " << parPtr->GetCurrentLBDistributionBin() << endl;
-    }
+    derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] = 0.0;
+    derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] = 1.0 / intensity;
 
     // The derivative with respect to the laserball 
     // isotropy distribution from the central run.
@@ -343,7 +304,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
     // each of the parameters in the laserball distribution
     // mask from the off-axis run.
     Double_t* parMask = new Double_t[ 1 + parPtr->GetNLBDistributionMaskParameters() ];
-    Double_t* lbCTheta = new Double_t( TMath::Cos( dataPoint.GetLBTheta() ) );
+    Double_t* lbCTheta = new Double_t( TMath::Cos( dataPoint.GetRelLBTheta() ) );
     for ( Int_t iVal = 0; iVal < parPtr->GetNLBDistributionMaskParameters(); iVal++ ){ parMask[ 1 + iVal ] = parPtr->GetLBDistributionMaskPar( iVal ); }
     for ( Int_t iVal = 0; iVal < parPtr->GetNLBDistributionMaskParameters(); iVal++ ){
       parMask[ 0 ] = (Double_t)iVal;
@@ -356,7 +317,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
     // each of the parameters in the laserball distribution
     // mask from the central run.
     Double_t* parMaskCtr = new Double_t[ 1 + parPtr->GetNLBDistributionMaskParameters() ];
-    Double_t* lbCThetaCtr = new Double_t( TMath::Cos( dataPoint.GetCentralLBTheta() ) );
+    Double_t* lbCThetaCtr = new Double_t( TMath::Cos( dataPoint.GetCentralRelLBTheta() ) );
     for ( Int_t iVal = 0; iVal < parPtr->GetNLBDistributionMaskParameters(); iVal++ ){ parMaskCtr[ 1 + iVal ] = parPtr->GetLBDistributionMaskPar( iVal ); }
     for ( Int_t iVal = 0; iVal < parPtr->GetNLBDistributionMaskParameters(); iVal++ ){
       parMaskCtr[ 0 ] = (Double_t)iVal;
@@ -378,7 +339,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
       derivativePars[ variableParameterIndex[ iPar ] ] *= modelPrediction;
     }
 
-  } 
+  }
 
   return modelPrediction;
   
@@ -463,13 +424,13 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCAPMT& dataPoint, std::strin
   // options are specified, assign the theta and phi values
   // accordingly.
   if ( runType == "off-axis" ){
-    lbRelTheta = dataPoint.GetLBTheta();
-    lbRelPhi = dataPoint.GetLBPhi();
+    lbRelTheta = dataPoint.GetRelLBTheta();
+    lbRelPhi = dataPoint.GetRelLBPhi();
   }
 
   else if ( runType == "central" ){
-    lbRelTheta = dataPoint.GetCentralLBTheta();
-    lbRelPhi = dataPoint.GetCentralLBPhi();
+    lbRelTheta = dataPoint.GetCentralRelLBTheta();
+    lbRelPhi = dataPoint.GetCentralRelLBPhi();
   }
 
   // Compute the cos theta for the theta coordinate.
@@ -542,11 +503,11 @@ Float_t OCAOpticsModel::ModelLBDistributionMask( const OCAPMT& dataPoint, std::s
   // Assign the value of theta based on whether the 
   // off-axis or central run was specified.
   if ( runType == "off-axis" ){ 
-    lbRelTheta = dataPoint.GetLBTheta(); 
+    lbRelTheta = dataPoint.GetRelLBTheta(); 
   }
 
   else if ( runType == "central" ){ 
-    lbRelTheta = dataPoint.GetCentralLBTheta(); 
+    lbRelTheta = dataPoint.GetCentralRelLBTheta(); 
   }
   
   // Initialise the mask value to 1.0 to begin with.
@@ -606,10 +567,10 @@ Float_t OCAOpticsModel::ModelAngularResponse( const OCAPMT& dataPoint, std::stri
   // accordingly. The incident angles on the data
   // points are held in degrees.
   if ( runType == "off-axis" ){ 
-    angle = TMath::ACos( dataPoint.GetCosTheta() ) * TMath::RadToDeg();  
+    angle = TMath::ACos( dataPoint.GetCosTheta() ) * 180.0 / TMath::Pi();
   }
   else if ( runType == "central" ){ 
-    angle = TMath::ACos( dataPoint.GetCosTheta() ) * TMath::RadToDeg(); 
+    angle = TMath::ACos( dataPoint.GetCosTheta() ) * 180.0 / TMath::Pi(); 
   }
 
   // Calculate the associated bin representative of this angle.

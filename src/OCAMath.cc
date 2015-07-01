@@ -99,9 +99,6 @@ void OCAMath::CalculateMPEOccRatio( const OCAPMT& dPoint, Float_t& occRatio, Flo
   occRatio *= ( dPoint.GetCentralFresnelTCoeff() * dPoint.GetCentralSolidAngle() ) 
     / ( dPoint.GetFresnelTCoeff() * dPoint.GetSolidAngle() );
 
-  // The central laserbll normalisation value.
-  occRatio *= dPoint.GetCentralLBIntensityNorm();
-
   // Add the errors in quadrature from the occupancy ratio to compute
   // the total error on the occupancy ratio.
   Double_t offAxisRun2 = TMath::Power( dPoint.GetMPECorrOccupancyErr() / dPoint.GetMPECorrOccupancy(), 2 );

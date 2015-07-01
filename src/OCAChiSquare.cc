@@ -40,25 +40,18 @@ Float_t OCAChiSquare::EvaluateChiSquare( OCAPMT& dPoint )
   // on the occupancy ratio. It does not account for the correction
   // due to the PMT incident angle. This will need to be implemented
   // in the future.
-  Float_t dataVal = 0.0;
-  Float_t error = 0.0;
-  OCAMath::CalculateMPEOccRatio( dPoint, dataVal, error );
-  dPoint.SetOccupancyRatio( dataVal );
-  dPoint.SetOccupancyRatioErr( error );
-  Float_t error2 = error * error;
-  //cout << "error is: " << error2 << endl;
-  Float_t variability2 = OCAMath::CalculatePMTVariabilityError( dPoint ) * OCAMath::CalculatePMTVariabilityError( dPoint );
-  error2 += ( dataVal * dataVal * variability2 );
-  //cout << "error2 is now: " << error2 << endl;
+  Float_t dataVal = dPoint.GetOccupancyRatio();
+  Float_t error = dPoint.GetOccupancyRatioErr();
+
+  Float_t totalError2 = error * error;
+  Float_t variabilityError = dataVal * OCAMath::CalculatePMTVariabilityError( dPoint );
+  totalError2 += ( variabilityError * variabilityError );
 
   // Calculate the difference between the model prediction
   // and the data value ( the residual for the chi-square calculation ).
   Float_t residual = ( dataVal - modelVal );
-  //cout << "residual2: " << residual * residual << ", error2: " << error2 << endl;
-  //cout << "model: " << modelVal << ", dataVal: " << dataVal << endl;
   // Calculate the chi-square value.
-  Float_t chiSq =  ( residual * residual ) / ( error2 );
-  //cout << "chiSquare: " << chiSq << endl;
+  Float_t chiSq =  ( residual * residual ) / ( totalError2 );
 
   // Return the chi-square value.
   return chiSq;
@@ -186,14 +179,13 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
     //cout << "OccRatioErr2 is: " << iDP->GetOccupancyRatioErr() * iDP->GetOccupancyRatioErr() << endl;
     dataError2 = 1.0 / varErr2;
     
-    // // Compute the 1 / sigma^2 value for this particular data point
-    // dataError2 = 1.0 / TMath::Sqrt(( ( iDP->GetOccupancyRatioErr() 
-    //                                    * iDP->GetOccupancyRatioErr() )
-    //                                  + ( iDP->GetOccupancyRatio() * iDP->GetOccupancyRatio() * OCAMath::CalculatePMTVariabilityError( *iDP ) ) ));
-    
     // And compute the difference between the model 
     // prediction and the data value.
     deltaDataVal = iDP->GetOccupancyRatio() - yMod;
+
+    // Add the chisqure entry to the overall chisquared value
+    chiSquareEntry = deltaDataVal * deltaDataVal * dataError2;
+    *chiSquareVal += chiSquareEntry;
 
     // Now set the parameter pointer to the parameters in the
     // parameter store object.
@@ -238,10 +230,6 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
       Int_t mapVar = variableParameterMap[ lVarIndex ];
       betaVec[ mapVar ] += deltaDataVal * weightVal;
     }
-
-    // Add the chisqure entry to the overall chisquared value
-    chiSquareEntry = deltaDataVal * deltaDataVal * dataError2;
-    *chiSquareVal += chiSquareEntry;
   }
 
   for ( jVar = 2; jVar <= mFit; jVar++ ){
@@ -494,8 +482,8 @@ Int_t OCAChiSquare::Minimise( Float_t testParameters[], Int_t parametersVary[],
 //////////////////////////////////////
 
 void OCAChiSquare::PerformMinimisation( Float_t testParameters[], Int_t parametersVary[], 
-                            Int_t nParameters, Float_t **covarianceMatrix, 
-                            Float_t **derivativeMatrix, Float_t *chiSquareVal )
+                                        Int_t nParameters, Float_t **covarianceMatrix, 
+                                        Float_t **derivativeMatrix, Float_t *chiSquareVal )
 {
   
   // Fit the data using 'OCAChiSquare::Minimise' until convergence
@@ -601,29 +589,28 @@ void OCAChiSquare::PerformMinimisation( Float_t testParameters[], Int_t paramete
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCAChiSquare::PerformOpticsFit( const int pass )
+void OCAChiSquare::PerformOpticsFit( const Int_t passNum )
 {
 
   // Set the global chi-square value to 0.0 to begin with.
   Float_t chiSquare = 0.0;
   
-  if ( pass == 0 ){
-    // From the data store identify which of the PMT angular
-    // response bins and which of the laserball distribution
-    // bins will vary in the fit. We only want to vary
-    // parameters which are representative of bins with sufficient
-    // entries in both the distributions.
-    fModel->IdentifyVaryingPMTAngularResponseBins( fDataStore );
-    fModel->IdentifyVaryingLBDistributionBins( fDataStore );
-    fModel->InitialiseLBRunNormalisations( fDataStore );
-    
-    // Identify the parameters which vary for all the data points.
-    // i.e. the global variable parameters such as the extinction lengths.
-    fModel->GetOCAModelParameterStore()->IdentifyBaseVaryingParameters();
-    
-    // Initialise the private PMT angular response look-up array.
-    fModel->GetOCAModelParameterStore()->InitialisePMTAngularResponseIndex();
-  } 
+  // From the data store identify which of the PMT angular
+  // response bins and which of the laserball distribution
+  // bins will vary in the fit. We only want to vary
+  // parameters which are representative of bins with sufficient
+  // entries in both the distributions.
+  fModel->IdentifyVaryingPMTAngularResponseBins( fDataStore );
+  fModel->IdentifyVaryingLBDistributionBins( fDataStore );
+  fModel->InitialiseLBRunNormalisations( fDataStore );
+  
+  // Identify the parameters which vary for all the data points.
+  // i.e. the global variable parameters such as the extinction lengths.
+  fModel->GetOCAModelParameterStore()->IdentifyBaseVaryingParameters();
+  
+  // Initialise the private PMT angular response look-up array.
+  fModel->GetOCAModelParameterStore()->InitialisePMTAngularResponseIndex();
+
   // Get the array of current parameter values.
   Float_t* parameters = fModel->GetOCAModelParameterStore()->GetParametersPtr();
   
@@ -637,9 +624,10 @@ void OCAChiSquare::PerformOpticsFit( const int pass )
   // Get the pointer to the covariance and derivative matrices.
   Float_t** covarianceMatrix = fModel->GetOCAModelParameterStore()->GetCovarianceMatrix();
   Float_t** derivativeMatrix = fModel->GetOCAModelParameterStore()->GetDerivativeMatrix();
-  // for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
-  //   cout << "Parameter: " << iPar << " is: " << parameters[ iPar ] << " with flag: " << parametersVary[ iPar ] << " and error: " << TMath::Sqrt( covarianceMatrix[ iPar ][ iPar ] ) << endl;
-  // }
+
+  for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
+    cout << "Parameter: " << iPar << " is: " << parameters[ iPar ] << " with flag: " << parametersVary[ iPar ] << " and error: " << TMath::Sqrt( covarianceMatrix[ iPar ][ iPar ] ) << endl;
+  }
   
   // Perform the minimisation for the optics fit.
   PerformMinimisation( parameters, parametersVary, 

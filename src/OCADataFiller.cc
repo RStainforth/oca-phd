@@ -69,17 +69,17 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
 
     if ( previousRunID != currentRunID
          && previousRunID > 0 && currentRunID > 0 ){
-      cout << "Filtered Information for Run: " << previousRunID << endl;
-      cout << "Laserball Position: (" 
-           << iD->GetLBPos().X() / 10.0
-           << ", " << iD->GetLBPos().Y() / 10.0
-           << ", " << iD->GetLBPos().Z() / 10.0 
-           << " ) cm, Radius = " << iD->GetLBPos().Mag() / 10.0 << " cm" << endl;
-      lFilterStore->PrintFilterCutInformation();
-      lFilterStore->ResetFilterConditionCounters();
-      cout << "----------------------------------------------------\n";
-      cout << "####################################################\n";
-      cout << "----------------------------------------------------\n";
+      //cout << "Filtered Information for Run: " << previousRunID << endl;
+      //cout << "Laserball Position: ( " 
+      //<< iD->GetLBPos().X() / 10.0
+      //<< ", " << iD->GetLBPos().Y() / 10.0
+      //<< ", " << iD->GetLBPos().Z() / 10.0 
+      //<< " ) cm, Radius = " << iD->GetLBPos().Mag() / 10.0 << " cm" << endl;
+      //lFilterStore->PrintFilterCutInformation();
+      //lFilterStore->ResetFilterConditionCounters();
+      //cout << "----------------------------------------------------\n";
+      //cout << "####################################################\n";
+      //cout << "----------------------------------------------------\n";
     }
 
     validPoint = true;
@@ -136,7 +136,6 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
 
       // Filter to check fractional error
       else if ( filterName == "filter_fractional_error" ){
-        lChiSq->EvaluateChiSquare( *iD );
         if ( !iF->CheckCondition( iD->GetOccupancyRatioErr() / iD->GetOccupancyRatio() ) ){ 
           validPoint = false; break;
         }
@@ -231,6 +230,8 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
     previousRunID = iD->GetRunID();
     
   }
+
+  lFilterStore->PrintFilterCutInformation();
 
   // Set and copy the value pointed to by the passed dataset to be this new
   // 'filtered' data set. This ensures the pointer keeps the same address,
