@@ -10,10 +10,9 @@
 #pragma link C++ class OCA::OCAChiSquare+;
 #pragma link C++ class OCA::OCAFit+;
 #pragma link C++ class OCA::OCAMath+;
-#pragma link C++ class OCA::OCADataPoint+;
 #pragma link C++ class OCA::OCAFilter+;
 #pragma link C++ class OCA::OCAFilterStore+;
-#pragma link C++ class OCA::OCADataStore+;
+#pragma link C++ class OCA::OCAPMTStore+;
 #pragma link C++ class OCA::OCADataFiller+;
 #pragma link C++ class OCA::OCAModelParameter+;
 #pragma link C++ class OCA::OCAModelParameterStore+;

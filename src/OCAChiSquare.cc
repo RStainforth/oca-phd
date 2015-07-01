@@ -1,7 +1,7 @@
 #include "OCAChiSquare.hh"
-#include "OCADataPoint.hh"
+#include "OCAPMT.hh"
 #include "OCAModelParameterStore.hh"
-#include "OCADataStore.hh"
+#include "OCAPMTStore.hh"
 #include "OCAMath.hh"
 #include "OCAOpticsModel.hh"
 
@@ -16,7 +16,7 @@ ClassImp( OCAChiSquare )
 OCAChiSquare::OCAChiSquare()
 {
 
-  // Ensure the pointers to the OCADataStore
+  // Ensure the pointers to the OCAPMTStore
   // and OCAOpticsModel pointers are initialised to 'NULL'
   fDataStore = NULL;
   fModel = NULL;
@@ -26,7 +26,7 @@ OCAChiSquare::OCAChiSquare()
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t OCAChiSquare::EvaluateChiSquare( OCADataPoint& dPoint )
+Float_t OCAChiSquare::EvaluateChiSquare( OCAPMT& dPoint )
 {
 
   // Calculate the model predicted value for the occupancy
@@ -46,8 +46,10 @@ Float_t OCAChiSquare::EvaluateChiSquare( OCADataPoint& dPoint )
   dPoint.SetOccupancyRatio( dataVal );
   dPoint.SetOccupancyRatioErr( error );
   Float_t error2 = error * error;
+  //cout << "error is: " << error2 << endl;
   Float_t variability2 = OCAMath::CalculatePMTVariabilityError( dPoint ) * OCAMath::CalculatePMTVariabilityError( dPoint );
-  error2 += dataVal * dataVal * variability2;
+  error2 += ( dataVal * dataVal * variability2 );
+  //cout << "error2 is now: " << error2 << endl;
 
   // Calculate the difference between the model prediction
   // and the data value ( the residual for the chi-square calculation ).
@@ -56,6 +58,7 @@ Float_t OCAChiSquare::EvaluateChiSquare( OCADataPoint& dPoint )
   //cout << "model: " << modelVal << ", dataVal: " << dataVal << endl;
   // Calculate the chi-square value.
   Float_t chiSq =  ( residual * residual ) / ( error2 );
+  //cout << "chiSquare: " << chiSq << endl;
 
   // Return the chi-square value.
   return chiSq;
@@ -72,10 +75,10 @@ Float_t OCAChiSquare::EvaluateGlobalChiSquare()
   Float_t chiSq = 0.0;
 
   // Create an iterator to loop through all the data points.
-  vector< OCADataPoint >::iterator iD;
+  vector< OCAPMT >::iterator iD;
 
-  for ( iD = fDataStore->GetOCADataPointsIterBegin();
-        iD != fDataStore->GetOCADataPointsIterEnd();
+  for ( iD = fDataStore->GetOCAPMTsIterBegin();
+        iD != fDataStore->GetOCAPMTsIterEnd();
         iD++ ){
    
     // Add the chi-square value for this data-point to the overall
@@ -161,9 +164,9 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
   *chiSquareVal = 0.0;
   
   // Create iterators for the loop below.
-  vector< OCADataPoint >::iterator iDP;
-  vector< OCADataPoint >::iterator iDPBegin = fDataStore->GetOCADataPointsIterBegin();
-  vector< OCADataPoint >::iterator iDPEnd = fDataStore->GetOCADataPointsIterEnd();
+  vector< OCAPMT >::iterator iDP;
+  vector< OCAPMT >::iterator iDPBegin = fDataStore->GetOCAPMTsIterBegin();
+  vector< OCAPMT >::iterator iDPEnd = fDataStore->GetOCAPMTsIterEnd();
 
   OCAModelParameterStore* parPtr = new OCAModelParameterStore();
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
@@ -259,7 +262,7 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
 //////////////////////////////////////
 //////////////////////////////////////
 
-void  OCAChiSquare::FitEvaluateModel( OCADataPoint& dPoint, Float_t testParameters[],
+void  OCAChiSquare::FitEvaluateModel( OCAPMT& dPoint, Float_t testParameters[],
                                       Float_t *modelVal, Float_t dDataValDParameters[], 
                                       Int_t nParameters )
 {
@@ -598,42 +601,42 @@ void OCAChiSquare::PerformMinimisation( Float_t testParameters[], Int_t paramete
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCAChiSquare::PerformOpticsFit()
+void OCAChiSquare::PerformOpticsFit( const int pass )
 {
 
   // Set the global chi-square value to 0.0 to begin with.
   Float_t chiSquare = 0.0;
   
-  // From the data store identify which of the PMT angular
-  // response bins and which of the laserball distribution
-  // bins will vary in the fit. We only want to vary
-  // parameters which are representative of bins with sufficient
-  // entries in both the distributions.
-  fModel->IdentifyVaryingPMTAngularResponseBins( fDataStore );
-  fModel->IdentifyVaryingLBDistributionBins( fDataStore );
-  fModel->InitialiseLBRunNormalisations( fDataStore );
-
-  // Identify the parameters which vary for all the data points.
-  // i.e. the global variable parameters such as the extinction lengths.
-  fModel->GetOCAModelParameterStore()->IdentifyBaseVaryingParameters();
-
-  // Initialise the private PMT angular response look-up array.
-  fModel->GetOCAModelParameterStore()->InitialisePMTAngularResponseIndex();
-  
+  if ( pass == 0 ){
+    // From the data store identify which of the PMT angular
+    // response bins and which of the laserball distribution
+    // bins will vary in the fit. We only want to vary
+    // parameters which are representative of bins with sufficient
+    // entries in both the distributions.
+    fModel->IdentifyVaryingPMTAngularResponseBins( fDataStore );
+    fModel->IdentifyVaryingLBDistributionBins( fDataStore );
+    fModel->InitialiseLBRunNormalisations( fDataStore );
+    
+    // Identify the parameters which vary for all the data points.
+    // i.e. the global variable parameters such as the extinction lengths.
+    fModel->GetOCAModelParameterStore()->IdentifyBaseVaryingParameters();
+    
+    // Initialise the private PMT angular response look-up array.
+    fModel->GetOCAModelParameterStore()->InitialisePMTAngularResponseIndex();
+  } 
   // Get the array of current parameter values.
   Float_t* parameters = fModel->GetOCAModelParameterStore()->GetParametersPtr();
-
+  
   // Get the array of corresponding flags to indicate whether or not
   // the parameter of the smae index in the 'parameters' pointer varies or not.
   Int_t* parametersVary = fModel->GetOCAModelParameterStore()->GetParametersVary();
-
+  
   // Get the total number of parameters in the model.
   Int_t nParameters = fModel->GetOCAModelParameterStore()->GetNParameters();
-
+  
   // Get the pointer to the covariance and derivative matrices.
   Float_t** covarianceMatrix = fModel->GetOCAModelParameterStore()->GetCovarianceMatrix();
   Float_t** derivativeMatrix = fModel->GetOCAModelParameterStore()->GetDerivativeMatrix();
-
   // for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
   //   cout << "Parameter: " << iPar << " is: " << parameters[ iPar ] << " with flag: " << parametersVary[ iPar ] << " and error: " << TMath::Sqrt( covarianceMatrix[ iPar ][ iPar ] ) << endl;
   // }

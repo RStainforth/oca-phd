@@ -1,7 +1,7 @@
 #include "OCAModelParameterStore.hh"
 #include "OCAOpticsModel.hh"
 #include "OCAModelParameter.hh"
-#include "OCADataPoint.hh"
+#include "OCAPMT.hh"
 
 #include <iostream>
 
@@ -44,7 +44,7 @@ OCAOpticsModel::OCAOpticsModel( const string modelName )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCAOpticsModel::IdentifyVaryingPMTAngularResponseBins( OCADataStore* lData )
+void OCAOpticsModel::IdentifyVaryingPMTAngularResponseBins( OCAPMTStore* lData )
 {
 
   // Obtain the number of PMT angular response bins.
@@ -59,10 +59,10 @@ void OCAOpticsModel::IdentifyVaryingPMTAngularResponseBins( OCADataStore* lData 
     pmtAngValid[ iAng ] = 0; 
   }
 
-  // Loop over all the data points stored in the OCADataStore object.
-  std::vector< OCADataPoint >::iterator iDP;
-  for ( iDP = lData->GetOCADataPointsIterBegin(); 
-        iDP != lData->GetOCADataPointsIterEnd(); 
+  // Loop over all the data points stored in the OCAPMTStore object.
+  std::vector< OCAPMT >::iterator iDP;
+  for ( iDP = lData->GetOCAPMTsIterBegin(); 
+        iDP != lData->GetOCAPMTsIterEnd(); 
         iDP++ ) {
 
     // We need to model the PMT angular response first to assign the
@@ -113,7 +113,7 @@ void OCAOpticsModel::IdentifyVaryingPMTAngularResponseBins( OCADataStore* lData 
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCAOpticsModel::IdentifyVaryingLBDistributionBins( OCADataStore* lData )
+void OCAOpticsModel::IdentifyVaryingLBDistributionBins( OCAPMTStore* lData )
 {
 
   // Obtain the number of laserball distribution bins.
@@ -128,10 +128,10 @@ void OCAOpticsModel::IdentifyVaryingLBDistributionBins( OCADataStore* lData )
     lbAngValid[ iLB ] = 0; 
   }
 
-  // Loop over all the data points stored in the OCADataStore object.
-  std::vector< OCADataPoint >::iterator iDP;
-  for ( iDP = lData->GetOCADataPointsIterBegin(); 
-        iDP != lData->GetOCADataPointsIterEnd(); 
+  // Loop over all the data points stored in the OCAPMTStore object.
+  std::vector< OCAPMT >::iterator iDP;
+  for ( iDP = lData->GetOCAPMTsIterBegin(); 
+        iDP != lData->GetOCAPMTsIterEnd(); 
         iDP++ ) {
 
     // We need to model the laserball distribution first to assign the
@@ -180,14 +180,14 @@ void OCAOpticsModel::IdentifyVaryingLBDistributionBins( OCADataStore* lData )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCAOpticsModel::InitialiseLBRunNormalisations( OCADataStore* lData )
+void OCAOpticsModel::InitialiseLBRunNormalisations( OCAPMTStore* lData )
 {
 
   Int_t previousRunIndex = -1;
-  // Loop over all the data points stored in the OCADataStore object.
-  std::vector< OCADataPoint >::iterator iDP;
-  for ( iDP = lData->GetOCADataPointsIterBegin(); 
-        iDP != lData->GetOCADataPointsIterEnd(); 
+  // Loop over all the data points stored in the OCAPMTStore object.
+  std::vector< OCAPMT >::iterator iDP;
+  for ( iDP = lData->GetOCAPMTsIterBegin(); 
+        iDP != lData->GetOCAPMTsIterEnd(); 
         iDP++ ) {
     
     if ( iDP->GetRunIndex() != previousRunIndex ){
@@ -202,7 +202,7 @@ void OCAOpticsModel::InitialiseLBRunNormalisations( OCADataStore* lData )
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCADataPoint& dataPoint, Float_t* derivativePars )
+Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_t* derivativePars )
 {
 
   // Obtain a pointer to the parameters for use in this calculation
@@ -387,7 +387,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCADataPoint& dataPoint, 
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t OCAOpticsModel::ModelPrediction( const OCADataPoint& dataPoint )
+Float_t OCAOpticsModel::ModelPrediction( const OCAPMT& dataPoint )
 {
   
   // Obtain a pointer to the parameters for use in this calculation
@@ -444,7 +444,7 @@ Float_t OCAOpticsModel::ModelPrediction( const OCADataPoint& dataPoint )
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t OCAOpticsModel::ModelLBDistribution( const OCADataPoint& dataPoint, std::string runType )
+Float_t OCAOpticsModel::ModelLBDistribution( const OCAPMT& dataPoint, std::string runType )
 {
 
   // Obtain a pointer to the parameters for use in this calculation
@@ -481,11 +481,11 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCADataPoint& dataPoint, std:
   if ( cosTheta > 1.0 ) cosTheta = 1.0;
   else if ( cosTheta < -1.0 ) cosTheta = -1.0;
 
-  if ( phi > 2 * TMath::Pi() ) phi -= 2 * TMath::Pi();
-  else if ( phi < 0 ) phi += 2 * TMath::Pi();
+  if ( phi > TMath::Pi() ) phi -= 2 * TMath::Pi();
+  else if ( phi < -1.0 * TMath::Pi() ) phi += 2 * TMath::Pi();
 
   // Compute the bin for this value of 'cosTheta'
-  Int_t iTheta = (Int_t)( ( 1 + cosTheta ) / 2 * parPtr->GetNLBDistributionCosThetaBins() );
+  Int_t iTheta = (Int_t)( ( 1 + cosTheta ) / 2.0 * parPtr->GetNLBDistributionCosThetaBins() );
 
   // Some book keeping to ensure the cosTheta bin is within the allowed
   // number.
@@ -495,7 +495,7 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCADataPoint& dataPoint, std:
   }
 
   // Compute the bin for this value of 'phi'
-  Int_t iPhi = (Int_t)( phi / ( 2 * TMath::Pi() ) * parPtr->GetNLBDistributionPhiBins() );
+  Int_t iPhi = (Int_t)( ( phi + TMath::Pi() ) / ( 2 * TMath::Pi() ) * parPtr->GetNLBDistributionPhiBins() );
 
   // Some book keeping to ensure the cosTheta bin is within the allowed
   // number.
@@ -529,7 +529,7 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCADataPoint& dataPoint, std:
 //////////////////////////////////////
 //////////////////////////////////////
  
-Float_t OCAOpticsModel::ModelLBDistributionMask( const OCADataPoint& dataPoint, std::string runType )
+Float_t OCAOpticsModel::ModelLBDistributionMask( const OCAPMT& dataPoint, std::string runType )
 {
 
   // Obtain a pointer to the parameters for use in this calculation
@@ -590,7 +590,7 @@ Float_t OCAOpticsModel::ModelLBDistributionMaskDeriviative( Double_t* aPtr, Doub
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t OCAOpticsModel::ModelAngularResponse( const OCADataPoint& dataPoint, std::string runType )
+Float_t OCAOpticsModel::ModelAngularResponse( const OCAPMT& dataPoint, std::string runType )
 {
 
   // Obtain a pointer to the parameters for use in this calculation
@@ -606,10 +606,10 @@ Float_t OCAOpticsModel::ModelAngularResponse( const OCADataPoint& dataPoint, std
   // accordingly. The incident angles on the data
   // points are held in degrees.
   if ( runType == "off-axis" ){ 
-    angle = dataPoint.GetIncidentAngle();  
+    angle = TMath::ACos( dataPoint.GetCosTheta() ) * TMath::RadToDeg();  
   }
   else if ( runType == "central" ){ 
-    angle = dataPoint.GetCentralIncidentAngle(); 
+    angle = TMath::ACos( dataPoint.GetCosTheta() ) * TMath::RadToDeg(); 
   }
 
   // Calculate the associated bin representative of this angle.

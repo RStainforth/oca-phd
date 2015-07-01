@@ -13,7 +13,7 @@
 ///     04/2015 : RPFS - First Revision, new file.
 ///
 /// DETAIL: This class computes the model predicted value
-///         for the occupancy ratio. For a given OCADataPoint
+///         for the occupancy ratio. For a given OCAPMT
 ///         object the method OCAModel::ModelPrediction can
 ///         be used to produce the predicted value for the
 ///         occupancy ratio.
@@ -23,9 +23,9 @@
 #ifndef _OCAOpticsModel_
 #define _OCAOpticsModel_
 
-#include "OCADataPoint.hh"
+#include "OCAPMT.hh"
 #include "OCAModelParameterStore.hh"
-#include "OCADataStore.hh"
+#include "OCAPMTStore.hh"
 
 using namespace std;
 
@@ -40,22 +40,22 @@ namespace OCA{
     ~OCAOpticsModel(){ }
 
     // Identify the number of entries in each PMT angular response bin
-    // from the data points in the OCADataStore object 'lData'.
+    // from the data points in the OCAPMTStore object 'lData'.
     // If the number of entries in a particular bin is less than the
     // required threshold value, then the parameter represented by that
     // bin wil be fixed in the fit.
-    void IdentifyVaryingPMTAngularResponseBins( OCADataStore* lData );
+    void IdentifyVaryingPMTAngularResponseBins( OCAPMTStore* lData );
 
     // Identify the number of entries in each laserball distribution bin
-    // from the data points in the OCADataStore object 'lData'.
+    // from the data points in the OCAPMTStore object 'lData'.
     // If the number of entries in a particular bin is less than the
     // required threshold value, then the parameter represented by that
     // bin wil be fixed in the fit.
-    void IdentifyVaryingLBDistributionBins( OCADataStore* lData );
+    void IdentifyVaryingLBDistributionBins( OCAPMTStore* lData );
 
     // Initialise the laserball run normalisation parameters to the initial
     // off-axis values stored on the data point objects.
-    void InitialiseLBRunNormalisations( OCADataStore* lData );
+    void InitialiseLBRunNormalisations( OCAPMTStore* lData );
 
     /////////////////////////////////
     ////////     METHODS     ////////
@@ -63,21 +63,21 @@ namespace OCA{
 
     // Given access to a data point, compute the model prediction for the occupancy ratio
     // and its associated derivatives with respect to each parameter.
-    Float_t ModelOccRatioPrediction( const OCADataPoint& dataPoint, Float_t* derivativePars = NULL );
+    Float_t ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_t* derivativePars = NULL );
 
     // Given access to a data point, compute the model prediction for the occupancy
     // and its associated derivatives with respect to each parameter.
-    Float_t ModelPrediction( const OCADataPoint& dataPoint );
+    Float_t ModelPrediction( const OCAPMT& dataPoint );
 
     // Given access to a data point, compute the model prediction for the laserball distribution
     // based on the run type. runType = "off-axis" or runType = "central"
     // for the off-axis and central runs respectively.
-    Float_t ModelLBDistribution( const OCADataPoint& dataPoint, std::string runType );
+    Float_t ModelLBDistribution( const OCAPMT& dataPoint, std::string runType );
 
     // Given access to a data point, compute the model prediction for the laserball distribution
     // maske based on the run type. runType = "off-axis" or runType = "central". 
     // for the off-axis and central runs respectively.
-    Float_t ModelLBDistributionMask( const OCADataPoint& dataPoint, std::string runType );
+    Float_t ModelLBDistributionMask( const OCAPMT& dataPoint, std::string runType );
 
     // Compute the derivative of the current laserball distribution mask value
     // with respect to each of the parameters in the mask.
@@ -86,7 +86,7 @@ namespace OCA{
     // Given access to a data point, compute the model prediction for the PMT angular response
     // based on the run type. runType = "off-axis" or runType = "central"
     // for the off-axis and central runs respectively.
-    Float_t ModelAngularResponse( const OCADataPoint& dataPoint, std::string runType );
+    Float_t ModelAngularResponse( const OCAPMT& dataPoint, std::string runType );
 
 
     /////////////////////////////////

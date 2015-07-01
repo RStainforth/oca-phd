@@ -13,17 +13,17 @@
 ///     04/2015 : RPFS - First Revision, new file.
 ///
 /// DETAIL: This class acts on two 'Store' type objects.
-///         - OCADataStore
+///         - OCAPMTStore
 ///         - OCAFilterStore
 ///
-///         The OCADataFiller object takes each OCADataPoint
-///         from the OCADataStore, and passes it to each 
+///         The OCADataFiller object takes each OCAPMT
+///         from the OCAPMTStore, and passes it to each 
 ///         OCADataFilter in the OCAFilterStore. If the
-///         OCADataPoint passes all the 'check' conditions
+///         OCAPMT passes all the 'check' conditions
 ///         as determined by the filters, then it is added to
-///         a final, newly created OCADataStore object which is
+///         a final, newly created OCAPMTStore object which is
 ///         consequently returned with the address of the original
-///         OCADataStore.
+///         OCAPMTStore.
 /// 
 ///         NOTE: a OCAChiSquare object is also required for this
 ///         to work as some filters make use of the initial chi-square
@@ -34,7 +34,7 @@
 #ifndef _OCADataFiller_
 #define _OCADataFiller_
 
-#include "OCADataStore.hh"
+#include "OCAPMTStore.hh"
 #include "OCAFilterStore.hh"
 #include "OCAChiSquare.hh"
 
@@ -57,7 +57,7 @@ namespace OCA{
     // Filter the current data. This requires a OCAChiSquare object if 
     // one of the filters is a chi square elimination cut
     void FilterData( OCAFilterStore* lFilterStore, 
-                     OCADataStore* lDataStore, 
+                     OCAPMTStore* lDataStore, 
                      OCAChiSquare* lChiSq = NULL );
 
     ClassDef( OCADataFiller, 1 );

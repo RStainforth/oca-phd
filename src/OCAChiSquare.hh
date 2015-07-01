@@ -6,7 +6,7 @@
 ///
 /// BRIEF: A simple class to compute the global chi-square
 ///        of an entire data set given a OCAModel object,
-///        a OCAModelParameterStore object and a OCADataStore
+///        a OCAModelParameterStore object and a OCAPMTStore
 ///        object
 ///                
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
@@ -16,8 +16,8 @@
 ///
 /// DETAIL: The OCAChiSquare object is used to compute the
 ///         individual and global chisquare from a set of
-///         data points (in the form of OCADataPoint objects)
-///         stored in a OCADataStore object. The model prediction
+///         data points (in the form of OCAPMT objects)
+///         stored in a OCAPMTStore object. The model prediction
 ///         used to compare the data values is a OCAOpticsModel
 ///         object. The 'data' is the occupancy ratio variable.
 /// 
@@ -43,8 +43,8 @@
 
 #include "OCAOpticsModel.hh"
 #include "OCAModelParameterStore.hh"
-#include "OCADataPoint.hh"
-#include "OCADataStore.hh"
+#include "OCAPMT.hh"
+#include "OCAPMTStore.hh"
 #include "OCAMath.hh"
 
 using namespace std;
@@ -63,12 +63,12 @@ namespace OCA{
     ////////     METHODS     ////////
     /////////////////////////////////
 
-    // Evaluate the chi-square for a single OCADataPoint object.
-    Float_t EvaluateChiSquare( OCADataPoint& dPoint );
+    // Evaluate the chi-square for a single data-point (OCAPMT object).
+    Float_t EvaluateChiSquare( OCAPMT& dPoint );
 
-    // Evaluate the global chi-square for all the OCADataPoint objects
+    // Evaluate the global chi-square for all the OCAPMT objects
     // that this OCAChiSquare object has access to, as provided by the
-    // the 'fDataStore' OCADataStore object pointer private variable.
+    // the 'fDataStore' OCAPMTStore object pointer private variable.
     Float_t EvaluateGlobalChiSquare();
 
     // This evaluates the solution vector and passes through to 
@@ -80,8 +80,8 @@ namespace OCA{
     // Evaluates the model for a trial set of parameters 'testParameters'
     // and then calculates the derivatives 'dDataValDParameters' with 
     // respect to each variable parameter relevant to the provided 
-    // OCADataPoint.
-    void FitEvaluateModel( OCADataPoint& dPoint, Float_t testParameters[],
+    // OCAPMT.
+    void FitEvaluateModel( OCAPMT& dPoint, Float_t testParameters[],
                            Float_t *modelVal, Float_t dDataValDParameters[], 
                            Int_t nParameters );
 
@@ -98,7 +98,7 @@ namespace OCA{
                               Int_t nParameters, Float_t **covarianceMatrix, 
                               Float_t **derivativeMatrix, Float_t *chiSquareVal );
     // Performs the optics fit.
-    void PerformOpticsFit();
+    void PerformOpticsFit( const int pass );
 
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -108,13 +108,13 @@ namespace OCA{
     // model predictions when calculating the chi-square for a data point.
     void SetPointerToModel( OCAOpticsModel* ocaModel ){ fModel = ocaModel; }
     
-    // Set the pointer to the OCADataStore object which is used
+    // Set the pointer to the OCAPMTStore object which is used
     // as the collection of datapoints when calculating the chi-square.
-    void SetPointerToData( OCADataStore* ocaData ){ fDataStore = ocaData; }
+    void SetPointerToData( OCAPMTStore* ocaData ){ fDataStore = ocaData; }
     
   private:
 
-    OCADataStore* fDataStore;       // Pointer to the OCADataStore object.   
+    OCAPMTStore* fDataStore;        // Pointer to the OCAPMTStore object.   
     OCAOpticsModel* fModel;         // Pointer to the OCAOpticsModel object. 
  
     ClassDef( OCAChiSquare, 0 );

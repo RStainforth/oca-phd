@@ -1,6 +1,6 @@
 #include "OCADataFiller.hh"
-#include "OCADataStore.hh"
-#include "OCADataPoint.hh"
+#include "OCAPMTStore.hh"
+#include "OCAPMT.hh"
 #include "OCAFilter.hh"
 #include "OCAFilterStore.hh"
 #include "OCAChiSquare.hh"
@@ -18,11 +18,11 @@ ClassImp( OCADataFiller )
 //////////////////////////////////////
 
 void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
-                                  OCADataStore* lDataStore,
+                                  OCAPMTStore* lDataStore,
                                   OCAChiSquare* lChiSq )
 {
 
-  // Iterate through each datapoint in the OCADataStore 
+  // Iterate through each datapoint in the OCAPMTStore 
   // object 'lDataStore' and apply all the filters in the 
   // passed OCAFilterStore object 'lFilterStore', removing datapoints 
   // which do not satisfy the individual filter conditions. 
@@ -34,8 +34,8 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
   // the datapoints against their model prediction using the current set
   // of parameters in the optical model (linked to the OCAChiSquare object)
 
-  // OCADataPoint iterator to loop through the data points
-  std::vector< OCADataPoint >::iterator iD;
+  // OCAPMT iterator to loop through the data points
+  std::vector< OCAPMT >::iterator iD;
 
   // OCAFilter iterator to loop through and apply the filters 
   // to the datapoints
@@ -51,18 +51,18 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
   // in the final data set.
   Bool_t validPoint = true;
 
-  // The new OCADataStore object which will store all the 
-  // OCADataPoints which successfully pass all the filter
+  // The new OCAPMTStore object which will store all the 
+  // OCAPMTs which successfully pass all the filter
   // conditions. This object will be pointed to by the pointer
   // passed into this function
-  OCADataStore* newStore = new OCADataStore();
+  OCAPMTStore* newStore = new OCAPMTStore();
 
   Int_t currentRunID = 0;
   Int_t previousRunID = 0;
     
-  // Loop through all the datapoints in the OCADataStore object
-  for ( iD = lDataStore->GetOCADataPointsIterBegin();
-        iD != lDataStore->GetOCADataPointsIterEnd();
+  // Loop through all the datapoints in the OCAPMTStore object
+  for ( iD = lDataStore->GetOCAPMTsIterBegin();
+        iD != lDataStore->GetOCAPMTsIterEnd();
         iD++ ){
 
     currentRunID = iD->GetRunID();
@@ -71,7 +71,7 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
          && previousRunID > 0 && currentRunID > 0 ){
       cout << "Filtered Information for Run: " << previousRunID << endl;
       cout << "Laserball Position: (" 
-           << iD->GetLBPos().X() /10.0
+           << iD->GetLBPos().X() / 10.0
            << ", " << iD->GetLBPos().Y() / 10.0
            << ", " << iD->GetLBPos().Z() / 10.0 
            << " ) cm, Radius = " << iD->GetLBPos().Mag() / 10.0 << " cm" << endl;
@@ -95,14 +95,14 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
       // Filters to check boolean values
 
       if ( filterName == "filter_bad_path" ){
-        if ( !iF->CheckBoolCondition( (Bool_t)iD->GetBadPathFlag() ) ){
+        if ( !iF->CheckBoolCondition( (Bool_t)iD->GetBadPath() ) ){
           validPoint = false; break;
         }
       }
 
 
       else if ( filterName == "filter_ctr_bad_path" ){
-        if ( !iF->CheckBoolCondition( (Bool_t)iD->GetCentralBadPathFlag() ) ){
+        if ( !iF->CheckBoolCondition( (Bool_t)iD->GetCentralBadPath() ) ){
           validPoint = false; break;
         }
       }
@@ -111,13 +111,13 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
       // occupancy from the off-axis and central runs
 
       else if ( filterName == "filter_prompt_counts" ){ 
-        if ( !iF->CheckCondition( iD->GetNPromptCounts() ) ){ 
+        if ( !iF->CheckCondition( iD->GetPromptPeakCounts() ) ){ 
           validPoint = false; break;
         }
       }
 
       else if ( filterName == "filter_ctr_prompt_counts" ){ 
-        if ( !iF->CheckCondition( iD->GetCentralNPromptCounts() ) ){ 
+        if ( !iF->CheckCondition( iD->GetCentralPromptPeakCounts() ) ){ 
           validPoint = false; break;
         }
       }
@@ -175,8 +175,8 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
       // the solid angles.
       
       else if ( filterName == "filter_pmt_angle" ){ 
-        if ( !iF->CheckCondition( iD->GetIncidentAngle() ) 
-             || !iF->CheckCondition( iD->GetCentralIncidentAngle() ) ){ 
+        if ( !iF->CheckCondition( TMath::ACos( iD->GetCosTheta() ) * TMath::RadToDeg() ) 
+             || !iF->CheckCondition( TMath::ACos( iD->GetCosTheta() ) * TMath::RadToDeg() ) ){ 
           validPoint = false; break;
         }
       }
@@ -202,13 +202,6 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
       else if ( filterName == "filter_css" ){ 
         if ( !iF->CheckCondition( iD->GetCSSFlag() ) 
              || !iF->CheckCondition( iD->GetCentralCSSFlag() ) ){ 
-          validPoint = false; break;
-        }
-      }
-      
-      else if ( filterName == "filter_bad_path" ){ 
-        if ( !iF->CheckCondition( iD->GetBadPathFlag() ) 
-             || !iF->CheckCondition( iD->GetCentralBadPathFlag() ) ){ 
           validPoint = false; break;
         }
       }

@@ -17,7 +17,7 @@
 ///     04/2015 : RPFS - First Revision, new file.
 ///
 /// DETAIL: The OCAFilter object is used to define a check
-///         condition for which a OCADataPoint object can be
+///         condition for which a OCAPMT object can be
 ///         tested against. For example, the fit may require
 ///         that only data points with an occupancy between
 ///         value X and Y should be included. Therefore this filter

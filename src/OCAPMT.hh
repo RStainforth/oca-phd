@@ -14,7 +14,7 @@
 ///
 /// DETAIL: This data structure contains all the information
 ///         for a specific PMT in a run, required as an input
-///         to a OCADataPoint object for us in an optics 
+///         to a OCAPMT object for us in an optics 
 ///         fit/analysis using OCA.
 ///
 ///         Herein lies information specific to the PMT itself,
@@ -107,59 +107,62 @@ namespace OCA{
     // Get whether or not OCAPMT::VerifyPMT has been called for this
     // PMT and whether the central run values are reasonable.
     Bool_t GetCentralIsVerified() const { return fCentralIsVerified; }
-
-    // Get whether or not OCAPMT::VerifyPMT has been called for this
-    // PMT and whether the wavelength run values are reasonable.
-    Bool_t GetWavelengthIsVerified() const { return fWavelengthIsVerified; }
-
-    // Get the DQXX flag for this PMT in the off-axis run.
-    Int_t GetDQXXFlag() const { return fDQXXFlag; }
-    
-    // Get the DQXX flag for this PMT in the central run.
-    Int_t GetCentralDQXXFlag() const { return fCentralDQXXFlag; }
-    
-    // Get the DQXX flag for this PMT in the wavelength run.
-    Int_t GetWavelengthDQXXFlag() const { return fWavelengthDQXXFlag; }
   
     // Get the position of this PMT as determined by the
     // RAT::DU::PMTInfo::GetPosition utility.
     TVector3 GetPos() const { return fPos; }
 
+    // Get the normal direction of the PMT face as determined
+    // be the RAT::DU::PMTInfo::GetDirection utility.
+    TVector3 GetNorm() const { return fNorm; }
+
     // Get the position of the laserball from the run
     // this PMT came from.
     TVector3 GetLBPos() const { return fLBPos; }
 
-    // Get the normal direction of the PMT face as determined
-    // be the RAT::DU::PMTInfo::GetDirection utility.
-    TVector3 GetNorm() const { return fNorm; }
+    // Get the position of the laserball from the central run
+    // this PMT came from.
+    TVector3 GetCentralLBPos() const { return fCentralLBPos; }
+
+    // Get the position of the laserball from the wavelength run
+    // this PMT came from.
+    TVector3 GetWavelengthLBPos() const { return fWavelengthLBPos; }
+
+    // Get the orientation of the laserball from the off-axis run
+    // this PMT came from.
+    Float_t GetLBOrientation() const { return fLBOrientation; }
+
+    // Get the orientation of the laserball from the central run
+    // this PMT came from.
+    Float_t GetCentralLBOrientation() const { return fCentralLBOrientation; }
+
+    // Get the orientation of the laserball from the wavelength run
+    // this PMT came from.
+    Float_t GetWavelengthLBOrientation() const { return fWavelengthLBOrientation; }
     
      // Get the prompt peak time for this PMT in the off-axis run. [ns]
     Float_t GetPromptPeakTime() const { return fPromptPeakTime; }
 
     // Get the width of the prompt peak for this PMT in the off-axis run. [ns]
     Float_t GetPromptPeakWidth() const { return fPromptPeakWidth; }
-
-    // Get the time of flight from the laserball to the PMT
-    // from the off-axis run. [ns]
-    Float_t GetTimeOfFlight() const { return fTimeOfFlight; }
     
     // Get the number of counts in the prompt peak timing window
     // (window is 4ns either side of prompt peak time mean) from the
     // off-axis run.
-    Float_t GetOccupancy() const { return fOccupancy; }
+    Float_t GetPromptPeakCounts() const { return fPromptPeakCounts; }
     
     // Get the error on the number of counts in the prompt peak timing window
     // (window is 4ns either side of prompt peak time mean) from the
     // off-axis run.
-    Float_t GetOccupancyErr() const { return fOccupancyErr; }
+    Float_t GetPromptPeakCountsErr() const { return fPromptPeakCountsErr; }
+
+    // Get the time of flight from the laserball to the PMT
+    // from the off-axis run. [ns]
+    Float_t GetTimeOfFlight() const { return fTimeOfFlight; }
 
     // Get the laserball intensity normalisation value for the 
     // off-axis run associated with this PMT.
     Float_t GetLBIntensityNorm() const { return fLBIntensityNorm; }
-
-    // Set the total number of prompt counts within the timing window 
-    // across all PMTs from the run this PMT came from.
-    Float_t GetTotalNRunPromptCounts() const { return fTotalNRunPromptCounts; }
 
     // Get the number of laserball pulses in the off-axis
     // run associated with this PMT.
@@ -188,14 +191,6 @@ namespace OCA{
     // Get the distance in the water region associated with the
     // light path associated with this PMT from the off-axis run.
     Float_t GetDistInWater() const { return fDistInWater; }
-
-    // Get the distance in the neck region assocaited with the
-    // light path assocaited with this PMT from the off-axis.
-    Float_t GetDistInNeck() const { return fDistInNeck; }
-
-    // Get the total distance of the light path assocaited
-    // with this PMT from the off-axis run.
-    Float_t GetTotalDist() const { return fTotalDist; }
     
     // Get the value of the solid angle subtended by the PMT from the
     // laserball position in the off-axis run.
@@ -208,11 +203,11 @@ namespace OCA{
     
     // Get the value the theta value of the light path from the laserball
     // in the off-axis run relative to the laserball axis.
-    Float_t GetRelLBTheta() const { return fRelLBTheta; }
+    Float_t GetLBTheta() const { return fLBTheta; }
 
     // Get the value the phi value of the light path from the laserball
     // in the off-axis run relative to the laserball axis.
-    Float_t GetRelLBPhi() const { return fRelLBPhi; }
+    Float_t GetLBPhi() const { return fLBPhi; }
     
     // Get the CHS flag for this PMT from the off-axis run.
     // Note: Same as DQXX for now. Will deprecate one depending
@@ -251,19 +246,19 @@ namespace OCA{
     // Get the width of the prompt peak for this PMT in the central run. [ns]
     Float_t GetCentralPromptPeakWidth() const { return fCentralPromptPeakWidth; }
 
-    // Get the time of flight from the laserball to the PMT
-    // from the central run. [ns]
-    Float_t GetCentralTimeOfFlight() const { return fCentralTimeOfFlight; }
-
     // Get the number of counts in the prompt peak timing window
     // (window is 4ns either side of prompt peak time mean) from the
     // central run.
-    Float_t GetCentralOccupancy() const { return fCentralOccupancy; }
+    Float_t GetCentralPromptPeakCounts() const { return fCentralPromptPeakCounts; }
 
     // Get the error on the number of counts in the prompt peak timing window
     // (window is 4ns either side of prompt peak time mean) from the
     // central run.
-    Float_t GetCentralOccupancyErr() const { return fCentralOccupancyErr; }
+    Float_t GetCentralPromptPeakCountsErr() const { return fCentralPromptPeakCountsErr; }
+
+    // Get the time of flight from the laserball to the PMT
+    // from the central run. [ns]
+    Float_t GetCentralTimeOfFlight() const { return fCentralTimeOfFlight; }
 
     // Get the laserball intensity normalisation value for the 
     // central run associated with this PMT.
@@ -296,14 +291,6 @@ namespace OCA{
     // Get the distance in the water region associated with the
     // light path associated with this PMT from the central run.
     Float_t GetCentralDistInWater() const { return fCentralDistInWater; }
-
-    // Get the distance in the neck region assocaited with the
-    // light path assocaited with this PMT from the central.
-    Float_t GetCentralDistInNeck() const { return fCentralDistInNeck; }
-
-    // Get the total distance of the light path assocaited
-    // with this PMT from the central run.
-    Float_t GetCentralTotalDist() const { return fCentralTotalDist; }
     
     // Get the value of the solid angle subtended by the PMT from the
     // laserball position in the central run.
@@ -316,11 +303,11 @@ namespace OCA{
     
     // Get the value the theta value of the light path from the laserball
     // in the central run relative to the laserball axis.
-    Float_t GetCentralRelLBTheta() const { return fCentralRelLBTheta; }
+    Float_t GetCentralLBTheta() const { return fCentralLBTheta; }
 
     // Get the value the phi value of the light path from the laserball
     // in the central run relative to the laserball axis.
-    Float_t GetCentralRelLBPhi() const { return fCentralRelLBPhi; }
+    Float_t GetCentralLBPhi() const { return fCentralLBPhi; }
     
     // Get the CHS flag for this PMT from the central run.
     // Note: Same as DQXX for now. Will deprecate one depending
@@ -349,112 +336,28 @@ namespace OCA{
     // which reached this PMT in the central run.
     TVector3 GetCentralIncidentLBVec() const { return fCentralIncidentLBVec; }
 
-    ////////////////////////////////////////////
-    ////////     WAVELENGTH GETTERS     ////////
-    ////////////////////////////////////////////
+    //////////////////////////////////////////////////////
+    ////////     GETTERS FOR FITTING ROUTINES     ////////
+    //////////////////////////////////////////////////////
 
-    // Get the prompt peak time for this PMT in the wavelength run. [ns]
-    Float_t GetWavelengthPromptPeakTime() const { return fWavelengthPromptPeakTime; }
+    // Get the occupancy ratio for this PMT
+    // Occupancy ratio is MPECorrOccupancy / CentralMPECorrOccupancy
+    Float_t GetOccupancyRatio() const { return fOccupancyRatio; }
 
-    // Get the width of the prompt peak for this PMT in the wavelength run. [ns]
-    Float_t GetWavelengthPromptPeakWidth() const { return fWavelengthPromptPeakWidth; }  
+    // Get the model predicted occupancy ratio for this PMT
+    Float_t GetModelOccupancyRatio() const { return fModelOccupancyRatio; }
 
-    // Get the time of flight from the laserball to the PMT
-    // from the wavelength run. [ns]
-    Float_t GetWavelengthTimeOfFlight() const { return fWavelengthTimeOfFlight; }
+    // Get the error on the occupancy ratio for this PMT
+    Float_t GetOccupancyRatioErr() const { return fOccupancyRatioErr; }
 
-    // Get the number of counts in the prompt peak timing window
-    // (window is 4ns either side of prompt peak time mean) from the
-    // wavelength run.
-    Float_t GetWavelengthOccupancy() const { return fWavelengthOccupancy; }
+    // Get the systematic PMT variability error for this PMT.
+    Float_t GetPMTVariability() const { return fPMTVariability; }
 
-    // Get the error on the number of counts in the prompt peak timing window
-    // (window is 4ns either side of prompt peak time mean) from the
-    // wavelength run.
-    Float_t GetWavelengthOccupancyErr() const { return fWavelengthOccupancyErr; }
-    
-    // Get the laserball intensity normalisation value for the 
-    // wavelength run associated with this PMT.
-    Float_t GetWavelengthLBIntensityNorm() const { return fWavelengthLBIntensityNorm; }
+    // Get the index of the run as this PMT appeared in the fit.
+    Int_t GetRunIndex() const { return fRunIndex; }
 
-    // Get the number of laserball pulses in the wavelength
-    // run associated with this PMT.
-    Float_t GetWavelengthNLBPulses() const { return fWavelengthNLBPulses; }
-    
-    // Get the Multi-Photoelectron corrected occupancy for this PMT
-    // for the wavelength run.
-    Float_t GetWavelengthMPECorrOccupancy() const { return fWavelengthMPECorrOccupancy; }
-    // Get the error on the Multi-Photoelectron corrected occupancy 
-    // for this PMT for the wavelength run.
-    Float_t GetWavelengthMPECorrOccupancyErr() const { return fWavelengthMPECorrOccupancyErr; }
-    
-    // Get the Fresnel transmission coefficient for the light path
-    // associated with this PMT from the wavelength run.
-    Float_t GetWavelengthFresnelTCoeff() const { return fWavelengthFresnelTCoeff; }
-    
-    // Get the distance in the inner AV region associated with the
-    // light path associated with this PMT from the wavelength run.
-    Float_t GetWavelengthDistInInnerAV() const { return fWavelengthDistInInnerAV; }
-
-    // Get the distance in the AV region associated with the
-    // light path associated with this PMT from the wavelength run.
-    Float_t GetWavelengthDistInAV() const { return fWavelengthDistInAV; }
-
-    // Get the distance in the water region associated with the
-    // light path associated with this PMT from the wavelength run.
-    Float_t GetWavelengthDistInWater() const { return fWavelengthDistInWater; }
-    
-    // Get the distance in the neck region assocaited with the
-    // light path assocaited with this PMT from the wavelength.
-    Float_t GetWavelengthDistInNeck() const { return fWavelengthDistInNeck; }
-
-    // Get the total distance of the light path assocaited
-    // with this PMT from the wavelength run.
-    Float_t GetWavelengthTotalDist() const { return fWavelengthTotalDist; }
-    
-    // Get the value of the solid angle subtended by the PMT from the
-    // laserball position in the wavelength run.
-    Float_t GetWavelengthSolidAngle() const { return fWavelengthSolidAngle; }
-
-    // Get the value of the cosine of the incident angle of the
-    // light path incident on this PMT from the laserball from the
-    // wavelength run.
-    Float_t GetWavelengthCosTheta() const { return fWavelengthCosTheta; }
-    
-    // Get the value the theta value of the light path from the laserball
-    // in the wavelength run relative to the laserball axis.
-    Float_t GetWavelengthRelLBTheta() const { return fWavelengthRelLBTheta; }
-
-    // Get the value the phi value of the light path from the laserball
-    // in the wavelength run relative to the laserball axis.
-    Float_t GetWavelengthRelLBPhi() const { return fWavelengthRelLBPhi; }
-    
-    // Get the CHS flag for this PMT from the wavelength run.
-    // Note: Same as DQXX for now. Will deprecate one depending
-    // on best choice of name.
-    Bool_t GetWavelengthCHSFlag() const { return fWavelengthCHSFlag; }
-
-    // Get the CSS flag for this PMT from the wavelength run.
-    // Note: Same as ANXX for now. Will deprecate one depending
-    // on best choice of name.
-    Bool_t GetWavelengthCSSFlag() const { return fWavelengthCSSFlag; }
-
-    // Get the flag associated with the state of the light path
-    // associated with this PMT from the wavelength run.
-    Bool_t GetWavelengthBadPath() const { return fWavelengthBadPath; }
-
-    // Get the flag associated with whether the light path went 
-    // thorugh the neck or not to reach this PMT from the
-    // wavelength run.
-    Bool_t GetWavelengthNeckFlag() const { return fWavelengthNeckFlag; }
-
-    // Get the initial photon vector associated with the lightpath
-    // which reached this PMT in the wavelength run.
-    TVector3 GetWavelengthInitialLBVec() const { return fWavelengthInitialLBVec; }
-    
-    // Get the incident photon vector associated with the lightpath
-    // which reached this PMT in the wavelength run.
-    TVector3 GetWavelengthIncidentLBVec() const { return fWavelengthIncidentLBVec; }
+    // Get the raw efficiency estimator of the PMT as it appeared in the fit.
+    Float_t GetRawEfficiency() const { return fRawEfficiency; }
     
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -482,31 +385,38 @@ namespace OCA{
     // Set whether or not OCAPMT::VerifyPMT has been called for this
     // PMT and whether the central run values are reasonable.
     void SetCentralIsVerified( const Bool_t verified ){ fCentralIsVerified = verified; }
-
-    // Set whether or not OCAPMT::VerifyPMT has been called for this
-    // PMT and whether the wavelength run values are reasonable.
-    void SetWavelengthIsVerified( const Bool_t verified ){ fWavelengthIsVerified = verified; }
-
-    // Set the DQXX flag for this PMT in the off-axis run.
-    void SetDQXXFlag( const Int_t val ){ fDQXXFlag = val; }
-
-    // Set the DQXX flag for this PMT in the central run.
-    void SetCentralDQXXFlag( const Int_t val ){ fCentralDQXXFlag = val; }
-
-    // Set the DQXX flag for this PMT in the wavelength run.
-    void SetWavelengthDQXXFlag( const Int_t val ){ fWavelengthDQXXFlag = val; }
                             
     // Set the position of this PMT as determined by the
     // RAT::DU::PMTInfo::GetPosition utility.
     void SetPos( const TVector3 xyzPos ){ fPos = xyzPos; }
 
-    // Set the position of the laserball from the run
+    // Set the normal direction of the PMT face as determined
+    // be the RAT::DU::PMTInfo::GetDirection utility.
+    void SetNorm( const TVector3 uvwOri ){ fNorm = uvwOri; } 
+
+    // Set the position of the laserball from the off-axis run
     // this PMT came from.
     void SetLBPos( const TVector3 lbPos ){ fLBPos = lbPos; }
 
-    // Set the normal direction of the PMT face as determined
-    // be the RAT::DU::PMTInfo::GetDirection utility.
-    void SetNorm( const TVector3 uvwOri ){ fNorm = uvwOri; }                
+    // Set the position of the laserball from the central run
+    // this PMT came from.
+    void SetCentralLBPos( const TVector3 lbPos ){ fCentralLBPos = lbPos; }
+
+    // Set the position of the laserball from the wavelength run
+    // this PMT came from.
+    void SetWavelengthLBPos( const TVector3 lbPos ){ fWavelengthLBPos = lbPos; }
+
+    // Set the orientation of the laserball from the off-axis run
+    // this PMT came from.
+    void SetLBOrientation( const Float_t lbOri ){ fLBOrientation = lbOri; }
+
+    // Set the orientation of the laserball from the central run
+    // this PMT came from.
+    void SetCentralLBOrientation( const Float_t lbOri ){ fCentralLBOrientation = lbOri; } 
+
+    // Set the orientation of the laserball from the wavelength run
+    // this PMT came from.
+    void SetWavelengthLBOrientation( const Float_t lbOri ){ fWavelengthLBOrientation = lbOri; }            
     
     // Set the prompt peak time for this PMT in the off-axis run. [ns]
     void SetPromptPeakTime( const Float_t tPeak ){ fPromptPeakTime = tPeak; }
@@ -514,27 +424,23 @@ namespace OCA{
     // Set the width of the prompt peak for this PMT in the off-axis run. [ns]
     void SetPromptPeakWidth( const Float_t tWidth ){ fPromptPeakWidth = tWidth; }
 
-    // Set the time of flight from the laserball to the PMT
-    // from the off-axis run. [ns]
-    void SetTimeOfFlight( const Float_t tOF ){ fTimeOfFlight = tOF; }
-
     // Set the number of counts in the prompt peak timing window
     // (window is 4ns either side of prompt peak time mean) from the
     // off-axis run.
-    void SetOccupancy( const Float_t occ ){ fOccupancy = occ; }
+    void SetPromptPeakCounts( const Float_t occ ){ fPromptPeakCounts = occ; }
 
     // Set the error on the number of counts in the prompt peak timing window
     // (window is 4ns either side of prompt peak time mean) from the
     // off-axis run.
-    void SetOccupancyErr( const Float_t occErr ){ fOccupancyErr = occErr; }
+    void SetPromptPeakCountsErr( const Float_t occErr ){ fPromptPeakCountsErr = occErr; }
+
+    // Set the time of flight from the laserball to the PMT
+    // from the off-axis run. [ns]
+    void SetTimeOfFlight( const Float_t tOF ){ fTimeOfFlight = tOF; }
 
     // Set the laserball intensity normalisation value for the 
     // off-axis run associated with this PMT.
     void SetLBIntensityNorm( const Float_t intensityNorm ){ fLBIntensityNorm = intensityNorm; }
-
-    // Set the total number of prompt counts within the timing window 
-    // across all PMTs from the run this PMT came from.
-    void SetTotalNRunPromptCounts( const Float_t val ){ fTotalNRunPromptCounts = val; }
 
     // Set the number of laserball pulses in the off-axis
     // run associated with this PMT.
@@ -564,15 +470,6 @@ namespace OCA{
     // light path associated with this PMT from the off-axis run.
     void SetDistInWater( const Float_t distInWater ){ fDistInWater = distInWater; }
 
-    // Set the distance in the neck region assocaited with the
-    // light path assocaited with this PMT from the off-axis.
-    void SetDistInNeck( const Float_t distInNeck ){ fDistInNeck = distInNeck; }
-
-    // Set the total distance of the light path assocaited
-    // with this PMT from the off-axis run.
-    void SetTotalDist( const Float_t distTotal ){ fTotalDist = distTotal; }
-    
-
     // Set the value of the solid angle subtended by the PMT from the
     // laserball position in the off-axis run.
     void SetSolidAngle( const Float_t solidA ){ fSolidAngle = solidA; }
@@ -584,11 +481,11 @@ namespace OCA{
     
     // Set the value the theta value of the light path from the laserball
     // in the off-axis run relative to the laserball axis.
-    void SetRelLBTheta( const Float_t theta ){ fRelLBTheta = theta; }
+    void SetLBTheta( const Float_t theta ){ fLBTheta = theta; }
 
     // Set the value the phi value of the light path from the laserball
     // in the off-axis run relative to the laserball axis.
-    void SetRelLBPhi( const Float_t phi ){ fRelLBPhi = phi; }
+    void SetLBPhi( const Float_t phi ){ fLBPhi = phi; }
 
     // Set the CHS flag for this PMT from the off-axis run.
     // Note: Same as DQXX for now. Will deprecate one depending
@@ -627,19 +524,19 @@ namespace OCA{
     // Set the width of the prompt peak for this PMT in the central run. [ns]
     void SetCentralPromptPeakWidth( const  Float_t tWidth ){ fCentralPromptPeakWidth = tWidth; }  
 
-    // Set the time of flight from the laserball to the PMT
-    // from the central run. [ns]
-    void SetCentralTimeOfFlight( const  Float_t tOF ){ fCentralTimeOfFlight = tOF; }
-
      // Set the number of counts in the prompt peak timing window
     // (window is 4ns either side of prompt peak time mean) from the
     // central run.
-    void SetCentralOccupancy( const  Float_t occ ){ fCentralOccupancy = occ; }
+    void SetCentralPromptPeakCounts( const  Float_t occ ){ fCentralPromptPeakCounts = occ; }
     
     // Set the error on the number of counts in the prompt peak timing window
     // (window is 4ns either side of prompt peak time mean) from the
     // central run.
-    void SetCentralOccupancyErr( const  Float_t occErr ){ fCentralOccupancyErr = occErr; }
+    void SetCentralPromptPeakCountsErr( const  Float_t occErr ){ fCentralPromptPeakCountsErr = occErr; }
+
+   // Set the time of flight from the laserball to the PMT
+    // from the central run. [ns]
+    void SetCentralTimeOfFlight( const  Float_t tOF ){ fCentralTimeOfFlight = tOF; }
 
     // Set the laserball intensity normalisation value for the 
     // central run associated with this PMT.
@@ -672,14 +569,6 @@ namespace OCA{
     // Set the distance in the water region associated with the
     // light path associated with this PMT from the central run.
     void SetCentralDistInWater( const  Float_t distInWater ){ fCentralDistInWater = distInWater; }
-
-    // Set the distance in the neck region assocaited with the
-    // light path assocaited with this PMT from the central.
-    void SetCentralDistInNeck( const  Float_t distInNeck ){ fCentralDistInNeck = distInNeck; }
-
-    // Set the total distance of the light path assocaited
-    // with this PMT from the central run.
-    void SetCentralTotalDist( const  Float_t distTotal ){ fCentralTotalDist = distTotal; }
     
     // Set the value of the solid angle subtended by the PMT from the
     // laserball position in the central run.
@@ -692,11 +581,11 @@ namespace OCA{
     
     // Set the value the theta value of the light path from the laserball
     // in the central run relative to the laserball axis.
-    void SetCentralRelLBTheta( const  Float_t theta ){ fCentralRelLBTheta = theta; }
+    void SetCentralLBTheta( const  Float_t theta ){ fCentralLBTheta = theta; }
 
     // Set the value the phi value of the light path from the laserball
     // in the central run relative to the laserball axis.
-    void SetCentralRelLBPhi( const  Float_t phi ){ fCentralRelLBPhi = phi; }
+    void SetCentralLBPhi( const  Float_t phi ){ fCentralLBPhi = phi; }
 
     // Set the CHS flag for this PMT from the central run.
     // Note: Same as DQXX for now. Will deprecate one depending
@@ -725,113 +614,28 @@ namespace OCA{
     // which reached this PMT in the central run.
     void SetCentralIncidentLBVec( const TVector3 vec ){ fCentralIncidentLBVec = vec; }
 
-    ////////////////////////////////////////////
-    ////////     WAVELENGTH SETTERS     ////////
-    ////////////////////////////////////////////
+    //////////////////////////////////////////////////////
+    ////////     SETTERS FOR FITTING ROUTINES     ////////
+    //////////////////////////////////////////////////////
 
-    // Set the prompt peak time for this PMT in the wavelength run. [ns]
-    void SetWavelengthPromptPeakTime( const  Float_t tPeak ){ fWavelengthPromptPeakTime = tPeak; }
+    // Set the occupancy ratio for this PMT
+    // Occupancy ratio is MPECorrOccupancy / CentralMPECorrOccupancy
+    void SetOccupancyRatio( const Float_t occRatio ){ fOccupancyRatio = occRatio; }
 
-    // Set the width of the prompt peak for this PMT in the wavelength run. [ns]
-    void SetWavelengthPromptPeakWidth( const  Float_t tWidth ){ fWavelengthPromptPeakWidth = tWidth; }  
+    // Set the model predicted occupancy ratio for this PMT
+    void SetModelOccupancyRatio( const Float_t occRatio ){ fModelOccupancyRatio = occRatio; }
 
-    // Set the time of flight from the laserball to the PMT
-    // from the wavelength run. [ns]
-    void SetWavelengthTimeOfFlight( const  Float_t tOF ){ fWavelengthTimeOfFlight = tOF; }
+    // Set the error on the occupancy ratio for this PMT
+    void SetOccupancyRatioErr( const Float_t occRatioErr ){ fOccupancyRatioErr = occRatioErr; }
 
-    // Set the number of counts in the prompt peak timing window
-    // (window is 4ns either side of prompt peak time mean) from the
-    // wavelength run.
-    void SetWavelengthOccupancy( const  Float_t occ ){ fWavelengthOccupancy = occ; }
+    // Set the systematic PMT variability error for this PMT.
+    void SetPMTVariability( const Float_t pmtVar ){ fPMTVariability = pmtVar; }
 
-    // Set the error on the number of counts in the prompt peak timing window
-    // (window is 4ns either side of prompt peak time mean) from the
-    // wavelength run.
-    void SetWavelengthOccupancyErr( const  Float_t occErr ){ fWavelengthOccupancyErr = occErr; }
+    // Set the index of the run as this PMT appeared in the fit.
+    void SetRunIndex( const Int_t runIndex ) { fRunIndex = runIndex; }
 
-    // Set the laserball intensity normalisation value for the 
-    // wavelength run associated with this PMT.
-    void SetWavelengthLBIntensityNorm( const  Float_t intensityNorm ){ fWavelengthLBIntensityNorm = intensityNorm; }
-
-    // Set the number of laserball pulses in the wavelength
-    // run associated with this PMT.
-    void SetWavelengthNLBPulses( const  Float_t nPulses ){ fWavelengthNLBPulses = nPulses; }
-
-    // Set the Multi-Photoelectron corrected occupancy for this PMT
-    // for the wavelength run.
-    void SetWavelengthMPECorrOccupancy( const  Float_t mpeCorr ){ fWavelengthMPECorrOccupancy = mpeCorr; }
-
-    // Set the error on the Multi-Photoelectron corrected occupancy 
-    // for this PMT for the wavelength run.
-    void SetWavelengthMPECorrOccupancyErr( const  Float_t mpeCorrErr ){ fWavelengthMPECorrOccupancyErr = mpeCorrErr; }
-    
-    // Set the Fresnel transmission coefficient for the light path
-    // associated with this PMT from the wavelength run.
-    void SetWavelengthFresnelTCoeff( const  Float_t fresnelCoeff ){ fWavelengthFresnelTCoeff = fresnelCoeff; }
-    
-    // Set the distance in the inner AV region associated with the
-    // light path associated with this PMT from the wavelength run.
-    void SetWavelengthDistInInnerAV( const  Float_t distInScint ){ fWavelengthDistInInnerAV = distInScint; }
-
-    // Set the distance in the AV region assocaited with the
-    // light path associated with this PMT from the wavelength run.
-    void SetWavelengthDistInAV( const  Float_t distInAV ){ fWavelengthDistInAV = distInAV; }
-
-    // Set the distance in the water region associated with the
-    // light path associated with this PMT from the wavelength run.
-    void SetWavelengthDistInWater( const  Float_t distInWater ){ fWavelengthDistInWater = distInWater; }
-
-    // Set the distance in the neck region assocaited with the
-    // light path assocaited with this PMT from the wavelength.
-    void SetWavelengthDistInNeck( const  Float_t distInNeck ){ fWavelengthDistInNeck = distInNeck; }
-
-    // Set the total distance of the light path assocaited
-    // with this PMT from the wavelength run.
-    void SetWavelengthTotalDist( const  Float_t distTotal ){ fWavelengthTotalDist = distTotal; }
-    
-    // Set the value of the solid angle subtended by the PMT from the
-    // laserball position in the wavelength run.
-    void SetWavelengthSolidAngle( const  Float_t solidA ){ fWavelengthSolidAngle = solidA; }
-
-    // Set the value of the cosine of the incident angle of the
-    // light path incident on this PMT from the laserball from the
-    // wavelength run.
-    void SetWavelengthCosTheta( const  Float_t cosTheta ){ fWavelengthCosTheta = cosTheta; }
-    
-    // Set the value the theta value of the light path from the laserball
-    // in the wavelength run relative to the laserball axis.
-    void SetWavelengthRelLBTheta( const  Float_t theta ){ fWavelengthRelLBTheta = theta; }
-    
-    // Set the value the phi value of the light path from the laserball
-    // in the wavelength run relative to the laserball axis.
-    void SetWavelengthRelLBPhi( const  Float_t phi ){ fWavelengthRelLBPhi = phi; }
-
-    // Set the CHS flag for this PMT from the wavelength run.
-    // Note: Same as DQXX for now. Will deprecate one depending
-    // on best choice of name.
-    void SetWavelengthCHSFlag( const Bool_t boolVal ){ fWavelengthCHSFlag = boolVal; }
-
-    // Set the CSS flag for this PMT from the wavelength run.
-    // Note: Same as ANXX for now. Will deprecate one depending
-    // on best choice of name.
-    void SetWavelengthCSSFlag( const Bool_t boolVal ){ fWavelengthCSSFlag = boolVal; }
-    
-    // Set the flag associated with the state of the light path
-    // associated with this PMT from the wavelength run.
-    void SetWavelengthBadPath( const  Bool_t badPath ){ fWavelengthBadPath = badPath; }
-
-    // Set the flag associated with whether the light path went 
-    // thorugh the neck or not to reach this PMT from the
-    // wavelength run.
-    void SetWavelengthNeckFlag( const  Bool_t neckFlag ){ fWavelengthNeckFlag = neckFlag; }
-
-    // Set the initial photon vector associated with the lightpath
-    // which reached this PMT in the wavelength run.
-    void SetWavelengthInitialLBVec( const TVector3 vec ){ fWavelengthInitialLBVec = vec; }
-
-    // Set the incident photon vector associated with the lightpath
-    // which reached this PMT in the wavelength run.
-    void SetWavelengthIncidentLBVec( const TVector3 vec ){ fWavelengthIncidentLBVec = vec; }
+    // Set the raw efficiency estimator of the PMT as it appeared in the fit.
+    void SetRawEfficiency( const Float_t rawEff ) { fRawEfficiency = rawEff; }
     
   private:
     
@@ -857,44 +661,41 @@ namespace OCA{
     Bool_t fIsVerified;                           // TRUE: PMT has sensible values FALSE: Some bad values
                                                   // See OCAPMT::VerifyPMT for details (OCAPMT.cc)
     Bool_t fCentralIsVerified;
-    Bool_t fWavelengthIsVerified;
-
-    Int_t fDQXXFlag;                              // Integer status for DQXX KCCC_TUBE_ON_LINE the PMT from off-axis run
-    Int_t fCentralDQXXFlag;                       // Integer status for DQXX KCCC_TUBE_ON_LINE the PMT from central run
-    Int_t fWavelengthDQXXFlag;                    // Integer status for DQXX KCCC_TUBE_ON_LINE the PMT from wavelength run
     
     TVector3 fPos;                                // PMT Position
-    TVector3 fLBPos;                              // Laserball position.
     TVector3 fNorm;                               // PMT Orientation
+    TVector3 fLBPos;                              // Laserball position.
+    TVector3 fCentralLBPos;                       // Laserball position from the central run.
+    TVector3 fWavelengthLBPos;                    // Laserball position from the wavelength run.
+    Float_t  fLBOrientation;                      // Laserball orientation.
+    Float_t  fCentralLBOrientation;               // Laserball orientation from the central run.
+    Float_t  fWavelengthLBOrientation;            // Laserball orientation from the wavelength run.
     
     Float_t fPromptPeakTime;                      // Time of Prompt Peak [ns] 
     Float_t fPromptPeakWidth;                     // Width of Prompt Peak [ns]
+
+    Float_t fPromptPeakCounts;                    // Prompt Peak Counts 
+    Float_t fPromptPeakCountsErr;                 // Error on Occupancy of this PMT
+
     Float_t fTimeOfFlight;                        // Time of Flight from source to PMT [ns]
-    Float_t fOccupancy;                           // Prompt Peak Counts 
-    Float_t fOccupancyErr;                        // Error on Occupancy of this PMT
+
     Float_t fLBIntensityNorm;                     // The prompt peak normalisation for the entire run
-
-    Float_t fTotalNRunPromptCounts;               // The total number of prompt counts within the timing window across all PMTs from the run this PMT came from.
-
     Float_t fNLBPulses;                           // Number of LaserBall pulses for this run.
 
     Float_t fMPECorrOccupancy;                    // MPE corrected occupancy
     Float_t fMPECorrOccupancyErr;                 // Error on the MPE corrected occupancy
-
     
     Float_t fFresnelTCoeff;                       // Acrylic Fresnel transmission coefficient
     
     Float_t fDistInInnerAV;                       // Distance through the scintillator region [mm]
     Float_t fDistInAV;                            // Distance through the acrylic region [mm]
     Float_t fDistInWater;                         // Distance through the water region [mm]
-    Float_t fDistInNeck;                          // Distance through the Neck region (if applicable) i.e. fNeckFlag == TRUE
-    Float_t fTotalDist;                           // Total distance through the detector
     
     Float_t fSolidAngle;                          // Solid Angle subtended by this PMT from source (LaserBall) position
     Float_t fCosTheta;                            // Cosine of light vector incident on the the PMT face
 
-    Float_t fRelLBTheta;                          // LaserBall Theta value for this PMT from the Laserball position
-    Float_t fRelLBPhi;                            // LaserBall Phi value for this PMT from the LaserBall position
+    Float_t fLBTheta;                             // LaserBall Theta value for this PMT from the Laserball position
+    Float_t fLBPhi;                               // LaserBall Phi value for this PMT from the LaserBall position
     
     Bool_t fCHSFlag;                              // (DQXX Flag) TRUE: Bad Channel FALSE: Good Channel
     Bool_t fCSSFlag;                              // (ANXX Flag) TRUE: Bad Channel FALSE: Good Channel
@@ -911,12 +712,13 @@ namespace OCA{
 
     Float_t fCentralPromptPeakTime;               // Time of Prompt Peak [ns] - From the central run
     Float_t fCentralPromptPeakWidth;              // Width of Prompt Peak [ns] - From the central run
+
+    Float_t fCentralPromptPeakCounts;             // Prompt Peak Counts  - From the central run
+    Float_t fCentralPromptPeakCountsErr;          // Error on Occupancy of this PMT - From the central run
+
     Float_t fCentralTimeOfFlight;                 // Time of Flight from source to PMT [ns] - From the central run
-    Float_t fCentralOccupancy;                    // Prompt Peak Counts  - From the central run
-    Float_t fCentralOccupancyErr;                 // Error on Occupancy of this PMT - From the central run
 
     Float_t fCentralLBIntensityNorm;              // The prompt peak normalisation for the entire run - From the central run
-
     Float_t fCentralNLBPulses;                    // Number of LaserBall pulses for this run. - From the central run
 
     Float_t fCentralMPECorrOccupancy;             // MPE corrected occupancy - From the central run
@@ -927,14 +729,12 @@ namespace OCA{
     Float_t fCentralDistInInnerAV;                // Distance through the scintillator region [mm] - From the central run
     Float_t fCentralDistInAV;                     // Distance through the acrylic region [mm] - From the central run
     Float_t fCentralDistInWater;                  // Distance through the water region [mm] - From the central run
-    Float_t fCentralDistInNeck;                   // Distance through the Neck region (if applicable) i.e. fNeckFlag == TRUE - From the central run
-    Float_t fCentralTotalDist;                    // Total distance through the detector - From the central run
     
     Float_t fCentralSolidAngle;                   // Solid Angle subtended by this PMT from source (LaserBall) position - From the central run
     Float_t fCentralCosTheta;                     // Cosine of light vector incident on the the PMT face - From the central run
 
-    Float_t fCentralRelLBTheta;                   // LaserBall Theta value for this PMT from the Laserball position - From the central run
-    Float_t fCentralRelLBPhi;                     // LaserBall Phi value for this PMT from the LaserBall position - From the central run
+    Float_t fCentralLBTheta;                      // LaserBall Theta value for this PMT from the Laserball position - From the central run
+    Float_t fCentralLBPhi;                        // LaserBall Phi value for this PMT from the LaserBall position - From the central run
     
     Bool_t fCentralCHSFlag;                       // (DQXX Flag) TRUE: Bad Channel FALSE: Good Channel - From the central run
     Bool_t fCentralCSSFlag;                       // (ANXX Flag) TRUE: Bad Channel FALSE: Good Channel - From the central run
@@ -945,44 +745,19 @@ namespace OCA{
     TVector3 fCentralInitialLBVec;                // Initial (unit) vector direction of light from source - From the central run
     TVector3 fCentralIncidentLBVec;               // Incident (unit) vector direction on PMT face - From the central run
 
-    /////////////////////////////////////
-    //////// WAVELENGTH PMT VALUES /////////
-    /////////////////////////////////////
+    ///////////////////////////////////////////
+    //////// VALUES FOR FITTING ROUTINES //////
+    ///////////////////////////////////////////
 
-    Float_t fWavelengthPromptPeakTime;            // Time of Prompt Peak [ns]  - From the wavelength run
-    Float_t fWavelengthPromptPeakWidth;           // Width of Prompt Peak [ns]- From the wavelength run
-    Float_t fWavelengthTimeOfFlight;              // Time of Flight from source to PMT [ns]- From the wavelength run
-    Float_t fWavelengthOccupancy;                 // Prompt Peak Counts - From the wavelength run
-    Float_t fWavelengthOccupancyErr;              // Error on Occupancy of this PMT- From the wavelength run
-    Float_t fWavelengthLBIntensityNorm;           // The prompt peak normalisation for the entire run- From the wavelength run
-
-    Float_t fWavelengthNLBPulses;                 // Number of LaserBall pulses for this run.- From the wavelength run
-
-    Float_t fWavelengthMPECorrOccupancy;          // MPE corrected occupancy- From the wavelength run
-    Float_t fWavelengthMPECorrOccupancyErr;       // Error on the MPE corrected occupancy- From the wavelength run
-
-    Float_t fWavelengthFresnelTCoeff;             // Acrylic Fresnel transmission coefficient- From the wavelength run
+    Float_t fOccupancyRatio;                       // Occupancy ratio of fMPECorrOccupancy / fCentralMPECorrOccupancy
+    Float_t fModelOccupancyRatio;                  // Model Occupancy ratio
+    Float_t fOccupancyRatioErr;                    // Error on the (data) occupancy ratio
     
-    Float_t fWavelengthDistInInnerAV;             // Distance through the scintillator region [mm]- From the wavelength run
-    Float_t fWavelengthDistInAV;                  // Distance through the acrylic region [mm]- From the wavelength run
-    Float_t fWavelengthDistInWater;               // Distance through the water region [mm]- From the wavelength run
-    Float_t fWavelengthDistInNeck;                // Distance through the Neck region (if applicable) i.e. fNeckFlag == TRUE- From the wavelength run
-    Float_t fWavelengthTotalDist;                 // Total distance through the detector- From the wavelength run
-    
-    Float_t fWavelengthSolidAngle;                // Solid Angle subtended by this PMT from source (LaserBall) position- From the wavelength run
-    Float_t fWavelengthCosTheta;                  // Cosine of light vector incident on the the PMT face- From the wavelength run
+    Float_t fPMTVariability;                       // Systematic PMT variability error.
 
-    Float_t fWavelengthRelLBTheta;                // LaserBall Theta value for this PMT from the Laserball position- From the wavelength run
-    Float_t fWavelengthRelLBPhi;                  // LaserBall Phi value for this PMT from the LaserBall position- From the wavelength run
-    
-    Bool_t fWavelengthCHSFlag;                    // (DQXX Flag) TRUE: Bad Channel FALSE: Good Channel- From the wavelength run
-    Bool_t fWavelengthCSSFlag;                    // (ANXX Flag) TRUE: Bad Channel FALSE: Good Channel- From the wavelength run
+    Int_t fRunIndex;                               // The index of the run as it appeared in the fit.
 
-    Bool_t fWavelengthBadPath;                    // Bad Light Path for this Channel (TRUE)- From the wavelength run
-    Bool_t fWavelengthNeckFlag;                   // If the Light Path for this PMT enters the neck (TRUE)- From the wavelength run
-
-    TVector3 fWavelengthInitialLBVec;             // Initial (unit) vector direction of light from source- From the wavelength run
-    TVector3 fWavelengthIncidentLBVec;            // Incident (unit) vector direction on PMT face- From the wavelength run
+    Float_t fRawEfficiency;                        // The raw efficiency estimator of the PMT as it appeared in the fit.
     
     ClassDef( OCAPMT, 1 );
     

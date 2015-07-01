@@ -74,7 +74,7 @@ Double_t OCAMath::OccRatioErr( const OCAPMT* pmt ){
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t OCAMath::CalculatePMTVariabilityError( const OCADataPoint& dPoint )
+Float_t OCAMath::CalculatePMTVariabilityError( const OCAPMT& dPoint )
 {
 
   // If the PMT variability has not yet been calculated for this data point
@@ -90,13 +90,14 @@ Float_t OCAMath::CalculatePMTVariabilityError( const OCADataPoint& dPoint )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCAMath::CalculateMPEOccRatio( const OCADataPoint& dPoint, Float_t& occRatio, Float_t& occRatioErr ){
+void OCAMath::CalculateMPEOccRatio( const OCAPMT& dPoint, Float_t& occRatio, Float_t& occRatioErr ){
 
   // The data occupancy ratio.
   occRatio = dPoint.GetMPECorrOccupancy() / dPoint.GetCentralMPECorrOccupancy();
 
   // The correction for the geometric factors (solid angle and Fresnel transmission coefficient).
-  occRatio *= ( dPoint.GetCentralFresnelTCoeff() * dPoint.GetCentralSolidAngle() ) / ( dPoint.GetFresnelTCoeff() * dPoint.GetSolidAngle() );
+  occRatio *= ( dPoint.GetCentralFresnelTCoeff() * dPoint.GetCentralSolidAngle() ) 
+    / ( dPoint.GetFresnelTCoeff() * dPoint.GetSolidAngle() );
 
   // The central laserbll normalisation value.
   occRatio *= dPoint.GetCentralLBIntensityNorm();

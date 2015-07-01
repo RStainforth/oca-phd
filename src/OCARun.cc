@@ -66,7 +66,6 @@ OCARun::OCARun( const OCARun& ocaRHS )
 
   fLBIntensityNorm = ocaRHS.fLBIntensityNorm;
   fCentralLBIntensityNorm = ocaRHS.fCentralLBIntensityNorm;
-  fWavelengthLBIntensityNorm = ocaRHS.fWavelengthLBIntensityNorm;
 
   fLBPos = ocaRHS.fLBPos;
   fCentralLBPos = ocaRHS.fCentralLBPos;
@@ -139,7 +138,6 @@ OCARun& OCARun::operator=( const OCARun& ocaRHS )
 
   fLBIntensityNorm = ocaRHS.fLBIntensityNorm;
   fCentralLBIntensityNorm = ocaRHS.fCentralLBIntensityNorm;
-  fWavelengthLBIntensityNorm = ocaRHS.fWavelengthLBIntensityNorm;
 
   fLBPos = ocaRHS.fLBPos;
   fCentralLBPos = ocaRHS.fCentralLBPos;
@@ -316,8 +314,8 @@ void OCARun::Fill( RAT::DU::SOCReader& socR,
     ( iLP->second ).SetLBIntensityNorm( GetLBIntensityNorm() );
 
     
-    ( iLP->second ).SetMPECorrOccupancy( OCAMath::MPECorrectedNPrompt( ( iLP->second ).GetOccupancy(), GetNLBPulses() ) );
-    ( iLP->second ).SetMPECorrOccupancyErr( OCAMath::MPECorrectedNPromptErr( ( iLP->second ).GetOccupancy(), GetNLBPulses() ) );
+    ( iLP->second ).SetMPECorrOccupancy( OCAMath::MPECorrectedNPrompt( ( iLP->second ).GetPromptPeakCounts(), GetNLBPulses() ) );
+    ( iLP->second ).SetMPECorrOccupancyErr( OCAMath::MPECorrectedNPromptErr( ( iLP->second ).GetPromptPeakCounts(), GetNLBPulses() ) );
     
     // Calculate the light path for this source position and PMT
     // Require a 10.0 mm precision for the light path to be
@@ -330,15 +328,16 @@ void OCARun::Fill( RAT::DU::SOCReader& socR,
 
     ///////// Off-Axis Laserball Theta and Phi Angles //////////
     TVector3 lbAxis( 0.0, 0.0, 1.0 );
-    lbAxis.SetPhi( GetLBPhi() );
-    lbAxis.SetTheta( GetLBTheta() );
+    //lbAxis.SetPhi( GetLBPhi() );
+    //lbAxis.SetTheta( GetLBTheta() );
     
     // Set the relative theta and phi coordinates of the light
     // in the local frame of the laserball as it left the source.
-    ( iLP->second ).SetRelLBTheta( ( ( iLP->second ).GetInitialLBVec() ).Angle( lbAxis ) );
-    Float_t laserPhi = ( ( iLP->second ).GetInitialLBVec() ).Phi();
-    Float_t relLBPhi = fmod( (Float_t)( laserPhi + lbAxis.Phi() ), 2.0 * TMath::Pi() ); 
-    ( iLP->second ).SetRelLBPhi( relLBPhi );
+    ( iLP->second ).SetLBTheta( ( ( iLP->second ).GetInitialLBVec() ).Angle( lbAxis ) );
+
+    TVector3 vec = ( ( iLP->second ).GetInitialLBVec() );
+    vec.Rotate( -1*GetLBPhi(), lbAxis ); 
+    ( iLP->second ).SetLBPhi( vec.Phi() );
   
     // Reset the light path object
     lLP.Clear();
@@ -381,8 +380,10 @@ void OCARun::CopySOCRunInfo( RAT::DS::SOC& socRun )
 
   SetGlobalTimeOffset( socRun.GetGlobalTimeOffset() );
   
-  SetLBTheta( socRun.GetCalib().GetDir().Theta() );
+  SetLBTheta( 0.0 );
   SetLBPhi( socRun.GetCalib().GetDir().Phi() );
+
+  SetLBOrientation( GetLBPhi() / ( TMath::Pi() / 2.0 ) );
 
 }
 
@@ -548,7 +549,6 @@ void OCARun::CrossRunFill( OCARun* cRun, OCARun* wRun )
     fWavelengthLambda = wRun->GetLambda();
     fWavelengthNLBPulses = wRun->GetNLBPulses();
     
-    fWavelengthLBIntensityNorm = wRun->GetLBIntensityNorm();
     fWavelengthLBPos = wRun->GetLBPos();
     
     fWavelengthLBTheta = wRun->GetLBTheta();
@@ -574,14 +574,18 @@ void OCARun::CrossRunFill( OCARun* cRun, OCARun* wRun )
       Int_t pmtID = ( iCPMT->first );
       ( fOCAPMTs[ pmtID ] ).SetCentralRunID( cRun->GetRunID() );
       ( fOCAPMTs[ pmtID ] ).SetCentralIsVerified( ( iCPMT->second ).GetIsVerified() );
+
+      ( fOCAPMTs[ pmtID ] ).SetCentralLBPos( cRun->GetLBPos() );
+      ( fOCAPMTs[ pmtID ] ).SetCentralLBOrientation( cRun->GetLBOrientation() );
       
       ( fOCAPMTs[ pmtID ] ).SetCentralPromptPeakTime( ( iCPMT->second ).GetPromptPeakTime() );
       ( fOCAPMTs[ pmtID ] ).SetCentralPromptPeakWidth( ( iCPMT->second ).GetPromptPeakWidth() );
+      ( fOCAPMTs[ pmtID ] ).SetCentralPromptPeakCounts( ( iCPMT->second ).GetPromptPeakCounts() );
+      ( fOCAPMTs[ pmtID ] ).SetCentralPromptPeakCountsErr( ( iCPMT->second ).GetPromptPeakCountsErr() );
+
       ( fOCAPMTs[ pmtID ] ).SetCentralTimeOfFlight( ( iCPMT->second ).GetTimeOfFlight() );
-      ( fOCAPMTs[ pmtID ] ).SetCentralOccupancy( ( iCPMT->second ).GetOccupancy() );
-      ( fOCAPMTs[ pmtID ] ).SetCentralOccupancyErr( ( iCPMT->second ).GetOccupancyErr() );
-      ( fOCAPMTs[ pmtID ] ).SetCentralLBIntensityNorm( ( iCPMT->second ).GetLBIntensityNorm() );
-      
+
+      ( fOCAPMTs[ pmtID ] ).SetCentralLBIntensityNorm( ( iCPMT->second ).GetLBIntensityNorm() );   
       ( fOCAPMTs[ pmtID ] ).SetCentralNLBPulses( ( iCPMT->second ).GetNLBPulses() );
       
       ( fOCAPMTs[ pmtID ] ).SetCentralMPECorrOccupancy( ( iCPMT->second ).GetMPECorrOccupancy() );
@@ -592,19 +596,15 @@ void OCARun::CrossRunFill( OCARun* cRun, OCARun* wRun )
       ( fOCAPMTs[ pmtID ] ).SetCentralDistInInnerAV( ( iCPMT->second ).GetDistInInnerAV() );
       ( fOCAPMTs[ pmtID ] ).SetCentralDistInAV( ( iCPMT->second ).GetDistInAV() );
       ( fOCAPMTs[ pmtID ] ).SetCentralDistInWater( ( iCPMT->second ).GetDistInWater() );
-      ( fOCAPMTs[ pmtID ] ).SetCentralDistInNeck( ( iCPMT->second ).GetDistInNeck() );
-      ( fOCAPMTs[ pmtID ] ).SetCentralTotalDist( ( iCPMT->second ).GetTotalDist() );
       
       ( fOCAPMTs[ pmtID ] ).SetCentralSolidAngle( ( iCPMT->second ).GetSolidAngle() );
       ( fOCAPMTs[ pmtID ] ).SetCentralCosTheta( ( iCPMT->second ).GetCosTheta() );
       
-      ( fOCAPMTs[ pmtID ] ).SetCentralRelLBTheta( ( iCPMT->second ).GetRelLBTheta() );
-      ( fOCAPMTs[ pmtID ] ).SetCentralRelLBPhi( ( iCPMT->second ).GetRelLBPhi() );
+      ( fOCAPMTs[ pmtID ] ).SetCentralLBTheta( ( iCPMT->second ).GetLBTheta() );
+      ( fOCAPMTs[ pmtID ] ).SetCentralLBPhi( ( iCPMT->second ).GetLBPhi() );
       
       ( fOCAPMTs[ pmtID ] ).SetCentralCHSFlag( ( iCPMT->second ).GetCHSFlag() );
       ( fOCAPMTs[ pmtID ] ).SetCentralCSSFlag( ( iCPMT->second ).GetCSSFlag() );
-
-      ( fOCAPMTs[ pmtID ] ).SetCentralDQXXFlag( ( iCPMT->second ).GetDQXXFlag() );
       
       ( fOCAPMTs[ pmtID ] ).SetCentralBadPath( ( iCPMT->second ).GetBadPath() );
       ( fOCAPMTs[ pmtID ] ).SetCentralNeckFlag( ( iCPMT->second ).GetNeckFlag() );
@@ -621,43 +621,11 @@ void OCARun::CrossRunFill( OCARun* cRun, OCARun* wRun )
     cout << "--------------------------" << endl;
     map< Int_t, OCAPMT >::iterator iWPMT;
     for( iWPMT = wRun->GetOCAPMTIterBegin(); iWPMT != wRun->GetOCAPMTIterEnd(); iWPMT++ ){
+
       Int_t pmtID = ( iWPMT->first );
       ( fOCAPMTs[ pmtID ] ).SetWavelengthRunID( wRun->GetRunID() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthIsVerified( ( iWPMT->second ).GetIsVerified() );
-      
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthPromptPeakTime( ( iWPMT->second ).GetPromptPeakTime() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthPromptPeakWidth( ( iWPMT->second ).GetPromptPeakWidth() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthTimeOfFlight( ( iWPMT->second ).GetTimeOfFlight() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthOccupancy( ( iWPMT->second ).GetOccupancy() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthOccupancyErr( ( iWPMT->second ).GetOccupancyErr() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthLBIntensityNorm( ( iWPMT->second ).GetLBIntensityNorm() );
-      
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthNLBPulses( ( iWPMT->second ).GetNLBPulses() );
-      
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthMPECorrOccupancy( ( iWPMT->second ).GetMPECorrOccupancy() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthMPECorrOccupancyErr( ( iWPMT->second ).GetMPECorrOccupancyErr() );
-      
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthFresnelTCoeff( ( iWPMT->second ).GetFresnelTCoeff() );
-      
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthDistInInnerAV( ( iWPMT->second ).GetDistInInnerAV() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthDistInAV( ( iWPMT->second ).GetDistInAV() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthDistInWater( ( iWPMT->second ).GetDistInWater() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthDistInNeck( ( iWPMT->second ).GetDistInNeck() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthTotalDist( ( iWPMT->second ).GetTotalDist() );
-      
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthSolidAngle( ( iWPMT->second ).GetSolidAngle() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthCosTheta( ( iWPMT->second ).GetCosTheta() );
-      
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthRelLBTheta( ( iWPMT->second ).GetRelLBTheta() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthRelLBPhi( ( iWPMT->second ).GetRelLBPhi() );
-      
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthCHSFlag( ( iWPMT->second ).GetCHSFlag() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthCSSFlag( ( iWPMT->second ).GetCSSFlag() );
-
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthDQXXFlag( ( iWPMT->second ).GetDQXXFlag() );
-      
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthBadPath( ( iWPMT->second ).GetBadPath() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthNeckFlag( ( iWPMT->second ).GetNeckFlag() );
+      ( fOCAPMTs[ pmtID ] ).SetWavelengthLBPos( wRun->GetLBPos() );
+      ( fOCAPMTs[ pmtID ] ).SetWavelengthLBOrientation( wRun->GetLBOrientation() );
       
     }
   }
@@ -679,64 +647,55 @@ void OCARun::CalculateLBIntensityNorm()
   map< Int_t, OCAPMT >::iterator iPMT;
   Float_t lbIntensityNorm = 0.0;
   Float_t centrallbIntensityNorm = 0.0;
-  Float_t wavelengthlbIntensityNorm = 0.0;
 
   Int_t nPMTs = 0;
   Int_t nCentralPMTs = 0;
-  Int_t nWavelengthPMTs = 0;
 
   // Loop through all the PMTs and compute the total number of counts
   // in all the prompt peak timing windows (occupancy) for each PMT
-  // in each off-axis, central and wavelength run.
+  // in each off-axis and central run.
 
   // Note: A call to OCARun::CrossRunFill must have been made
-  // if the central and wavelength values are to calculated.
+  // if the central values are to calculated.
   for ( iPMT = GetOCAPMTIterBegin(); iPMT != GetOCAPMTIterEnd(); iPMT++ ){
 
-    // Off-axis run: ensure the DQXX flag is 1.
-    if ( ( iPMT->second ).GetDQXXFlag() == 1 
+    // Off-axis run: ensure the CHS flag is 1.
+    if ( ( iPMT->second ).GetCHSFlag() == 1 
          && ( iPMT->second ).GetMPECorrOccupancy() >= 0.0 ){
       lbIntensityNorm += ( iPMT->second ).GetMPECorrOccupancy();
       nPMTs++;
     }
 
-    // Central run: ensure the DQXX flag is 1.
-    if ( ( iPMT->second ).GetCentralDQXXFlag() == 1
+    // Central run: ensure the CHS flag is 1.
+    if ( ( iPMT->second ).GetCentralCHSFlag() == 1
          && ( iPMT->second ).GetCentralMPECorrOccupancy() >= 0.0 ){
       centrallbIntensityNorm += ( iPMT->second ).GetCentralMPECorrOccupancy();   
       nCentralPMTs++;
     }
 
-    // Wavelength run: ensure the DQXX flag is 1.
-    if ( ( iPMT->second ).GetWavelengthDQXXFlag() == 1
-         && ( iPMT->second ).GetWavelengthMPECorrOccupancy() >= 0.0 ){
-      wavelengthlbIntensityNorm += ( iPMT->second ).GetWavelengthMPECorrOccupancy();
-      nWavelengthPMTs++;
-    }
   }
 
   // Provided the total number of PMTs included in each run isn't zero
   // (very unlikely), divide through by the number of PMTs to 
   // calculate the average occupancy (Laserball normalisation).
 
-  // Off-axis runs.
-  //if ( nPMTs != 0 ){ lbIntensityNorm /= nPMTs; }
-  //else{ lbIntensityNorm = -10.0; }
+  // // Off-axis runs.
+  // if ( nPMTs != 0 ){ lbIntensityNorm /= nPMTs; }
+  // else{ lbIntensityNorm = -10.0; }
 
-  // Central runs.
-  //if ( nCentralPMTs != 0 ){ centrallbIntensityNorm /= nCentralPMTs; }
-  //else{ centrallbIntensityNorm = -10.0; }
+  // // Central runs.
+  // if ( nCentralPMTs != 0 ){ centrallbIntensityNorm /= nCentralPMTs; }
+  // else{ centrallbIntensityNorm = -10.0; }
 
-  // Wavelength runs.
-  //if ( nWavelengthPMTs != 0 ){ wavelengthlbIntensityNorm /= nWavelengthPMTs; }
-  //else{ wavelengthlbIntensityNorm = -10.0; }
+  // // Wavelength runs.
+  // if ( nWavelengthPMTs != 0 ){ wavelengthlbIntensityNorm /= nWavelengthPMTs; }
+  // else{ wavelengthlbIntensityNorm = -10.0; }
 
   // Define the private member variables which
   // hold the intensity normalisation value for each
   // of the off-axis, central and wavelength runs.
   fLBIntensityNorm = lbIntensityNorm;
   fCentralLBIntensityNorm = centrallbIntensityNorm;
-  fWavelengthLBIntensityNorm = wavelengthlbIntensityNorm;
 
   // Also give these values to every PMT for easy access by
   // OCAOpticsMode::ModelPrediction.
@@ -744,7 +703,6 @@ void OCARun::CalculateLBIntensityNorm()
 
     ( iPMT->second ).SetLBIntensityNorm( fLBIntensityNorm );
     ( iPMT->second ).SetCentralLBIntensityNorm( fCentralLBIntensityNorm );
-    ( iPMT->second ).SetWavelengthLBIntensityNorm( fWavelengthLBIntensityNorm );
 
   }
 

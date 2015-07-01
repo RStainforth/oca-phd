@@ -461,11 +461,11 @@ void OCAFit::InitialiseParameters()
           fiPMT != fCurrentRun->GetOCAPMTIterEnd();
           fiPMT++ ){
       fCurrentPMT = fPMTPtrs[ (iT*10000) + (fiPMT->first % 10000) ];
-      if ( fCurrentPMT->GetDQXXFlag() == 1 ){
+      if ( fCurrentPMT->GetCHSFlag() == 1 ){
         normVal += fCurrentPMT->GetMPECorrOccupancy();
         nPMTsTmp++;
       }
-      if ( fCurrentPMT->GetCentralDQXXFlag() == 1 ){
+      if ( fCurrentPMT->GetCentralCHSFlag() == 1 ){
         normCentralVal += fCurrentPMT->GetCentralMPECorrOccupancy();
         nCentralPMTsTmp++;
       }
@@ -1114,7 +1114,7 @@ Bool_t OCAFit::PMTSkip( const OCARun* iRunPtr, const OCAPMT* iPMTPtr, Float_t me
   Int_t runIndex = GetRunIndex( iRunPtr->GetRunID() );
   Float_t pmtData = CalculatePMTData( iPMTPtr );
   Float_t pmtSigma = CalculatePMTSigma( iPMTPtr );
-  Float_t occCount = iPMTPtr->GetOccupancy();
+  Float_t occCount = iPMTPtr->GetPromptPeakCounts();
   Float_t pmtDataNorm = pmtData * ( 1.0 / (GetLBNormalisationPar( runIndex )));
 
 
@@ -1285,7 +1285,6 @@ Float_t OCAFit::ModelAngularResponse( const OCAPMT* iPMTPtr, Int_t& iAng, Int_t 
   Float_t cosTheta = 0.0;
   if ( runType == 0 ) cosTheta = iPMTPtr->GetCosTheta();
   if ( runType == 1 ) cosTheta = iPMTPtr->GetCentralCosTheta();
-  if ( runType == 2 ) cosTheta = iPMTPtr->GetWavelengthCosTheta();
   //cout << "cosTheta is: " << cosTheta << endl;
   Float_t angle = acos( cosTheta );
   Float_t theta = angle * 180.0/M_PI;
@@ -1317,8 +1316,8 @@ Float_t OCAFit::ModelLBDistribution( const OCARun* iRunPtr, const OCAPMT* iPMTPt
   if ( runType == 0 ){
     lbTheta = iRunPtr->GetLBTheta();
     lbPhi = iRunPtr->GetLBPhi();
-    lbRelTheta = iPMTPtr->GetRelLBTheta();
-    lbRelPhi = iPMTPtr->GetRelLBPhi();
+    lbRelTheta = iPMTPtr->GetLBTheta();
+    lbRelPhi = iPMTPtr->GetLBPhi();
     //cout << "lbTheta: " << lbTheta << " lbPhi: " << lbPhi << endl;
     //cout << "lbRelTheta: " << lbRelTheta << " lbRelPhi: " << lbRelPhi << endl;
   }
@@ -1326,17 +1325,10 @@ Float_t OCAFit::ModelLBDistribution( const OCARun* iRunPtr, const OCAPMT* iPMTPt
   if ( runType == 1 ){
     lbTheta = iRunPtr->GetCentralLBTheta();
     lbPhi = iRunPtr->GetCentralLBPhi();
-    lbRelTheta = iPMTPtr->GetCentralRelLBTheta();
-    lbRelPhi = iPMTPtr->GetCentralRelLBPhi();
+    lbRelTheta = iPMTPtr->GetCentralLBTheta();
+    lbRelPhi = iPMTPtr->GetCentralLBPhi();
     //cout << "CtrlbTheta: " << lbTheta << " CtrlbPhi: " << lbPhi << endl;
     //cout << "CtrlbRelTheta: " << lbRelTheta << " CtrlbRelPhi: " << lbRelPhi << endl;
-  }
-
-  if ( runType == 2 ){
-    lbTheta = iRunPtr->GetWavelengthLBTheta();
-    lbPhi = iRunPtr->GetWavelengthLBPhi();
-    lbRelTheta = iPMTPtr->GetWavelengthRelLBTheta();
-    lbRelPhi = iPMTPtr->GetWavelengthRelLBPhi();
   }
 
   Float_t cosTheta = 0.0;
@@ -1426,8 +1418,8 @@ Float_t OCAFit::ModelLBDistributionMask( const OCAPMT* iPMTPtr, const Int_t runT
 {
 
   Float_t lbTheta = 0.0;
-  if ( runType == 0 ){ lbTheta = iPMTPtr->GetRelLBTheta(); }
-  if ( runType == 1 ){ lbTheta = iPMTPtr->GetCentralRelLBTheta(); }
+  if ( runType == 0 ){ lbTheta = iPMTPtr->GetLBTheta(); }
+  if ( runType == 1 ){ lbTheta = iPMTPtr->GetCentralLBTheta(); }
   Float_t cosLBTheta = cos( lbTheta );
 
   return ModelLBDistributionMask( cosLBTheta );
@@ -1848,8 +1840,8 @@ Float_t OCAFit::ModelPrediction( const OCARun* iRunPtr, const OCAPMT* iPMTPtr, I
   Float_t lbPhi = fCurrentRun->GetLBPhi();
 
   TVector3 pmtRelVec( 0.0, 0.0, 1.0 );
-  Float_t lbRelTheta = fCurrentPMT->GetRelLBTheta();
-  Float_t lbRelPhi = fCurrentPMT->GetRelLBPhi();
+  Float_t lbRelTheta = fCurrentPMT->GetLBTheta();
+  Float_t lbRelPhi = fCurrentPMT->GetLBPhi();
   if ( lbTheta == 0.0 ){
     cosLB = cos( lbRelTheta );
     phi = fmod( (Double_t)( lbRelPhi + lbPhi ), 2.0 * M_PI );
@@ -1933,8 +1925,8 @@ Float_t OCAFit::ModelPrediction( const OCARun* iRunPtr, const OCAPMT* iPMTPtr, I
   lbTheta = fCurrentRun->GetCentralLBTheta();
   lbPhi = fCurrentRun->GetCentralLBPhi();
 
-  lbRelTheta = fCurrentPMT->GetCentralRelLBTheta();
-  lbRelPhi = fCurrentPMT->GetCentralRelLBPhi();
+  lbRelTheta = fCurrentPMT->GetCentralLBTheta();
+  lbRelPhi = fCurrentPMT->GetCentralLBPhi();
 
   if ( lbTheta == 0.0 ){
     cosLB = cos( lbRelTheta );

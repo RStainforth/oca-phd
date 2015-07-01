@@ -24,7 +24,7 @@
 ///
 ////////////////////////////////////////////////////////////////////
 
-#include "OCADataStore.hh"
+#include "OCAPMTStore.hh"
 #include "OCADB.hh"
 #include "OCARunReader.hh"
 #include "OCADataFiller.hh"
@@ -104,11 +104,11 @@ int main( int argc, char** argv ){
   lModel->SetRequiredNLBDistributionEntries( minLBDistEntries );
   lModel->SetRequiredNPMTAngularRepsonseEntries( minPMTEntries );  
   
-  // Create and add the run information to a OCADataStore object.
-  OCADataStore* lData = new OCADataStore( fitName );
+  // Create and add the run information to a OCAPMTStore object.
+  OCAPMTStore* lData = new OCAPMTStore( fitName );
 
-  //cout << "OCADataStore 1 has: " << lData->GetNDataPoints() << endl;
-  //cout << "OCADataStore 2 has: " << lData2->GetNDataPoints() << endl;
+  //cout << "OCAPMTStore 1 has: " << lData->GetNDataPoints() << endl;
+  //cout << "OCAPMTStore 2 has: " << lData2->GetNDataPoints() << endl;
 
   // Create a pointer to a new OCAChiSquare and set a link
   // to each of the data and the model.
@@ -126,7 +126,7 @@ int main( int argc, char** argv ){
 
   // Backup the original data store which is cut on at the top
   // level as part of each loop iteration below.
-  OCADataStore* ogStore = new OCADataStore( fitName );
+  OCAPMTStore* ogStore = new OCAPMTStore( fitName );
   *ogStore = *lData;
   lModel->InitialiseLBRunNormalisations( lData );
 
@@ -153,7 +153,7 @@ int main( int argc, char** argv ){
     lFilterStore->ResetFilterConditionCounters();
 
     // Perform the optics fit.
-    lChiSq->PerformOpticsFit();
+    lChiSq->PerformOpticsFit( iFit );
 
     // Set the data to the original set of data point values.
     if ( iFit != chiSqLims.size() - 1 ){

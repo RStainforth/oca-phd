@@ -24,7 +24,7 @@
 ///
 ////////////////////////////////////////////////////////////////////
 
-#include "OCADataStore.hh"
+#include "OCAPMTStore.hh"
 #include "OCADB.hh"
 #include "OCARunReader.hh"
 #include "OCADataFiller.hh"
@@ -101,8 +101,8 @@ int main( int argc, char** argv ){
   std::string dataSet = lDB.GetStringField( "FITFILE", "data_set", "fit_setup" );
   OCARunReader lReader( runIDs, dataSet );
   
-  // Create and add the run information to a OCADataStore object.
-  OCADataStore* lData = new OCADataStore();
+  // Create and add the run information to a OCAPMTStore object.
+  OCAPMTStore* lData = new OCAPMTStore();
   lData->AddData( lReader );
 
   // Create a pointer to a new OCAChiSquare and set a link
@@ -121,8 +121,8 @@ int main( int argc, char** argv ){
 
   // Backup the original data store which is cut on at the top
   // level as part of each loop iteration below.
-  OCADataStore* ogStore = new OCADataStore();
-  OCADataStore* finalStore = new OCADataStore();
+  OCAPMTStore* ogStore = new OCAPMTStore();
+  OCAPMTStore* finalStore = new OCAPMTStore();
   *ogStore = *lData;
   lModel->InitialiseLBRunNormalisations( lData );
 
@@ -149,7 +149,7 @@ int main( int argc, char** argv ){
     lFilterStore->ResetFilterConditionCounters();
 
     // Perform the optics fit.
-    lChiSq->PerformOpticsFit();
+    lChiSq->PerformOpticsFit( iFit );
 
     // Set the data to the original set of data point values.
     if ( iFit == chiSqLims.size() - 1 ){
@@ -174,9 +174,9 @@ int main( int argc, char** argv ){
   // MPE-Corrected-Occupancy / Model Prediction.
 
 
-  vector< OCADataPoint >::iterator iDP;
-  vector< OCADataPoint >::iterator iDPBegin = lData->GetOCADataPointsIterBegin();
-  vector< OCADataPoint >::iterator iDPEnd = lData->GetOCADataPointsIterEnd();
+  vector< OCAPMT >::iterator iDP;
+  vector< OCAPMT >::iterator iDPBegin = finalStore->GetOCAPMTsIterBegin();
+  vector< OCAPMT >::iterator iDPEnd = finalStore->GetOCAPMTsIterEnd();
   
   // Iterate over all the data points and calculate
   // the estimator of the raw efficiency.
@@ -188,10 +188,11 @@ int main( int argc, char** argv ){
     // of the occupancy.
     modelPrediction = lModel->ModelPrediction( *iDP );
     dataValue = iDP->GetMPECorrOccupancy();
-
+    cout << "modelPrediction: " << modelPrediction << endl;
+    cout << "dataValue: " << dataValue << endl;
     // Set the ratio of the model / data to be the raw estimator
     // for the PMT efficiency.
-    iDP->SetRawEfficiency( modelPrediction / dataValue );
+    iDP->SetRawEfficiency( dataValue / modelPrediction );
 
   }
 
@@ -213,7 +214,7 @@ int main( int argc, char** argv ){
   // and then use the standard deviation from the mean of the histogram
   // distribution to provide a dynamic cut for the PMT variability
   // calculation.
-  TH1F* effHistoRaw = new TH1F( "PMT Efficiencies", "PMT Relative Raw Efficiencies", 1000, 0.0, 10.0 );
+  TH1F* effHistoRaw = new TH1F( "PMT Efficiencies", "PMT Relative Raw Efficiencies", 100, 0.0, 1.0 );
 
   // Now loop over all the data points and add their raw efficiencies to 
   // the corresponding run entry in 'rawEffSum' and increment 'nPMTsPerRun'
@@ -227,11 +228,6 @@ int main( int argc, char** argv ){
       effHistoRaw->Fill( iDP->GetRawEfficiency() );      
     }
   }
-
-  // The mean and stadnard deviation of the raw efficiency
-  // distribution.
-  Float_t rawEffMean = effHistoRaw->GetMean();
-  Float_t rawEffStdDev = effHistoRaw->GetStdDev();
 
   // Now we calculate the distribution of the raw efficiencies by
   // incident PMT angle.
@@ -251,18 +247,14 @@ int main( int argc, char** argv ){
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
     
     // The incident angle.
-    Int_t incAngle = (Int_t)iDP->GetIncidentAngle();
-    if ( iDP->GetRawEfficiency() > ( rawEffMean - 3.0 * rawEffStdDev )
-         && iDP->GetRawEfficiency() < ( rawEffMean + 3.0 * rawEffStdDev )
-         && incAngle >= 0 && incAngle < 51 ){
+    Int_t incAngle = (Int_t)( TMath::ACos( iDP->GetCosTheta() ) * TMath::RadToDeg() );
 
-      pmtAngleEffMean[ incAngle ] += iDP->GetRawEfficiency();
-      pmtNAngle[ incAngle ]++;
+    pmtAngleEffMean[ incAngle ] += iDP->GetRawEfficiency();
+    pmtNAngle[ incAngle ]++;
       
-    }
     
   }
-
+  
   // Now calculate the mean of each of the raw efficiency distributions
   // by PMT incident angle.
   for ( Int_t iIndex = 0; iIndex < 51; iIndex++ ){
@@ -273,7 +265,7 @@ int main( int argc, char** argv ){
       pmtAngleEffMean[ iIndex ] = 0.0;
     }
   }
-
+  
   // Now we calculate the variance of the efficiency distributions
   // in each of the incident angle bins.
   Float_t* pmtAngleEffSigma = new Float_t[ 51 ];
@@ -284,16 +276,13 @@ int main( int argc, char** argv ){
   // The sum of the individual variances for each data point...
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
     
-    Int_t incAngle = (Int_t)iDP->GetIncidentAngle();
-    if ( iDP->GetRawEfficiency() > ( rawEffMean - 3.0 * rawEffStdDev )
-         && iDP->GetRawEfficiency() < ( rawEffMean + 3.0 * rawEffStdDev )
-         && incAngle >= 0 && incAngle < 51 ){
+    // The incident angle.
+    Int_t incAngle = (Int_t)( TMath::ACos( iDP->GetCosTheta() ) * TMath::RadToDeg() );
       
-      Float_t sigma = iDP->GetRawEfficiency() - pmtAngleEffMean[ incAngle ];
-      Float_t sigma2 = sigma * sigma;
-      pmtAngleEffSigma[ incAngle ] += sigma2;
-      
-    }   
+    Float_t sigma = iDP->GetRawEfficiency() - pmtAngleEffMean[ incAngle ];
+    Float_t sigma2 = sigma * sigma;
+    pmtAngleEffSigma[ incAngle ] += sigma2;
+    
   }
 
   // ...dividing through and square-rooting to compute the
@@ -320,9 +309,9 @@ int main( int argc, char** argv ){
                         (Float_t)( pmtAngleEffSigma[ iIndex ] / pmtAngleEffMean[ iIndex ] ) );
     }
   }
-
+  
   TCanvas* effAngleC = new TCanvas( "effAngleC", "PMT Incident Angle Variability", 600, 400 );
-
+  
   myPlot->SetMarkerStyle( 7 );
   myPlot->SetMarkerColor( 2 );
   myPlot->GetXaxis()->SetTitle( "Indicent PMT Angle [degrees]" );
@@ -339,15 +328,19 @@ int main( int argc, char** argv ){
   string filePath = outputDir + "fits/";
   effAngleC->Print( ( filePath + fitName + "_pmt_variability.eps" ).c_str() );
 
-  for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
+  vector< OCAPMT >::iterator iDPL;
+  vector< OCAPMT >::iterator iDPBeginL = lData->GetOCAPMTsIterBegin();
+  vector< OCAPMT >::iterator iDPEndL = lData->GetOCAPMTsIterEnd();
 
-    Int_t incAngle = (Int_t)iDP->GetIncidentAngle();
+  for ( iDPL = iDPBeginL; iDPL != iDPEndL; iDPL++ ) {
+
+    Int_t incAngle = (Int_t)( TMath::ACos( iDPL->GetCosTheta() ) * TMath::RadToDeg() );
     if ( incAngle >= 0 && incAngle < 51 ){
       Float_t varPar = pmtAngleEffSigma[ incAngle ] / pmtAngleEffMean[ incAngle ];
-      iDP->SetPMTVariability( varPar * varPar );
+      iDPL->SetPMTVariability( varPar );
     }
     else{
-      iDP->SetPMTVariability( -1.0 );
+      iDPL->SetPMTVariability( -1.0 );
     }
 
   }
@@ -370,8 +363,8 @@ int main( int argc, char** argv ){
 
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
     if ( iDP->GetRawEfficiency() > 0.0 && iDP->GetRawEfficiency() < 100000000.0 ){
-      pmtIDRun[ iDP->GetPMTID() ]++;
-      pmtIDEff[ iDP->GetPMTID() ] += iDP->GetRawEfficiency() / rawEffAvg[ iDP->GetRunIndex() ];
+      pmtIDRun[ iDP->GetID() ]++;
+      pmtIDEff[ iDP->GetID() ] += iDP->GetRawEfficiency() / rawEffAvg[ iDP->GetRunIndex() ];
     }
 
   }

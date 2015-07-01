@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////
 ///
-/// FILENAME: OCADataStore.hh
+/// FILENAME: OCAPMTStore.hh
 ///
-/// CLASS: OCA::OCADataStore
+/// CLASS: OCA::OCAPMTStore
 ///
 /// BRIEF: Simple class to store a set of data points
 ///        ready for use in the fitting process
@@ -12,16 +12,16 @@
 /// REVISION HISTORY:
 ///     04/2015 : RPFS - First Revision, new file.
 ///
-/// DETAILS: This class holds a collection of OCADataPoint
+/// DETAILS: This class holds a collection of OCAPMT
 ///          objects. This allows for quick access by the
 ///          OCAChiSquare object when performing the fit.
 ///
 ////////////////////////////////////////////////////////////////////
 
-#ifndef _OCADataStore_
-#define _OCADataStore_
+#ifndef _OCAPMTStore_
+#define _OCAPMTStore_
 
-#include "OCADataPoint.hh"
+#include "OCAPMT.hh"
 #include "OCARunReader.hh"
 #include "OCAPMT.hh"
 
@@ -32,18 +32,18 @@ using namespace std;
 
 namespace OCA{
 
-  class OCADataStore : public TObject
+  class OCAPMTStore : public TObject
   {
   public: 
 
-    // The consturctor and destructor for the OCADataStore objects
-    OCADataStore( const string storeName = "" );
-    ~OCADataStore(){ };
+    // The consturctor and destructor for the OCAPMTStore objects
+    OCAPMTStore( const string storeName = "" );
+    ~OCAPMTStore(){ };
 
     // The self-addition, addition and equality operators
-    OCADataStore& operator+=( OCADataStore& rhs );
-    OCADataStore operator+( OCADataStore& rhs );
-    OCADataStore& operator=( const OCADataStore& rhs );
+    OCAPMTStore& operator+=( OCAPMTStore& rhs );
+    OCAPMTStore operator+( OCAPMTStore& rhs );
+    OCAPMTStore& operator=( const OCAPMTStore& rhs );
 
     /////////////////////////////////
     ////////     METHODS     ////////
@@ -51,9 +51,9 @@ namespace OCA{
 
     // Add a data point to the store.
     // Either a pre-existing data point...
-    void AddDataPoint( const OCADataPoint dataPoint );
+    void AddDataPoint( const OCAPMT dataPoint );
 
-    // ...or a PMT which makes use of the OCADataPoint constructor.
+    // ...or a PMT which makes use of the OCAPMT constructor.
     void AddDataPoint( const OCAPMT& lPMT );
 
     // Data can also be added from all the OCAPMTs stored in OCARuns
@@ -61,13 +61,13 @@ namespace OCA{
     void AddData( OCARunReader& lRuns );
 
     // Write the datastore to a .root file.
-    void WriteToFile( const string fileName = "OCADataStore.root" );
+    void WriteToFile( const string fileName = "OCAPMTStore.root" );
     
     // Remove all the datapoints from the current store.
     void ClearData(){ fDataPoints.clear(); }
 
     // Or remove a particular data point.
-    void EraseDataPoint( vector< OCADataPoint >::iterator iDataPoint ){ fDataPoints.erase( iDataPoint ); }
+    void EraseDataPoint( vector< OCAPMT >::iterator iDataPoint ){ fDataPoints.erase( iDataPoint ); }
 
     /////////////////////////////////
     ////////     GETTERS     ////////
@@ -83,12 +83,12 @@ namespace OCA{
     Int_t GetNDataPoints(){ return fDataPoints.size(); }
 
     // Return a data point by the index i.e. the order the data point
-    // was added to the OCADataStore originally.
-    OCADataPoint GetDataPoint( Int_t iDP ){ return fDataPoints[ iDP ]; }
+    // was added to the OCAPMTStore originally.
+    OCAPMT GetDataPoint( Int_t iDP ){ return fDataPoints[ iDP ]; }
 
     // Get the iterators to the beginning and end of the data store
-    vector< OCADataPoint >::iterator GetOCADataPointsIterBegin(){ return fDataPoints.begin(); }
-    vector< OCADataPoint >::iterator GetOCADataPointsIterEnd(){ return fDataPoints.end(); }
+    vector< OCAPMT >::iterator GetOCAPMTsIterBegin(){ return fDataPoints.begin(); }
+    vector< OCAPMT >::iterator GetOCAPMTsIterEnd(){ return fDataPoints.end(); }
 
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -101,12 +101,12 @@ namespace OCA{
 
     string fStoreName;                     // The store name.
     string fStoreFilePath;                 // The full system path of the file.
-    vector< OCADataPoint > fDataPoints;  // The vector of data point objects.
+    vector< OCAPMT > fDataPoints;  // The vector of data point objects.
     
 
     
 
-    ClassDef( OCADataStore, 1 );
+    ClassDef( OCAPMTStore, 1 );
     
   };
   

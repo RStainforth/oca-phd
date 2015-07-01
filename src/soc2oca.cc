@@ -111,7 +111,7 @@ int main( int argc, char** argv ){
 
   cout << "\n";
   cout << "###############################" << endl;
-  cout << "######## SOC2OCA Start ########" << endl;
+  cout << "######## SOC2OCA START ########" << endl;
   cout << "###############################" << endl;
   cout << "\n";
   
@@ -308,9 +308,9 @@ int main( int argc, char** argv ){
   cout << ( ocaRunDir + rIDStr + (string)"_OCARun.root" ).c_str() << endl;
   cout << "has been created." << endl;
   cout << "\n";
-  cout << "################################" << endl;
+  cout << "##############################" << endl;
   cout << "######## SOC2OCA END #########" << endl;
-  cout << "################################" << endl;
+  cout << "##############################" << endl;
   cout << "\n";
 
 }

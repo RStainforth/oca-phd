@@ -201,6 +201,15 @@ namespace OCA{
     // Get the laserball position from the off-axis run (mm).
     TVector3 GetLBPos() const { return fLBPos; } 
 
+    // Get the laserball orientation from the off-axis run.
+    Float_t GetLBOrientation() const { return fLBOrientation; }
+
+    // Get the laserball orientation from the central run.
+    Float_t GetCentralLBOrientation() const { return fCentralLBOrientation; } 
+
+    // Get the laserball orientation from the wavelength run.
+    Float_t GetWavelengthLBOrientation() const { return fWavelengthLBOrientation; }  
+
     // Get the laserball position from the central run (mm).
     TVector3 GetCentralLBPos() const { return fCentralLBPos; } 
 
@@ -401,6 +410,15 @@ namespace OCA{
 
     // Set the error in the laserball z-position from the wavelength run (mm).
     void SetWavelengthLBZPosErr( const Float_t LBZPosErr ){ fWavelengthLBZPosErr = LBZPosErr; }
+
+    // Set the laserball orientation from the off-axis run.
+    void SetLBOrientation( const Float_t lbOri ) { fLBOrientation = lbOri; }
+
+    // Set the laserball orientation from the central run.
+    void SetCentralLBOrientation( const Float_t lbOri ) { fCentralLBOrientation = lbOri; } 
+
+    // Set the laserball orientation from the wavelength run.
+    void SetWavelengthLBOrientation( const Float_t lbOri ) { fWavelengthLBOrientation = lbOri; } 
     
     // Set the theta coordinate of the laserball orientation
     // from the off-axis run.
@@ -474,6 +492,10 @@ namespace OCA{
     Float_t fWavelengthLBZPosErr;          // Error on the z laserball coordinate in the wavelength run
     Float_t fWavelengthLBXPosErr;          // Error on the x laserball coordinate in the wavelength run
     Float_t fWavelengthLBYPosErr;          // Error on the y laserball coordinate in the wavelength run
+
+    Float_t fLBOrientation;                // The orientation of the laserball from the off-axis run.
+    Float_t fCentralLBOrientation;         // The orientation of the laserball from the central run.
+    Float_t fWavelengthLBOrientation;      // The orientation of the laserball from the wavelength run.
     
     Float_t fLBTheta;                      // Theta orientation value ( usually fLBTheta=0 )
     Float_t fLBPhi;                        // Phi orientation value ( 0:=South, pi/2:=West, pi:=North, 3pi/2:=East )

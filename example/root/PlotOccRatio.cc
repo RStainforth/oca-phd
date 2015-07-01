@@ -3,8 +3,8 @@
 #include "TStyle.h"
 #include "TMath.h"
 
-#include "OCADataStore.hh"
-#include "OCADataPoint.hh"
+#include "OCAPMTStore.hh"
+#include "OCAPMT.hh"
 
 #include <string>
 #include <vector>
@@ -15,11 +15,11 @@ using namespace OCA;
 void PlotNPromptCountsRatio( std::string storeName, const char* plotName )
 {
 
-  OCADataStore* lStore = new OCADataStore( storeName );
+  OCAPMTStore* lStore = new OCAPMTStore( storeName );
 
-  vector< OCADataPoint >::iterator iDP;
-  vector< OCADataPoint >::iterator iDPBegin = lStore->GetOCADataPointsIterBegin();
-  vector< OCADataPoint >::iterator iDPEnd = lStore->GetOCADataPointsIterEnd();
+  vector< OCAPMT >::iterator iDP;
+  vector< OCAPMT >::iterator iDPBegin = lStore->GetOCAPMTsIterBegin();
+  vector< OCAPMT >::iterator iDPEnd = lStore->GetOCAPMTsIterEnd();
 
   TH1F* rOccHisto = new TH1F( "NPrompt Ratio", "NPrompt Counts Ratio Histogram", 71, -0.02, 1.42 );
 
@@ -53,11 +53,11 @@ void PlotNPromptCountsRatio( std::string storeName, const char* plotName )
 void PlotOccRatio( std::string storeName, const char* plotName, Float_t nPromptLow, Float_t nPromptHigh )
 {
 
-  OCADataStore* lStore = new OCADataStore( storeName );
+  OCAPMTStore* lStore = new OCAPMTStore( storeName );
 
-  vector< OCADataPoint >::iterator iDP;
-  vector< OCADataPoint >::iterator iDPBegin = lStore->GetOCADataPointsIterBegin();
-  vector< OCADataPoint >::iterator iDPEnd = lStore->GetOCADataPointsIterEnd();
+  vector< OCAPMT >::iterator iDP;
+  vector< OCAPMT >::iterator iDPBegin = lStore->GetOCAPMTsIterBegin();
+  vector< OCAPMT >::iterator iDPEnd = lStore->GetOCAPMTsIterEnd();
 
   TH1F* rOccHisto = new TH1F( "Occ Ratio", "Occ Ratio Histogram", 101, -0.02, 2.0 );
 
@@ -104,11 +104,11 @@ void PlotNPromptCounts( std::string storeName, const char* plotName,
                         Float_t histoXLow, Float_t histoXHigh, Int_t nBins )
 {
 
-  OCADataStore* lStore = new OCADataStore( storeName );
+  OCAPMTStore* lStore = new OCAPMTStore( storeName );
 
-  vector< OCADataPoint >::iterator iDP;
-  vector< OCADataPoint >::iterator iDPBegin = lStore->GetOCADataPointsIterBegin();
-  vector< OCADataPoint >::iterator iDPEnd = lStore->GetOCADataPointsIterEnd();
+  vector< OCAPMT >::iterator iDP;
+  vector< OCAPMT >::iterator iDPBegin = lStore->GetOCAPMTsIterBegin();
+  vector< OCAPMT >::iterator iDPEnd = lStore->GetOCAPMTsIterEnd();
 
   TH1F* rOccHisto = new TH1F( "NPrompt Counts", "NPrompt Counts Histogram", nBins, histoXLow, histoXHigh );
 

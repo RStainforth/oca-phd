@@ -38,7 +38,7 @@
 #include <TObject.h>
 
 #include "OCAPMT.hh"
-#include "OCADataPoint.hh"
+#include "OCAPMT.hh"
 
 
 namespace OCA{
@@ -70,14 +70,14 @@ namespace OCA{
     static Double_t OccRatioErr( const OCAPMT* pmt );
 
     // Calculate the error due to the PMT variability on a single
-    // PMT as represented by a OCADataPoint object.
-    static Float_t CalculatePMTVariabilityError( const OCADataPoint& dPoint );
+    // PMT as represented by a OCAPMT object.
+    static Float_t CalculatePMTVariabilityError( const OCAPMT& dPoint );
 
-    // Given a OCADataPoint object, this calculates both the
+    // Given a OCAPMT object, this calculates both the
     // MPE corrected occupancy ratio and its error. The ratio
     // and the error are assigned to 'occRatio' and 'occRatioErr'
     // respectively.
-    static void CalculateMPEOccRatio( const OCADataPoint& dPoint, 
+    static void CalculateMPEOccRatio( const OCAPMT& dPoint, 
                                       Float_t& occRatio, 
                                       Float_t& occRatioErr );
 

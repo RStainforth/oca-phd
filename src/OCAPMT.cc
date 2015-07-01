@@ -29,26 +29,28 @@ OCAPMT::OCAPMT( const OCAPMT& rhs )
 
   fIsVerified = rhs.fIsVerified;
   fCentralIsVerified = rhs.fCentralIsVerified;
-  fWavelengthIsVerified = rhs.fWavelengthIsVerified;
-
-  fDQXXFlag = rhs.fDQXXFlag;
-  fCentralDQXXFlag = rhs.fCentralDQXXFlag;
-  fWavelengthDQXXFlag = rhs.fWavelengthDQXXFlag;
 
   fPos = rhs.fPos;
   fNorm = rhs.fNorm;
+
+  fLBPos = rhs.fLBPos;
+  fCentralLBPos = rhs.fCentralLBPos;
+  fWavelengthLBPos = rhs.fWavelengthLBPos;
+  fLBOrientation = rhs.fLBOrientation;
+  fCentralLBOrientation = rhs.fCentralLBOrientation;
+  fWavelengthLBOrientation = rhs.fWavelengthLBOrientation;
 
   // Off-axis values.
 
   fPromptPeakTime = rhs.fPromptPeakTime;
   fPromptPeakWidth = rhs.fPromptPeakWidth;
+
+  fPromptPeakCounts = rhs.fPromptPeakCounts;
+  fPromptPeakCountsErr = rhs.fPromptPeakCountsErr;
+
   fTimeOfFlight = rhs.fTimeOfFlight;
-  fOccupancy = rhs.fOccupancy;
-  fOccupancyErr = rhs.fOccupancyErr;
+
   fLBIntensityNorm = rhs.fLBIntensityNorm;
-
-  fTotalNRunPromptCounts = rhs.fTotalNRunPromptCounts;
-
   fNLBPulses = rhs.fNLBPulses;
 
   fMPECorrOccupancy = rhs.fMPECorrOccupancy;
@@ -59,14 +61,12 @@ OCAPMT::OCAPMT( const OCAPMT& rhs )
   fDistInInnerAV = rhs.fDistInInnerAV;
   fDistInAV = rhs.fDistInAV;
   fDistInWater = rhs.fDistInWater;
-  fDistInNeck = rhs.fDistInNeck;
-  fTotalDist = rhs.fTotalDist;
 
   fSolidAngle = rhs.fSolidAngle;
   fCosTheta = rhs.fCosTheta;
 
-  fRelLBTheta = rhs.fRelLBTheta;
-  fRelLBPhi = rhs.fRelLBPhi;
+  fLBTheta = rhs.fLBTheta;
+  fLBPhi = rhs.fLBPhi;
 
   fCHSFlag = rhs.fCHSFlag;
   fCSSFlag = rhs.fCSSFlag;
@@ -81,11 +81,12 @@ OCAPMT::OCAPMT( const OCAPMT& rhs )
 
   fCentralPromptPeakTime = rhs.fCentralPromptPeakTime;
   fCentralPromptPeakWidth = rhs.fCentralPromptPeakWidth;
-  fCentralTimeOfFlight = rhs.fCentralTimeOfFlight;
-  fCentralOccupancy = rhs.fCentralOccupancy;
-  fCentralOccupancyErr = rhs.fCentralOccupancyErr;
-  fCentralLBIntensityNorm = rhs.fCentralLBIntensityNorm;
+  fCentralPromptPeakCounts = rhs.fCentralPromptPeakCounts;
+  fCentralPromptPeakCountsErr = rhs.fCentralPromptPeakCountsErr;
 
+  fCentralTimeOfFlight = rhs.fCentralTimeOfFlight;
+
+  fCentralLBIntensityNorm = rhs.fCentralLBIntensityNorm;
   fCentralNLBPulses = rhs.fCentralNLBPulses;
 
   fCentralMPECorrOccupancy = rhs.fCentralMPECorrOccupancy;
@@ -96,14 +97,12 @@ OCAPMT::OCAPMT( const OCAPMT& rhs )
   fCentralDistInInnerAV = rhs.fCentralDistInInnerAV;
   fCentralDistInAV = rhs.fCentralDistInAV;
   fCentralDistInWater = rhs.fCentralDistInWater;
-  fCentralDistInNeck = rhs.fCentralDistInNeck;
-  fCentralTotalDist = rhs.fCentralTotalDist;
 
   fCentralSolidAngle = rhs.fCentralSolidAngle;
   fCentralCosTheta = rhs.fCentralCosTheta;
 
-  fCentralRelLBTheta = rhs.fCentralRelLBTheta;
-  fCentralRelLBPhi = rhs.fCentralRelLBPhi;
+  fCentralLBTheta = rhs.fCentralLBTheta;
+  fCentralLBPhi = rhs.fCentralLBPhi;
 
   fCentralCHSFlag = rhs.fCentralCHSFlag;
   fCentralCSSFlag = rhs.fCentralCSSFlag;
@@ -114,42 +113,15 @@ OCAPMT::OCAPMT( const OCAPMT& rhs )
   fCentralInitialLBVec = rhs.fCentralInitialLBVec;
   fCentralIncidentLBVec = rhs.fCentralIncidentLBVec;
 
-  // Wavelength values.
+  fOccupancyRatio = rhs.fOccupancyRatio;
+  fModelOccupancyRatio = rhs.fModelOccupancyRatio;
+  fOccupancyRatioErr = rhs.fOccupancyRatioErr;
 
-  fWavelengthPromptPeakTime = rhs.fWavelengthPromptPeakTime;
-  fWavelengthPromptPeakWidth = rhs.fWavelengthPromptPeakWidth;
-  fWavelengthTimeOfFlight = rhs.fWavelengthTimeOfFlight;
-  fWavelengthOccupancy = rhs.fWavelengthOccupancy;
-  fWavelengthOccupancyErr = rhs.fWavelengthOccupancyErr;
-  fWavelengthLBIntensityNorm = rhs.fWavelengthLBIntensityNorm;
+  fPMTVariability = rhs.fPMTVariability;
 
-  fWavelengthNLBPulses = rhs.fWavelengthNLBPulses;
+  fRunIndex = rhs.fRunIndex;
 
-  fWavelengthMPECorrOccupancy = rhs.fWavelengthMPECorrOccupancy;
-  fWavelengthMPECorrOccupancyErr = rhs.fWavelengthMPECorrOccupancyErr;
-
-  fWavelengthFresnelTCoeff = rhs.fWavelengthFresnelTCoeff;
-
-  fWavelengthDistInInnerAV = rhs.fWavelengthDistInInnerAV;
-  fWavelengthDistInAV = rhs.fWavelengthDistInAV;
-  fWavelengthDistInWater = rhs.fWavelengthDistInWater;
-  fWavelengthDistInNeck = rhs.fWavelengthDistInNeck;
-  fWavelengthTotalDist = rhs.fWavelengthTotalDist;
-
-  fWavelengthSolidAngle = rhs.fWavelengthSolidAngle;
-  fWavelengthCosTheta = rhs.fWavelengthCosTheta;
-
-  fWavelengthRelLBTheta = rhs.fWavelengthRelLBTheta;
-  fWavelengthRelLBPhi = rhs.fWavelengthRelLBPhi;
-
-  fWavelengthCHSFlag = rhs.fWavelengthCHSFlag;
-  fWavelengthCSSFlag = rhs.fWavelengthCSSFlag;
-
-  fWavelengthBadPath = rhs.fWavelengthBadPath;
-  fWavelengthNeckFlag = rhs.fWavelengthNeckFlag;
-
-  fWavelengthInitialLBVec = rhs.fWavelengthInitialLBVec;
-  fWavelengthIncidentLBVec = rhs.fWavelengthIncidentLBVec;
+  fRawEfficiency = rhs.fRawEfficiency;
 
 }
 
@@ -173,26 +145,28 @@ OCAPMT& OCAPMT::operator=( const OCAPMT& rhs )
 
   fIsVerified = rhs.fIsVerified;
   fCentralIsVerified = rhs.fCentralIsVerified;
-  fWavelengthIsVerified = rhs.fWavelengthIsVerified;
-
-  fDQXXFlag = rhs.fDQXXFlag;
-  fCentralDQXXFlag = rhs.fCentralDQXXFlag;
-  fWavelengthDQXXFlag = rhs.fWavelengthDQXXFlag;
 
   fPos = rhs.fPos;
   fNorm = rhs.fNorm;
+
+  fLBPos = rhs.fLBPos;
+  fCentralLBPos = rhs.fCentralLBPos;
+  fWavelengthLBPos = rhs.fWavelengthLBPos;
+  fLBOrientation = rhs.fLBOrientation;
+  fCentralLBOrientation = rhs.fCentralLBOrientation;
+  fWavelengthLBOrientation = rhs.fWavelengthLBOrientation;
 
   // Off-axis values.
 
   fPromptPeakTime = rhs.fPromptPeakTime;
   fPromptPeakWidth = rhs.fPromptPeakWidth;
+
+  fPromptPeakCounts = rhs.fPromptPeakCounts;
+  fPromptPeakCountsErr = rhs.fPromptPeakCountsErr;
+
   fTimeOfFlight = rhs.fTimeOfFlight;
-  fOccupancy = rhs.fOccupancy;
-  fOccupancyErr = rhs.fOccupancyErr;
+
   fLBIntensityNorm = rhs.fLBIntensityNorm;
-
-  fTotalNRunPromptCounts = rhs.fTotalNRunPromptCounts;
-
   fNLBPulses = rhs.fNLBPulses;
 
   fMPECorrOccupancy = rhs.fMPECorrOccupancy;
@@ -203,14 +177,12 @@ OCAPMT& OCAPMT::operator=( const OCAPMT& rhs )
   fDistInInnerAV = rhs.fDistInInnerAV;
   fDistInAV = rhs.fDistInAV;
   fDistInWater = rhs.fDistInWater;
-  fDistInNeck = rhs.fDistInNeck;
-  fTotalDist = rhs.fTotalDist;
 
   fSolidAngle = rhs.fSolidAngle;
   fCosTheta = rhs.fCosTheta;
 
-  fRelLBTheta = rhs.fRelLBTheta;
-  fRelLBPhi = rhs.fRelLBPhi;
+  fLBTheta = rhs.fLBTheta;
+  fLBPhi = rhs.fLBPhi;
 
   fCHSFlag = rhs.fCHSFlag;
   fCSSFlag = rhs.fCSSFlag;
@@ -225,11 +197,12 @@ OCAPMT& OCAPMT::operator=( const OCAPMT& rhs )
 
   fCentralPromptPeakTime = rhs.fCentralPromptPeakTime;
   fCentralPromptPeakWidth = rhs.fCentralPromptPeakWidth;
-  fCentralTimeOfFlight = rhs.fCentralTimeOfFlight;
-  fCentralOccupancy = rhs.fCentralOccupancy;
-  fCentralOccupancyErr = rhs.fCentralOccupancyErr;
-  fCentralLBIntensityNorm = rhs.fCentralLBIntensityNorm;
+  fCentralPromptPeakCounts = rhs.fCentralPromptPeakCounts;
+  fCentralPromptPeakCountsErr = rhs.fCentralPromptPeakCountsErr;
 
+  fCentralTimeOfFlight = rhs.fCentralTimeOfFlight;
+
+  fCentralLBIntensityNorm = rhs.fCentralLBIntensityNorm;
   fCentralNLBPulses = rhs.fCentralNLBPulses;
 
   fCentralMPECorrOccupancy = rhs.fCentralMPECorrOccupancy;
@@ -240,14 +213,12 @@ OCAPMT& OCAPMT::operator=( const OCAPMT& rhs )
   fCentralDistInInnerAV = rhs.fCentralDistInInnerAV;
   fCentralDistInAV = rhs.fCentralDistInAV;
   fCentralDistInWater = rhs.fCentralDistInWater;
-  fCentralDistInNeck = rhs.fCentralDistInNeck;
-  fCentralTotalDist = rhs.fCentralTotalDist;
 
   fCentralSolidAngle = rhs.fCentralSolidAngle;
   fCentralCosTheta = rhs.fCentralCosTheta;
 
-  fCentralRelLBTheta = rhs.fCentralRelLBTheta;
-  fCentralRelLBPhi = rhs.fCentralRelLBPhi;
+  fCentralLBTheta = rhs.fCentralLBTheta;
+  fCentralLBPhi = rhs.fCentralLBPhi;
 
   fCentralCHSFlag = rhs.fCentralCHSFlag;
   fCentralCSSFlag = rhs.fCentralCSSFlag;
@@ -258,43 +229,16 @@ OCAPMT& OCAPMT::operator=( const OCAPMT& rhs )
   fCentralInitialLBVec = rhs.fCentralInitialLBVec;
   fCentralIncidentLBVec = rhs.fCentralIncidentLBVec;
 
-  // Wavelength values.
+  fOccupancyRatio = rhs.fOccupancyRatio;
+  fModelOccupancyRatio = rhs.fModelOccupancyRatio;
+  fOccupancyRatioErr = rhs.fOccupancyRatioErr;
 
-  fWavelengthPromptPeakTime = rhs.fWavelengthPromptPeakTime;
-  fWavelengthPromptPeakWidth = rhs.fWavelengthPromptPeakWidth;
-  fWavelengthTimeOfFlight = rhs.fWavelengthTimeOfFlight;
-  fWavelengthOccupancy = rhs.fWavelengthOccupancy;
-  fWavelengthOccupancyErr = rhs.fWavelengthOccupancyErr;
-  fWavelengthLBIntensityNorm = rhs.fWavelengthLBIntensityNorm;
+  fPMTVariability = rhs.fPMTVariability;
 
-  fWavelengthNLBPulses = rhs.fWavelengthNLBPulses;
+  fRunIndex = rhs.fRunIndex;
 
-  fWavelengthMPECorrOccupancy = rhs.fWavelengthMPECorrOccupancy;
-  fWavelengthMPECorrOccupancyErr = rhs.fWavelengthMPECorrOccupancyErr;
+  fRawEfficiency = rhs.fRawEfficiency;
 
-  fWavelengthFresnelTCoeff = rhs.fWavelengthFresnelTCoeff;
-
-  fWavelengthDistInInnerAV = rhs.fWavelengthDistInInnerAV;
-  fWavelengthDistInAV = rhs.fWavelengthDistInAV;
-  fWavelengthDistInWater = rhs.fWavelengthDistInWater;
-  fWavelengthDistInNeck = rhs.fWavelengthDistInNeck;
-  fWavelengthTotalDist = rhs.fWavelengthTotalDist;
-
-  fWavelengthSolidAngle = rhs.fWavelengthSolidAngle;
-  fWavelengthCosTheta = rhs.fWavelengthCosTheta;
-
-  fWavelengthRelLBTheta = rhs.fWavelengthRelLBTheta;
-  fWavelengthRelLBPhi = rhs.fWavelengthRelLBPhi;
-
-  fWavelengthCHSFlag = rhs.fWavelengthCHSFlag;
-  fWavelengthCSSFlag = rhs.fWavelengthCSSFlag;
-
-  fWavelengthBadPath = rhs.fWavelengthBadPath;
-  fWavelengthNeckFlag = rhs.fWavelengthNeckFlag;
-
-  fWavelengthInitialLBVec = rhs.fWavelengthInitialLBVec;
-  fWavelengthIncidentLBVec = rhs.fWavelengthIncidentLBVec;
- 
   return *this;
 
 }
@@ -318,24 +262,26 @@ void OCAPMT::ClearPMT()
 
   SetIsVerified( false );
   SetCentralIsVerified( false );
-  SetWavelengthIsVerified( false );
-
-  SetDQXXFlag( -1 );
-  SetCentralDQXXFlag( -1 );
-  SetWavelengthDQXXFlag( -1 );
 
   TVector3 nullVec( -99999.9, -99999.9, -99999.9 );
   SetPos( nullVec );
   SetNorm( nullVec );
-
+  SetLBPos( nullVec );
+  SetCentralLBPos( nullVec );
+  SetWavelengthLBPos( nullVec );
+  SetLBOrientation( -10.0 );
+  SetCentralLBOrientation( -10.0 );
+  SetWavelengthLBOrientation( -10.0 );
+  
   SetPromptPeakTime( -10.0 );
   SetPromptPeakWidth( -10.0 );
+
+  SetPromptPeakCounts( -10.0 );
+  SetPromptPeakCountsErr( -10.0 );
+
   SetTimeOfFlight( -10.0 );
-  SetOccupancy( -10.0 );
-  SetOccupancyErr( -10.0 );
 
   SetLBIntensityNorm( -10.0 );
-  SetTotalNRunPromptCounts( -10.0 );
   SetNLBPulses( -10.0 );
 
   SetMPECorrOccupancy( -10.0 );
@@ -346,17 +292,16 @@ void OCAPMT::ClearPMT()
   SetDistInInnerAV( -10.0 );
   SetDistInAV( -10.0 );
   SetDistInWater( -10.0 );
-  SetDistInNeck( -10.0 );
-  SetTotalDist( -10.0 );
 
   SetSolidAngle( -10.0 );
   SetCosTheta( -10.0 );
 
-  SetRelLBTheta( -10.0 );
-  SetRelLBPhi( -10.0 );
+  SetLBTheta( -10.0 );
+  SetLBPhi( -10.0 );
 
   SetCHSFlag( false );
   SetCSSFlag( false );
+
   SetBadPath( false );
   SetNeckFlag( false );
 
@@ -367,9 +312,10 @@ void OCAPMT::ClearPMT()
 
   SetCentralPromptPeakTime( -10.0 );
   SetCentralPromptPeakWidth( -10.0 );
+  SetCentralPromptPeakCounts( -10.0 );
+  SetCentralPromptPeakCountsErr( -10.0 );
+
   SetCentralTimeOfFlight( -10.0 );
-  SetCentralOccupancy( -10.0 );
-  SetCentralOccupancyErr( -10.0 );
 
   SetCentralLBIntensityNorm( -10.0 );
   SetCentralNLBPulses( -10.0 );
@@ -382,14 +328,12 @@ void OCAPMT::ClearPMT()
   SetCentralDistInInnerAV( -10.0 );
   SetCentralDistInAV( -10.0 );
   SetCentralDistInWater( -10.0 );
-  SetCentralDistInNeck( -10.0 );
-  SetCentralTotalDist( -10.0 );
 
   SetCentralSolidAngle( -10.0 );
   SetCentralCosTheta( -10.0 );
 
-  SetCentralRelLBTheta( -10.0 );
-  SetCentralRelLBPhi( -10.0 );
+  SetCentralLBTheta( -10.0 );
+  SetCentralLBPhi( -10.0 );
 
   SetCentralCHSFlag( false );
   SetCentralCSSFlag( false );
@@ -400,41 +344,15 @@ void OCAPMT::ClearPMT()
   SetCentralInitialLBVec( nullVec );
   SetCentralIncidentLBVec( nullVec );
 
-  // Wavelength values.
+  SetOccupancyRatio( -1.0 );
+  SetModelOccupancyRatio( -1.0 );
+  SetOccupancyRatioErr( -1.0 );
 
-  SetWavelengthPromptPeakTime( -10.0 );
-  SetWavelengthPromptPeakWidth( -10.0 );
-  SetWavelengthTimeOfFlight( -10.0 );
-  SetWavelengthOccupancy( -10.0 );
-  SetWavelengthOccupancyErr( -10.0 );
+  SetPMTVariability( -1.0 );
 
-  SetWavelengthLBIntensityNorm( -10.0 );
-  SetWavelengthNLBPulses( -10.0 );
+  SetRunIndex( -1 );
 
-  SetWavelengthMPECorrOccupancy( -10.0 );
-  SetWavelengthMPECorrOccupancyErr( -10.0 );
-
-  SetWavelengthFresnelTCoeff( -10.0 );
-
-  SetWavelengthDistInInnerAV( -10.0 );
-  SetWavelengthDistInAV( -10.0 );
-  SetWavelengthDistInWater( -10.0 );
-  SetWavelengthDistInNeck( -10.0 );
-  SetWavelengthTotalDist( -10.0 );
-
-  SetWavelengthSolidAngle( -10.0 );
-  SetWavelengthCosTheta( -10.0 );
-
-  SetWavelengthRelLBTheta( -10.0 );
-  SetWavelengthRelLBPhi( -10.0 );
-
-  SetWavelengthCHSFlag( false );
-  SetWavelengthCSSFlag( false );
-  SetWavelengthBadPath( false );
-  SetWavelengthNeckFlag( false );
-
-  SetWavelengthInitialLBVec( nullVec );
-  SetWavelengthIncidentLBVec( nullVec );
+  SetRawEfficiency( -1.0 );
 
 }
 
@@ -459,11 +377,11 @@ void OCAPMT::AddSOCPMTData( RAT::DS::SOCPMT& socPMT )
 
   // Set the number of counts in the prompt peak
   // timing window (4ns either side of the mean).
-  SetOccupancy( socPMT.GetPromptOccupancy() );
+  SetPromptPeakCounts( socPMT.GetPromptOccupancy() );
 
   // Set the error on the number of counts in the prompt
   // peak timing window.
-  SetOccupancyErr( TMath::Sqrt( fOccupancy ) );
+  SetPromptPeakCountsErr( TMath::Sqrt( GetPromptPeakCounts() ) );
 
 }
 
@@ -496,30 +414,18 @@ void OCAPMT::ProcessLightPath( RAT::DU::LightPathCalculator& lPath,
       // in RAT::DU::LightPathCalculator.
       //SetDistInNeck( lPath.GetDistInNeck() );
     }
-    
-    // NOTE: Current neck distances need fixing
-    // in RAT::DU::LightPathCalculator.
-    //SetDistInNeck( lPath.GetDistInNeck() );
 
     // Set the light path distances through the three
     // different detector materials.
     SetDistInInnerAV( lPath.GetDistInInnerAV() );
     SetDistInAV( lPath.GetDistInAV() );
     SetDistInWater( lPath.GetDistInWater() );
-    SetTotalDist( lPath.GetTotalDist() );
 
     // Set the initial and final photon vectors
     // from the laserball (Initial) to the PMT
     // bucket (Incident).
     SetInitialLBVec( lPath.GetInitialLightVec() );
     SetIncidentLBVec( lPath.GetIncidentVecOnPMT() );
-
-    // Set the relative theta and phi values for
-    // the light from the laserball. These theta
-    // and phi values are in the local frame of the
-    // laserball axis.
-    SetRelLBTheta( GetInitialLBVec().Theta() );
-    SetRelLBPhi( GetInitialLBVec().Phi() );
 
     // Set the Fresnel transmission coefficient for the
     // light path associated with this PMT.
@@ -540,12 +446,8 @@ void OCAPMT::ProcessLightPath( RAT::DU::LightPathCalculator& lPath,
 
     // Set the DQXX flag (=1 by default whilst RAT functionality
     // for the SOCPMTs is made compatible with the flags).
-    if ( chanHW.IsChannelOnline( GetID() ) ){
-      SetDQXXFlag( 1 );
-    }
-    else{
-      SetDQXXFlag( 0 );
-    }
+    if ( chanHW.IsChannelOnline( GetID() ) ){ SetCHSFlag( 1 ); }
+    else{ SetCHSFlag( 0 ); }
 
   }
 
@@ -590,8 +492,8 @@ void OCAPMT::VerifyPMT()
     SetIsVerified( false ); return; 
   }
 
-  // Ensure the occupancy is non-zero.
-  if ( fOccupancy < 0.0 ){ SetIsVerified( false ); return; }
+  // Ensure the prompt peak counts is non-zero.
+  if ( fPromptPeakCounts < 0.0 ){ SetIsVerified( false ); return; }
 
   // Ensure the multi-photoelectron corrected occupancy is non-zero.
   if ( fMPECorrOccupancy < 0.0 ){ SetIsVerified( false ); return; }
@@ -604,7 +506,7 @@ void OCAPMT::VerifyPMT()
 
   // Check that the distances in the inner AV, AV 
   // and water regions have sensible values.
-  if ( fDistInInnerAV < 0.0 || fDistInInnerAV > 13000.0 ){ 
+  if ( fDistInInnerAV < 0.0 || fDistInInnerAV > 12500.0 ){ 
     SetIsVerified( false ); return; 
   }
   if ( fDistInAV < 0.0 || fDistInAV > 1000.0 ){ 
@@ -615,7 +517,7 @@ void OCAPMT::VerifyPMT()
   }
   
   // Ensure the solid angle is non-zero.
-  if ( fSolidAngle == 0.0 ){ 
+  if ( fSolidAngle <= 0.0 ){ 
     SetIsVerified( false ); return; 
   }
 
@@ -625,7 +527,7 @@ void OCAPMT::VerifyPMT()
     SetIsVerified( false ); return; 
   }
 
-  if ( fDQXXFlag != 1 ){
+  if ( fCHSFlag != 1 ){
     SetIsVerified( false ); return;
   }
   

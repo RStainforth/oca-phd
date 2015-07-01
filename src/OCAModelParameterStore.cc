@@ -1,6 +1,6 @@
 #include "OCAModelParameterStore.hh"
 #include "OCAModelParameter.hh"
-#include "OCADataStore.hh"
+#include "OCAPMTStore.hh"
 
 #include "OCADB.hh"
 #include "OCAMath.hh"
@@ -987,7 +987,7 @@ TH2F* OCAModelParameterStore::GetLBDistributionHistogram()
   // Set the ranges as phi : ( 0, 2pi ) and
   // cos-theta : ( -1.0, 1.0 ).
   TH2F* lbDistributionHist = new TH2F( "lbDistributionHist", "Laserball Distribution Histogram",
-                                       nPhiBins, 0.0, 2.0 * TMath::Pi(), 
+                                       nPhiBins, -10 * TMath::Pi(), 1.0 * TMath::Pi(), 
                                        nCThetaBins, -1.0, 1.0 );
 
   // Get a pointer to the start of the laserball distribution
