@@ -45,7 +45,7 @@ Float_t OCAChiSquare::EvaluateChiSquare( OCAPMT& dPoint )
   OCAMath::CalculateMPEOccRatio( dPoint, occRatio, occRatioErr );
 
   Float_t occRatioError2 = occRatioErr * occRatioErr;
-  Float_t variabilityError2 = 0.03*0.03;//TMath::Power( occRatio * (OCAMath::CalculatePMTVariabilityError( dPoint ) - dPoint.GetMPECorrOccupancyErr()), 2 );
+  Float_t variabilityError2 = TMath::Power( occRatio * (OCAMath::CalculatePMTVariabilityError( dPoint ) - dPoint.GetMPECorrOccupancyErr()), 2 );
 
   // Calculate the difference between the model prediction
   // and the data value ( the residual for the chi-square calculation ).
@@ -175,7 +175,7 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
     Float_t occRatio = 0.0;
     OCAMath::CalculateMPEOccRatio( *iDP, occRatio, occRatioErr );
     Float_t occRatioErr2 = occRatioErr * occRatioErr;
-    Float_t variabilityErr2 = (0.03*0.03);//TMath::Power( occRatio * ( OCAMath::CalculatePMTVariabilityError( *iDP ) - iDP->GetMPECorrOccupancyErr() ), 2 );
+    Float_t variabilityErr2 = TMath::Power( occRatio * ( OCAMath::CalculatePMTVariabilityError( *iDP ) - iDP->GetMPECorrOccupancyErr() ), 2 );
     //cout << "variabilityErr2: " << variabilityErr2 << endl;
     //cout << "occRatioErr2: " << occRatioErr2 << endl;
     dataError2 = 1.0 / ( occRatioErr2 + variabilityErr2 );

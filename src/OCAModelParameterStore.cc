@@ -124,7 +124,7 @@ void OCAModelParameterStore::AddParameters( const char* fileName )
   //      - PMT Angular Response: Number of bins between 0-degrees and 90-degrees 'fNPMTAngularResponseBins'
   //      - Laserball Isotropy Distribution 2D ( CosTheta, Phi ) Histogram:
   //            * Number of bins in CosTheta between -1.0 and +1.0 'fNLBDistributionCosThetaBins'
-  //            * Number of bins in Phi between 0.0 and 360.0 'fNLBDistributionPhiBins'
+  //            * Number of bins in Phi between -pi and pi 'fNLBDistributionPhiBins'
 
   // Loop over each parameter set in the card file and add them/it to the store.
   for ( Int_t iStr = 0; iStr < (Int_t)paramList.size(); iStr++ ){

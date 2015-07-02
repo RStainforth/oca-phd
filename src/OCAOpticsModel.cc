@@ -85,20 +85,28 @@ void OCAOpticsModel::IdentifyVaryingPMTAngularResponseBins( OCAPMTStore* lData )
   // many entries it has.
   for ( Int_t iAng = 0; iAng < nPMTResponseBins; iAng++ ){
 
+    Bool_t parVary = fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ];
+
     // If the number of entries is less than the requirement,
     // or if the bin is the first in the PMT angular response
     // distribution ( i.e. iAng = 0 ) then keep the associated
     // parameter fixed in the fit.
-    if ( pmtAngValid[ iAng ] < fRequiredNPMTAngularResponseEntries 
-         || iAng == 0 ){ 
+    if ( parVary ){
+      if ( ( pmtAngValid[ iAng ] < fRequiredNPMTAngularResponseEntries 
+             || iAng == 0 ) ){ 
+        fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 0;
+      }
+      
+      // If the number of entries exceeds the required amount
+      // then vary the associated parameter in the parameter array.
+      else{
+        fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 1;
+      }
+    }
+    else{
       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 0;
     }
-
-    // If the number of entries exceeds the required amount
-    // then vary the associated parameter in the parameter array.
-    else{
-      fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 1;
-    }
+      
 
   }
 
@@ -148,20 +156,28 @@ void OCAOpticsModel::IdentifyVaryingLBDistributionBins( OCAPMTStore* lData )
   // distribution fixed.
   for ( Int_t iLB = 0; iLB < nLBDistBins; iLB++ ){
 
+    Bool_t parVary = fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ];
+
     // If the number of entries is less than the requirement,
     // or if the bin is the first in the laserball
     // distribution ( i.e. iLB = 0 ) then keep the associated
     // parameter fixed in the fit.
 
-    if ( lbAngValid[ iLB ] < fRequiredNLBDistributionEntries ){ 
+    if ( parVary ){
+      if ( lbAngValid[ iLB ] < fRequiredNLBDistributionEntries ){ 
+        fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 0;
+      }
+      
+      // If the number of entries exceeds the required amount
+      // then vary the associated parameter in the parameter array.
+      else{
+        fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 1;
+      }
+    }
+    else{
       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 0;
     }
-
-    // If the number of entries exceeds the required amount
-    // then vary the associated parameter in the parameter array.
-    else{
-      fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 1;
-    }
+      
   }
 
   delete lbAngValid;
@@ -185,6 +201,14 @@ void OCAOpticsModel::InitialiseLBRunNormalisations( OCAPMTStore* lData )
       previousRunIndex = iDP->GetRunIndex();
       fModelParameterStore->SetLBRunNormalisationPar( iDP->GetRunIndex(),
                                                       ( iDP->GetLBIntensityNorm() / iDP->GetCentralLBIntensityNorm() ) );
+      Bool_t parVary = fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBRunNormalisationParIndex() + iDP->GetRunIndex() ];
+      if ( parVary ){
+        fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBRunNormalisationParIndex() + iDP->GetRunIndex() ] = 1;
+      }
+      else{
+        fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBRunNormalisationParIndex() + iDP->GetRunIndex() ] = 0;
+      }
+        
     }
   }
 
