@@ -80,11 +80,9 @@ soc2oca -r 10195 -c 10177 -d jun15MC
 
 # Central Runs
 
-# Orientation 0
-soc2oca -r 10175 -c 10175 -d jun15MC
-# Orientation 1
-soc2oca -r 10176 -c 10176 -d jun15MC
-# Orientation 2
-soc2oca -r 10177 -c 10177 -d jun15MC
-# Orientation 3
-soc2oca -r 10178 -c 10178 -d jun15MC
+# Orientation 1 / Orientation 0
+soc2oca -r 10176 -c 10175 -d jun15MC
+# Orientation 2 / Orientation 0 
+soc2oca -r 10177 -c 10175 -d jun15MC
+# Orientation 3 / Orientation 0
+soc2oca -r 10178 -c 10175 -d jun15MC

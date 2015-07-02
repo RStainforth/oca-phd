@@ -200,7 +200,8 @@ void OCAOpticsModel::InitialiseLBRunNormalisations( OCAPMTStore* lData )
     if ( iDP->GetRunIndex() != previousRunIndex ){
       previousRunIndex = iDP->GetRunIndex();
       fModelParameterStore->SetLBRunNormalisationPar( iDP->GetRunIndex(),
-                                                      ( iDP->GetLBIntensityNorm() / iDP->GetCentralLBIntensityNorm() ) );
+                                                      iDP->GetLBIntensityNorm() );
+
       Bool_t parVary = fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBRunNormalisationParIndex() + iDP->GetRunIndex() ];
       if ( parVary ){
         fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBRunNormalisationParIndex() + iDP->GetRunIndex() ] = 1;
@@ -246,7 +247,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
   // Use the obtained normalisation bin obtain the current value for the
   // intensity normalisation for the off-axis run.
   Float_t normVal = parPtr->GetLBRunNormalisationPar( dataPoint.GetRunIndex() );
-  //Float_t normCtrVal = dataPoint.GetCentralLBIntensityNorm();
+  Float_t normCtrVal = dataPoint.GetCentralLBIntensityNorm();
   // Obtain the differences between the off-axis and central
   // runs for the distances in the inner AV, AV and water regions.
   Float_t dInnerAV = dataPoint.GetDistInInnerAV() 
@@ -283,7 +284,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
   
   // Using all the above calculated values we can compute
   // the model prediction for the occuapncy ratio.
-  Float_t modelPrediction = normVal * angRespRatio * intensityRatio * 
+  Float_t modelPrediction = ( normVal / normCtrVal ) * angRespRatio * intensityRatio * 
     TMath::Exp( - ( dInnerAV * ( dInnerAVExtinction )
                     + dAV * ( dAVExtinction )
                     + dWater * ( dWaterExtinction ) ) );
@@ -389,7 +390,7 @@ Float_t OCAOpticsModel::ModelPrediction( const OCAPMT& dataPoint )
   // Use the obtained normalisation bin obtain the current value for the
   // intensity normalisation for the off-axis run.
   Float_t normVal = parPtr->GetLBRunNormalisationPar( dataPoint.GetRunIndex() );
-  normVal *= dataPoint.GetCentralLBIntensityNorm();
+  //normVal *= dataPoint.GetCentralLBIntensityNorm();
 
   // Obtain the distances from the off-axis 
   // runs for the distances in the inner AV, AV and water regions.
@@ -536,17 +537,21 @@ Float_t OCAOpticsModel::ModelLBDistributionMask( const OCAPMT& dataPoint, std::s
   }
   
   // Initialise the mask value to 1.0 to begin with.
-  Float_t polynomialVal = 0.0;
   Float_t onePlus = 1.0 + cos( lbRelTheta );
+  Float_t polynomialVal = 1.0;
   // Loop through all the laserball mask parameters
   // performing the summation of different degree terms
   // The degree will run from 1 to NLBDistributionMaskParameters.
-  for ( Int_t iPar = parPtr->GetNLBDistributionMaskParameters() - 1; 
-        iPar >= 0; 
-        iPar-- ){
+  // for ( Int_t iPar = parPtr->GetNLBDistributionMaskParameters() - 1; 
+  //       iPar >= 0; 
+  //       iPar-- ){
 
-    polynomialVal = polynomialVal * onePlus + parPtr->GetLBDistributionMaskPar( iPar );
+  //   polynomialVal = polynomialVal * onePlus + parPtr->GetLBDistributionMaskPar( iPar );
     
+  // }
+
+  for ( Int_t iPar = 1; iPar < parPtr->GetNLBDistributionMaskParameters(); iPar++ ){
+    polynomialVal += parPtr->GetLBDistributionMaskPar( iPar ) * TMath::Power( onePlus, iPar );
   }
 
   // Return the prediciton for the mask component of the

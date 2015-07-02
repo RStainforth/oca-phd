@@ -177,22 +177,16 @@ int main( int argc, char** argv ){
   vector< OCAPMT >::iterator iDP;
   vector< OCAPMT >::iterator iDPBegin = finalStore->GetOCAPMTsIterBegin();
   vector< OCAPMT >::iterator iDPEnd = finalStore->GetOCAPMTsIterEnd();
-  
+
   // Iterate over all the data points and calculate
   // the estimator of the raw efficiency.
   Float_t modelPrediction = 1.0;
   Float_t dataValue = 1.0;
-  for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
+  Float_t pmtEff = 0.0;
 
-    // Calculate the model prediction and the data value
-    // of the occupancy.
-    modelPrediction = lModel->ModelPrediction( *iDP );
-    dataValue = iDP->GetMPECorrOccupancy();
-
-    // Set the ratio of the model / data to be the raw estimator
-    // for the PMT efficiency.
-    iDP->SetRawEfficiency( dataValue / modelPrediction );
-
+  TH1F* effHistos = new TH1F[ 90 ];
+  for ( Int_t iHist = 0; iHist < 90; iHist++ ){
+    effHistos[ iHist ].SetBins( 10000.0, 0.0, 10.0 );
   }
 
   // Now need to calculate the average of each PMT efficiency across each run.
@@ -200,112 +194,86 @@ int main( int argc, char** argv ){
 
   // Initialise arrays which are used to calculate the average
   // of the raw efficiency across each run.
-  Float_t* rawEffSum = new Float_t[ nRuns ];
-  Float_t* rawEffAvg = new Float_t[ nRuns ];
-  Int_t* nPMTsPerRun = new Int_t [ nRuns ];
-  for ( Int_t iRun = 0; iRun < nRuns; iRun++ ){
-    rawEffSum[ iRun ] = 0.0;
-    rawEffAvg[ iRun ] = 0.0;
-    nPMTsPerRun[ iRun ] = 0;
+  Float_t* rawEffSum = new Float_t[ 10000 ];
+  Float_t* rawEffAvg = new Float_t[ 10000 ];
+  Float_t rawEffAvgTot = 0.0;
+  Int_t* nPMTsPerIndex = new Int_t[ 10000 ];
+  Int_t* nUniquePMTs = new Int_t[ 10000 ];
+  for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
+    rawEffSum[ iPMT ] = 0.0;
+    rawEffAvg[ iPMT ] = 0.0;
+    nPMTsPerIndex[ iPMT ] = 0;
+    nUniquePMTs[ iPMT ] = 0;
   }
 
-  // We can use a histogram to store all of the raw efficiencies,
-  // and then use the standard deviation from the mean of the histogram
-  // distribution to provide a dynamic cut for the PMT variability
-  // calculation.
-  TH1F* effHistoRaw = new TH1F( "PMT Efficiencies", "PMT Relative Raw Efficiencies", 100, 0.0, 1.0 );
-
-  // Now loop over all the data points and add their raw efficiencies to 
-  // the corresponding run entry in 'rawEffSum' and increment 'nPMTsPerRun'
-  // accordingly. At the end, divide through each sum for each run by the
-  // total number of PMTs, i.e. rawEffAvg[ iRun ] = rawEffSum[ iRun ] / nPMTsPerRun[ iRun ].
-
+  Float_t rawEff = 0.0;
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
-    if ( iDP->GetRawEfficiency() > 0.0 && iDP->GetRawEfficiency() < 10.0 ){
-      rawEffSum[ iDP->GetRunIndex() ] += iDP->GetRawEfficiency();
-      nPMTsPerRun[ iDP->GetRunIndex() ]++;
-      effHistoRaw->Fill( iDP->GetRawEfficiency() );      
+    
+    // Calculate the model prediction and the data value
+    // of the occupancy.
+    modelPrediction = lModel->ModelPrediction( *iDP );
+    dataValue = iDP->GetMPECorrOccupancy();
+    rawEff = dataValue / modelPrediction;
+
+    if ( rawEff > 0.0 ){
+      nPMTsPerIndex[ iDP->GetID() ]++;
+      rawEffAvg[ iDP->GetID() ] += rawEff;
+      if ( nUniquePMTs[ iDP->GetID() ] == 0 ){
+        nUniquePMTs[ iDP->GetID() ]++;
+      }
     }
   }
 
-  // Now we calculate the distribution of the raw efficiencies by
-  // incident PMT angle.
-
-  // Create an array which will store the sum of raw efficiencies by
-  // incident angle up to 50-degrees.
-  Float_t* pmtAngleEffMean = new Float_t[ 51 ];
-  Int_t* pmtNAngle = new Int_t[ 51 ];
-  for ( Int_t iIndex = 0; iIndex < 51; iIndex++ ){
-    pmtAngleEffMean[ iIndex ] = 0.0;
-    pmtNAngle[ iIndex ] = 0; 
+  for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
+    if ( nPMTsPerIndex[ iPMT ] > 0 ){
+      rawEffAvg[ iPMT ] /= nPMTsPerIndex[ iPMT ];
+      if ( rawEffAvg[ iPMT ] != 0.0 ){
+        rawEffAvgTot += rawEffAvg[ iPMT ];
+      }
+    }
   }
 
-  // Loop over all the data points, and for efficiencies within
-  // 3 standard deviations from the mean either side, include them
-  // in the sum for the calculation of the PMT variability.
-  for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
+  Int_t nGoodPMTs = 0;
+  for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
+    nGoodPMTs += nUniquePMTs[ iPMT ];
+  }
+  rawEffAvgTot /= (Float_t)nGoodPMTs;
+
+  for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ){
     
+    // Calculate the model prediction and the data value
+    // of the occupancy.
+    modelPrediction = lModel->ModelPrediction( *iDP );
+    dataValue = iDP->GetMPECorrOccupancy();
+    pmtEff = dataValue / modelPrediction;
+
     // The incident angle.
     Int_t incAngle = (Int_t)( TMath::ACos( iDP->GetCosTheta() ) * TMath::RadToDeg() );
+    Float_t histoVal = ( ( pmtEff / rawEffAvg[ iDP->GetID() ] ) / rawEffAvgTot );
 
-    pmtAngleEffMean[ incAngle ] += iDP->GetRawEfficiency();
-    pmtNAngle[ incAngle ]++;
-      
-    
-  }
-  
-  // Now calculate the mean of each of the raw efficiency distributions
-  // by PMT incident angle.
-  for ( Int_t iIndex = 0; iIndex < 51; iIndex++ ){
-    if ( pmtNAngle != 0 ){
-      pmtAngleEffMean[ iIndex ] /= pmtNAngle[ iIndex ];
-    }
-    else{
-      pmtAngleEffMean[ iIndex ] = 0.0;
-    }
-  }
-  
-  // Now we calculate the variance of the efficiency distributions
-  // in each of the incident angle bins.
-  Float_t* pmtAngleEffSigma = new Float_t[ 51 ];
-  for ( Int_t iIndex = 0; iIndex < 51; iIndex++ ){
-    pmtAngleEffSigma[ iIndex ] = 0.0;
+    if ( histoVal > 0.0 && !std::isnan( pmtEff ) && !std::isinf( pmtEff ) ){
+      cout << "histoVal: " << histoVal << endl;
+      effHistos[ incAngle ].Fill( histoVal );
+      cout << "nEntries: " << effHistos[ incAngle ].GetEntries() << endl;
+    }    
   }
 
-  // The sum of the individual variances for each data point...
-  for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
-    
-    // The incident angle.
-    Int_t incAngle = (Int_t)( TMath::ACos( iDP->GetCosTheta() ) * TMath::RadToDeg() );
-      
-    Float_t sigma = iDP->GetRawEfficiency() - pmtAngleEffMean[ incAngle ];
-    Float_t sigma2 = sigma * sigma;
-    pmtAngleEffSigma[ incAngle ] += sigma2;
-    
-  }
-
-  // ...dividing through and square-rooting to compute the
-  // standard deviation for each PMT incident angle bin.
-  for ( Int_t iIndex = 0; iIndex < 51; iIndex++ ){
-
-    if ( pmtNAngle[ iIndex ] != 0 ){
-      pmtAngleEffSigma[ iIndex ] /= pmtNAngle[ iIndex ];
-      pmtAngleEffSigma[ iIndex ] = TMath::Sqrt( pmtAngleEffSigma[ iIndex ] );
-    }
-    else{
-      pmtAngleEffSigma[ iIndex ] = 0.0;
-    }
-
+  for ( Int_t iHist = 0; iHist < 90; iHist++ ){
+    cout << "iHist has: " << effHistos[ iHist ].GetEntries() << " entries" << endl;
+    Float_t mean = effHistos[ iHist ].GetMean();
+    Float_t rms = effHistos[ iHist ].GetRMS();
+    cout << "Mean is: " << mean << endl;
+    cout << "RMS is: " << rms << endl;
   }
 
   TGraph* myPlot = new TGraph();
 
-  for ( Int_t iIndex = 0; iIndex < 51; iIndex++ ){
-    if ( pmtAngleEffMean[ iIndex ] != 0.0
-         && (Float_t)( pmtAngleEffSigma[ iIndex ] / pmtAngleEffMean[ iIndex ] ) < 1.0 ){
+  for ( Int_t iIndex = 0; iIndex < 90; iIndex++ ){
+    if ( effHistos[ iIndex ].GetMean() != 0.0
+         && (Float_t)( effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean() ) < 1.0 ){
       myPlot->SetPoint( iIndex, 
                         (Float_t)( iIndex + 0.5 ),
-                        (Float_t)( pmtAngleEffSigma[ iIndex ] / pmtAngleEffMean[ iIndex ] ) );
+                        (Float_t)( effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean() ) );
     }
   }
   
@@ -327,116 +295,116 @@ int main( int argc, char** argv ){
   string filePath = outputDir + "fits/";
   effAngleC->Print( ( filePath + fitName + "_pmt_variability.eps" ).c_str() );
 
-  vector< OCAPMT >::iterator iDPL;
-  vector< OCAPMT >::iterator iDPBeginL = lData->GetOCAPMTsIterBegin();
-  vector< OCAPMT >::iterator iDPEndL = lData->GetOCAPMTsIterEnd();
+  // vector< OCAPMT >::iterator iDPL;
+  // vector< OCAPMT >::iterator iDPBeginL = lData->GetOCAPMTsIterBegin();
+  // vector< OCAPMT >::iterator iDPEndL = lData->GetOCAPMTsIterEnd();
 
-  for ( iDPL = iDPBeginL; iDPL != iDPEndL; iDPL++ ) {
+  // for ( iDPL = iDPBeginL; iDPL != iDPEndL; iDPL++ ) {
 
-    Int_t incAngle = (Int_t)( TMath::ACos( iDPL->GetCosTheta() ) * TMath::RadToDeg() );
-    if ( incAngle >= 0 && incAngle < 51 ){
-      Float_t varPar = pmtAngleEffSigma[ incAngle ] / pmtAngleEffMean[ incAngle ];
-      iDPL->SetPMTVariability( varPar );
-    }
-    else{
-      iDPL->SetPMTVariability( -1.0 );
-    }
+  //   Int_t incAngle = (Int_t)( TMath::ACos( iDPL->GetCosTheta() ) * TMath::RadToDeg() );
+  //   if ( incAngle >= 0 && incAngle < 51 ){
+  //     Float_t varPar = pmtAngleEffSigma[ incAngle ] / pmtAngleEffMean[ incAngle ];
+  //     iDPL->SetPMTVariability( varPar );
+  //   }
+  //   else{
+  //     iDPL->SetPMTVariability( -1.0 );
+  //   }
 
-  }
+  // }
 
   lData->WriteToFile( ( fitName + ".root" ).c_str() );
   finalStore->WriteToFile( ( fitName + "_filtered.root" ).c_str() );
 
-  // Now divide through to calculate the average.  
-  for ( Int_t iRun = 0; iRun < nRuns; iRun++ ){
-    rawEffAvg[ iRun ] = rawEffSum[ iRun ] / nPMTsPerRun[ iRun ];
-  }
+  // // Now divide through to calculate the average.  
+  // for ( Int_t iRun = 0; iRun < nRuns; iRun++ ){
+  //   rawEffAvg[ iRun ] = rawEffSum[ iRun ] / nPMTsPerRun[ iRun ];
+  // }
 
-  // Now we need to calculate the average PMT efficiency across runs.
-  Int_t* pmtIDRun = new Int_t[ 10000 ];
-  Float_t* pmtIDEff = new Float_t[ 10000 ];
-  for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
-    pmtIDRun[ iPMT ] = 0;
-    pmtIDEff[ iPMT ] = 0.0;
-  }
+  // // Now we need to calculate the average PMT efficiency across runs.
+  // Int_t* pmtIDRun = new Int_t[ 10000 ];
+  // Float_t* pmtIDEff = new Float_t[ 10000 ];
+  // for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
+  //   pmtIDRun[ iPMT ] = 0;
+  //   pmtIDEff[ iPMT ] = 0.0;
+  // }
 
-  for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
-    if ( iDP->GetRawEfficiency() > 0.0 && iDP->GetRawEfficiency() < 100000000.0 ){
-      pmtIDRun[ iDP->GetID() ]++;
-      pmtIDEff[ iDP->GetID() ] += iDP->GetRawEfficiency() / rawEffAvg[ iDP->GetRunIndex() ];
-    }
+  // for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
+  //   if ( iDP->GetRawEfficiency() > 0.0 && iDP->GetRawEfficiency() < 100000000.0 ){
+  //     pmtIDRun[ iDP->GetID() ]++;
+  //     pmtIDEff[ iDP->GetID() ] += iDP->GetRawEfficiency() / rawEffAvg[ iDP->GetRunIndex() ];
+  //   }
 
-  }
+  // }
 
-  // Now we normalise through by the number of occurences each PMT makes
-  // across the runs in the fit.
-  for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
+  // // Now we normalise through by the number of occurences each PMT makes
+  // // across the runs in the fit.
+  // for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
 
-    if ( pmtIDRun[ iPMT ] == 0 ){ 
-      pmtIDEff[ iPMT ] = 0.0; 
-    }
+  //   if ( pmtIDRun[ iPMT ] == 0 ){ 
+  //     pmtIDEff[ iPMT ] = 0.0; 
+  //   }
 
-    else{
-      Float_t effSum = pmtIDEff[ iPMT ];
-      pmtIDEff[ iPMT ] = effSum / pmtIDRun[ iPMT ];
-    }
+  //   else{
+  //     Float_t effSum = pmtIDEff[ iPMT ];
+  //     pmtIDEff[ iPMT ] = effSum / pmtIDRun[ iPMT ];
+  //   }
 
-  }
+  // }
 
-  Int_t nPMTs = 0;
-  Float_t effSum = 0.0;
-  // Now divide each entry by the total sum.
+  // Int_t nPMTs = 0;
+  // Float_t effSum = 0.0;
+  // // Now divide each entry by the total sum.
 
-  // First need to check how many PMTs there are
-  for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
+  // // First need to check how many PMTs there are
+  // for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
 
-    if ( pmtIDEff[ iPMT ] != 0.0 ){ 
-      nPMTs++; 
-      effSum += pmtIDEff[ iPMT ];
-    }
+  //   if ( pmtIDEff[ iPMT ] != 0.0 ){ 
+  //     nPMTs++; 
+  //     effSum += pmtIDEff[ iPMT ];
+  //   }
 
-  }
+  // }
 
-  Float_t totalOverNPMTs = effSum / (Float_t)nPMTs;
+  // Float_t totalOverNPMTs = effSum / (Float_t)nPMTs;
 
-  // Now normalise through each effictive value.
-  for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
+  // // Now normalise through each effictive value.
+  // for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
 
-    if ( pmtIDEff[ iPMT ] != 0.0 ){ 
-      pmtIDEff[ iPMT ] /= totalOverNPMTs;
-    }
+  //   if ( pmtIDEff[ iPMT ] != 0.0 ){ 
+  //     pmtIDEff[ iPMT ] /= totalOverNPMTs;
+  //   }
 
-  }
+  // }
 
-  TH1F* effHisto = new TH1F( "PMT Efficiencies", "PMT Relative Normalised Efficiencies", 200, 0.0, 2.0 );
+  // TH1F* effHisto = new TH1F( "PMT Efficiencies", "PMT Relative Normalised Efficiencies", 200, 0.0, 2.0 );
 
-  for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
-    if ( pmtIDEff[ iPMT ] != 0.0 ){
-      effHisto->Fill( pmtIDEff[ iPMT ] );
-    }
-  }
+  // for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
+  //   if ( pmtIDEff[ iPMT ] != 0.0 ){
+  //     effHisto->Fill( pmtIDEff[ iPMT ] );
+  //   }
+  // }
 
-  TCanvas* tCanvas = new TCanvas( "c1", "PMT Relative Efficiencies", 600, 400 );
-  effHisto->GetXaxis()->SetTitle( "Relative PMT Efficiency [Normalised] (a.units)" );
-  effHisto->GetYaxis()->SetTitle( "No. PMTs / 0.01" );
-  effHisto->GetXaxis()->SetTitleOffset( 1.4 );
-  effHisto->GetYaxis()->SetTitleOffset( 1.4 );
+  // TCanvas* tCanvas = new TCanvas( "c1", "PMT Relative Efficiencies", 600, 400 );
+  // effHisto->GetXaxis()->SetTitle( "Relative PMT Efficiency [Normalised] (a.units)" );
+  // effHisto->GetYaxis()->SetTitle( "No. PMTs / 0.01" );
+  // effHisto->GetXaxis()->SetTitleOffset( 1.4 );
+  // effHisto->GetYaxis()->SetTitleOffset( 1.4 );
   
-  effHisto->SetLineColor( 1 );
-  effHisto->SetLineWidth( 1 );
-  effHisto->Draw();
-  tCanvas->Print( (filePath + fitName + "_norm_eff.eps").c_str() );
+  // effHisto->SetLineColor( 1 );
+  // effHisto->SetLineWidth( 1 );
+  // effHisto->Draw();
+  // tCanvas->Print( (filePath + fitName + "_norm_eff.eps").c_str() );
 
-  TCanvas* tCanvasRaw = new TCanvas( "c1Raw", "PMT Relative Raw Efficiencies", 600, 400 );
-  effHistoRaw->GetXaxis()->SetTitle( "Relative PMT Efficiency [Raw] (a.units)" );
-  effHistoRaw->GetYaxis()->SetTitle( "No. PMTs / 0.01" );
-  effHistoRaw->GetXaxis()->SetTitleOffset( 1.4 );
-  effHistoRaw->GetYaxis()->SetTitleOffset( 1.4 );
+  // TCanvas* tCanvasRaw = new TCanvas( "c1Raw", "PMT Relative Raw Efficiencies", 600, 400 );
+  // effHistoRaw->GetXaxis()->SetTitle( "Relative PMT Efficiency [Raw] (a.units)" );
+  // effHistoRaw->GetYaxis()->SetTitle( "No. PMTs / 0.01" );
+  // effHistoRaw->GetXaxis()->SetTitleOffset( 1.4 );
+  // effHistoRaw->GetYaxis()->SetTitleOffset( 1.4 );
   
-  effHistoRaw->SetLineColor( 2 );
-  effHistoRaw->SetLineWidth( 1 );
-  effHistoRaw->Draw();
-  tCanvasRaw->Print( (filePath + fitName + "_raw_eff.eps").c_str() );
+  // effHistoRaw->SetLineColor( 2 );
+  // effHistoRaw->SetLineWidth( 1 );
+  // effHistoRaw->Draw();
+  // tCanvasRaw->Print( (filePath + fitName + "_raw_eff.eps").c_str() );
     
   cout << "\n";
   cout << "#############################" << endl;

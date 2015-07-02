@@ -79,11 +79,22 @@ Float_t OCAMath::CalculatePMTVariabilityError( const OCAPMT& dPoint )
 
   // If the PMT variability has not yet been calculated for this data point
   // then it will be negative, in which case return 0.0 for this calculation.
-  if( dPoint.GetPMTVariability() < 0.0
-      || dPoint.GetMPECorrOccupancy() == 0.0 ){ return 0.0; }
+  // if( dPoint.GetPMTVariability() < 0.0
+  //     || dPoint.GetMPECorrOccupancy() == 0.0 ){ return 0.0; }
 
   // Otherwise, can calculate the PMT variability term.
-  return dPoint.GetPMTVariability();
+  Float_t par0 = 0.03208;
+  Float_t par1 = -0.00001311;
+  Float_t par2 = 5.48e-06;
+  Float_t incidentAngle = TMath::ACos( dPoint.GetCosTheta() ) * 180.0 / TMath::Pi();
+
+  Float_t var = par0
+    + par1 * ( incidentAngle )
+    + par2 * ( incidentAngle * incidentAngle ); 
+  Float_t stat = 1.0 / TMath::Sqrt( dPoint.GetPromptPeakCounts() );
+  Float_t varErr = TMath::Sqrt( ( var * var ) - ( stat * stat ) );
+
+  return varErr;
 
 }
 

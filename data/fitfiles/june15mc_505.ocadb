@@ -20,11 +20,11 @@ valid_end: [0, 0],
 
 run_ids: [ 10157, 10158, 10159, 10160, 10161, 10162, 
            10163, 10164, 10165, 10166, 10167, 10168,
-           10169, 10170, 10171, 10172, 10173,
-           10174, 10179,
-           10180, 10181, 10182, 10183, 10184, 10185,
-           10186, 10187, 10188, 10189, 10190, 10191,
-           10192, 10193, 10194, 10195 ],
+           10169, 10170, 10171, 10172, 10173, 10174, 
+                  10176, 10177, 10178, 10179, 10180, 
+           10181, 10182, 10183, 10184, 10185, 10186, 
+           10187, 10188, 10189, 10190, 10191, 10192, 
+           10193, 10194, 10195 ],
 
 }
 
@@ -35,7 +35,7 @@ index: "filter_setup",
 valid_begin: [0, 0],
 valid_end: [0, 0],
 
-filter_list: [ "filter_prompt_counts", "filter_ctr_prompt_counts", "filter_chi_square", "filter_mpe_occupancy", "filter_mpe_ctr_occupancy" ],
+filter_list: [ "filter_prompt_counts", "filter_ctr_prompt_counts", "filter_chi_square" ],
 
 filter_mpe_occupancy_min: 0.01,
 filter_mpe_occupancy_max: 0.06,
@@ -43,11 +43,11 @@ filter_mpe_occupancy_max: 0.06,
 filter_mpe_ctr_occupancy_min: 0.02,
 filter_mpe_ctr_occupancy_max: 0.05,
 
-filter_prompt_counts_min: 500.0,
-filter_prompt_counts_max: 2000.0,
+filter_prompt_counts_min: 1100.0,
+filter_prompt_counts_max: 200000.0,
 
-filter_ctr_prompt_counts_min: 500.0,
-filter_ctr_prompt_counts_max: 2000.0,                      
+filter_ctr_prompt_counts_min: 1500.0,
+filter_ctr_prompt_counts_max: 200000.0,                      
 
 filter_chi_square_min: 0.0,
 filter_chi_square_max: 1000.0,
@@ -132,7 +132,7 @@ laserball_intensity_mask_vary: 1,
 // are calculate by LOCASOpticsModel::InitialiseLBRunNormalisations.
 
 // Whether or not to vary the laserball run normalisation in the fit ( 0: Keep Fixed, 1: Vary )
-laserball_run_normalisation_vary: 0,
+laserball_run_normalisation_vary: 1,
 
 }
 
@@ -144,7 +144,7 @@ valid_begin: [0, 0],
 valid_end: [0, 0],
 
 // The sequential chi-square upper limits to cut initial data-points on for each fit
-chisq_lims: [ 1000.0, 100.0, 50.0, 25.0, 16.0, 16.0 ],
+chisq_lims: [ 1000.0, 100.0, 50.0, 25.0, 16.0, 9.0, 9.0 ],
 
 }
 

@@ -42,7 +42,7 @@ OCARunReader::OCARunReader()
 //////////////////////////////////////
 
 OCARunReader::OCARunReader( vector< Int_t >& runIDs,
-                                const string dataSet )
+                            const string dataSet )
 {
 
   // Create a stringstream object and string to help

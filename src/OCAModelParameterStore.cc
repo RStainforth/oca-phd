@@ -1144,10 +1144,16 @@ Float_t OCAModelParameterStore::SLBDistributionMask( Double_t* aPtr, Double_t* p
   Float_t lbM = 0.0;
   Float_t onePlus = 1.0 + aPtr[ 0 ];
 
-  // The summation which forms the laserball
-  // mask function.
-  for ( iVal = nPars-1; iVal >= 0; iVal-- ){
-    lbM = lbM * onePlus + parPtr[ 1 + iVal ];
+  // // The summation which forms the laserball
+  // // mask function.
+  // for ( iVal = nPars-1; iVal >= 0; iVal-- ){
+  //   lbM = lbM * onePlus + parPtr[ 1 + iVal ];
+  // }
+
+  lbM = 1.0;
+  for ( iVal = 1; iVal < nPars; iVal++ ){
+
+    lbM += parPtr[ 1 + iVal ] * TMath::Power( onePlus, iVal );
   }
 
   return lbM;

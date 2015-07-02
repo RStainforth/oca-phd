@@ -66,16 +66,21 @@ using namespace RAT;
 using namespace OCA;
 
 // Utility class to parse the command line arguments for this executable
-// Current options: -r (Main-Run-ID), -c (Central-Run-ID), -w (Wavelength-Run-ID, -h (Help)
+// Current options: -r (Main-Run-ID), -c (Central-Run-ID), 
+// -wr (Wavelength-Run-ID), -wc (Wavelength-Central-Run-ID),
+// -f laserball position option.
+// -sys (Path to systematic settings).
+// -h (Help).
 class OCACmdOptions 
 {
 public:
-  OCACmdOptions( ) : fRID( -1 ), fCRID( -1 ), fWRID( -1 ), 
-                     fRIDStr( "" ), fCRIDStr( "" ), fWRIDStr( "" ), 
-                     fMMYY( "" ) { }
+  OCACmdOptions( ) : fRID( -1 ), fCRID( -1 ), 
+                     fWRID( -1 ), 
+                     fRIDStr( "" ), fCRIDStr( "" ), 
+                     fWRIDStr( "" ) { }
   Long64_t fRID, fCRID, fWRID;
-  std::string fRIDStr, fCRIDStr, fWRIDStr;
-  std::string fMMYY;
+  std::string fRIDStr, fCRIDStr, fWRIDStr, fWCRIDStr;
+  std::string fMMYY, fSystematicFile;
 };
 
 // Declare the three function prototypes used 
