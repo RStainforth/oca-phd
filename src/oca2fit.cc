@@ -169,23 +169,7 @@ int main( int argc, char** argv ){
   // the fit.
   lParStore->CrossCheckParameters();
 
-  Float_t** covMatrix = lParStore->GetCovarianceMatrix();
-  Int_t nParameters = lParStore->GetNParameters();
-
-  TH2F* testHisto = new TH2F( "2dHisto", "Covariance Matrix", 90, 1, 90, 90, 1, 90 );
-  for ( Int_t iPar = 1; iPar <= 90; iPar++ ){
-    for ( Int_t jPar = 1; jPar <= 90; jPar++ ){
-      testHisto->SetCellContent( iPar, jPar, covMatrix[ iPar ][ jPar ] );
-      
-    }
-  }
-
-  TCanvas* c1 = new TCanvas( "c1", "2d-histo", 600, 400 );
-
-  testHisto->Draw("COLZ");
-  c1->Print("test_histo_gram.eps");
-
-  lData->WriteToFile( "example_finished_data.root" );
+  lData->WriteToFile( ( fitName + "_oca2fit.root" ).c_str() );
 
   // Create the full file path for the output fit file.
   string fitROOTPath = lDB.GetOutputDir() + "fits/" + fitName + ".root";

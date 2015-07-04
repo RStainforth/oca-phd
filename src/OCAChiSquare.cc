@@ -437,7 +437,7 @@ Int_t OCAChiSquare::Minimise( Float_t testParameters[], Int_t parametersVary[],
     if ( parametersVary[ lVar ] ) { 
       aTrial[ lVar ] = testParameters[ lVar ] + matrixLine[ ++jVar ];
     }
-  }
+  } 
 
   // Perform a final fit evaluation with these parameters.
   FitEvaluation( aTrial, parametersVary, nParameters, 

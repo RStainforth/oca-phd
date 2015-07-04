@@ -72,7 +72,9 @@ namespace OCA{
     // Given access to a data point, compute the model prediction for the laserball distribution
     // based on the run type. runType = "off-axis" or runType = "central"
     // for the off-axis and central runs respectively.
-    Float_t ModelLBDistribution( const OCAPMT& dataPoint, std::string runType );
+    Float_t ModelLBDistribution( const OCAPMT& dataPoint, std::string runType, 
+                                 Float_t* phiInterpolFrac, Float_t* cosThetaInterpolFrac, 
+                                 Int_t* binsToDiff );
 
     // Given access to a data point, compute the model prediction for the laserball distribution
     // maske based on the run type. runType = "off-axis" or runType = "central". 
@@ -86,7 +88,7 @@ namespace OCA{
     // Given access to a data point, compute the model prediction for the PMT angular response
     // based on the run type. runType = "off-axis" or runType = "central"
     // for the off-axis and central runs respectively.
-    Float_t ModelAngularResponse( const OCAPMT& dataPoint, std::string runType );
+    Float_t ModelAngularResponse( const OCAPMT& dataPoint, std::string runType, Int_t& interpolFrac );
 
 
     /////////////////////////////////

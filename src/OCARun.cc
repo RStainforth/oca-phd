@@ -277,6 +277,8 @@ void OCARun::FillRunInfo( RAT::DU::SOCReader& socR,
   // ... and the PMT information from the SOC file.
   CopySOCPMTInfo( *socPtr );
 
+  delete socPtr;
+
 }
 
 //////////////////////////////////////
@@ -379,6 +381,8 @@ void OCARun::FillPMTInfo( RAT::DU::SOCReader& socR,
     ( iLP->second ).VerifyPMT();
     
   }
+
+  delete socPtr;
 
 }
 

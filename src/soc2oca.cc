@@ -302,7 +302,7 @@ int main( int argc, char** argv ){
   cout << "Now Performing CrossRunFill...";
   lRunPtr->CrossRunFill( lCRunPtr, lWRunPtr );
   cout << "done." << endl;
-
+  delete lCRunPtr;
 
   // Now create a OCARun (.root) file to store the information of the main-run
 
@@ -324,7 +324,6 @@ int main( int argc, char** argv ){
 
   // Close the file
   file->Close();
-  delete file;
 
   cout << "OCARun file: " << endl;
   cout << ( ocaRunDir + rIDStr + (string)"_OCARun.root" ).c_str() << endl;

@@ -656,19 +656,22 @@ void OCAModelParameterStore::InitialisePMTAngularResponseIndex()
     for ( jVal = 0; jVal <= fNPMTAngularResponseBins; jVal++ ) {
       if ( iVal <= jVal ) { first = iVal; second = jVal; }
       else { first = jVal; second = iVal; }
+      fPMTAngularResponseIndex[ iVal ][ jVal ][ 1 ] = first;
+      fPMTAngularResponseIndex[ iVal ][ jVal ][ 2 ] = first+1;
       if ( first == second ) {
-        fPMTAngularResponseIndex[ iVal ][ jVal ][ 0 ] = 1;
-        fPMTAngularResponseIndex[ iVal ][ jVal ][ 1 ] = first;
-        fPMTAngularResponseIndex[ iVal ][ jVal ][ 2 ] = -1;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 0 ] = 2;
         fPMTAngularResponseIndex[ iVal ][ jVal ][ 3 ] = -1;
         fPMTAngularResponseIndex[ iVal ][ jVal ][ 4 ] = -1;
       } 
-      else {
-        fPMTAngularResponseIndex[ iVal ][ jVal ][ 0 ] = 2;
-        fPMTAngularResponseIndex[ iVal ][ jVal ][ 1 ] = first;
-        fPMTAngularResponseIndex[ iVal ][ jVal ][ 2 ] = second;
-        fPMTAngularResponseIndex[ iVal ][ jVal ][ 3 ] = -1;
+      else if ( second - first == 1 ){
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 0 ] = 3;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 3 ] = second + 1;
         fPMTAngularResponseIndex[ iVal ][ jVal ][ 4 ] = -1;
+      }
+      else {
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 0 ] = 4;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 3 ] = second;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 4 ] = second+1;
       }
     }
   }
