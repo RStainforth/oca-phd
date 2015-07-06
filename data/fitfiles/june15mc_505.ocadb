@@ -43,7 +43,7 @@ filter_mpe_occupancy_max: 0.06,
 filter_mpe_ctr_occupancy_min: 0.02,
 filter_mpe_ctr_occupancy_max: 0.05,
 
-filter_prompt_counts_min: 1000.0,
+filter_prompt_counts_min: 1100.0,
 filter_prompt_counts_max: 200000.0,
 
 filter_ctr_prompt_counts_min: 4000.0,
@@ -113,7 +113,7 @@ pmt_angular_response_min_bin_entries: 25,
 laserball_distribution_histogram_number_of_phi_bins: 36,
 
 // The number of bins distributed between -1 and +1 for the CosTheta of the laserball distribution
-laserball_distribution_histogram_number_of_cos_theta_bins: 24,
+laserball_distribution_histogram_number_of_cos_theta_bins: 12,
 
 // Whether or not to vary the laserball distribution in the fit ( 0: Keep Fixed, 1: Vary )
 laserball_distribution_histogram_vary: 1,

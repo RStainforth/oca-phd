@@ -321,18 +321,18 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
     // The derivative with respect to the PMT angular response
     // from the off-axis run.
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() ] = 0.0;
-    //derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() + 1 ] = 0.0;
-    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() ] = 1.0 /  angResp;
-    //derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() + 1 ] = interpolFrac / angResp;
+    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() + 1 ] = 0.0;
+    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() ] = ( 1.0 - interpolFrac ) /  angResp;
+    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() + 1 ] = interpolFrac / angResp;
     //cout << "( 1.0 - interpolFrac ) / angResp is: "  << ( 1.0 - interpolFrac ) / angResp << endl;
     //cout << "interpolFrac / angResp is: "  << interpolFrac / angResp << endl;
     //cout << "PMT Angular Sum: " << interpolFrac + ( 1.0 - interpolFrac ) << endl;
     // The derivative with respect to the PMT angular response
     // from the central run.
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] = 0.0;
-    //derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() + 1 ] = 0.0;
-    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] -= 1.0 / angRespCtr;
-    //derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() + 1 ] -= interpolFracCtr /  angRespCtr;
+    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() + 1 ] = 0.0;
+    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] -= ( 1.0 - interpolFracCtr ) / angRespCtr;
+    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() + 1 ] -= interpolFracCtr /  angRespCtr;
     //cout << "( 1.0 - interpolFracCtr ) / angRespCtr is: "  << ( 1.0 - interpolFracCtr ) / angRespCtr << endl;
     //cout << "interpolFracCtr / angRespCtr is: "  << interpolFracCtr / angRespCtr << endl;
     //cout << "------------------" << endl;
@@ -783,7 +783,7 @@ Float_t OCAOpticsModel::ModelAngularResponse( const OCAPMT& dataPoint, std::stri
 
   interpolFrac = 0.0;
   parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponseParIndex() + iAng );
-  return  parPtr->GetPMTAngularResponsePar( iAng );
+  //return  parPtr->GetPMTAngularResponsePar( iAng );
 
   if ( !fModelParameterStore->GetParametersVary()[ parPtr->GetPMTAngularResponseParIndex() + iAng ]
        ||
@@ -801,12 +801,12 @@ Float_t OCAOpticsModel::ModelAngularResponse( const OCAPMT& dataPoint, std::stri
   Float_t binWidth = 90.0 / parPtr->GetNPMTAngularResponseBins();
   Float_t slope = ( parPtr->GetPMTAngularResponsePar( iAng + 1 ) - parPtr->GetPMTAngularResponsePar( iAng ) ) / binWidth;
   Float_t deltaTheta = ( angle - floor( angle ) );
-  interpolFrac = deltaTheta / binWidth;
+  interpolFrac = ( deltaTheta * slope ) / binWidth;
+  interpolFrac = ( ( 1.0 - TMath::Cos( interpolFrac * TMath::Pi() ) ) / 2.0 );
  
   //vector< Int_t > bins;
   //parPtr->GetCurrentAngularResponseBins()->insert( parPtr->GetCurrentAngularResponseBins()->begin(), bins.begin(), bins.end() );
-  pmtAngularResponse = ( parPtr->GetPMTAngularResponsePar( iAng ) * ( 1.0 - interpolFrac )
-                         + parPtr->GetPMTAngularResponsePar( iAng + 1 ) * interpolFrac );
+  pmtAngularResponse = ( parPtr->GetPMTAngularResponsePar( iAng ) * ( 1.0 - interpolFrac ) ) + ( parPtr->GetPMTAngularResponsePar( iAng + 1 ) * interpolFrac );
   parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponseParIndex() + iAng );
   parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponseParIndex() + iAng + 1 );
 

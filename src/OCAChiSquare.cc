@@ -134,6 +134,7 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
   // Initialise the vector of derivatives of the data points with respect to the
   // parameters
   dDataValDParameters = OCAMath::OCAVector( 1, nParameters );
+  Float_t* dDataValDParametersTMP = OCAMath::OCAVector( 1, nParameters );  
 
   // Check which of the current parameters are set to vary.
   for ( jVar = 1; jVar <= nParameters; jVar++ ){
@@ -191,7 +192,7 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
     // Now set the parameter pointer to the parameters in the
     // parameter store object.
     parPtr = fModel->GetOCAModelParameterStore();
-
+ 
     // Identify which of those parameters vary.
     //cout << "chi square call" << endl;
     parPtr->IdentifyVaryingParameters();

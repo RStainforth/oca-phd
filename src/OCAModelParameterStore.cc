@@ -1028,7 +1028,7 @@ TH2F* OCAModelParameterStore::GetLBDistributionHistogram()
   // Set the ranges as phi : ( 0, 2pi ) and
   // cos-theta : ( -1.0, 1.0 ).
   TH2F* lbDistributionHist = new TH2F( "lbDistributionHist", "Laserball Distribution Histogram",
-                                       nPhiBins, -10 * TMath::Pi(), 1.0 * TMath::Pi(), 
+                                       nPhiBins, -1 * TMath::Pi(), 1.0 * TMath::Pi(), 
                                        nCThetaBins, -1.0, 1.0 );
 
   // Get a pointer to the start of the laserball distribution
@@ -1216,8 +1216,8 @@ TH2F* OCAModelParameterStore::GetLBDistributionIntensityHistogram()
   // Set the ranges as phi : ( 0, 2pi ) and
   // cos-theta : ( -1.0, 1.0 ).
   TH2F* lbDistributionIntHist = new TH2F( "lbDistributionIntensityHist", "Laserball Distribution Histogram",
-                                       nPhiBins, 0.0, 2.0 * TMath::Pi(), 
-                                       nCThetaBins, -1.0, 1.0 );
+                                          nPhiBins, -1.0 * TMath::Pi(), TMath::Pi(), 
+                                          nCThetaBins, -1.0, 1.0 );
 
   // Get a pointer to the start of the laserball distribution
   // parameters in the parameter array.
@@ -1227,6 +1227,7 @@ TH2F* OCAModelParameterStore::GetLBDistributionIntensityHistogram()
   // This will be used to calculate the corresponding
   // mask multipier for each cos-theta bin.
   Float_t binWidth = 2.0 / nCThetaBins;
+  Float_t binWidthPhi = ( 2.0 * TMath::Pi() ) / ( nPhiBins );
 
   // Loop over all the bins in the distribution and set the
   // corresponding bin entry in the histogram accordingly.
@@ -1235,6 +1236,7 @@ TH2F* OCAModelParameterStore::GetLBDistributionIntensityHistogram()
 
       // The value of cos-theta.
       Float_t cTheta = -1.0 + ( binWidth * iTheta );
+      Float_t phi = -1.0 * TMath::Pi() + ( binWidthPhi * jPhi );
 
       // Initialise the mask value to 1.0 to begin with.
       Float_t polynomialVal = 0.0;
