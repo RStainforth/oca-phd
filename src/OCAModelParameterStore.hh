@@ -248,6 +248,10 @@ namespace OCA{
     vector< OCAModelParameter >::iterator GetOCAModelParametersIterBegin(){ return fParameters.begin(); }
     vector< OCAModelParameter >::iterator GetOCAModelParametersIterEnd(){ return fParameters.end(); }
 
+    vector< Int_t >* GetCurrentLBDistributionBins(){ return fCurrentLBDistributionBins; }
+
+    vector< Int_t >* GetCurrentAngularResponseBins(){ return fCurrentAngularResponseBins; }
+
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
@@ -291,6 +295,10 @@ namespace OCA{
     // Set the covariance matrix pointer array to those given 
     // by the 'covar' array of arrays.
     void SetCovarianceMatrix( Float_t** covar ) { fCovarianceMatrix = covar; }
+
+    void SetCurrentLBDistributionBins( vector< Int_t >& vec ){ *fCurrentLBDistributionBins = vec; }
+
+    void SetCurrentAngularResponseBins( vector< Int_t >& vec ){ *fCurrentAngularResponseBins = vec; }
 
   private:
 
@@ -339,6 +347,9 @@ namespace OCA{
 
     Int_t* fVariableParameterIndex;                  //! Look-up table for the ordered variable parameter indices.
     Int_t* fVariableParameterMap;                    //! Look-up table for the variable parameters (global).
+
+    vector< Int_t >* fCurrentLBDistributionBins;
+    vector< Int_t >* fCurrentAngularResponseBins;
 
     ClassDef( OCAModelParameterStore, 1 )
 

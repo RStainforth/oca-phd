@@ -367,7 +367,7 @@ Int_t OCAMath::GaussJordanElimination( Float_t** lhsMatrix, Int_t nParameters,
           // the return value, 'retVal' to -1.
           
           else if ( iPiv[ kVar ] > 1){ 
-            cout << "OCAMath::GaussJordanElimination: Error! Singular matrix element encountered!" << endl;
+            cout << "OCAMath::GaussJordanElimination: Error! Singular matrix element encountered for index: " << "iPiv[ " << kVar << " ] = " << iPiv[ kVar ] << endl;
             retVal = -1;
           }
         }

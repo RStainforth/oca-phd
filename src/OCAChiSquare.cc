@@ -193,6 +193,7 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
     parPtr = fModel->GetOCAModelParameterStore();
 
     // Identify which of those parameters vary.
+    //cout << "chi square call" << endl;
     parPtr->IdentifyVaryingParameters();
 
     // Return the number of variable parameters for the current

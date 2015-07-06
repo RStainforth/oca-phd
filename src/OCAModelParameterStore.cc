@@ -14,6 +14,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 using namespace std;
 using namespace OCA;
@@ -60,6 +61,10 @@ OCAModelParameterStore::OCAModelParameterStore( string storeName )
   fNCurrentVariableParameters = -1;
   fNBaseVariableParameters = -1;
   fNGlobalVariableParameters = -1;
+
+  fCurrentAngularResponseBins = new vector< Int_t >[ 12 ];
+  fCurrentLBDistributionBins = new vector< Int_t >[ 12 ];
+  
 
 }
 
@@ -657,21 +662,20 @@ void OCAModelParameterStore::InitialisePMTAngularResponseIndex()
       if ( iVal <= jVal ) { first = iVal; second = jVal; }
       else { first = jVal; second = iVal; }
       fPMTAngularResponseIndex[ iVal ][ jVal ][ 1 ] = first;
-      fPMTAngularResponseIndex[ iVal ][ jVal ][ 2 ] = first+1;
+      fPMTAngularResponseIndex[ iVal ][ jVal ][ 2 ] = second;
       if ( first == second ) {
-        fPMTAngularResponseIndex[ iVal ][ jVal ][ 0 ] = 2;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 0 ] = 1;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 1 ] = first;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 2 ] = -1;
         fPMTAngularResponseIndex[ iVal ][ jVal ][ 3 ] = -1;
         fPMTAngularResponseIndex[ iVal ][ jVal ][ 4 ] = -1;
       } 
-      else if ( second - first == 1 ){
-        fPMTAngularResponseIndex[ iVal ][ jVal ][ 0 ] = 3;
-        fPMTAngularResponseIndex[ iVal ][ jVal ][ 3 ] = second + 1;
-        fPMTAngularResponseIndex[ iVal ][ jVal ][ 4 ] = -1;
-      }
       else {
-        fPMTAngularResponseIndex[ iVal ][ jVal ][ 0 ] = 4;
-        fPMTAngularResponseIndex[ iVal ][ jVal ][ 3 ] = second;
-        fPMTAngularResponseIndex[ iVal ][ jVal ][ 4 ] = second+1;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 0 ] = 2;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 1 ] = first;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 2 ] = second;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 3 ] = -1;
+        fPMTAngularResponseIndex[ iVal ][ jVal ][ 4 ] = -1;
       }
     }
   }
@@ -703,6 +707,40 @@ void OCAModelParameterStore::IdentifyVaryingParameters()
     }
 
   }
+
+  // vector< Int_t >* lbBins = GetCurrentLBDistributionBins();
+  // vector< Int_t >* angBins = GetCurrentAngularResponseBins();
+  // //cout << "lbBins->size: " << lbBins->size() << endl;
+  // for ( Int_t iPar = 0; iPar < lbBins->size(); iPar++ ){
+  //   //cout << "lbBins: " << iPar << " is: " << lbBins->at( iPar ) << endl;
+  // }
+  // //cout << "angBins->size: " << angBins->size() << endl;
+  // //cout << "------------" << endl;
+  // for ( Int_t iPar = 0; iPar < angBins->size(); iPar++ ){
+  //   //cout << "angBins: " << iPar << " is: " << angBins->at( iPar ) << endl;
+  // }
+  // angBins->insert( angBins->end(), lbBins->begin(), lbBins->end() );
+  // //cout << "angBins->size now: " << angBins->size() << endl;  
+  // std::sort ( angBins->begin(), angBins->end() );
+  // for ( Int_t iEl = 0; iEl < angBins->size(); iEl++ ){
+  //   if ( iEl < angBins->size() - 1 ){
+  //     if ( angBins->at( iEl ) == angBins->at( iEl + 1 ) ){
+  //       angBins->at( iEl ) = 0;
+  //     }
+  //   }
+  // }
+  // //cout << "angBins->size now two: " << angBins->size() << endl;
+
+  // for ( Int_t iPar = 0; iPar < angBins->size(); iPar++ ){
+  //   //cout << "going to vary: " << angBins->at( iPar ) << endl;
+  //   if ( fParametersVary[ angBins->at( iPar ) ] ){
+  //     //cout << "going to vary: " << angBins->at( iPar ) << endl;
+  //     fVariableParameterIndex[ ++fNCurrentVariableParameters ] = angBins->at( iPar );
+  //   } 
+  // }
+  // //cout << "------------" << endl;
+  // angBins->clear();
+  // lbBins->clear();
  
   // Identify which bins varied, and in which order for the
   // laserball distribution. Then give the associated parameter indices

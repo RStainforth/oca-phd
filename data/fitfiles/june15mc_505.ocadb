@@ -107,20 +107,20 @@ pmt_angular_response_vary: 1,
 
 // The minimum number of entries required in each PMT angular response
 // bin for the parameter associated with that parameter to vary in the fit
-pmt_angular_response_min_bin_entries: 50,
+pmt_angular_response_min_bin_entries: 25,
 
 // The number of bins distributed between 0 - 360 degrees for the laserball phi distribution
 laserball_distribution_histogram_number_of_phi_bins: 36,
 
 // The number of bins distributed between -1 and +1 for the CosTheta of the laserball distribution
-laserball_distribution_histogram_number_of_cos_theta_bins: 12,
+laserball_distribution_histogram_number_of_cos_theta_bins: 24,
 
 // Whether or not to vary the laserball distribution in the fit ( 0: Keep Fixed, 1: Vary )
 laserball_distribution_histogram_vary: 1,
 
 // The minimum number of laserball distribution entries in each bin
 // required for the parameter associated with that bin to vary
-laserball_distribution_histogram_min_bin_entries: 25,
+laserball_distribution_histogram_min_bin_entries: 10,
 
 // The degree of the polynomial mask function used to model the laserball intensity
 laserball_intensity_mask_number_of_parameters: 5,

@@ -88,7 +88,7 @@ namespace OCA{
     // Given access to a data point, compute the model prediction for the PMT angular response
     // based on the run type. runType = "off-axis" or runType = "central"
     // for the off-axis and central runs respectively.
-    Float_t ModelAngularResponse( const OCAPMT& dataPoint, std::string runType, Int_t& interpolFrac );
+    Float_t ModelAngularResponse( const OCAPMT& dataPoint, std::string runType, Float_t& interpolFrac );
 
 
     /////////////////////////////////
