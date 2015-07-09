@@ -99,16 +99,12 @@ int main( int argc, char** argv ){
   // distribution bin entires required for the parameter associated
   // with each bin to vary in the fit.
   Int_t minPMTEntries = lDB.GetIntField( "FITFILE", "pmt_angular_response_min_bin_entries", "parameter_setup" );
-  cout << "minPMT Entries is: " << minPMTEntries << endl;
   Int_t minLBDistEntries = lDB.GetIntField( "FITFILE", "laserball_distribution_histogram_min_bin_entries", "parameter_setup" );
   lModel->SetRequiredNLBDistributionEntries( minLBDistEntries );
   lModel->SetRequiredNPMTAngularRepsonseEntries( minPMTEntries );  
   
   // Create and add the run information to a OCAPMTStore object.
   OCAPMTStore* lData = new OCAPMTStore( fitName );
-
-  //cout << "OCAPMTStore 1 has: " << lData->GetNDataPoints() << endl;
-  //cout << "OCAPMTStore 2 has: " << lData2->GetNDataPoints() << endl;
 
   // Create a pointer to a new OCAChiSquare and set a link
   // to each of the data and the model.

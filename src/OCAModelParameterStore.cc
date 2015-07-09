@@ -56,6 +56,10 @@ OCAModelParameterStore::OCAModelParameterStore( string storeName )
   fNLBDistributionCosThetaBins = -1;
   fNLBDistributionPhiBins = -1;
   fNLBRunNormalisations = -1;
+  fNLBSinWaveSlices = -1;
+  fNLBParametersPerSinWaveSlice = -1;
+  fLBDistributionType = -1;
+  fNLBDistributionPars = -1;
 
   fNParameters = -1;
   fNCurrentVariableParameters = -1;
@@ -63,8 +67,18 @@ OCAModelParameterStore::OCAModelParameterStore( string storeName )
   fNGlobalVariableParameters = -1;
 
   fCurrentAngularResponseBins = new vector< Int_t >[ 12 ];
-  fCurrentLBDistributionBins = new vector< Int_t >[ 12 ];
-  
+  fCurrentLBDistributionBins = new vector< Int_t >[ 12 ]; 
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+OCAModelParameterStore::~OCAModelParameterStore()
+{
+
+  delete fCurrentAngularResponseBins;
+  delete fCurrentLBDistributionBins;
 
 }
 
@@ -136,7 +150,7 @@ void OCAModelParameterStore::AddParameters( const char* fileName )
 
     // Laserball distribution mask.
     if ( paramList[ iStr ] == "laserball_intensity_mask" ){
-      fNLBDistributionMaskParameters = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_parameters" ), "parameter_setup" );
+      fNLBDistributionMaskParameters = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_parameters" ), "parameter_setup" ) + 1;
     }
 
     // PMT angular response.
@@ -145,9 +159,20 @@ void OCAModelParameterStore::AddParameters( const char* fileName )
     }
 
     // Laserball distribution hisotgram.
-    else if ( paramList[ iStr ] == "laserball_distribution_histogram" ){
-      fNLBDistributionCosThetaBins = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_cos_theta_bins" ), "parameter_setup" );
-      fNLBDistributionPhiBins = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_phi_bins" ), "parameter_setup" );
+    else if ( paramList[ iStr ] == "laserball_distribution" ){
+      cout << "now on lb-type" << endl;
+      fLBDistributionType = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_type" ), "parameter_setup" );
+      if ( fLBDistributionType == 0 ){
+        fNLBDistributionCosThetaBins = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_cos_theta_bins" ), "parameter_setup" );
+        fNLBDistributionPhiBins = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_phi_bins" ), "parameter_setup" );
+      }
+      else if ( fLBDistributionType == 1 ){
+        fNLBSinWaveSlices = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_theta_slices" ), "parameter_setup" );
+        fNLBParametersPerSinWaveSlice = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_parameters_per_theta_slice" ), "parameter_setup" );
+      }
+      else{
+        cout << "Error: Unknown laserball type specified: " << fLBDistributionType << endl;
+      }
     }
 
     // Laserball run normalisation.
@@ -287,16 +312,22 @@ void OCAModelParameterStore::AddParameters( const char* fileName )
 
     }
 
-    if ( paramList[ iStr ] == "laserball_distribution_histogram" ){
+    if ( paramList[ iStr ] == "laserball_distribution" ){
 
-      nParsInGroup = fNLBDistributionPhiBins * fNLBDistributionCosThetaBins;
+      if ( fLBDistributionType == 0 ){
+        fNLBDistributionPars = fNLBDistributionPhiBins * fNLBDistributionCosThetaBins;
+      }
+      if ( fLBDistributionType == 1 ){
+        fNLBDistributionPars = fNLBSinWaveSlices * fNLBParametersPerSinWaveSlice;
+      }
 
       varyBool = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
 
       // Now loop over each angular response parameter and initialise its initial values;
-      for ( Int_t iPar = 1; iPar <= nParsInGroup; iPar++ ){
-
-        initVal = 1.0;
+      for ( Int_t iPar = 1; iPar <= fNLBDistributionPars; iPar++ ){
+        if ( fLBDistributionType == 0 ){ initVal = 1.0; }
+        if ( fLBDistributionType == 1 && iPar % 2 == 1 ){ initVal = 0.01; }
+        if ( fLBDistributionType == 1 && iPar % 2 == 0 ){ initVal = 1.0; }
 
         // The laserball distribution parameters in the histogram will not vary beyond 0.0 and 2.0, so set
         // these accordingly
@@ -315,7 +346,7 @@ void OCAModelParameterStore::AddParameters( const char* fileName )
           fNPMTAngularResponseBins + 
           iPar;
         OCAModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, 
-                                        minVal, maxVal, incVal, nParsInGroup, varyBool );
+                                        minVal, maxVal, incVal, fNLBDistributionPars, varyBool );
         AddParameter( lParameter );
         
         lStream.clear();
@@ -352,8 +383,8 @@ void OCAModelParameterStore::AddParameters( const char* fileName )
         Int_t parIndex = 3 + 
           fNLBDistributionMaskParameters + 
           fNPMTAngularResponseBins + 
-          ( fNLBDistributionPhiBins * fNLBDistributionCosThetaBins ) 
-          + iPar;
+          fNLBDistributionPars + 
+          iPar;
         OCAModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, 
                                         minVal, maxVal, incVal, nParsInGroup, varyBool );
         AddParameter( lParameter );
@@ -368,7 +399,6 @@ void OCAModelParameterStore::AddParameters( const char* fileName )
   fNParameters = (Int_t)fParameters.size();
 
   AllocateParameterArrays();
-
 }
 
 //////////////////////////////////////
@@ -476,41 +506,82 @@ void OCAModelParameterStore::WriteToRATDBFile( const char* fileName )
   roccVals << "\n";
 
   Float_t* lbDistPtr = &fParametersPtr[ GetLBDistributionParIndex() ];
-
-  Int_t nCThetaBins = GetNLBDistributionCosThetaBins();
-  Int_t nPhiBins = GetNLBDistributionPhiBins();
-  roccVals << "// The laserball distribution histogram parameters.\n";
-  roccVals << "laserball_distribution_histogram_number_of_phi_bins : " << nPhiBins << ",\n";
-  roccVals << "laserball_distribution_histogram_number_of_cos_theta_bins : " << nCThetaBins << ",\n";
-  roccVals << "laserball_distribution_histogram : [ ";
-  for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
-    for ( Int_t iPhi = 0; iPhi < nPhiBins; iPhi++ ){
-      if ( iTheta == nCThetaBins - 1
-           && iPhi == nPhiBins - 1 ){
-        roccVals << lbDistPtr[ iTheta*nCThetaBins + iPhi ] << " ],\n";
+  Int_t lbType = GetLBDistributionType();
+  if ( lbType == 0 ){
+    Int_t nCThetaBins = GetNLBDistributionCosThetaBins();
+    Int_t nPhiBins = GetNLBDistributionPhiBins();
+    roccVals << "// The laserball distribution histogram parameters.\n";
+    roccVals << "laserball_distribution_histogram_number_of_phi_bins : " << nPhiBins << ",\n";
+    roccVals << "laserball_distribution_histogram_number_of_cos_theta_bins : " << nCThetaBins << ",\n";
+    roccVals << "laserball_distribution_histogram : [ ";
+    for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
+      for ( Int_t iPhi = 0; iPhi < nPhiBins; iPhi++ ){
+        if ( iTheta == nCThetaBins - 1
+             && iPhi == nPhiBins - 1 ){
+          roccVals << lbDistPtr[ iTheta*nCThetaBins + iPhi ] << " ],\n";
+        }
+        else{
+          roccVals << lbDistPtr[ iTheta*nCThetaBins + iPhi ] << ", ";
+        }
       }
-      else{
-        roccVals << lbDistPtr[ iTheta*nCThetaBins + iPhi ] << ", ";
-      }
+      roccVals << "\n";
     }
+    roccVals << "laserball_distribution_errors : [ ";
+    for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
+      for ( Int_t iPhi = 0; iPhi < nPhiBins; iPhi++ ){
+        if ( iTheta == nCThetaBins - 1
+             && iPhi == nPhiBins - 1 ){
+          roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ][ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ] ) << " ],\n";
+        }
+        else{
+          roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ][ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ] ) << ", ";
+        }
+      }
+      roccVals << "\n";
+    }
+  }
+  if ( lbType == 1 ){
+    Int_t nThetaSlices = GetNLBSinWaveSlices();
+    Int_t nParsPerSlice = GetNLBParametersPerSinWaveSlice();
+    roccVals << "// The laserball distribution sin-wave parameters.\n";
+    roccVals << "laserball_distribution_number_of_cos_theta_slices : " << nThetaSlices << ",\n";
+    roccVals << "laserball_distribution_number_of_parameters_per_cos_theta_slice : " << nParsPerSlice << ",\n";
+    roccVals << "laserball_distribution_sin_wave : [ ";
+    for ( Int_t iPar = 1; iPar <= ( nThetaSlices * nParsPerSlice ); iPar++ ){
+
+      if ( iPar % 2 == 0 && iPar == ( nThetaSlices * nParsPerSlice ) ){
+        roccVals << lbDistPtr[ iPar ] << " ],\n";
+      }
+      if ( iPar % 2 == 0 && iPar % 8 == 0 ){
+        roccVals << lbDistPtr[ iPar ] << ",\n";
+      }
+      else if ( iPar % 2 == 1 ){
+        roccVals << lbDistPtr[ iPar ] << ", ";
+      }
+      else if ( iPar % 2 == 0 ){
+        roccVals << lbDistPtr[ iPar ] << ",     ";
+      }     
+      roccVals << "\n";
+    }
+    roccVals << "laserball_distribution_errors : [ ";
+    for ( Int_t iPar = 1; iPar <= ( nThetaSlices * nParsPerSlice ); iPar++ ){
+
+      if ( iPar % 2 == 0 && iPar == ( nThetaSlices * nParsPerSlice ) ){
+        roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << " ],\n";
+      }
+      if ( iPar % 2 == 0 && iPar % 8 == 0 ){
+        roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ",\n";
+      }
+      else if ( iPar % 2 == 1 ){
+        roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ", ";
+      }
+      else if ( iPar % 2 == 0 ){
+        roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ",     ";
+      }
+    roccVals << "\n";
+    } 
     roccVals << "\n";
   }
-  roccVals << "laserball_distribution_errors : [ ";
-  for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
-    for ( Int_t iPhi = 0; iPhi < nPhiBins; iPhi++ ){
-      if ( iTheta == nCThetaBins - 1
-           && iPhi == nPhiBins - 1 ){
-        roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ][ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ] ) << " ],\n";
-      }
-      else{
-        roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ][ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ] ) << ", ";
-      }
-    }
-    roccVals << "\n";
-  }
-
-  roccVals << "\n";
-
   roccVals << "// The PMT angular response parameters.\n";
   Int_t nPMTAngPars = GetNPMTAngularResponseBins();
   Float_t* pmtAngPtr = &fParametersPtr[ GetPMTAngularResponseParIndex() ];
@@ -745,34 +816,72 @@ void OCAModelParameterStore::IdentifyVaryingParameters()
   // Identify which bins varied, and in which order for the
   // laserball distribution. Then give the associated parameter indices
   // linked to those bins to the variable parameter index array.
-  Int_t first = 0;
-  Int_t second = 0;
-  if ( fCurrentLBDistributionBin <= fCentralCurrentLBDistributionBin ){ 
-    first = fCurrentLBDistributionBin; 
-    second = fCentralCurrentLBDistributionBin; 
-  }
-  else{ 
-    first = fCentralCurrentLBDistributionBin; 
-    second = fCurrentLBDistributionBin; 
-  }
-  
-  if ( first != second ){
-    parnum = GetLBDistributionParIndex() + first;
-    if ( fParametersVary[ parnum ] ){ 
-      fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum;
+  if ( fLBDistributionType == 0 ){
+    Int_t first = 0;
+    Int_t second = 0;
+    if ( fCurrentLBDistributionBin <= fCentralCurrentLBDistributionBin ){ 
+      first = fCurrentLBDistributionBin; 
+      second = fCentralCurrentLBDistributionBin; 
     }
+    else{ 
+      first = fCentralCurrentLBDistributionBin; 
+      second = fCurrentLBDistributionBin; 
+    }
+    
+    if ( first != second ){
+      parnum = GetLBDistributionParIndex() + first;
+      if ( fParametersVary[ parnum ] ){ 
+        fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum;
+      }
+      
+      parnum = GetLBDistributionParIndex() + second;
+      if ( fParametersVary[ parnum ] ){ 
+        fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum;
+      }
+    }
+  }
 
-    parnum = GetLBDistributionParIndex() + second;
-    if ( fParametersVary[ parnum ] ){ 
-      fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum;
+
+  if(fLBDistributionType == 1){
+    Int_t firstSlice = GetCurrentLBDistributionBin();
+    Int_t secondSlice = GetCentralCurrentLBDistributionBin();
+    Int_t first = 0;
+    Int_t second = 0;
+    if ( firstSlice < secondSlice ){ first = firstSlice; second = secondSlice; }
+    if ( secondSlice < firstSlice ){ first = secondSlice; second = firstSlice; }
+    if ( secondSlice == firstSlice ){ first = firstSlice; }
+
+    if ( first != second ){
+      if ( fParametersVary[ GetLBDistributionParIndex() + first*2 ] ){
+        fVariableParameterIndex[++fNCurrentVariableParameters] = GetLBDistributionParIndex() + first*2;
+      }
+      if ( fParametersVary[ GetLBDistributionParIndex() + first*2 + 1 ] ){
+        fVariableParameterIndex[++fNCurrentVariableParameters] = GetLBDistributionParIndex() + first*2 + 1;
+      }
+      if ( fParametersVary[ GetLBDistributionParIndex() + second*2 ] ){
+        fVariableParameterIndex[++fNCurrentVariableParameters] = GetLBDistributionParIndex() + second*2;
+      }
+      if ( fParametersVary[ GetLBDistributionParIndex() + second*2 + 1 ] ){
+        fVariableParameterIndex[++fNCurrentVariableParameters] = GetLBDistributionParIndex() + second*2 + 1;
+      }
+    }
+    else{
+      if ( fParametersVary[ GetLBDistributionParIndex() + first*2 ] ){
+        fVariableParameterIndex[++fNCurrentVariableParameters] = GetLBDistributionParIndex() + first*2;
+      }
+      if ( fParametersVary[ GetLBDistributionParIndex() + first*2 + 1 ] ){
+        fVariableParameterIndex[++fNCurrentVariableParameters] = GetLBDistributionParIndex() + first*2 + 1;
+      }
     }
   }
+
+
   
   parnum = GetLBRunNormalisationParIndex() + fCurrentLBRunNormalisationBin;
   if ( fParametersVary[ parnum ] ){ 
     fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum; 
   }
-
+  
   return;
 
 }
@@ -812,6 +921,12 @@ void OCAModelParameterStore::IdentifyBaseVaryingParameters()
       fVariableParameterIndex[ ++fNBaseVariableParameters ] = GetLBDistributionMaskParIndex() + iPar;
     }
   }
+
+  // if(fLBDistributionType == 1){
+  //   for (int i=0; i<fNLBSinWaveSlices * fNLBParametersPerSinWaveSlice; i++)
+  //     if (fParametersVary[ GetLBDistributionParIndex() + i ]) 
+  //       fVariableParameterIndex[++fNBaseVariableParameters] = GetLBDistributionParIndex() + i;
+  // }
 
 }
 
@@ -874,7 +989,7 @@ TH1F* OCAModelParameterStore::GetPMTAngularResponseHistogram()
   }
 
   // Set the titles of the x and y axes.
-  hHisto->GetXaxis()->SetTitle( "Incident PMT Angle (#theta_{PMT})[degrees]" );
+  hHisto->GetXaxis()->SetTitle( "Incident PMT Angle #theta_{PMT} [degrees]" );
   hHisto->GetYaxis()->SetTitle( "Relative PMT Angular Response" );
 
   // Set a title offset of 120% the default.
@@ -1021,36 +1136,67 @@ TH2F* OCAModelParameterStore::GetLBDistributionHistogram()
 
   // Get the number of cos-theta and phi bins
   // in the laserball isotropy distribution.
-  Int_t nCThetaBins = GetNLBDistributionCosThetaBins();
-  Int_t nPhiBins = GetNLBDistributionPhiBins();
-
+  Int_t nCThetaBins = 0;GetNLBDistributionCosThetaBins();
+  Int_t nPhiBins = 0;GetNLBDistributionPhiBins();
+  if ( fLBDistributionType == 0 ){ nCThetaBins = GetNLBDistributionCosThetaBins(); nPhiBins = GetNLBDistributionPhiBins(); }
+  if ( fLBDistributionType == 1 ){ nCThetaBins = GetNLBSinWaveSlices(); nPhiBins = GetNLBParametersPerSinWaveSlice(); }
   // Decalre a new 2D histogram with 'Float_t' type entries.
   // Set the ranges as phi : ( 0, 2pi ) and
   // cos-theta : ( -1.0, 1.0 ).
-  TH2F* lbDistributionHist = new TH2F( "lbDistributionHist", "Laserball Distribution Histogram",
-                                       nPhiBins, -1 * TMath::Pi(), 1.0 * TMath::Pi(), 
-                                       nCThetaBins, -1.0, 1.0 );
 
-  // Get a pointer to the start of the laserball distribution
-  // parameters in the parameter array.
-  Float_t* lbDistPtr = &fParametersPtr[ GetLBDistributionParIndex() ];
+  TH2F* lbDistributionHist;
 
-  // Loop through each of the cos-theta and phi
-  // bins and assign the corresponding parameter to its
-  // bin entry in the histogram.
-  for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
-    for ( Int_t jPhi = 0; jPhi < nPhiBins; jPhi++ ){
+  if ( fLBDistributionType == 0 ){
+    lbDistributionHist = new TH2F( "lbDistributionHist", "Laserball Distribution Histogram",
+                                   nPhiBins, -1 * TMath::Pi(), 1.0 * TMath::Pi(), 
+                                   nCThetaBins, -1.0, 1.0 );
 
-      // Set the bin content to the parameter value for each bin.
-      // The (+1) is because the 0-th bin in a ROOT histogram
-      // is the underflow bin.
-      lbDistributionHist->SetCellContent( jPhi + 1, iTheta + 1, 
-                                          lbDistPtr[ iTheta * nPhiBins + jPhi ] );
+    // Get a pointer to the start of the laserball distribution
+    // parameters in the parameter array.
+    Float_t* lbDistPtr = &fParametersPtr[ GetLBDistributionParIndex() ];
+    
+    // Loop through each of the cos-theta and phi
+    // bins and assign the corresponding parameter to its
+    // bin entry in the histogram.
+    for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
+      for ( Int_t jPhi = 0; jPhi < nPhiBins; jPhi++ ){
+        
+        // Set the bin content to the parameter value for each bin.
+        // The (+1) is because the 0-th bin in a ROOT histogram
+        // is the underflow bin.
+        lbDistributionHist->SetCellContent( jPhi + 1, iTheta + 1, 
+                                            lbDistPtr[ iTheta * nPhiBins + jPhi ] );
+      }
+    }
+  }
+
+  if ( fLBDistributionType == 1 ){
+    lbDistributionHist = new TH2F( "lbDistributionHist", "Laserball Distribution Histogram",
+                                   36, -1 * TMath::Pi(), 1.0 * TMath::Pi(), 
+                                   nCThetaBins, -1.0, 1.0 );
+
+    // Get a pointer to the start of the laserball distribution
+    // parameters in the parameter array.
+    Float_t* lbDistPtr = &fParametersPtr[ GetLBDistributionParIndex() ];
+
+    // Loop through each of the cos-theta and phi
+    // bins and assign the corresponding parameter to its
+    // bin entry in the histogram.
+    for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
+      for ( Int_t jPhi = 0; jPhi <= 35; jPhi++ ){
+        Float_t phiVal = -1.0 * TMath::Pi() + jPhi * ( ( 2.0 * TMath::Pi() ) / 36 );
+        // Set the bin content to the parameter value for each bin.
+        // The (+1) is because the 0-th bin in a ROOT histogram
+        // is the underflow bin.
+        Float_t lbDistVal = 1.0 +  lbDistPtr[ iTheta * 2 ] * TMath::Sin( 1.0 * phiVal + lbDistPtr[ iTheta * 2 + 1 ] ); 
+        lbDistributionHist->SetCellContent( jPhi + 1, iTheta + 1, 
+                                            lbDistVal );
+      }
     }
   }
 
   // Set the titles of the x and y axes.
-  lbDistributionHist->GetXaxis()->SetTitle( "Laserball Phi_{LB}" );
+  lbDistributionHist->GetXaxis()->SetTitle( "Laserball #phi_{LB}" );
   lbDistributionHist->GetYaxis()->SetTitle( "Laserball Cos#theta_{LB}" );
 
   // Set the title offset to each respective axis as 120% that
@@ -1076,7 +1222,7 @@ TF1* OCAModelParameterStore::GetLBDistributionMaskFunction()
   // title later on in this method.
   stringstream tmpStream;
   string nParsStr = "";
-  tmpStream << nMaskPars;
+  tmpStream << nMaskPars-1;
   tmpStream >> nParsStr;
   
   // Returns a pointer to a function with no parameters, to plot the current
@@ -1121,7 +1267,7 @@ TF1* OCAModelParameterStore::GetLBDistributionMaskFunction()
   // Set the plot and axes titles.
   string plotTitle = "Laserball Mask Function P_{" + nParsStr + "}";
   lbMaskFunc->SetTitle( plotTitle.c_str() );
-  lbMaskFunc->GetXaxis()->SetTitle( "Polar Angle Cos#theta_{LB}" );
+  lbMaskFunc->GetXaxis()->SetTitle( "Cos#theta_{LB}" );
   lbMaskFunc->GetYaxis()->SetTitle( "Relative Laserball Intensity" );
 
   // Set the title offset to 120% of the original.
@@ -1236,7 +1382,7 @@ TH2F* OCAModelParameterStore::GetLBDistributionIntensityHistogram()
 
       // The value of cos-theta.
       Float_t cTheta = -1.0 + ( binWidth * iTheta );
-      Float_t phi = -1.0 * TMath::Pi() + ( binWidthPhi * jPhi );
+      //Float_t phi = -1.0 * TMath::Pi() + ( binWidthPhi * jPhi );
 
       // Initialise the mask value to 1.0 to begin with.
       Float_t polynomialVal = 0.0;
@@ -1261,8 +1407,8 @@ TH2F* OCAModelParameterStore::GetLBDistributionIntensityHistogram()
   }
 
   // Set the titles of the x and y axes.
-  lbDistributionIntHist->GetXaxis()->SetTitle( "Laserball Phi_{LB}" );  
-  lbDistributionIntHist->GetYaxis()->SetTitle( "Laserball Cos#theta_{LB}" );
+  lbDistributionIntHist->GetXaxis()->SetTitle( "#phi_{LB}" );  
+  lbDistributionIntHist->GetYaxis()->SetTitle( "Cos#theta_{LB}" );
 
   // Set the title offset to each respective axis as 120% that
   // of its original value.

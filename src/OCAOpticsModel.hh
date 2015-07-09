@@ -76,6 +76,9 @@ namespace OCA{
                                  Float_t* phiInterpolFrac, Float_t* cosThetaInterpolFrac, 
                                  Int_t* binsToDiff );
 
+    Double_t ModelLBDistributionSinWave( Float_t& a,Double_t *par );
+    Double_t ModelDLBDistributionSinWave( Float_t& a,Double_t *par);
+
     // Given access to a data point, compute the model prediction for the laserball distribution
     // maske based on the run type. runType = "off-axis" or runType = "central". 
     // for the off-axis and central runs respectively.

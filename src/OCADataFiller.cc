@@ -18,8 +18,8 @@ ClassImp( OCADataFiller )
 //////////////////////////////////////
 
 void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
-                                  OCAPMTStore* lDataStore,
-                                  OCAChiSquare* lChiSq )
+                                OCAPMTStore* lDataStore,
+                                OCAChiSquare* lChiSq )
 {
 
   // Iterate through each datapoint in the OCAPMTStore 

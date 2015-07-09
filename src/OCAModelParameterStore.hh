@@ -42,7 +42,7 @@ namespace OCA{
 
     // The constructor and destructor of the OCAModelParameterStore object.
     OCAModelParameterStore ( string storeName = "OCAModelParameterStore" );
-    ~OCAModelParameterStore(){ }
+    ~OCAModelParameterStore();
 
     /////////////////////////////////
     ////////     METHODS     ////////
@@ -158,6 +158,18 @@ namespace OCA{
     // Get the number of laserball run normalisations.
     Int_t GetNLBRunNormalisations() const { return fNLBRunNormalisations; }
 
+    // Get the number of laserball run normalisations.
+    Int_t GetNLBSinWaveSlices() const { return fNLBSinWaveSlices; }
+
+    // Get the number of laserball run normalisations.
+    Int_t GetNLBParametersPerSinWaveSlice() const { return fNLBParametersPerSinWaveSlice; }
+
+    // Get the total number of laserball distribution parameters; regardles sof type (binned or sin-wave)
+    Int_t GetNLBDistributionPars() const { return fNLBDistributionPars; }
+
+    // Get the type of the laserball angular distribution (0: binned, 1: sin-wave)
+    Int_t GetLBDistributionType() const { return fLBDistributionType; }
+
     // Get the index for the inner av extinction length.
     Int_t GetInnerAVExtinctionLengthParIndex() const { return 1; } 
 
@@ -196,7 +208,7 @@ namespace OCA{
     
     // Get the index for the start of the run normalisation parameters.
     Int_t GetLBRunNormalisationParIndex() const { return 3 + fNLBDistributionMaskParameters 
-        + fNPMTAngularResponseBins + ( fNLBDistributionCosThetaBins * fNLBDistributionPhiBins ) + 1; }
+        + fNPMTAngularResponseBins + fNLBDistributionPars + 1; }
 
     // Get the 'iPar'-th laserball normalisation parameter.
     // i.e. The off-axis normalisation value for the 'iPar'-th run in
@@ -319,6 +331,10 @@ namespace OCA{
     Int_t fNLBDistributionCosThetaBins;              // The number of bins in cos theta ( -1.0, 1.0 ) for the laserball distribution 2d histogram.
     Int_t fNLBDistributionPhiBins;                   // The number of bins in phi ( 0.0, 360.0 ) for the laserball distribution 2d hisotgram.
     Int_t fNLBRunNormalisations;                     // The total number of run normalisations ( = number of laserball runs ).
+    Int_t fNLBSinWaveSlices;                         // The total number of slices in theta for the sin-wave laserball angular distribution.
+    Int_t fNLBParametersPerSinWaveSlice;             // The number of parameters per sin wave theta slice in the sin-wave laserball angular distribution.
+    Int_t fLBDistributionType;                       // Get the laserball angular distribution type (0: binned, 1: sin-wave).
+    Int_t fNLBDistributionPars;                      // Total number of laserball distribution parameters; regardless of the type (binned or sin-wave)
 
     Int_t fNParameters;                              // The number of parameters in the store.
 

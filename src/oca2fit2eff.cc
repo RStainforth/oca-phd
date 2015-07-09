@@ -96,6 +96,13 @@ int main( int argc, char** argv ){
   // object.
   lModel->SetOCAModelParameterStore( lParStore );
 
+  // Get the minimum number of PMT angular response and Laserball
+  // distribution bin entires required for the parameter associated
+  // with each bin to vary in the fit.
+  Int_t minPMTEntries = lDB.GetIntField( "FITFILE", "pmt_angular_response_min_bin_entries", "parameter_setup" );
+  Int_t minLBDistEntries = lDB.GetIntField( "FITFILE", "laserball_distribution_min_bin_entries", "parameter_setup" );
+  lModel->SetRequiredNLBDistributionEntries( minLBDistEntries );
+  lModel->SetRequiredNPMTAngularRepsonseEntries( minPMTEntries ); 
   // Add all the run files to the OCARunReader object
   std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" ); 
   std::string dataSet = lDB.GetStringField( "FITFILE", "data_set", "fit_setup" );
@@ -137,7 +144,7 @@ int main( int argc, char** argv ){
     lFilterStore->UpdateFilter( "filter_chi_square", 
                                ( lFilterStore->GetFilter( "filter_chi_square" ) ).GetMinValue(), 
                                chiSqLims[ iFit ] );
-    
+    cout << "about to filter data" << endl;
     // Filter the data.
     lDataFiller->FilterData( lFilterStore, lData, lChiSq );
 
@@ -325,6 +332,16 @@ int main( int argc, char** argv ){
 
   lData->WriteToFile( ( fitName + ".root" ).c_str() );
   finalStore->WriteToFile( ( fitName + "_filtered.root" ).c_str() );
+
+  //delete lParStore;
+  //delete lModel;
+  //delete lData;
+  //delete lChiSq;
+  //delete lFilterStore;
+  //delete lDataFiller;
+  //delete ogStore;
+  //delete finalStore;
+  
     
   cout << "\n";
   cout << "#############################" << endl;

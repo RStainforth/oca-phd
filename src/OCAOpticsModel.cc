@@ -121,71 +121,72 @@ void OCAOpticsModel::IdentifyVaryingPMTAngularResponseBins( OCAPMTStore* lData )
 void OCAOpticsModel::IdentifyVaryingLBDistributionBins( OCAPMTStore* lData )
 {
 
-  // Obtain the number of laserball distribution bins.
-  Int_t nLBDistBins = fModelParameterStore->GetNLBDistributionCosThetaBins() * fModelParameterStore->GetNLBDistributionPhiBins();
-
-  // Create an array which will, for each bin, store the number of entries
-  // for the corresponding laserball distribution bin of the same index.
-  Int_t* lbAngValid = new Int_t[ nLBDistBins ];
-
-  // Initialise each value in the array to 0 to begin with. 
-  for ( Int_t iLB = 0; iLB < nLBDistBins; iLB++ ){ 
-    lbAngValid[ iLB ] = 0; 
-  }
-
-  // Loop over all the data points stored in the OCAPMTStore object.
-  std::vector< OCAPMT >::iterator iDP;
-  for ( iDP = lData->GetOCAPMTsIterBegin(); 
-        iDP != lData->GetOCAPMTsIterEnd(); 
-        iDP++ ) {
-
-    // We need to model the laserball distribution first to assign the
-    // current laserball distribution bin for this data point.
-    // i.e. we need to assign fCurrentLBDistributionBin.
-    Float_t phiFrac[ 2 ];
-    Float_t cosThetaFrac[ 2 ];
-    Int_t binsToDiff[ 4 ];
-    ModelLBDistribution( *iDP, "off-axis", phiFrac, cosThetaFrac, binsToDiff );
-
-    // For the corresponding entry in the array, i.e. the counter,
-    // increment it's value by one.
-    lbAngValid[ fModelParameterStore->GetCurrentLBDistributionBin() ]++;
+  if ( fModelParameterStore->GetLBDistributionType() == 0 ){
+    // Obtain the number of laserball distribution bins.
+    Int_t nLBDistBins = fModelParameterStore->GetNLBDistributionCosThetaBins() * fModelParameterStore->GetNLBDistributionPhiBins();
     
-  }
-
-  // Now loop over all the entries checking how many entries are
-  // there for each bin. If the number of entries
-  // exceeds the minimum required amount then set that parameter
-  // to vary. If not, keep that particular bin in the laserball
-  // distribution fixed.
-  for ( Int_t iLB = 0; iLB < nLBDistBins; iLB++ ){
-
-    Bool_t parVary = fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ];
-
-    // If the number of entries is less than the requirement,
-    // or if the bin is the first in the laserball
-    // distribution ( i.e. iLB = 0 ) then keep the associated
-    // parameter fixed in the fit.
-
-    if ( parVary ){
-      if ( lbAngValid[ iLB ] < fRequiredNLBDistributionEntries ){ 
+    // Create an array which will, for each bin, store the number of entries
+    // for the corresponding laserball distribution bin of the same index.
+    Int_t* lbAngValid = new Int_t[ nLBDistBins ];
+    
+    // Initialise each value in the array to 0 to begin with. 
+    for ( Int_t iLB = 0; iLB < nLBDistBins; iLB++ ){ 
+      lbAngValid[ iLB ] = 0; 
+    }
+    
+    // Loop over all the data points stored in the OCAPMTStore object.
+    std::vector< OCAPMT >::iterator iDP;
+    for ( iDP = lData->GetOCAPMTsIterBegin(); 
+          iDP != lData->GetOCAPMTsIterEnd(); 
+          iDP++ ) {
+      
+      // We need to model the laserball distribution first to assign the
+      // current laserball distribution bin for this data point.
+      // i.e. we need to assign fCurrentLBDistributionBin.
+      Float_t phiFrac[ 2 ];
+      Float_t cosThetaFrac[ 2 ];
+      Int_t binsToDiff[ 4 ];
+      ModelLBDistribution( *iDP, "off-axis", phiFrac, cosThetaFrac, binsToDiff );
+      
+      // For the corresponding entry in the array, i.e. the counter,
+      // increment it's value by one.
+      lbAngValid[ fModelParameterStore->GetCurrentLBDistributionBin() ]++;
+      
+    }
+    
+    // Now loop over all the entries checking how many entries are
+    // there for each bin. If the number of entries
+    // exceeds the minimum required amount then set that parameter
+    // to vary. If not, keep that particular bin in the laserball
+    // distribution fixed.
+    for ( Int_t iLB = 0; iLB < nLBDistBins; iLB++ ){
+      
+      Bool_t parVary = fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ];
+      
+      // If the number of entries is less than the requirement,
+      // or if the bin is the first in the laserball
+      // distribution ( i.e. iLB = 0 ) then keep the associated
+      // parameter fixed in the fit.
+      
+      if ( parVary ){
+        if ( lbAngValid[ iLB ] < fRequiredNLBDistributionEntries ){ 
+          fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 0;
+        }
+        
+        // If the number of entries exceeds the required amount
+        // then vary the associated parameter in the parameter array.
+        else{
+          fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 1;
+        }
+      }
+      else{
         fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 0;
       }
       
-      // If the number of entries exceeds the required amount
-      // then vary the associated parameter in the parameter array.
-      else{
-        fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 1;
-      }
     }
-    else{
-      fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ] = 0;
-    }
-      
+    
+    delete lbAngValid;
   }
-
-  delete lbAngValid;
-
 }
 
 //////////////////////////////////////
@@ -224,7 +225,7 @@ void OCAOpticsModel::InitialiseLBRunNormalisations( OCAPMTStore* lData )
 
 Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_t* derivativePars )
 {
-
+  //cout << "about to evaluate" << endl;
   // Obtain a pointer to the parameters for use in this calculation
   // for the model prediction of the occupancy ratio.
   OCAModelParameterStore* parPtr = GetOCAModelParameterStore();
@@ -344,6 +345,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
     //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiff[ 0 ] ] = 1.0 / intensity;
       //}
     //else{
+    if ( parPtr->GetLBDistributionType() == 0 ){
     derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] = 0.0;
     //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiff[ 1 ] ] = 0.0;
     //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiff[ 2 ] ] = 0.0;
@@ -373,7 +375,53 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
     //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 2 ] ] = 0.0;
     //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 3 ] ] = 0.0;
 
-    derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCentralCurrentLBDistributionBin() ] -= 1.0 / intensityCtr; 
+    derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCentralCurrentLBDistributionBin() ] -= 1.0 / intensityCtr;
+    }
+
+    if ( parPtr->GetLBDistributionType() == 1 ){
+      Double_t* parlb = new Double_t[1+parPtr->GetNLBParametersPerSinWaveSlice()];
+      Float_t phi = dataPoint.GetRelLBPhi();
+      if ( phi < -1.0 * TMath::Pi() ){ phi += 2.0 * TMath::Pi(); }
+      if ( phi > TMath::Pi() ){ phi -= 2.0 * TMath::Pi(); }
+      //Double_t* lbphi = new Double_t(phi);
+      for(int i=0; i<parPtr->GetNLBParametersPerSinWaveSlice(); i++) {parlb[1+i] = parPtr->GetLBDistributionPar(parPtr->GetCurrentLBDistributionBin()*parPtr->GetNLBParametersPerSinWaveSlice()+i);}
+      for(int i=0; i<parPtr->GetNLBParametersPerSinWaveSlice(); i++){
+        parlb[0] = (Double_t)i;
+        derivativePars[parPtr->GetLBDistributionParIndex()
+                       +parPtr->GetCurrentLBDistributionBin()*parPtr->GetNLBParametersPerSinWaveSlice()+i] = 0.0;
+        derivativePars[parPtr->GetLBDistributionParIndex()
+                       +parPtr->GetCurrentLBDistributionBin()*parPtr->GetNLBParametersPerSinWaveSlice()+i] = ModelDLBDistributionSinWave(phi,parlb)/intensity;
+        //cout << "ModelDLBDistributionSinWave(lbphi,parlb)/intensity: " << ModelDLBDistributionSinWave(lbphi,parlb)/intensity << endl;
+        //cout << "intensity: " << intensity << endl;
+        //cout << "ModelDLBDistributionSinWave(lbphi,parlb): " << ModelDLBDistributionSinWave(lbphi,parlb) << endl;
+        //cout << "-----------------" << endl;
+      }
+      //delete [] parlb;
+      //delete lbphi;
+      Double_t* parlbCtr = new Double_t[1+parPtr->GetNLBParametersPerSinWaveSlice()];
+      phi = dataPoint.GetCentralRelLBPhi();
+      if ( phi < -1.0 * TMath::Pi() ){ phi += 2.0 * TMath::Pi(); }
+      if ( phi > TMath::Pi() ){ phi -= 2.0 * TMath::Pi(); }
+      //Double_t* lbphiCtr = new Double_t(phi);
+      for(int i=0; i<parPtr->GetNLBParametersPerSinWaveSlice(); i++) {parlbCtr[1+i] = parPtr->GetLBDistributionPar(parPtr->GetCentralCurrentLBDistributionBin()*parPtr->GetNLBParametersPerSinWaveSlice()+i);}
+      for(int i=0; i<parPtr->GetNLBParametersPerSinWaveSlice(); i++){
+        derivativePars[parPtr->GetLBDistributionParIndex()
+                       +parPtr->GetCentralCurrentLBDistributionBin()*parPtr->GetNLBParametersPerSinWaveSlice()+i] = 0.0;
+      }
+      for(int i=0; i<parPtr->GetNLBParametersPerSinWaveSlice(); i++){
+        parlbCtr[0] = (Double_t)i;
+        derivativePars[parPtr->GetLBDistributionParIndex()
+                       +parPtr->GetCentralCurrentLBDistributionBin()*parPtr->GetNLBParametersPerSinWaveSlice()+i] -= ModelDLBDistributionSinWave(phi,parlbCtr)/intensityCtr;
+        //cout << "ModelDLBDistributionSinWave(lbphi,parlb)/intensityCtr: " << ModelDLBDistributionSinWave(lbphi,parlb)/intensityCtr << endl;
+        //cout << "intensityCtr: " << intensityCtr << endl;
+        //cout << "ModelDLBDistributionSinWave(lbphi,parlb): " << ModelDLBDistributionSinWave(lbphi,parlb) << endl;
+        //cout << "-----------------" << endl;
+      }
+      delete [] parlbCtr;
+      delete [] parlb;
+      //delete lbphiCtr;
+
+    }
     //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 1 ] ] -= ( phiFracCtr[ 1 ] * cosThetaFracCtr[ 0 ] ) / ( intensityCtr );     
     //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 2 ] ] -= ( phiFracCtr[ 0 ] * cosThetaFracCtr[ 1 ] ) / ( intensityCtr );
     //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 3 ] ] -= ( phiFracCtr[ 1 ] * cosThetaFracCtr[ 1 ] ) / ( intensityCtr );
@@ -385,7 +433,9 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
 
     // The derivative with respect to the run normalisation
     // from the off-axis run.
+    derivativePars[ parPtr->GetLBRunNormalisationParIndex() + parPtr->GetCurrentLBRunNormalisationBin() ] = 0.0;
     derivativePars[ parPtr->GetLBRunNormalisationParIndex() + parPtr->GetCurrentLBRunNormalisationBin() ] = 1.0 / normVal;
+    //derivativePars[ parPtr->GetLBRunNormalisationParIndex() + parPtr->GetCurrentLBRunNormalisationBin() ] -= 1.0 / normCtrVal;
 
     // Now we compute the derivative with respect to 
     // each of the parameters in the laserball distribution
@@ -395,6 +445,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
     for ( Int_t iVal = 0; iVal < parPtr->GetNLBDistributionMaskParameters(); iVal++ ){ parMask[ 1 + iVal ] = parPtr->GetLBDistributionMaskPar( iVal ); }
     for ( Int_t iVal = 0; iVal < parPtr->GetNLBDistributionMaskParameters(); iVal++ ){
       parMask[ 0 ] = (Double_t)iVal;
+      derivativePars[ parPtr->GetLBDistributionMaskParIndex() + iVal ] = 0.0;
       derivativePars[ parPtr->GetLBDistributionMaskParIndex() + iVal ] = ModelLBDistributionMaskDeriviative( lbCTheta, parMask ) / intensityPoly;
     }
     delete [] parMask;
@@ -542,24 +593,55 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCAPMT& dataPoint, std::strin
   else if ( phi < -1.0 * TMath::Pi() ) phi += 2 * TMath::Pi();
 
   // Compute the bin for this value of 'cosTheta'
+  Int_t nTheta = 0;
+  Int_t nPhi = 0;
+  if ( parPtr->GetLBDistributionType() == 0 ){ nTheta = parPtr->GetNLBDistributionCosThetaBins(); nPhi = parPtr->GetNLBDistributionPhiBins(); }
+  if ( parPtr->GetLBDistributionType() == 1 ){ nTheta = parPtr->GetNLBSinWaveSlices(); nPhi = parPtr->GetNLBParametersPerSinWaveSlice(); }
   
-  Int_t iTheta = (Int_t)( ( 1 + cosTheta ) / 2.0 * parPtr->GetNLBDistributionCosThetaBins() );
+  //cout << "nTheta is: " << nTheta << endl;
+  //cout << "nPhi is: " << nPhi << endl;
+  Int_t iTheta = (Int_t)( ( 1 + cosTheta ) / 2.0 * nTheta );
 
   // Some book keeping to ensure the cosTheta bin is within the allowed
   // number.
   if ( iTheta < 0 ){ iTheta = 0; }
-  if ( iTheta >= parPtr->GetNLBDistributionCosThetaBins() ){
-    iTheta = parPtr->GetNLBDistributionCosThetaBins() - 1;
+  if ( iTheta >= nTheta ){
+    iTheta = nTheta - 1;
+  }
+
+  if ( parPtr->GetLBDistributionType() == 1 ){
+    //Double_t* aPhi = new Double_t( (Double_t)phi );
+    Double_t* par = new Double_t[ 1 + nPhi ];
+    par[ 0 ] = nPhi;
+    for ( Int_t iPar = 0; iPar < nPhi; iPar++ ){
+      par[ iPar + 1 ] = parPtr->GetLBDistributionPar( iTheta * nPhi + iPar );
+    }
+
+    Float_t laserLight = (Float_t)ModelLBDistributionSinWave( phi, par );
+    delete [] par;
+    //delete aPhi;
+
+    // value to the current values held by the OCAModelParameterStore
+    // object.
+    if ( runType == "off-axis" ){ 
+      parPtr->SetCurrentLBDistributionBin( iTheta ); 
+    }
+    else if ( runType == "central" ){ 
+      parPtr->SetCentralCurrentLBDistributionBin( iTheta ); 
+    }
+
+    return laserLight;
+   
   }
 
   // Compute the bin for this value of 'phi'
-  Int_t iPhi = (Int_t)( ( phi + TMath::Pi() ) / ( 2 * TMath::Pi() ) * parPtr->GetNLBDistributionPhiBins() );
+  Int_t iPhi = (Int_t)( ( phi + TMath::Pi() ) / ( 2 * TMath::Pi() ) * nPhi );
 
   // Some book keeping to ensure the cosTheta bin is within the allowed
   // number.
   if ( iPhi < 0 ){ iPhi = 0; }
-  if ( iPhi >= parPtr->GetNLBDistributionPhiBins() ){
-    iPhi = parPtr->GetNLBDistributionPhiBins() - 1;
+  if ( iPhi >= nPhi ){
+    iPhi = nPhi - 1;
   }
 
   // Begin 2D interpolation
@@ -567,7 +649,7 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCAPMT& dataPoint, std::strin
   // Using the individual phi and cosTheta bins calculate
   // the overall bin for which the associated parameter from the
   // parameter array can be obtained.
-  Int_t iLBDist = iTheta * parPtr->GetNLBDistributionPhiBins() + iPhi;
+  Int_t iLBDist = iTheta * nPhi + iPhi;
 
   // Depending on the run type specified, assign this overall bin
   // value to the current values held by the OCAModelParameterStore
@@ -675,6 +757,53 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCAPMT& dataPoint, std::strin
   // Float_t laserlight = parPtr->GetLBDistributionPar( iLBDist );
   // return laserlight;
   
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Double_t OCAOpticsModel::ModelLBDistributionSinWave(Float_t& a,Double_t *par)
+{
+  // Utility function which returns the laserball distribution sinusoidal function 
+  // corresponding to a[0] = phi.
+  //
+  // par[0] specifies number of parameters; par[1] through par[par[0]] are
+  // the parameters themselves.  Can't use fNdistwave inside static class function!
+
+  // see QOCAFit::ModelLBDist() when modifying...
+
+  Double_t phi          = a;
+  Double_t amplitude_ac = par[1];
+  Double_t frequency    = 1.;
+  Double_t phase        = par[2];
+  Double_t amplitude_dc = 1.;
+  Double_t lbd = amplitude_ac*sin(frequency*phi + phase) + amplitude_dc;
+
+  return lbd;
+}
+
+Double_t OCAOpticsModel::ModelDLBDistributionSinWave(Float_t& a,Double_t *par)
+{
+  // Utility function which returns the partial derivative of the 
+  // laserball distribution sinusoidal function with respect to the 
+  // parameter identified by the index in par[0], and evaluated at
+  // phi = a[0].
+
+  // see QOCAFit::ModelLBDist() when modifying...
+
+  Int_t ipar = (Int_t) par[0];
+  Double_t phi          = a;
+  Double_t amplitude_ac = par[1];
+  Double_t frequency    = 1.;
+  Double_t phase        = par[2];
+  Double_t dlbd;
+
+  // actual derivatives
+  if(ipar == 0) dlbd = sin(frequency*phi + phase);
+  else if(ipar == 1) dlbd = amplitude_ac*cos(frequency*phi + phase);
+  else dlbd = 0.0;
+  
+  return dlbd;
 }
 
 //////////////////////////////////////
