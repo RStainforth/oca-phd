@@ -74,13 +74,16 @@ using namespace OCA;
 class OCACmdOptions 
 {
 public:
-  OCACmdOptions( ) : fRID( -1 ), fCRID( -1 ), 
-                     fWRID( -1 ), 
-                     fRIDStr( "" ), fCRIDStr( "" ), 
-                     fWRIDStr( "" ) { }
-  Long64_t fRID, fCRID, fWRID;
-  std::string fRIDStr, fCRIDStr, fWRIDStr, fWCRIDStr;
-  std::string fMMYY, fSystematicFile;
+  OCACmdOptions( ) : fRID( -1 ), fCID( -1 ), 
+                     fWRID( -1 ), fWCID( -1 ),
+                     fLBPosMode( -1 ),
+                     fRIDStr( "" ), fCIDStr( "" ), 
+                     fWRIDStr( "" ), fWCIDStr( "" ),
+                     fLBPosModeStr( "" ),
+                     fMMYY( "" ), fSystematicFilePath( "" ) { }
+  Long64_t fRID, fCID, fWRID, fWCID, fLBPosMode;
+  std::string fRIDStr, fCIDStr, fWRIDStr, fWCIDStr, fLBPosModeStr;
+  std::string fMMYY, fSystematicFilePath;
 };
 
 // Declare the three function prototypes used 
@@ -102,17 +105,27 @@ int main( int argc, char** argv ){
   
   // Define the run IDs of the main-run, central- and wavelength-run files.
   Long64_t rID = Opts.fRID;
-  Long64_t crID = Opts.fCRID;
+  Long64_t crID = Opts.fCID;
   Long64_t wrID = Opts.fWRID;
   
   // Define the run IDs of the main-run, central- and wavelength-run files.
   // Same as above but as strings.
   std::string rIDStr = Opts.fRIDStr;
-  std::string crIDStr = Opts.fCRIDStr;
+  std::string crIDStr = Opts.fCIDStr;
   std::string wrIDStr = Opts.fWRIDStr;
 
   // Get the directory in MMYY format for where the SOC files are stored.
   std::string dirMMYY = Opts.fMMYY;
+
+  // Get the LB positions to use for the off-axis and central runs.
+  std::string lbPosMode = Opts.fLBPosModeStr;
+
+  // Get the systematics file path
+  std::string sysFile = Opts.fSystematicFilePath;
+
+  cout << "Some test info:\n";
+  cout << "lbPosMode: " << lbPosMode << endl;
+  cout << "sysFile: " << sysFile << endl;
 
   cout << "\n";
   cout << "###############################" << endl;
@@ -345,25 +358,31 @@ int main( int argc, char** argv ){
 OCACmdOptions ParseArguments( int argc, char** argv) 
 {
   static struct option opts[] = { {"help", 0, NULL, 'h'},
-                                  {"run-id", 1, NULL, 'r'},
+                                  {"off-axis-run-id", 1, NULL, 'r'},
                                   {"central-run-id", 1, NULL, 'c'},
-                                  {"wavelength-run-id", 1, NULL, 'w'},
+                                  {"wavelength-off-axis-run-id", 1, NULL, 'R'},
+                                  {"wavelength-central-run-id", 1, NULL, 'C'},
+                                  {"laserball-pos-mode", 1, NULL, 'l'},
                                   {"month-year-directory", 1, NULL, 'd'},
+                                  {"systematics-file", 1, NULL, 's'},
                                   {0,0,0,0} };
   
   OCACmdOptions options;
   int option_index = 0;
-  int c = getopt_long(argc, argv, "h:r:c:w:d:", opts, &option_index);
+  int c = getopt_long(argc, argv, "h:r:c:R:C:l:d:s:", opts, &option_index);
   while (c != -1) {
     switch (c) {
     case 'h': cout << "HELP GOES HERE" << endl; break;
     case 'r': options.fRID = atol( optarg ); break;
-    case 'c': options.fCRID = atol( optarg ); break;
-    case 'w': options.fWRID = atol( optarg ); break;
+    case 'c': options.fCID = atol( optarg ); break;
+    case 'R': options.fWRID = atol( optarg ); break;
+    case 'C': options.fWCID = atol( optarg ); break;
+    case 'l': options.fLBPosMode = atol( optarg ); break;
+    case 's': options.fSystematicFilePath = (std::string)optarg; break;
     case 'd': options.fMMYY = (std::string)optarg; break;
     }
     
-    c = getopt_long(argc, argv, "h:r:c:w:d:", opts, &option_index);
+    c = getopt_long(argc, argv, "h:r:c:R:C:l:d:s:", opts, &option_index);
   }
   
   stringstream idStream;
@@ -372,12 +391,20 @@ OCACmdOptions ParseArguments( int argc, char** argv)
   idStream >> options.fRIDStr;
   idStream.clear();
   
-  idStream << options.fCRID;
-  idStream >> options.fCRIDStr;
+  idStream << options.fCID;
+  idStream >> options.fCIDStr;
   idStream.clear();
   
   idStream << options.fWRID;
   idStream >> options.fWRIDStr;
+  idStream.clear();
+
+  idStream << options.fWCID;
+  idStream >> options.fWCIDStr;
+  idStream.clear();
+
+  idStream << options.fLBPosMode;
+  idStream >> options.fLBPosModeStr;
   idStream.clear();
 
   return options;
