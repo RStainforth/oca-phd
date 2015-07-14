@@ -16,7 +16,7 @@
 ///
 /// DETAIL: This object holds lots of individual 
 ///         OCAModelParameter objects together which collectively
-///         can be used by a OCAOpticsModle object to make
+///         can be used by a OCAOpticsModel object to make
 ///         model predictions for the occuapncy ratio.
 ///
 ////////////////////////////////////////////////////////////////////
@@ -342,7 +342,7 @@ namespace OCA{
 
     Int_t fNGlobalVariableParameters;                // The total global number of variable parameters.
 
-    vector< OCAModelParameter > fParameters;       // The vector of parameter objects i.e. the store.
+    vector< OCAModelParameter > fParameters;         // The vector of parameter objects i.e. the store.
 
     Float_t* fParametersPtr;                         //! The pointer of parameter values.
     Int_t* fParametersVary;                          //! Array of which parameters vary ( =1 ) and which do not ( =0 ).

@@ -1140,14 +1140,14 @@ TH2F* OCAModelParameterStore::GetLBDistributionHistogram()
   Int_t nPhiBins = 0;GetNLBDistributionPhiBins();
   if ( fLBDistributionType == 0 ){ nCThetaBins = GetNLBDistributionCosThetaBins(); nPhiBins = GetNLBDistributionPhiBins(); }
   if ( fLBDistributionType == 1 ){ nCThetaBins = GetNLBSinWaveSlices(); nPhiBins = GetNLBParametersPerSinWaveSlice(); }
+  
   // Decalre a new 2D histogram with 'Float_t' type entries.
   // Set the ranges as phi : ( 0, 2pi ) and
   // cos-theta : ( -1.0, 1.0 ).
-
   TH2F* lbDistributionHist;
 
   if ( fLBDistributionType == 0 ){
-    lbDistributionHist = new TH2F( "lbDistributionHist", "Laserball Distribution Histogram",
+    lbDistributionHist = new TH2F( "lbDistributionHist", "Laserball Angular Distribution Histogram",
                                    nPhiBins, -1 * TMath::Pi(), 1.0 * TMath::Pi(), 
                                    nCThetaBins, -1.0, 1.0 );
 
@@ -1171,7 +1171,7 @@ TH2F* OCAModelParameterStore::GetLBDistributionHistogram()
   }
 
   if ( fLBDistributionType == 1 ){
-    lbDistributionHist = new TH2F( "lbDistributionHist", "Laserball Distribution Histogram",
+    lbDistributionHist = new TH2F( "lbDistributionHist", "Laserball Angular Distribution Histogram",
                                    36, -1 * TMath::Pi(), 1.0 * TMath::Pi(), 
                                    nCThetaBins, -1.0, 1.0 );
 
@@ -1357,52 +1357,102 @@ TH2F* OCAModelParameterStore::GetLBDistributionIntensityHistogram()
   // in the laserball isotropy distribution.
   Int_t nCThetaBins = GetNLBDistributionCosThetaBins();
   Int_t nPhiBins = GetNLBDistributionPhiBins();
+  if ( fLBDistributionType == 0 ){ nCThetaBins = GetNLBDistributionCosThetaBins(); nPhiBins = GetNLBDistributionPhiBins(); }
+  if ( fLBDistributionType == 1 ){ nCThetaBins = GetNLBSinWaveSlices(); nPhiBins = GetNLBParametersPerSinWaveSlice(); }
 
   // Decalre a new 2D histogram with 'Float_t' type entries.
   // Set the ranges as phi : ( 0, 2pi ) and
   // cos-theta : ( -1.0, 1.0 ).
-  TH2F* lbDistributionIntHist = new TH2F( "lbDistributionIntensityHist", "Laserball Distribution Histogram",
-                                          nPhiBins, -1.0 * TMath::Pi(), TMath::Pi(), 
-                                          nCThetaBins, -1.0, 1.0 );
+  TH2F* lbDistributionIntHist;
 
-  // Get a pointer to the start of the laserball distribution
-  // parameters in the parameter array.
-  Float_t* lbDistPtr = &fParametersPtr[ GetLBDistributionParIndex() ];
-
-  // Get the bin width for the cos-theta part of the distribution.
-  // This will be used to calculate the corresponding
-  // mask multipier for each cos-theta bin.
-  Float_t binWidth = 2.0 / nCThetaBins;
-  Float_t binWidthPhi = ( 2.0 * TMath::Pi() ) / ( nPhiBins );
-
-  // Loop over all the bins in the distribution and set the
-  // corresponding bin entry in the histogram accordingly.
-  for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
-    for ( Int_t jPhi = 0; jPhi < nPhiBins; jPhi++ ){
-
-      // The value of cos-theta.
-      Float_t cTheta = -1.0 + ( binWidth * iTheta );
-      //Float_t phi = -1.0 * TMath::Pi() + ( binWidthPhi * jPhi );
-
-      // Initialise the mask value to 1.0 to begin with.
-      Float_t polynomialVal = 0.0;
-      Float_t onePlus = 1.0 + cTheta;
-      // Loop through all the laserball mask parameters
-      // performing the summation of different degree terms
-      // The degree will run from 1 to NLBDistributionMaskParameters.
-      for ( Int_t iPar = GetNLBDistributionMaskParameters() - 1; 
-            iPar >= 0; 
-            iPar-- ){
+  if ( fLBDistributionType == 0 ){
+    lbDistributionIntHist = new TH2F( "lbDistributionIntensityHist", "Laserball Intensity Distribution Histogram",
+                                      nPhiBins, -1.0 * TMath::Pi(), TMath::Pi(), 
+                                      nCThetaBins, -1.0, 1.0 );
+    
+    // Get a pointer to the start of the laserball distribution
+    // parameters in the parameter array.
+    Float_t* lbDistPtr = &fParametersPtr[ GetLBDistributionParIndex() ];
+    
+    // Get the bin width for the cos-theta part of the distribution.
+    // This will be used to calculate the corresponding
+    // mask multipier for each cos-theta bin.
+    Float_t binWidth = 2.0 / nCThetaBins;
+    Float_t binWidthPhi = ( 2.0 * TMath::Pi() ) / ( nPhiBins );
+    
+    // Loop over all the bins in the distribution and set the
+    // corresponding bin entry in the histogram accordingly.
+    for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
+      for ( Int_t jPhi = 0; jPhi < nPhiBins; jPhi++ ){
         
-        polynomialVal = polynomialVal * onePlus + GetLBDistributionMaskPar( iPar );
+        // The value of cos-theta.
+        Float_t cTheta = -1.0 + ( binWidth * iTheta );
+        //Float_t phi = -1.0 * TMath::Pi() + ( binWidthPhi * jPhi );
         
+        // Initialise the mask value to 1.0 to begin with.
+        Float_t polynomialVal = 0.0;
+        Float_t onePlus = 1.0 + cTheta;
+        // Loop through all the laserball mask parameters
+        // performing the summation of different degree terms
+        // The degree will run from 1 to NLBDistributionMaskParameters.
+        for ( Int_t iPar = GetNLBDistributionMaskParameters() - 1; 
+              iPar >= 0; 
+              iPar-- ){
+          
+          polynomialVal = polynomialVal * onePlus + GetLBDistributionMaskPar( iPar );
+          
+        }
+        
+        // Set the hisotgram entry, note the 'polynomialVal' multiplier
+        // to apply the intensity correction from the laserball mask
+        // parameters to the laserball isotropy distribution.
+        lbDistributionIntHist->SetCellContent( jPhi + 1, iTheta + 1, 
+                                               polynomialVal * lbDistPtr[ iTheta * nPhiBins + jPhi ] );
       }
+    } 
+  }
+  if ( fLBDistributionType == 1 ){
+    lbDistributionIntHist = new TH2F( "lbDistributionIntHist", "Laserball Intensity Distribution Histogram",
+                                      36, -1 * TMath::Pi(), 1.0 * TMath::Pi(), 
+                                      nCThetaBins, -1.0, 1.0 );
+    
+    // Get a pointer to the start of the laserball distribution
+    // parameters in the parameter array.
+    Float_t* lbDistPtr = &fParametersPtr[ GetLBDistributionParIndex() ];
 
-      // Set the hisotgram entry, note the 'polynomialVal' multiplier
-      // to apply the intensity correction from the laserball mask
-      // parameters to the laserball isotropy distribution.
-      lbDistributionIntHist->SetCellContent( jPhi + 1, iTheta + 1, 
-                                             polynomialVal * lbDistPtr[ iTheta * nPhiBins + jPhi ] );
+    Float_t binWidth = 2.0 / nCThetaBins;
+    
+    // Loop through each of the cos-theta and phi
+    // bins and assign the corresponding parameter to its
+    // bin entry in the histogram.
+    for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
+      for ( Int_t jPhi = 0; jPhi <= 35; jPhi++ ){
+        Float_t phiVal = -1.0 * TMath::Pi() + jPhi * ( ( 2.0 * TMath::Pi() ) / 36 );
+        
+        // The value of cos-theta.
+        Float_t cTheta = -1.0 + ( binWidth * iTheta );
+        //Float_t phi = -1.0 * TMath::Pi() + ( binWidthPhi * jPhi );
+        
+        // Initialise the mask value to 1.0 to begin with.
+        Float_t polynomialVal = 0.0;
+        Float_t onePlus = 1.0 + cTheta;
+        // Loop through all the laserball mask parameters
+        // performing the summation of different degree terms
+        // The degree will run from 1 to NLBDistributionMaskParameters.
+        for ( Int_t iPar = GetNLBDistributionMaskParameters() - 1; 
+              iPar >= 0; 
+              iPar-- ){
+          
+          polynomialVal = polynomialVal * onePlus + GetLBDistributionMaskPar( iPar );
+          
+        }
+        // Set the bin content to the parameter value for each bin.
+        // The (+1) is because the 0-th bin in a ROOT histogram
+        // is the underflow bin.
+        Float_t lbDistVal = 1.0 +  lbDistPtr[ iTheta * 2 ] * TMath::Sin( 1.0 * phiVal + lbDistPtr[ iTheta * 2 + 1 ] ); 
+        lbDistributionIntHist->SetCellContent( jPhi + 1, iTheta + 1, 
+                                               lbDistVal * polynomialVal );
+      }
     }
   }
 
