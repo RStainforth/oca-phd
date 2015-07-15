@@ -241,7 +241,8 @@ void OCARun::ClearRun()
 //////////////////////////////////////
 
 void OCARun::FillRunInfo( RAT::DU::SOCReader& socR,
-                          UInt_t runID )
+                          UInt_t runID, Int_t lbPosMode,
+                          Bool_t copyPMTInfo )
 {
 
   // Create a new RAT::DS::SOC object to be used
@@ -274,8 +275,28 @@ void OCARun::FillRunInfo( RAT::DU::SOCReader& socR,
   // The run information from the SOC file...
   CopySOCRunInfo( *socPtr );
 
-  // ... and the PMT information from the SOC file.
-  CopySOCPMTInfo( *socPtr );
+  if ( lbPosMode == 1 ){ 
+    SetLBPos( socPtr->GetCalib().GetPos() ); 
+  }
+  if ( lbPosMode == 2 ){ 
+    cout << "OCARun::FillRunInfo: Camera Coordinates not currently available, setting to manipulator position\n";
+    SetLBPos( socPtr->GetCalib().GetPos() );
+  }
+  if ( lbPosMode == 3 ){
+    // The fitted laserball position.
+    RAT::DS::FitResult lbFit = socPtr->GetFitResult( "lbfit" );
+    RAT::DS::FitVertex lbVertex = lbFit.GetVertex( 0 );
+    
+    SetLBPos( lbVertex.GetPosition() );
+    SetLBXPosErr( lbVertex.GetPositivePositionError().X() );
+    SetLBXPosErr( lbVertex.GetPositivePositionError().Y() );
+    SetLBXPosErr( lbVertex.GetPositivePositionError().Z() );
+  }
+
+  if ( copyPMTInfo ){
+    // ... and the PMT information from the SOC file.
+    CopySOCPMTInfo( *socPtr );
+  }
 
   delete socPtr;
 
@@ -403,17 +424,6 @@ void OCARun::CopySOCRunInfo( RAT::DS::SOC& socRun )
 
   // The number of pulses.
   SetNLBPulses( socRun.GetNPulsesTriggered() );
-
-  // The fitted laserball position.
-  RAT::DS::FitResult lbFit = socRun.GetFitResult( "lbfit" );
-  RAT::DS::FitVertex lbVertex = lbFit.GetVertex( 0 );
-  
-  SetLBPos( lbVertex.GetPosition() );
-  
-  SetLBXPosErr( lbVertex.GetPositivePositionError().X() );
-  SetLBXPosErr( lbVertex.GetPositivePositionError().Y() );
-  SetLBXPosErr( lbVertex.GetPositivePositionError().Z() );
-
 
   SetGlobalTimeOffset( socRun.GetGlobalTimeOffset() );
   
@@ -544,14 +554,14 @@ OCAPMT& OCARun::GetPMT( Int_t iPMT )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCARun::CrossRunFill( OCARun* cRun, OCARun* wRun )
+void OCARun::CrossRunFill( OCARun* cRun )
 {
 
 
   // Ensure that the pointers to the central and wavelength
   // runs are not 'NULL', otherwise return an error.
-  if ( cRun == NULL && wRun == NULL ){
-    cout << "OCARun::CrossRunFill: Error: No Central or Wavelength Run Information to fill from" << endl;
+  if ( cRun == NULL ){
+    cout << "OCARun::CrossRunFill: Error: No Central Run Information to fill from" << endl;
     cout << "--------------------------" << endl;
     return;
   }
@@ -573,24 +583,6 @@ void OCARun::CrossRunFill( OCARun* cRun, OCARun* wRun )
     fCentralLBTheta = cRun->GetLBTheta();
     fCentralLBPhi = cRun->GetLBPhi();
         
-  }
-  
-  // If a pointer to a wavelength run OCARun object
-  // exist, then fill the 'wavelength' values on this object
-  // with the regular values from that one.  
-  if ( wRun != NULL ){
-    
-    fWavelengthRunID = wRun->GetRunID();
-    fWavelengthSourceID = wRun->GetSourceID();
-    
-    fWavelengthLambda = wRun->GetLambda();
-    fWavelengthNLBPulses = wRun->GetNLBPulses();
-    
-    fWavelengthLBPos = wRun->GetLBPos();
-    
-    fWavelengthLBTheta = wRun->GetLBTheta();
-    fWavelengthLBPhi = wRun->GetLBPhi();
-    
   }
 
   // Start filling the PMT information from the central run
@@ -648,25 +640,6 @@ void OCARun::CrossRunFill( OCARun* cRun, OCARun* wRun )
       
     }
   }
-
-  // Start filling the PMT information from the central run
-  // to all the 'central' values on the OCAPMTs stored in 
-  // this one.  
-  if ( wRun != NULL ){
-
-    cout << "OCARun::CrossRunFill: Filling Wavelength Run Information..." << endl;
-    cout << "--------------------------" << endl;
-    map< Int_t, OCAPMT >::iterator iWPMT;
-    for( iWPMT = wRun->GetOCAPMTIterBegin(); iWPMT != wRun->GetOCAPMTIterEnd(); iWPMT++ ){
-
-      Int_t pmtID = ( iWPMT->first );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthRunID( wRun->GetRunID() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthLBPos( wRun->GetLBPos() );
-      ( fOCAPMTs[ pmtID ] ).SetWavelengthLBOrientation( wRun->GetLBOrientation() );
-      
-    }
-  }
-
   // Calculate the number of prompt counts over each PMT for the run
   CalculateLBIntensityNorm();
 
@@ -718,18 +691,6 @@ void OCARun::CalculateLBIntensityNorm()
 
   lbIntensityNorm *= (Float_t)( 10000.0 / nPMTs );
   centrallbIntensityNorm *= (Float_t)( 10000.0 / nCentralPMTs );
-
-  // // Off-axis runs.
-  // if ( nPMTs != 0 ){ lbIntensityNorm /= nPMTs; }
-  // else{ lbIntensityNorm = -10.0; }
-
-  // // Central runs.
-  // if ( nCentralPMTs != 0 ){ centrallbIntensityNorm /= nCentralPMTs; }
-  // else{ centrallbIntensityNorm = -10.0; }
-
-  // // Wavelength runs.
-  // if ( nWavelengthPMTs != 0 ){ wavelengthlbIntensityNorm /= nWavelengthPMTs; }
-  // else{ wavelengthlbIntensityNorm = -10.0; }
 
   // Define the private member variables which
   // hold the intensity normalisation value for each

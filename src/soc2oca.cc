@@ -47,6 +47,7 @@
 #include "RAT/DU/SOCReader.hh"
 #include "RAT/DS/SOC.hh"
 #include "RAT/DS/SOCPMT.hh"
+#include "RAT/Log.hh"
 
 #include "OCARun.hh"
 #include "OCAPMT.hh"
@@ -66,11 +67,29 @@ using namespace RAT;
 using namespace OCA;
 
 // Utility class to parse the command line arguments for this executable
-// Current options: -r (Main-Run-ID), -c (Central-Run-ID), 
-// -wr (Wavelength-Run-ID), -wc (Wavelength-Central-Run-ID),
-// -f laserball position option.
-// -sys (Path to systematic settings).
-// -h (Help).
+// Current options: 
+// -r [Off-Axis-RunID] 
+// -c [Central-RunID] 
+// -R [Wavelength-Off-Axis-RunID] 
+// -C [Wavelength-Central-RunID]
+// -l [XY] : Laserball position option
+//       X : Off-Axis run laserball position.
+//         X = 1 : Off-Axis manipulator laserball position 
+//         X = 2 : Off-Axis camera laserball position
+//         X = 3 : Off-Axis fitted laserball position
+//         X = 4 : Off-Axis fitted laserball position from wavelength run (-R option)
+//
+//       Y : Central run laserball position.
+//         Y = 1 : Central manipulator laserball position
+//         Y = 2 : Central camera laserball position
+//         Y = 3 : Central fitted laserball position
+//         Y = 4 : Central fitted laserball position from wavelength run (-C option)
+//
+// Note: By convention we will often use the option '-l 44' : wavelenght position fits for both
+//       the off-axis and central runs.
+// -d [MMYY] : The name of the dataset directory in the ${OCA_ROOT}/data/runs/soc directory
+// -s [Systematic-File-Name] : Name of systematic file in the ${OCA_ROOT}/data/systematics directory
+// -h : Display help for this executable 
 class OCACmdOptions 
 {
 public:
@@ -95,37 +114,42 @@ int main( int argc, char** argv );
 //////////////////////
 
 int main( int argc, char** argv ){
-  
-  Bool_t mrBool = false;
-  Bool_t crBool = false;
-  Bool_t wrBool = false; 
 
   // Parse arguments passed to the command line
   OCACmdOptions Opts = ParseArguments( argc, argv );
   
-  // Define the run IDs of the main-run, central- and wavelength-run files.
+  // Define the run IDs of the off-axis-, central- and wavelength-run files.
   Long64_t rID = Opts.fRID;
-  Long64_t crID = Opts.fCID;
+  Long64_t cID = Opts.fCID;
   Long64_t wrID = Opts.fWRID;
+  Long64_t wcID = Opts.fWCID;
   
-  // Define the run IDs of the main-run, central- and wavelength-run files.
-  // Same as above but as strings.
+  // Define the run IDs of the off-axis-, central- and wavelength-run files.
+  // Same as above but as std::string objects.
   std::string rIDStr = Opts.fRIDStr;
-  std::string crIDStr = Opts.fCIDStr;
+  std::string cIDStr = Opts.fCIDStr;
   std::string wrIDStr = Opts.fWRIDStr;
+  std::string wcIDStr = Opts.fWCIDStr;
 
   // Get the directory in MMYY format for where the SOC files are stored.
   std::string dirMMYY = Opts.fMMYY;
 
-  // Get the LB positions to use for the off-axis and central runs.
+  // Get the laserball position mode to use for the off-axis and central runs.
+  // These positions form the basis for the calculation of distances,
+  // solidangle, Fresnel transmission coefficients, incidents angles etc.
   std::string lbPosMode = Opts.fLBPosModeStr;
+  stringstream lbPosStream;
+  lbPosStream << ( lbPosMode.c_str() )[ 0 ];
+  Int_t rLBPosMode = 0;
+  lbPosStream >> rLBPosMode;
+  lbPosStream.clear();
+  Int_t cLBPosMode = 0;
+  lbPosStream << ( lbPosMode.c_str() )[ 1 ];
+  lbPosStream >> cLBPosMode;
+  lbPosStream.clear();
 
   // Get the systematics file path
   std::string sysFile = Opts.fSystematicFilePath;
-
-  cout << "Some test info:\n";
-  cout << "lbPosMode: " << lbPosMode << endl;
-  cout << "sysFile: " << sysFile << endl;
 
   cout << "\n";
   cout << "###############################" << endl;
@@ -133,19 +157,45 @@ int main( int argc, char** argv ){
   cout << "###############################" << endl;
   cout << "\n";
   
-  // Check that a main-run file has been specified.
-  if ( rID < 0 ){ cout << "No Run-ID specified. Aborting" << endl; return 1; }
-  else{ mrBool = true; cout << "Run ID: " << rID << endl; }
+  // Check that an off-axis-run ID has been specified.
+  if ( rID < 0 ){ cout << "soc2oca error: No off-axis run ID specified. Aborting" << endl; return 1; }
+  else{ cout << "Off-axis run ID: " << rID << endl; }
 
-  // Check whether a second run file has been specified (either a central- or wavelength-run file)
-  if ( crID < 0 && wrID < 0 ){ cout << "No Central/Wavelength-Run ID specified. Aborting" << endl; return 1; }
+  // Check that a central-run file has been specified.
+  if ( cID < 0 ){ cout << "soc2oca error: No central run ID specified. Aborting" << endl; return 1; }
+  else{ cout << "Central run ID: " << cID << endl; }
 
-  if ( crID < 0 ){ cout << "No Central-Run ID specified." << endl; }
-  else{ crBool = true; cout << "Central Run ID: " << crID << endl; }
-  
-  if ( wrID < 0 ){ cout << "No Wavelength-Run ID specified." << endl; }
-  else{ wrBool = true; cout << "Wavelength Run ID: " << wrID << endl; }
-    
+  if ( wrID < 0 && rLBPosMode == 4 ){ 
+    cout << "soc2oca error: The requested laserball position for the off-axis run is to use the fitted position\n"; 
+    cout << "from the wavelength run '-l [" << rLBPosMode << "]" << cLBPosMode << "' (value = 4), yet no run id for the off-axis wavelength run has been\n";
+    cout << "specified. Aborting\n"; return 1;
+  }
+  else{ cout << "Off-axis wavelength run ID: " << wrID << endl; }
+
+  if ( wcID < 0 && cLBPosMode == 4 ){ 
+    cout << "soc2oca error: The requested laserball position for the central run is to use the fitted position\n"; 
+    cout << "from the wavelength run '-l " << rLBPosMode << "[" << cLBPosMode << "]' (value = 4), yet no run id for the central wavelength run has been\n";
+    cout << "specified. Aborting\n"; return 1;
+  }
+  else{ cout << "Central wavelength run ID: " << wcID << endl; }
+  cout << "--------------------------" << endl;
+
+  cout << "Off-axis run laserball position mode: " << rLBPosMode << endl;
+  cout << "Off-axis run will use the ";
+  switch ( rLBPosMode ) {
+  case 1 : cout << "manipulator coordinates from the run as the laserball position.\n"; break;
+  case 2 : cout << "camera determined position from the run as the laserball position.\n"; break;
+  case 3 : cout << "fitted position from the run as the laserball position.\n"; break;
+  case 4 : cout << "fitted position from the wavelength run as the laserball position.\n"; break;
+  }
+  cout << "Central run laserball position mode: " << cLBPosMode << endl;
+  cout << "Central run will use the ";
+  switch ( cLBPosMode ) {
+  case 1 : cout << "manipulator coordinates from the run as the laserball position.\n"; break;
+  case 2 : cout << "camera determined position from the run as the laserball position.\n"; break;
+  case 3 : cout << "fitted position from the run as the laserball position.\n"; break;
+  case 4 : cout << "fitted position from the wavelength run as the laserball position.\n"; break;
+  }    
   cout << "--------------------------" << endl;
   // Obtain the directory path where the SOC files are located
   // from the environment and create the full filename paths.
@@ -154,11 +204,12 @@ int main( int argc, char** argv ){
   string socRunDir = lDB.GetSOCRunDir( dirMMYY );
   string fExt = "_Run.root";
 
-  string rFilename, crFilename, wrFilename;
+  string rFilename, cFilename, wrFilename, wcFilename;
   
   rFilename = ( socRunDir + rIDStr + fExt ).c_str();
-  if ( crBool ){ crFilename = ( socRunDir + crIDStr + fExt ).c_str(); }
-  if( wrBool ){ wrFilename = ( socRunDir + wrIDStr + fExt ).c_str(); }
+  cFilename = ( socRunDir + cIDStr + fExt ).c_str();
+  if( wrID > 0 ){ wrFilename = ( socRunDir + wrIDStr + fExt ).c_str(); }
+  if( wcID > 0 ){ wcFilename = ( socRunDir + wcIDStr + fExt ).c_str(); }
   
   // Check that the main-run file exists
   ifstream rfile( rFilename.c_str() );
@@ -172,33 +223,31 @@ int main( int argc, char** argv ){
   else{
     cout << "The SOC Run file: " << endl;
     cout << rFilename << endl;
-    cout << "will be used as the run file" << endl;
+    cout << "will be used as the off-axis run file" << endl;
     cout << "--------------------------" << endl;
   }
   rfile.close();
 
   // Check that the central-run file exists
-  if ( crBool ){
-    ifstream crfile( crFilename.c_str() );
-    if ( !crfile ){ 
-      cout << "The SOC Run file: " << endl;
-      cout << crFilename << endl;
-      cout << "does not exist. Aborting." << endl;
-      cout << "--------------------------" << endl;   
+  ifstream cfile( cFilename.c_str() );
+  if ( !cfile ){ 
+    cout << "The SOC Run file: " << endl;
+    cout << cFilename << endl;
+    cout << "does not exist. Aborting." << endl;
+    cout << "--------------------------" << endl;   
     return 1;
-    }
-
-    else{
-      cout << "The SOC Run file: " << endl;
-      cout << crFilename << endl;
-      cout << "will be used as the central run file" << endl;
-      cout << "--------------------------" << endl;
-    }
-    crfile.close();
   }
+  
+  else{
+    cout << "The SOC Run file: " << endl;
+    cout << cFilename << endl;
+    cout << "will be used as the central run file" << endl;
+    cout << "--------------------------" << endl;
+  }
+  cfile.close();
 
-  // Check that the wavelength-run file exists
-  if ( wrBool ){
+  // Check that the wavelength off-axis run file exists
+  if ( wrID > 0 ){
     ifstream wrfile( wrFilename.c_str() );
     if ( !wrfile ){ 
       cout << "The SOC Run file: " << endl;
@@ -211,54 +260,79 @@ int main( int argc, char** argv ){
     else{
       cout << "The SOC Run file: " << endl;
       cout << wrFilename << endl;
-      cout << "will be used as the wavelength run file" << endl;
+      cout << "will be used as the wavelength off-axis run file" << endl;
       cout << "--------------------------" << endl;
     }
     wrfile.close();
   }
 
-  // Create the OCARun Objects for the run (lRun),
-  // central (lCRun) and wavelength (lWRun) runs respectively.
-  OCARun* lRunPtr = new OCARun();
-  // Set Default run-IDs and Run-Types
-  lRunPtr->SetRunID( rID );
+  // Check that the wavelength central run file exists
+  if ( wcID > 0 ){
+    ifstream wcfile( wcFilename.c_str() );
+    if ( !wcfile ){ 
+      cout << "The SOC Run file: " << endl;
+      cout << wcFilename << endl;
+      cout << "does not exist. Aborting." << endl;
+      cout << "--------------------------" << endl;    
+      return 1;
+    }
 
-  OCARun* lCRunPtr = NULL;
-  OCARun* lWRunPtr = NULL;
+    else{
+      cout << "The SOC Run file: " << endl;
+      cout << wcFilename << endl;
+      cout << "will be used as the wavelength central run file" << endl;
+      cout << "--------------------------" << endl;
+    }
+    wcfile.close();
+  }
+
+  // Create the OCARun Objects for the off-axis run (lRun) and
+  // central (lCRun) runs respectively.
+  OCARun* lRunPtr = new OCARun();
+  OCARun* lCRunPtr = new OCARun();
+  // Set Default run-IDs
+  lRunPtr->SetRunID( rID );
+  lCRunPtr->SetRunID( cID );
+
+  OCARun* lWRRunPtr = NULL;
+  OCARun* lWCRunPtr = NULL;
   
   // Create the SOCReader object <-- This allows for multiple SOC files
   // to be loaded
-  cout << "Adding main-run SOC file: " << endl;
+  cout << "Adding off-axis run SOC file: " << endl;
   cout << rIDStr + (string)"_Run.root" << endl;
   cout << "--------------------------" << endl;
   // Add the main-run to the SOC reader first
   RAT::DU::SOCReader soc( ( socRunDir + rIDStr + (string)"_Run.root" ).c_str() );
 
-  // If a central-run has been specified, add it to the SOCReader
-  if ( crBool ){
+  cout << "Adding central run SOC file: " << endl;
+  cout << cIDStr + (string)"_Run.root" << endl;
+  cout << "--------------------------" << endl;
+  // Add the central-run to the SOC reader
+  soc.Add( ( socRunDir + cIDStr + (string)"_Run.root" ).c_str() );
 
-    lCRunPtr = new OCARun();
-    lCRunPtr->SetRunID( crID );
+  // If a wavelength off-axis run has been specified, add it to the SOCReader
+  if ( wrID > 0 && rLBPosMode == 4 ){
+    lWRRunPtr = new OCARun();
+    lWRRunPtr->SetRunID( wrID );
 
-    cout << "Adding central-run SOC file: " << endl;
-    cout << crIDStr + (string)"_Run.root" << endl;
-    cout << "--------------------------" << endl;
-    // Add the central-run to the SOC reader
-    soc.Add( ( socRunDir + crIDStr + (string)"_Run.root" ).c_str() );
-    
-  }
-
-  // If a wavelength-run has been specified, add it to the SOCReader
-  if ( wrBool ){
-
-    lWRunPtr = new OCARun();
-    lWRunPtr->SetRunID( crID );
-
-    cout << "Adding wavelength-run SOC file: " << endl;
+    cout << "Adding wavelength off-axis run SOC file: " << endl;
     cout << wrIDStr + (string)"_Run.root" << endl;
     cout << "--------------------------" << endl;
     // Add the central-run to the SOC reader
     soc.Add( ( socRunDir + wrIDStr + (string)"_Run.root" ).c_str() );
+  }
+
+  // If a wavelength central run has been specified, add it to the SOCReader
+  if ( wcID > 0 && cLBPosMode == 4 ){
+    lWCRunPtr = new OCARun();
+    lWCRunPtr->SetRunID( wcID );
+
+    cout << "Adding wavelength central run SOC file: " << endl;
+    cout << wcIDStr + (string)"_Run.root" << endl;
+    cout << "--------------------------" << endl;
+    // Add the central-run to the SOC reader
+    soc.Add( ( socRunDir + wcIDStr + (string)"_Run.root" ).c_str() );
   }
 
   // Create LightPathCalculator object;
@@ -270,51 +344,50 @@ int main( int argc, char** argv ){
 
   // Now fill the OCARuns objects with the respective information
   // from the SOC files in the SOC reader
-  cout << "Now filling run information from off-axis SOC file...";
-  lRunPtr->FillRunInfo( soc, rID );
+  cout << "Now filling run information from off-axis run SOC file...";
+  lRunPtr->FillRunInfo( soc, rID, rLBPosMode );
   cout << "done." << endl;
-  if ( crBool ){ 
-    cout << "Now filling run information from central SOC file...";
-    lCRunPtr->FillRunInfo( soc, crID ); 
-    cout << "done." << endl;
-  }
-  if ( wrBool ){ 
-    cout << "Now filling run information from wavelength SOC file...";
-    lWRunPtr->FillRunInfo( soc, wrID );
-    cout << "done." << endl;
+  cout << "Now filling run information from central run SOC file...";
+  lCRunPtr->FillRunInfo( soc, cID, cLBPosMode ); 
+  cout << "done." << endl;
 
-    // Set Wavelength position to off-axis:
-    cout << "Setting off-axis laserball position+errors to wavelength run laserball position+errors...";
-    lRunPtr->SetLBPos( lWRunPtr->GetLBPos() );
-    lRunPtr->SetLBXPosErr( lWRunPtr->GetLBXPosErr() );
-    lRunPtr->SetLBYPosErr( lWRunPtr->GetLBYPosErr() );
-    lRunPtr->SetLBZPosErr( lWRunPtr->GetLBZPosErr() );
+  if ( wrID > 0 && rLBPosMode == 4){ 
+    cout << "Now filling run information from wavelength off-axis run SOC file...";
+    lWRRunPtr->FillRunInfo( soc, wrID, false );
+    lRunPtr->SetLBPos( lWRRunPtr->GetLBPos() ); 
+    lRunPtr->SetLBXPosErr( lWRRunPtr->GetLBXPosErr() );
+    lRunPtr->SetLBYPosErr( lWRRunPtr->GetLBYPosErr() );
+    lRunPtr->SetLBZPosErr( lWRRunPtr->GetLBZPosErr() );
     cout << "done." << endl;
   }
+  delete lWRRunPtr;
+
+  if ( wcID > 0 && cLBPosMode == 4 ){ 
+    cout << "Now filling run information from wavelength central run SOC file...";
+    lWCRunPtr->FillRunInfo( soc, wcID, false );
+    lCRunPtr->SetLBPos( lWCRunPtr->GetLBPos() ); 
+    lCRunPtr->SetLBXPosErr( lWCRunPtr->GetLBXPosErr() );
+    lCRunPtr->SetLBYPosErr( lWCRunPtr->GetLBYPosErr() );
+    lCRunPtr->SetLBZPosErr( lWCRunPtr->GetLBZPosErr() );      
+    cout << "done." << endl;
+  }
+  delete lWCRunPtr;
 
   cout << "Now filling PMT information from off-axis SOC file...";
   lRunPtr->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, rID );
   cout << "done." << endl;
-  if ( crBool ){
   cout << "Now filling PMT information from central SOC file...";
   lCRunPtr->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, rID );
   cout << "done." << endl;
-  }
-  if ( wrBool ){
-  cout << "Now filling PMT information from wavelength SOC file...";
-  lWRunPtr->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, rID );
-  cout << "done." << endl;
-  }
   
-
   // Now that all the SOC files have been loaded, and the OCARun objects
   // created, the corrections to the main-run entries can be calculated
   // using information from the other two files. The CrossRunFill function will
   // check the Run-IDs of both the central- and wavelength- OCARun objects
   // to see if their data has been entered following the above 'if' statements
-  cout << "Now Performing CrossRunFill...";
-  lRunPtr->CrossRunFill( lCRunPtr, lWRunPtr );
-  cout << "done." << endl;
+  cout << "Now combining off-axis and central run information...";
+  lRunPtr->CrossRunFill( lCRunPtr );
+  cout << "done.\n" << endl;
   delete lCRunPtr;
 
   // Now create a OCARun (.root) file to store the information of the main-run
@@ -337,6 +410,7 @@ int main( int argc, char** argv ){
 
   // Close the file
   file->Close();
+  delete lRunPtr;
 
   cout << "OCARun file: " << endl;
   cout << ( ocaRunDir + rIDStr + (string)"_OCARun.root" ).c_str() << endl;

@@ -75,7 +75,8 @@ namespace OCA{
     // Fill Run information from a SOC file with run ID 'runID'
     // into the run information stored here (OCARun object).
     void FillRunInfo( RAT::DU::SOCReader& socR,
-                      UInt_t runID );
+                      UInt_t runID, Int_t lbPosMode, 
+                      Bool_t copyPMTInfo = true );
 
     // Fill PMT information from a SOC file with run ID 'runID'
     // into the PMT information stored here (OCAPMT objects).
@@ -118,7 +119,7 @@ namespace OCA{
     // Fill information about a central run (cRun) and a
     // wavelength run (wRun) (if specified) into this OCARun
     // object
-    void CrossRunFill( OCARun* cRun, OCARun* wRun );
+    void CrossRunFill( OCARun* cRun );
 
     // Calculate the number of prompt counts detected at each PMT
     // within the run. This must be called after CopySOCPMTInfo()
