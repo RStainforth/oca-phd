@@ -43,6 +43,7 @@ void OCADB::ClearDB()
   fOCARunDir = "";
   fRDTRunDir = "";
   fOutputDir = "";
+  fSystematicsDir = "";
   
   // The current 'fit-file' this DB is accessing from
   // has an empty path
@@ -59,6 +60,7 @@ void OCADB::ClearDB()
   fOCARunDir = getenv( "OCA_DATA" ) + (string)"/runs/ocarun/";
   fRDTRunDir = getenv( "OCA_DATA" ) + (string)"/runs/rdt/";
   fOutputDir = getenv( "OCA_ROOT" ) + (string)"/output/";
+  fSystematicsDir = getenv( "OCA_DATA" ) + (string)"/systematics/";
   
 }
 
@@ -88,8 +90,8 @@ void OCADB::SetFile( const char* file )
 //////////////////////////////////////
 
 string OCADB::GetStringField( const string& tableName, 
-                                const string& fieldName,
-                                const string& indexName )
+                              const string& fieldName,
+                              const string& indexName )
 {
   
   // Clear what the current RATDB pointer object is pointing to.
@@ -125,8 +127,8 @@ string OCADB::GetStringField( const string& tableName,
 //////////////////////////////////////
 
 Double_t OCADB::GetDoubleField( const string& tableName, 
-                                  const string& fieldName,
-                                  const string& indexName )
+                                const string& fieldName,
+                                const string& indexName )
 {
   
   // Clear what the current RATDB pointer object is pointing to.
@@ -162,8 +164,8 @@ Double_t OCADB::GetDoubleField( const string& tableName,
 //////////////////////////////////////
 
 Int_t OCADB::GetIntField( const string& tableName, 
-                            const string& fieldName,
-                            const string& indexName )
+                          const string& fieldName,
+                          const string& indexName )
 {
   
   // Clear what the current RATDB pointer object is pointing to.
@@ -199,8 +201,8 @@ Int_t OCADB::GetIntField( const string& tableName,
 //////////////////////////////////////
 
 Bool_t OCADB::GetBoolField( const string& tableName, 
-                              const string& fieldName,
-                              const string& indexName )
+                            const string& fieldName,
+                            const string& indexName )
 {
   
   // Clear what the current RATDB pointer object is pointing to.
@@ -243,8 +245,8 @@ Bool_t OCADB::GetBoolField( const string& tableName,
 //////////////////////////////////////
 
 vector< Int_t > OCADB::GetIntVectorField( const string& tableName,  
-                                            const string& fieldName, 
-                                            const string& indexName )
+                                          const string& fieldName, 
+                                          const string& indexName )
 {
   
   // Clear what the current RATDB pointer object is pointing to.
@@ -281,8 +283,8 @@ vector< Int_t > OCADB::GetIntVectorField( const string& tableName,
 //////////////////////////////////////
 
 vector< Double_t > OCADB::GetDoubleVectorField( const string& tableName,  
-                                                  const string& fieldName, 
-                                                  const string& indexName )
+                                                const string& fieldName, 
+                                                const string& indexName )
 {
   
   // Clear what the current RATDB pointer object is pointing to.
@@ -318,8 +320,8 @@ vector< Double_t > OCADB::GetDoubleVectorField( const string& tableName,
 //////////////////////////////////////
 
 vector< string > OCADB::GetStringVectorField( const string& tableName,  
-                                                const string& fieldName, 
-                                                const string& indexName )
+                                              const string& fieldName, 
+                                              const string& indexName )
 {
   
   // Clear what the current RATDB pointer object is pointing to.

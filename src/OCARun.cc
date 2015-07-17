@@ -83,6 +83,10 @@ OCARun::OCARun( const OCARun& ocaRHS )
   fWavelengthLBYPosErr = ocaRHS.fWavelengthLBYPosErr;
   fWavelengthLBZPosErr = ocaRHS.fWavelengthLBZPosErr;
 
+  fLBOrientation = ocaRHS.fLBOrientation;
+  fCentralLBOrientation = ocaRHS.fCentralLBOrientation;
+  fWavelengthLBOrientation = ocaRHS.fWavelengthLBOrientation;
+
   fLBTheta = ocaRHS.fLBTheta;
   fLBPhi = ocaRHS.fLBPhi;
 
@@ -154,6 +158,10 @@ OCARun& OCARun::operator=( const OCARun& ocaRHS )
   fWavelengthLBXPosErr = ocaRHS.fWavelengthLBXPosErr;
   fWavelengthLBYPosErr = ocaRHS.fWavelengthLBYPosErr;
   fWavelengthLBZPosErr = ocaRHS.fWavelengthLBZPosErr;
+
+  fLBOrientation = ocaRHS.fLBOrientation;
+  fCentralLBOrientation = ocaRHS.fCentralLBOrientation;
+  fWavelengthLBOrientation = ocaRHS.fWavelengthLBOrientation;
 
   fLBTheta = ocaRHS.fLBTheta;
   fLBPhi = ocaRHS.fLBPhi;
@@ -320,7 +328,6 @@ void OCARun::FillPMTInfo( RAT::DU::SOCReader& socR,
   // First check that a SOC file with the 
   // specified runID exists in the SOCReader.
   for ( Int_t iSOC = 0; iSOC < (Int_t)socR.GetSOCCount(); iSOC++ ){
-
     // Get the SOC entry.
     *socPtr = socR.GetSOC( iSOC );
 
@@ -335,7 +342,6 @@ void OCARun::FillPMTInfo( RAT::DU::SOCReader& socR,
       return;
     }
   }
-
   // Create an iterator to loop over the PMTs...
   map< Int_t, OCAPMT >::iterator iLP;
 
@@ -350,7 +356,6 @@ void OCARun::FillPMTInfo( RAT::DU::SOCReader& socR,
   // e.g. distance through scintillator, acrylic and water and various flags based
   // on the quality of the light path.
   for ( iLP = GetOCAPMTIterBegin(); iLP != GetOCAPMTIterEnd(); iLP++ ){
-
     // Get the PMT ID and OCAPMT object
     pmtID = iLP->first;
     // Set the run ID

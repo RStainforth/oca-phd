@@ -107,6 +107,7 @@ public:
 
 // Declare the three function prototypes used 
 OCACmdOptions ParseArguments( int argc, char** argv );
+void ApplySystematic( OCARun* ocaRunPtr, std::string systematicOpt, Double_t systematicVal );
 void help();
 int main( int argc, char** argv );
 
@@ -150,6 +151,13 @@ int main( int argc, char** argv ){
 
   // Get the systematics file path
   std::string sysFile = Opts.fSystematicFilePath;
+  OCADB lDB;
+  lDB.SetFile( ( lDB.GetSystematicsDir() + sysFile ).c_str() );
+  std::vector< std::string > sysOpts = lDB.GetStringVectorField( "SYSTEMATICS", "systematics_list", "systematics_setup" );
+  std::vector< Float_t > sysVals;
+  for ( Int_t iSys = 0; iSys < (Int_t)sysOpts.size(); iSys++ ){
+    sysVals.push_back( lDB.GetDoubleField( "SYSTEMATICS", sysOpts[ iSys ], "systematics_setup" ) );
+  }
 
   cout << "\n";
   cout << "###############################" << endl;
@@ -200,7 +208,6 @@ int main( int argc, char** argv ){
   // Obtain the directory path where the SOC files are located
   // from the environment and create the full filename paths.
   // SOC run filenames currently of the form "[Run-ID]_Run.root"
-  OCADB lDB;
   string socRunDir = lDB.GetSOCRunDir( dirMMYY );
   string fExt = "_Run.root";
 
@@ -353,7 +360,7 @@ int main( int argc, char** argv ){
 
   if ( wrID > 0 && rLBPosMode == 4){ 
     cout << "Now filling run information from wavelength off-axis run SOC file...";
-    lWRRunPtr->FillRunInfo( soc, wrID, false );
+    lWRRunPtr->FillRunInfo( soc, wrID, 3, false );
     lRunPtr->SetLBPos( lWRRunPtr->GetLBPos() ); 
     lRunPtr->SetLBXPosErr( lWRRunPtr->GetLBXPosErr() );
     lRunPtr->SetLBYPosErr( lWRRunPtr->GetLBYPosErr() );
@@ -364,7 +371,7 @@ int main( int argc, char** argv ){
 
   if ( wcID > 0 && cLBPosMode == 4 ){ 
     cout << "Now filling run information from wavelength central run SOC file...";
-    lWCRunPtr->FillRunInfo( soc, wcID, false );
+    lWCRunPtr->FillRunInfo( soc, wcID, 3, false );
     lCRunPtr->SetLBPos( lWCRunPtr->GetLBPos() ); 
     lCRunPtr->SetLBXPosErr( lWCRunPtr->GetLBXPosErr() );
     lCRunPtr->SetLBYPosErr( lWCRunPtr->GetLBYPosErr() );
@@ -377,8 +384,26 @@ int main( int argc, char** argv ){
   lRunPtr->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, rID );
   cout << "done." << endl;
   cout << "Now filling PMT information from central SOC file...";
-  lCRunPtr->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, rID );
+  lCRunPtr->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, cID );
   cout << "done." << endl;
+
+  OCARun** sysRuns = new OCARun*[ (Int_t)sysOpts.size() ];
+  OCARun** sysRunsCtr = new OCARun*[ (Int_t)sysOpts.size() ];
+  for ( Int_t iSys = 0; iSys < (Int_t)sysOpts.size(); iSys++ ){
+    sysRuns[ iSys ] = new OCARun( *lRunPtr );
+    sysRuns[ iSys ]->CopyOCAPMTInfo( *lRunPtr );
+    sysRunsCtr[ iSys ] = new OCARun( *lCRunPtr );
+    sysRunsCtr[ iSys ]->CopyOCAPMTInfo( *lCRunPtr );
+    cout << "Now applying systematic " << iSys << ": " << sysOpts[ iSys ] << endl;
+    ApplySystematic( sysRuns[ iSys ], sysOpts[ iSys ], sysVals[ iSys ] );
+    ApplySystematic( sysRunsCtr[ iSys ], sysOpts[ iSys ], sysVals[ iSys ] );
+    sysRuns[ iSys ]->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, rID );
+    sysRunsCtr[ iSys ]->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, cID );
+    sysRuns[ iSys ]->CrossRunFill( sysRunsCtr[ iSys ] );
+    cout << "done.\n";
+  }
+
+  delete [] sysRunsCtr;
   
   // Now that all the SOC files have been loaded, and the OCARun objects
   // created, the corrections to the main-run entries can be calculated
@@ -404,6 +429,11 @@ int main( int argc, char** argv ){
   runTree->Branch( "OCARun", lRunPtr->ClassName(), &(*lRunPtr), 32000, 99 );
   file->cd();
 
+  for ( Int_t iSys = 0; iSys < (Int_t)sysOpts.size(); iSys++ ){
+    runTree->Branch( sysOpts[ iSys ].c_str(), sysRuns[ iSys ]->ClassName(), &(*sysRuns[ iSys ]), 32000, 99 );
+    file->cd();
+  }
+
   // Fill the tree and write it to the file
   runTree->Fill();
   runTree->Write();
@@ -411,6 +441,7 @@ int main( int argc, char** argv ){
   // Close the file
   file->Close();
   delete lRunPtr;
+  delete [] sysRuns;
 
   cout << "OCARun file: " << endl;
   cout << ( ocaRunDir + rIDStr + (string)"_OCARun.root" ).c_str() << endl;
@@ -498,4 +529,34 @@ void help(){
   cout << " -c, --central-run-id      Set the corresponding central run ID file \n";
   cout << " -w, --wavelength-run-id   Set the corresponding wavelength run ID file \n";
   
+}
+
+void ApplySystematic( OCARun* ocaRunPtr, std::string systematicOpt, Double_t systematicVal )
+{
+
+  if ( systematicOpt == "laserball_r_scale" ){
+    ocaRunPtr->SetLBPos( systematicVal * ocaRunPtr->GetLBPos() );
+  }
+  if ( systematicOpt == "laserball_plus_x_shift" ){
+    TVector3 lbPos = ocaRunPtr->GetLBPos();
+    lbPos.SetX( lbPos.X() + systematicVal );
+    ocaRunPtr->SetLBPos( lbPos );
+  }
+  if ( systematicOpt == "laserball_plus_y_shift" ){
+    TVector3 lbPos = ocaRunPtr->GetLBPos();
+    lbPos.SetY( lbPos.Y() + systematicVal );
+    ocaRunPtr->SetLBPos( lbPos );
+  }
+  if ( systematicOpt == "laserball_plus_z_shift" ){
+    TVector3 lbPos = ocaRunPtr->GetLBPos();
+    lbPos.SetZ( lbPos.Z() + systematicVal );
+    ocaRunPtr->SetLBPos( lbPos );
+  }
+  if ( systematicOpt == "lambda_plus_shift" ){
+    ocaRunPtr->SetLambda( ocaRunPtr->GetLambda() + systematicVal );
+  }
+  if ( systematicOpt == "lambda_minus_shift" ){
+    ocaRunPtr->SetLambda( ocaRunPtr->GetLambda() - systematicVal );
+  }
+
 }
