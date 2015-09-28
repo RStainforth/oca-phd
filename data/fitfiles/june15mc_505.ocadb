@@ -5,8 +5,35 @@ index: "fit_setup",
 valid_begin: [0, 0],
 valid_end: [0, 0],
 
-data_set: "jun15mc",
-fit_name: "505nm_jun15mc",
+// This is the directory path in $OCA_ROOT/data/runs/ocarun/*data_set*
+// where to find the OCA-run files.
+data_set: "oct15/labppo",
+
+// This is the name of the fit file to be written to the
+// $OCA_ROOT/output/fits directory
+fit_name: "505_labppo_oct15",
+
+// This is the name of the fit type. 'nominal' denotes
+// the standard fit. The following other options allows
+// for systematic fits:
+//        "laserball_r_scale"
+//        "laserball_r_shift"
+//        "laserball_plus_x_shift"
+//        "laserball_minus_x_shift"
+//        "laserball_plus_y_shift"
+//        "laserball_minus_y_shift"
+//        "laserball_plus_z_shift"
+//        "laserball_minus_z_shift"
+//        "lambda_plus_shift"
+//        "lambda_minus_shift"
+//        "lb_distribution_flat"
+//        "lb_distribution_squared"
+fit_systematic: "nominal",
+
+// Seed with nominal parameter values? (1: Yes, 0: No)
+// Tells the fit whether or not to seed using parameters from
+// a previous fit.
+seed_initial_parameters: "505_labppo_oct15.root",
 
 }
 
