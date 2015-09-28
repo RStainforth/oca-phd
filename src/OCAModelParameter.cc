@@ -61,6 +61,26 @@ OCAModelParameter::OCAModelParameter( std::string parameterName,
 //////////////////////////////////////
 //////////////////////////////////////
 
+OCAModelParameter& OCAModelParameter::operator=( const OCAModelParameter& rhs )
+{
+
+  fParameterName = rhs.fParameterName;
+  fIndex = rhs.fIndex;
+  fNInGroup = rhs.fNInGroup;
+  fIncrementValue = rhs.fIncrementValue;
+  fInitialValue = rhs.fInitialValue;
+  fFinalValue = rhs.fFinalValue;
+  fMinValue = rhs.fMinValue;
+  fMaxValue = rhs.fMaxValue;
+  fVary = rhs.fVary;
+
+  return *this;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 void OCAModelParameter::PrintInfo()
 {
 

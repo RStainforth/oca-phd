@@ -80,12 +80,17 @@ int main( int argc, char** argv ){
   OCADB lDB;
   lDB.SetFile( argv[1] );
   std::string fitName = lDB.GetStringField( "FITFILE", "fit_name", "fit_setup" );
+  std::string seedFile = lDB.GetStringField( "FITFILE", "seed_initial_parameters", "fit_setup" );
+  std::string systematicName = lDB.GetStringField( "FITFILE", "fit_systematic", "fit_setup" );
+
   // Create the OCAModelParameterStore object which stores
   // the parameters for the optics model.
   OCAModelParameterStore* lParStore = new OCAModelParameterStore( fitName );
-
-  // Add the parameters.
-  lParStore->AddParameters( argv[1] );
+  
+  // Seed the parameters...
+  if ( seedFile != "" ){ lParStore->SeedParameters( seedFile ); }
+  // ...or add the parameters as specified in the fit file
+  else{ lParStore->AddParameters( argv[1] ); }
 
   // Create the OCAOpticsModel object. This is the object
   // which will use the OCAModelParameter objects to compute
@@ -106,7 +111,9 @@ int main( int argc, char** argv ){
   // Add all the run files to the OCARunReader object
   std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" ); 
   std::string dataSet = lDB.GetStringField( "FITFILE", "data_set", "fit_setup" );
-  OCARunReader lReader( runIDs, dataSet );
+  OCARunReader lReader;
+  lReader.SetBranchName( systematicName );
+  lReader.Add( runIDs, dataSet );
   
   // Create and add the run information to a OCAPMTStore object.
   OCAPMTStore* lData = new OCAPMTStore();

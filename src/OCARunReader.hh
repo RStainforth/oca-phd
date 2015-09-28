@@ -50,6 +50,10 @@ namespace OCA{
     // Add a OCARun file by runID.
     void Add( Int_t runID );
 
+    // Add OCARun files by runID.
+    void Add( vector< Int_t >& runIDs,
+              const string dataSet );
+
     // Add a OCARun file as specified by a list of
     // run IDs in a 'fit-file'.
     void Add( const char* filename );
@@ -89,6 +93,9 @@ namespace OCA{
     // Set the current OCARun by run ID.
     void SetCurrentOCARun( Int_t runID ){ fOCARun = GetOCARun( runID ); }
 
+    // Set the branch name, might be different for different systematics
+    void SetBranchName( const string& brName ){ fBranchName = brName; }
+
   protected:
 
     TChain* fOCARunT;                   // TChain of the ROOT files added to the OCARun reader.
@@ -96,6 +103,8 @@ namespace OCA{
     
     Long64_t fNext;                       // Index of the next OCARun TTree in the TChain.
     Long64_t fNOCARuns;                 // Total number of OCARun TTrees in the TChain.
+
+    string fBranchName;                   // Branch name for the OCARun file to be used
 
     vector< Int_t > fListOfRunIDs;        // Vector of run IDs whose corresponding ROOT fies
                                           // have been loaded onto the TChain.

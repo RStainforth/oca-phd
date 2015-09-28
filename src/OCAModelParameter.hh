@@ -47,6 +47,9 @@ namespace OCA{
                          Bool_t varyBool );
     ~OCAModelParameter(){ };
 
+    // The equality operator for OCAModelParameter types.
+    OCAModelParameter& operator=( const OCAModelParameter& rhs );
+
     // Print all the information about the parameter.
     void PrintInfo();
 

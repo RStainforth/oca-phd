@@ -42,6 +42,8 @@ OCAModelParameterStore::OCAModelParameterStore( string storeName )
   fVariableParameterIndex = NULL;
   fVariableParameterMap = NULL;
   fPMTAngularResponseIndex = NULL;
+  fCurrentAngularResponseBins = new vector< Int_t >[ 12 ];
+  fCurrentLBDistributionBins = new vector< Int_t >[ 12 ];
 
   // Set the 'Int_t' type variables to non-interpretive values,
   // i.e. -1.
@@ -50,7 +52,11 @@ OCAModelParameterStore::OCAModelParameterStore( string storeName )
   fCurrentPMTAngularResponseBin = -1;
   fCentralCurrentPMTAngularResponseBin = -1;
   fCurrentLBRunNormalisationBin = -1;
-  
+
+  fNCurrentVariableParameters = -1;
+  fNBaseVariableParameters = -1;
+  fNGlobalVariableParameters = -1;
+    
   fNLBDistributionMaskParameters = -1;
   fNPMTAngularResponseBins = -1;
   fNLBDistributionCosThetaBins = -1;
@@ -60,15 +66,9 @@ OCAModelParameterStore::OCAModelParameterStore( string storeName )
   fNLBParametersPerSinWaveSlice = -1;
   fLBDistributionType = -1;
   fNLBDistributionPars = -1;
-
+  
   fNParameters = -1;
-  fNCurrentVariableParameters = -1;
-  fNBaseVariableParameters = -1;
-  fNGlobalVariableParameters = -1;
-
-  fCurrentAngularResponseBins = new vector< Int_t >[ 12 ];
-  fCurrentLBDistributionBins = new vector< Int_t >[ 12 ]; 
-
+  
 }
 
 //////////////////////////////////////
@@ -102,6 +102,50 @@ void OCAModelParameterStore::PrintParameterInfo()
     iPar->PrintInfo();
 
   }
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void OCAModelParameterStore::SeedParameters( std::string& fitFileName )
+{
+
+  OCADB lDB;
+  std::string outputDir = lDB.GetOutputDir() + "fits/";
+  
+  TFile* tmpFile = TFile::Open( ( outputDir + fitFileName ).c_str() );
+  TTree* tmpTree = (TTree*)tmpFile->Get( "nominal;1" );
+
+  OCAModelParameterStore* tmpStore = new OCAModelParameterStore( fStoreName );
+  tmpTree->SetBranchAddress( "nominal", &(*tmpStore) );
+
+  fNLBDistributionMaskParameters = tmpStore->GetNLBDistributionMaskParameters();
+  fNPMTAngularResponseBins = tmpStore->GetNPMTAngularResponseBins();
+  
+  fNLBDistributionCosThetaBins = tmpStore->GetNLBDistributionCosThetaBins();
+  fNLBDistributionPhiBins = tmpStore->GetNLBDistributionPhiBins();
+  
+  fNLBRunNormalisations = tmpStore->GetNLBRunNormalisations();
+  fNLBSinWaveSlices = tmpStore->GetNLBSinWaveSlices();
+
+  fNLBParametersPerSinWaveSlice = tmpStore->GetNLBParametersPerSinWaveSlice();
+
+  fLBDistributionType = tmpStore->GetLBDistributionType();
+
+  fNLBDistributionPars = tmpStore->GetNLBDistributionPars();
+
+  fNParameters = tmpStore->GetNParameters();
+
+  vector< OCAModelParameter >::iterator iPar;
+  for ( iPar = tmpStore->GetOCAModelParametersIterBegin();
+        iPar != tmpStore->GetOCAModelParametersIterEnd();
+        iPar++ ){
+    fParameters.push_back( *iPar );
+  }
+
+  AllocateParameterArrays();
+  delete tmpStore;
 
 }
 
@@ -404,7 +448,7 @@ void OCAModelParameterStore::AddParameters( const char* fileName )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCAModelParameterStore::WriteToROOTFile( const char* fileName )
+void OCAModelParameterStore::WriteToROOTFile( const char* fileName, const char* branchName )
 {
   
   TFile* file = TFile::Open( fileName, "RECREATE" );
@@ -428,7 +472,7 @@ void OCAModelParameterStore::WriteToROOTFile( const char* fileName )
   file->WriteTObject( lbDistributionTF1 );
 
   // Declare a new branch pointing to the parameter store
-  parTree->Branch( "OCAModelParameterStore", (*this).ClassName(), &(*this), 32000, 99 );
+  parTree->Branch( branchName, (*this).ClassName(), &(*this), 32000, 99 );
   file->cd();
 
   // Fill the tree and write it to the file
@@ -437,8 +481,9 @@ void OCAModelParameterStore::WriteToROOTFile( const char* fileName )
 
   file->Close();
   delete file;
-
-  cout << "OCA::OCAModelParameterStore: Fitted parameters saved to ROOT file:\n";
+  cout << "The OCA::OCAModelParameterStore has been written to the branch:\n";
+  cout << branchName << "\n";
+  cout << "And saved to the ROOT file:\n";
   cout << fileName << "\n";
 
 }

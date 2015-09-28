@@ -430,7 +430,8 @@ int main( int argc, char** argv ){
   file->cd();
 
   for ( Int_t iSys = 0; iSys < (Int_t)sysOpts.size(); iSys++ ){
-    runTree->Branch( sysOpts[ iSys ].c_str(), sysRuns[ iSys ]->ClassName(), &(*sysRuns[ iSys ]), 32000, 99 );
+    runTree->Branch( sysOpts[ iSys ].c_str(), sysRuns[ iSys ]->ClassName(), 
+                     &(*sysRuns[ iSys ]), 32000, 99 );
     file->cd();
   }
 
@@ -531,32 +532,88 @@ void help(){
   
 }
 
+//////////////////////
+//////////////////////
+
 void ApplySystematic( OCARun* ocaRunPtr, std::string systematicOpt, Double_t systematicVal )
 {
 
+  // Laserball position radius scaling 
+  // R_lb -> R_b * systematicVal
   if ( systematicOpt == "laserball_r_scale" ){
     ocaRunPtr->SetLBPos( systematicVal * ocaRunPtr->GetLBPos() );
   }
+
+  // Laserball position radius shift 
+  // R_lb -> R_b + systematicVal [mm]
+  if ( systematicOpt == "laserball_r_shift" ){
+    ocaRunPtr->SetLBPos( systematicVal * ocaRunPtr->GetLBPos() );
+  }
+
+  // Laserball position x-position +ve shift
+  // Rx_lb -> Rx_lb + systematicVal [mm]
   if ( systematicOpt == "laserball_plus_x_shift" ){
     TVector3 lbPos = ocaRunPtr->GetLBPos();
     lbPos.SetX( lbPos.X() + systematicVal );
     ocaRunPtr->SetLBPos( lbPos );
   }
+  // Laserball position x-position -ve shift
+  // Rx_lb -> Rx_lb - systematicVal [mm]
+  if ( systematicOpt == "laserball_minus_x_shift" ){
+    TVector3 lbPos = ocaRunPtr->GetLBPos();
+    lbPos.SetX( lbPos.X() - systematicVal );
+    ocaRunPtr->SetLBPos( lbPos );
+  }
+
+  // Laserball position y-position +ve shift
+  // Ry_lb -> Ry_lb + systematicVal [mm]
   if ( systematicOpt == "laserball_plus_y_shift" ){
     TVector3 lbPos = ocaRunPtr->GetLBPos();
     lbPos.SetY( lbPos.Y() + systematicVal );
     ocaRunPtr->SetLBPos( lbPos );
   }
+  // Laserball position y-position -ve shift
+  // Ry_lb -> Ry_lb - systematicVal [mm]
+  if ( systematicOpt == "laserball_minus_y_shift" ){
+    TVector3 lbPos = ocaRunPtr->GetLBPos();
+    lbPos.SetY( lbPos.Y() - systematicVal );
+    ocaRunPtr->SetLBPos( lbPos );
+  }
+
+  // Laserball position z-position +ve shift
+  // Rz_lb -> Rz_lb + systematicVal [mm]
   if ( systematicOpt == "laserball_plus_z_shift" ){
     TVector3 lbPos = ocaRunPtr->GetLBPos();
     lbPos.SetZ( lbPos.Z() + systematicVal );
     ocaRunPtr->SetLBPos( lbPos );
   }
+  // Laserball position z-position -ve shift
+  // Rz_lb -> Rz_lb - systematicVal [mm]
+  if ( systematicOpt == "laserball_minus_z_shift" ){
+    TVector3 lbPos = ocaRunPtr->GetLBPos();
+    lbPos.SetZ( lbPos.Z() + systematicVal );
+    ocaRunPtr->SetLBPos( lbPos );
+  }
+
+  // Laserball wavelength +ve shift
+  // Lambda_lb -> Lambda_lb + systemacVal[nm]
   if ( systematicOpt == "lambda_plus_shift" ){
     ocaRunPtr->SetLambda( ocaRunPtr->GetLambda() + systematicVal );
   }
+  // Laserball wavelength -ve shift
+  // Lambda_lb -> Lambda_lb - systemacVal[nm]
   if ( systematicOpt == "lambda_minus_shift" ){
     ocaRunPtr->SetLambda( ocaRunPtr->GetLambda() - systematicVal );
+  }
+
+  // Dummy systematic for flat LB distribution
+  if ( systematicOpt == "lb_distribution_flat" ){
+    cout << "Flat laserball distribution systematic registered. Systematic will be enforced at the fitting stage. Not here" << endl;
+  }
+
+  // Dummy systematic for LB distribution squared
+  if ( systematicOpt == "lb_distribution_squared" ){
+    cout << "Squared laserball distribution systematic registered. Systematic will be enforced at the fitting stage. Not here" << endl;
   }
 
 }

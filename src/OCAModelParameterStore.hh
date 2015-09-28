@@ -53,6 +53,9 @@ namespace OCA{
       fParameters.push_back( parameter ); 
     }
 
+    // Seed Parameters from a pre-existing file
+    void SeedParameters( std::string& fitFileName );
+
     // Add a complete set of parameters from a 'fit-file'.
     void AddParameters( const char* fileName );
 
@@ -60,7 +63,8 @@ namespace OCA{
     void PrintParameterInfo();
     
     // Write the parameters to a .root file
-    void WriteToROOTFile( const char* fileName = "OCAModelParameterStore.root" );
+    void WriteToROOTFile( const char* fileName = "OCAModelParameterStore.root",
+                          const char* branchName = "nominal" );
 
     // Write the parameters to a .ratdb file
     void WriteToRATDBFile( const char* fileName = "OCAModelParameterStore.root" );
@@ -315,16 +319,17 @@ namespace OCA{
   private:
 
     string fStoreName;                               // The store name.
+    string fSystematicName;                          // The systematic name.
 
-    Int_t fCurrentLBDistributionBin;                 // The current laserball distribution bin for the off-axis run.
+    Int_t fCurrentLBDistributionBin;                 //! The current laserball distribution bin for the off-axis run.
     
-    Int_t fCentralCurrentLBDistributionBin;          // The current laserball distribution for the central run.
+    Int_t fCentralCurrentLBDistributionBin;          //! The current laserball distribution for the central run.
 
-    Int_t fCurrentPMTAngularResponseBin;             // The current angular response bin for the off-axis run.
+    Int_t fCurrentPMTAngularResponseBin;             //! The current angular response bin for the off-axis run.
 
-    Int_t fCentralCurrentPMTAngularResponseBin;      // The current angular response bin for the off-axis run.
+    Int_t fCentralCurrentPMTAngularResponseBin;      //! The current angular response bin for the off-axis run.
 
-    Int_t fCurrentLBRunNormalisationBin;             // The current index for the laserball normalisation.
+    Int_t fCurrentLBRunNormalisationBin;             //! The current index for the laserball normalisation.
 
     Int_t fNLBDistributionMaskParameters;            // The number of laserball mask parameters.
     Int_t fNPMTAngularResponseBins;                  // The number of PMT Angular Response Bins.
@@ -338,9 +343,9 @@ namespace OCA{
 
     Int_t fNParameters;                              // The number of parameters in the store.
 
-    Int_t fNCurrentVariableParameters;               // The total number of current variable parameters.
+    Int_t fNCurrentVariableParameters;               //! The total number of current variable parameters.
 
-    Int_t fNGlobalVariableParameters;                // The total global number of variable parameters.
+    Int_t fNGlobalVariableParameters;                //! The total global number of variable parameters.
 
     vector< OCAModelParameter > fParameters;         // The vector of parameter objects i.e. the store.
 
@@ -350,7 +355,7 @@ namespace OCA{
     Float_t** fCovarianceMatrix;                     //! [ fNParameters + 1 ][ fNParameters + 1 ] Covariance matrix.
     Float_t** fDerivativeMatrix;                     //! [ fNParameters + 1 ][ fNParameters + 1 ] Curvature matrix.
 
-    Int_t fNBaseVariableParameters;                  // The number of base variable parameters, 
+    Int_t fNBaseVariableParameters;                  //! The number of base variable parameters, 
                                                      // i.e. the parameters which vary that do not include:
                                                      // - PMT angular response
                                                      // - Laserball distribution histogram 
@@ -364,8 +369,8 @@ namespace OCA{
     Int_t* fVariableParameterIndex;                  //! Look-up table for the ordered variable parameter indices.
     Int_t* fVariableParameterMap;                    //! Look-up table for the variable parameters (global).
 
-    vector< Int_t >* fCurrentLBDistributionBins;
-    vector< Int_t >* fCurrentAngularResponseBins;
+    vector< Int_t >* fCurrentLBDistributionBins;     //!
+    vector< Int_t >* fCurrentAngularResponseBins;    //!
 
     ClassDef( OCAModelParameterStore, 1 )
 

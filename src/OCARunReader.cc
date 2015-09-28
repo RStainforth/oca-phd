@@ -19,6 +19,8 @@ using namespace std;
 OCARunReader::OCARunReader()
 {
 
+
+  fBranchName = "OCARun";
   // Create a new TChain object with the name
   // "OCARunT".
   fOCARunT = new TChain( "OCARunT" );
@@ -27,7 +29,7 @@ OCARunReader::OCARunReader()
   // address to the memory allocated to it on the
   // TChain.
   fOCARun = new OCARun();
-  fOCARunT->SetBranchAddress( "OCARun", &fOCARun );
+  fOCARunT->SetBranchAddress( fBranchName.c_str(), &fOCARun );
 
   // Set the next counter to zero to begin with.
   fNext = 0;
@@ -45,6 +47,7 @@ OCARunReader::OCARunReader( vector< Int_t >& runIDs,
                             const string dataSet )
 {
 
+  fBranchName = "OCARun";
   // Create a stringstream object and string to help
   // create the file path for the various OCARun files
   // associated with each run ID in the 'runIDs' vector.
@@ -66,7 +69,7 @@ OCARunReader::OCARunReader( vector< Int_t >& runIDs,
 
   // Create a new OCARun object.
   fOCARun = new OCARun();
-  fOCARunT->SetBranchAddress( "OCARun", &fOCARun );
+  fOCARunT->SetBranchAddress( fBranchName.c_str(), &fOCARun );
 
   // For each run ID in the 'runIDs' vector find the associated
   // OCARun file and add it to the reader.
@@ -137,7 +140,7 @@ OCARunReader::OCARunReader( Int_t runID )
 
   // Create a pointer to the OCARun object.
   fOCARun = new OCARun();
-  fOCARunT->SetBranchAddress( "OCARun", &fOCARun );
+  fOCARunT->SetBranchAddress( fBranchName.c_str(), &fOCARun );
 
   // Add the OCARun .root file to the OCARunReader.
   Add( filename.c_str() );
@@ -171,7 +174,7 @@ OCARunReader::OCARunReader( const char* filename )
   fOCARunT = new TChain( "OCARunT" );
 
   fOCARun = new OCARun();
-  fOCARunT->SetBranchAddress( "OCARun", &fOCARun );
+  fOCARunT->SetBranchAddress( fBranchName.c_str(), &fOCARun );
 
   fNext = 0;
   fNOCARuns = fOCARunT->GetEntries();
@@ -224,6 +227,66 @@ void OCARunReader::Add( Int_t runID )
 
   fNOCARuns = fOCARunT->GetEntries();
 
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+void OCARunReader::Add( vector< Int_t >& runIDs,
+                        const string dataSet )
+{
+
+  // Create a stringstream object and string to help
+  // create the file path for the various OCARun files
+  // associated with each run ID in the 'runIDs' vector.
+  stringstream myStream;
+  string runIDStr = "";
+
+  // Create an instance of the OCADB object to 
+  // obtain the full system path directory to 
+  // the OCARun folder.
+  OCADB lDB;
+  string ocaRunDir = lDB.GetOCARunDir( dataSet );
+  string fExt = "_OCARun.root";
+  
+  string filename = "";
+
+  fOCARunT->SetBranchAddress( fBranchName.c_str(), &fOCARun );
+
+  // For each run ID in the 'runIDs' vector find the associated
+  // OCARun file and add it to the reader.
+  for ( Int_t iRun = 0; iRun < (Int_t)runIDs.size(); iRun++ ){
+
+    myStream << runIDs[ iRun ];
+    myStream >> runIDStr;
+
+    // The full system path to the OCARun file.
+    filename = ( ocaRunDir + runIDStr + fExt );
+
+    // Add the file.
+    Add( filename.c_str() );
+
+    // Clear the stringstream and string variables
+    // in preparation for the next iteration of the loop.
+    myStream.clear();
+    runIDStr = "";
+
+  }
+
+  // Set the next counter to zero to begin with.
+  fNext = 0;
+
+  // Set the number of OCARuns to the number which have
+  // been added to the TChain.
+  fNOCARuns = fOCARunT->GetEntries();
+
+  // Set the pointer to the current OCARun object to the
+  // first entry in the TChain.
+  fOCARun = GetOCARun( runIDs[ 0 ] );
+
+  // Set the current PMT pointer to the first PMT in the first OCARun entry.
+  map< Int_t, OCAPMT >::iterator iPMT = fOCARun->GetOCAPMTIterBegin();
+  fCurrentPMT = &( iPMT->second );
 }
 
 //////////////////////////////////////
