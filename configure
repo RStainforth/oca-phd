@@ -1,5 +1,5 @@
 #!/bin/bash
-# Configure script for fresh OCA code release
+# Configure script for fresh OCA-SNOPLUS code release
 # authored by Robert Stainforth at University of Liverpool
 # rpfs@liv.ac.uk
 
@@ -31,29 +31,30 @@ printf "\n\n"
 OCAROOT=`pwd`
 OCADATA=${OCAROOT}/data
 
-# Now create the env_oca.sh and env_oca.csh files
-printf "%-25s" "Generating oca_env.sh..."
-cat > env_oca.sh << EOF
+# Now create the env_oca_snoplus.sh
+printf "%-25s" "Generating oca_env_snoplus.sh..."
+cat > env_oca_snoplus.sh << EOF
 #!/bin/bash
 
-export OCA_ROOT=$OCAROOT
-export OCA_DATA=$OCADATA
+export OCA_SNOPLUS_ROOT=$OCAROOT
+export OCA_SNOPLUS_DATA=$OCADATA
 
 export RATENVFILE=$RATFILE
 source $RATFILE
 
 # These are just to avoid having to move to the bin directory.
-export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$OCA_ROOT/lib
+export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$OCA_SNOPLUS_ROOT/lib
 system=\`uname -s\`
 if [ "\$system" == "Darwin" ]; then
-    export DYLD_LIBRARY_PATH=\$DYLD_LIBRARY_PATH:\$OCA_ROOT/lib
+    export DYLD_LIBRARY_PATH=\$DYLD_LIBRARY_PATH:\$OCA_SNOPLUS_ROOT/lib
 fi
 
-export PATH=\$PATH:\$OCA_ROOT/bin 
+export PATH=\$PATH:\$OCA_SNOPLUS_ROOT/bin
+source $OCAROOT/src/sno/env_oca_sno.sh
 EOF
 
 printf "\n"
-[[ -e env_oca.sh ]] && chmod +x env_oca.sh && printf "env_oca.sh has been created!\n\nPlease type 'source env_oca.sh' at the command line here and then install OCA by typing:\n\n'make clean', 'make' and 'make install'\n\nrespectively at the command line in the '"
+[[ -e env_oca.sh ]] && chmod +x env_oca.sh && printf "env_oca.sh has been created!\n\nPlease type 'source env_oca_snoplus.sh' at the command line here and then install OCA by typing:\n\n'make clean', 'make' and 'make install'\n\nrespectively at the command line in the '"
 printf `pwd`
 printf "/src' directory.\n\n"
-printf "Remember: You need to 'source env_oca.sh' each time you use OCA\n\n"
+printf "Remember: You need to 'source env_oca_snoplus.sh' each time you use OCA\n\n"

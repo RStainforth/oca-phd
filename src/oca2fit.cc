@@ -17,10 +17,10 @@
 ///         by typing 'oca2fit [path-to-fit-file]' where the
 ///         the '[path-to-fit-file]' is the full system path
 ///         to the 'fit-file', typically stored in the 
-///         '$OCA_ROOT/data/fit_files/' directory.
+///         '$OCA_SNOPLUS_ROOT/data/fit_files/' directory.
 ///         At the end of this executable the result of the fit
 ///         are written out to a .root file and place in the
-///         'OCA_ROOT/output/fits/' directory.
+///         'OCA_SNOPLUS_ROOT/output/fits/' directory.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -173,7 +173,7 @@ int main( int argc, char** argv ){
 
   // Write the fit to a .root file.
   // These .root files are typically held in the
-  // '$OCA_ROOT/output/fits/' directory.
+  // '$OCA_SNOPLUS_ROOT/output/fits/' directory.
   lParStore->WriteToROOTFile( fitROOTPath.c_str() );
   lParStore->WriteToRATDBFile( fitRATDBPath.c_str() );
     

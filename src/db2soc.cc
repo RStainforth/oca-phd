@@ -22,7 +22,7 @@
 ///              e.g. db2soc -r 12121953
 ///
 ///         where '12121953' is the Run-ID of the run SOC file
-///         located in ${OCA_DATA}/runs/soc whose name is
+///         located in ${OCA_SNOPLUS_DATA}/runs/soc whose name is
 ///         "12121953_Run.root". This would udpdate the 'runID'
 ///         private member variable on the soc file.
 ///

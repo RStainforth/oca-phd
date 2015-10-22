@@ -14,7 +14,7 @@
 /// DETAIL: This class loads information from the OCA database. 
 ///         In particular, the purpose of this class is to load 
 ///         information from a 'fit-file',
-///         located in the $OCA_ROOT/data/fit_files/ directory.
+///         located in the $OCA_SNOPLUS_ROOT/data/fit_files/ directory.
 ///         Once the specific fit-file has been assigned using
 ///         OCADB::SetFile, this class essentially provides
 ///         easy access to any number of data types stored in the

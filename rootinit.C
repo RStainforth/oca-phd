@@ -12,18 +12,17 @@
   cout << "RAT: Libraries loaded." << endl;
   gSystem->AddIncludePath(" -I$RATROOT/include");
 	
-  char *OCAROOT = getenv("OCA_ROOT");
-  if (OCAROOT != NULL) {
-	gSystem->Load("libOCA.so");
-	cout << "OCA: Libraries loaded." << endl;
-	gSystem->AddIncludePath(" -I$OCA_ROOT/lib");
+  char *OCASNOPLUSROOT = getenv("OCA_SNOPLUS_ROOT");
+  if (OCASNOPLUSROOT != NULL) {
+	gSystem->Load("libOCA_SNOPLUS.so");
+	cout << "OCA-SNOPLUS: Libraries loaded." << endl;
   }
 
-  char *QOCAROOT = getenv("QOCA_ROOT");
-  if (QOCAROOT != NULL) {
-	gSystem->Load("libQOCA.so");
-	cout << "QOCA: Libraries loaded." << endl;
-	gSystem->AddIncludePath(" -I$QOCA_ROOT/include");
+  char *OCASNOROOT = getenv("OCA_SNO_ROOT");
+  if (OCASNOROOT != NULL) {
+	gSystem->Load("libOCA_SNO.so");
+	cout << "OCA-SNO: Libraries loaded." << endl;
   }
+
 }
 

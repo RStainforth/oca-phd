@@ -32,7 +32,8 @@ RATLIB		:= -L$(RATROOT)/lib -lRATEvent_$(RATSYSTEM) -lrat_$(RATSYSTEM)
 
 # Compile and link flags for OCA
 OCACFLAGS := -I./
-OCALIB    := -L. -lOCA
+OCA_SNOPLUS_LIB    := -L. -lOCA_SNOPLUS
+OCA_SNO_LIB   := -L. -LOCA_SNO
 
 PICFLAG	:= -fPIC
 
@@ -49,6 +50,7 @@ ifneq ($(findstring macosx, $(ARCH)),)
 
 # Shouldn't need the below statement anymore - will keep it here for legacy control.
 #LINKCMD := install_name_tool -change lib/libRATEvent_$(RATSYSTEM).so @rpath/libRATEvent_$(RATSYSTEM).so libOCA.so
+
 endif
 ifneq ($(findstring $(ARCH), $(strip linux debian redhat)),)
 	LDOPTS := -shared
@@ -61,12 +63,12 @@ endif
 ### Some options for this package
 OCA_VERSION:= "1.0.0" # The OCA version
 OCA_COMPATIBILITY:= "1.0.0" 
-OCA_ROOT 	:= $(OCA_ROOT)
-OCA_LIB	:= $(OCA_ROOT)/lib 
-OCA_SRC	:= $(OCA_ROOT)/src
-OCA_INC	:= $(OCA_ROOT)/include
-OCA_BIN	:= $(OCA_ROOT)/bin
-OCA_OBJ   := $(OCA_ROOT)/obj
+OCA_SNOPLUS_ROOT 	:= $(OCA_SNOPLUS_ROOT)
+OCA_LIB	:= $(OCA_SNOPLUS_ROOT)/lib 
+OCA_SRC	:= $(OCA_SNOPLUS_ROOT)/src
+OCA_INC	:= $(OCA_SNOPLUS_ROOT)/include
+OCA_BIN	:= $(OCA_SNOPLUS_ROOT)/bin
+OCA_OBJ   := $(OCA_SNOPLUS_ROOT)/obj
 
 # Dictionary
 DICT_H	:= OCA_LinkDef.h
@@ -89,18 +91,18 @@ OCAC		:= $(filter-out $(addsuffix .cc,$(OCA_EXE)),$(notdir $(shell find $(OCA_SR
 # List of the OCA objects, i.e. all those files attached in $OCAC but with the extensions .cc replaced
 # with .o
 OCAO	    := $(patsubst %.cc,%.o,$(OCAC))
-OCAL		:= libOCA.so
+OCAL		:= libOCA_SNOPLUS.so
 
 ### Below are the building commands. Don't touch if you don't know what you're doing.
 
 .PHONY: setup all install_libraries executables install_executables
 
+all: oca_sno_build headers libraries executables
 
-all: show headers libraries executables
-#OCA_positionfit tdiff reflecttime qpath_runner OCAfit_runner OCAextract_runner OCAplots_runner OCAtitles_runner
-
-test:
-	@cd $(OCA_ROOT)
+oca_sno_build:
+	@echo " == Building OCA-SNO =="	
+	@cd sno && $(MAKE)
+	@cd sno && $(MAKE) install
 
 dirs: 
 	@mkdir -p $(OCA_LIB)
@@ -114,83 +116,86 @@ show:
 	@echo " * LDOPT 	: $(LDOPTS)"
 
 headers: $(OCAH)
-	@echo " == Executing $@ =="	
+	@echo " == Executing OCA-SNOPLUS headers =="	
 
 libraries: $(OCAL)
-		@echo " == Executing $@ =="
+		@echo " == Executing OCA-SNOPLUS Libraries =="
 
 executables: $(OCA_EXE)
-		@echo " == Executing $@ =="
+		@echo " == Executing OCA-SNOPLUS Executables =="
 
-install: install_libraries install_executables install_headers
+install: install_libraries install_headers install_executables
 
 install_headers: headers
-		@echo " == Executing $@ =="
+		@echo " == Executing OCA-SNOPLUS Install Headers =="
 		@echo "copying OCA headers to $(OCA_INC)"
 		@cp $(OCAH) $(OCA_INC)
 		@echo "Done."
 
 install_libraries: libraries dirs
-		@echo " == Executing $@ =="
+		@echo " == Executing OCA-SNOPLUS Install Libraries =="
 		@echo "copying $(OCAL) to $(OCA_LIB)"
 		@cp $(OCAL) $(OCA_LIB)
 		@cp $(OCAO) $(OCA_OBJ)
 		@echo "Done."
 
 install_executables: executables dirs
-		@echo " == Executing $@ =="
+		@echo " == Executing OCA-SNOPLUS Install Executables =="
 		@echo "copying OCA executables to $(OCA_BIN)"
 		@cd $(OCA_SRC)
-		@cp $(OCA_EXE) $(OCA_ROOT)/bin
-		@cd $(OCA_ROOT)
+		@cp $(OCA_EXE) $(OCA_SNOPLUS_ROOT)/bin
+		@cd $(OCA_SNOPLUS_ROOT)
 		@echo "Done"
 
-
-
 clean:
-	@echo " == Executing $@ =="
+	@echo " == Executing OCA-SNOPLUS Clean =="
 	@rm -f *Dict.C
 	@rm -f *Dict.h
 	@rm -f *.o
 	@rm -f *.so
 	@rm -f $(OCA_EXE)
-	@echo "Done."
+	@cd sno && $(MAKE) clean	
 
 soc2oca: soc2oca.o $(OCAL)
-	@echo " == Executing $@ =="
+	@echo " == Executing OCA-SNOPLUS $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${OCALIB}
+	 $< ${DEPLIBS} ${RATLIB} ${OCA_SNOPLUS_LIB}
 
 oca2fit: oca2fit.o $(OCAL)
-	@echo " == Executing $@ =="
+	@echo " == Executing OCA-SNOPLUS $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${OCALIB}
+	 $< ${DEPLIBS} ${RATLIB} ${OCA_SNOPLUS_LIB}
 
 oca2marquardt: oca2marquardt.o $(OCAL)
-	@echo " == Executing $@ =="
+	@echo " == Executing OCA-SNOPLUS $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${OCALIB}
+	 $< ${DEPLIBS} ${RATLIB} ${OCA_SNOPLUS_LIB}
 
 oca2fit2eff: oca2fit2eff.o $(OCAL)
-	@echo " == Executing $@ =="
+	@echo " == Executing OCA-SNOPLUS $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${OCALIB}
+	 $< ${DEPLIBS} ${RATLIB} ${OCA_SNOPLUS_LIB}
 
 oca2scint: oca2scint.o $(OCAL)
-	@echo " == Executing $@ =="
+	@echo " == Executing OCA-SNOPLUS $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${OCALIB}
+	 $< ${DEPLIBS} ${RATLIB} ${OCA_SNOPLUS_LIB}
 
 makedatastore: makedatastore.o $(OCAL)
-	@echo " == Executing $@ =="
+	@echo " == Executing OCA-SNOPLUS $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${OCALIB}
+	 $< ${DEPLIBS} ${RATLIB} ${OCA_SNOPLUS_LIB}
+
+#rdt2osc: rdt2soc.o $(OCAL)
+#	@echo " == Executing $@ =="
+#	$(CXX) $(CXXFLAGS) -o $@ \
+#	 $< ${DEPLIBS} ${RATLIB} ${OCA_SNOPLUS_LIB} ${OCA_SNO_LIB}
 
 $(OCAL): $(OCAO) $(DICT_O)
-	@echo " == Executing $@ =="
+	@echo " == Executing OCA-SNOPLUS $@ =="
 	@echo "linking $(OCAL)"
 	$(CXX) $(LDFLAGS) $(LDOPTS) \
-	-o $@ ${DEPLIBS} ${RATLIB} $(OCAO) $(DICT_O) $(LINKCMD)
+	-o $@ ${DEPLIBS} ${RATLIB} ${OCA_SNO_LIB} $(OCAO) $(DICT_O) $(LINKCMD)
 
 # not sure if we really need ${DEPLIBS} up above here, we're only linking all the OCA object files
 

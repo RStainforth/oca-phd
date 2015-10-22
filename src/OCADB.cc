@@ -56,11 +56,11 @@ void OCADB::ClearDB()
   
   // Locate the run directories and full path names
   // for the SOC, OCARun and RDT files
-  fSOCRunDir = getenv( "OCA_DATA" ) + (string)"/runs/soc/";
-  fOCARunDir = getenv( "OCA_DATA" ) + (string)"/runs/ocarun/";
-  fRDTRunDir = getenv( "OCA_DATA" ) + (string)"/runs/rdt/";
-  fOutputDir = getenv( "OCA_ROOT" ) + (string)"/output/";
-  fSystematicsDir = getenv( "OCA_DATA" ) + (string)"/systematics/";
+  fSOCRunDir = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/runs/soc/";
+  fOCARunDir = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/runs/ocarun/";
+  fRDTRunDir = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/runs/rdt/";
+  fOutputDir = getenv( "OCA_SNOPLUS_ROOT" ) + (string)"/output/";
+  fSystematicsDir = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/systematics/";
   
 }
 

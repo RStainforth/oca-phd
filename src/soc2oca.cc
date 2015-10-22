@@ -33,7 +33,7 @@
 ///              e.g. soc2oca -r 12121953 -c 30091953 -w 18091989
 ///
 ///         soc2oca will then output a file "12121953_OCARun.root" to 
-///         ${OCA_DATA}/data/runs/ocarun. 
+///         ${OCA_SNOPLUS_DATA}/data/runs/ocarun. 
 ///
 ///         Currently BOTH a main-run and central-run file is required. The wavelength
 ///         run file is optional.
@@ -85,10 +85,10 @@ using namespace OCA;
 //         Y = 3 : Central fitted laserball position
 //         Y = 4 : Central fitted laserball position from wavelength run (-C option)
 //
-// Note: By convention we will often use the option '-l 44' : wavelenght position fits for both
+// Note: By convention we will often use the option '-l 44' : wavelength position fits for both
 //       the off-axis and central runs.
-// -d [MMYY] : The name of the dataset directory in the ${OCA_ROOT}/data/runs/soc directory
-// -s [Systematic-File-Name] : Name of systematic file in the ${OCA_ROOT}/data/systematics directory
+// -d [MMYY] : The name of the dataset directory in the ${OCA_SNOPLUS_ROOT}/data/runs/soc directory
+// -s [Systematic-File-Name] : Name of systematic file in the ${OCA_SNOPLUS_ROOT}/data/systematics directory
 // -h : Display help for this executable 
 class OCACmdOptions 
 {
@@ -418,7 +418,7 @@ int main( int argc, char** argv ){
   // Now create a OCARun (.root) file to store the information of the main-run
 
   // Get the directory to where the OCARun file will be written
-  // Currently this is ${OCA_DATA}/runs/ocarun
+  // Currently this is ${OCA_SNOPLUS_DATA}/runs/ocarun
   std::string ocaRunDir = lDB.GetOCARunDir( dirMMYY );
   TFile* file = new TFile( ( ocaRunDir + rIDStr + (string)"_OCARun.root" ).c_str(), "RECREATE" );
 
