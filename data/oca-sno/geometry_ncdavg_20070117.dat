@@ -1,0 +1,86 @@
+#.
+*-------------------------------------------------------------------------------
+*---
+*---    Geometry (GEO): Neutral Current Detectors OVL
+*---
+*---    Contact:  O. Simard (Carleton)
+*---    Date: January 19, 2007
+*---
+*-------------------------------------------------------------------------------
+*---
+*DO   GEDP  111 -i(31I -F )                 #.  Deployment: NCD OVL
+#.
+#.       Standard Database Header
+#.
+19750101        0 20380517 03331900  #.  1..4   Intrinsic validity
+       0        0        0           #.  5..7   Data type, Task type, Format no.
+       0        0        0           #.  8..10  Creation Date, Time, Source Id.
+19750101        0 20380517 03331900  #. 11..14  Effective validity
+       0        0                    #. 15..16  Entry Date Time
+4*0                                  #. 17..20  Spare
+10*0                                 #. 21..30  Temporary data (not in database)
+#.
+#.    End of Standard Database Header
+#.
+#.
+#.    User Data.
+#.
+#.
+40     #. Number of NCD strings.
+#.
+#. This array contains the positioning and length information for each
+#. NCD string.
+#.
+#. Notes: 
+#.    1) The positions are fitted using QNCDPositionFit which uses
+#.       as input the fitted laserball positions. 
+#.    2) The coordinates are averaged using many independent optics scans.
+#.    3) The total lengths and fractional volume (see below) are copied
+#.       from the original geometry.dat (data from J. Loach).
+#.
+#. column 1: detector x coordinate of the string
+#. column 2: detector y coordinate of the string
+#. column 3: total length of the string (in z direction)
+#. column 4: cumulative fractional volume of the string
+#.
+    46.634    47.528  1119.455  0.027588
+    49.091   149.458  1070.055  0.053959
+    47.919   246.409  1020.855  0.079118
+    48.924   338.273   920.455  0.101802
+   149.324   247.720   970.055  0.125708
+   147.840   147.088  1070.155  0.152082
+   247.246   146.764   961.755  0.175784
+   149.132    47.783  1069.055  0.202130
+   244.302    47.636  1020.555  0.227281
+   337.504    44.402   919.772  0.249948
+   335.411   -52.317   919.655  0.272613
+   246.623   -51.873  1020.455  0.297761
+   149.654   -48.615  1064.055  0.323984
+   244.516  -150.137   969.555  0.347878
+    43.790   -48.406  1119.555  0.375469
+   143.199  -147.659  1069.955  0.401838
+   143.746  -248.553   970.055  0.425744
+    45.895  -150.545  1070.255  0.452120
+    45.078  -249.002  1019.955  0.477256
+    43.681  -335.147   920.072  0.499931
+   -53.702  -334.519   920.255  0.522610
+   -53.002  -245.237  1020.455  0.547759
+   -52.964  -149.819  1069.755  0.574122
+  -154.657  -247.498   970.055  0.598029
+  -149.986  -146.145  1066.855  0.624321
+   -51.408   -48.063  1120.055  0.651924
+  -248.944  -145.202   970.555  0.675843
+  -153.952   -50.019  1069.455  0.702199
+  -250.863   -46.787  1020.555  0.727350
+  -340.598   -47.227   919.872  0.750020
+  -339.541    50.484   920.055  0.772694
+  -250.152    51.878  1020.555  0.797845
+  -248.922   150.192   967.655  0.821692
+  -155.218    48.984  1069.855  0.848058
+  -149.369   146.757  1069.655  0.874419
+  -151.829   247.220   970.455  0.898336
+   -50.482   339.417   918.472  0.920971
+   -51.692   247.462  1020.255  0.946115
+   -49.965   151.332  1066.655  0.972402
+   -51.132    52.722  1119.855  1.000001
+#.

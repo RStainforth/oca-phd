@@ -153,6 +153,7 @@ int main( int argc, char** argv ){
   std::string sysFile = Opts.fSystematicFilePath;
   OCADB lDB;
   lDB.SetFile( ( lDB.GetSystematicsDir() + sysFile ).c_str() );
+  cout << "Setting Systematics File: " << ( lDB.GetSystematicsDir() + sysFile ).c_str() << endl;
   std::vector< std::string > sysOpts = lDB.GetStringVectorField( "SYSTEMATICS", "systematics_list", "systematics_setup" );
   std::vector< Float_t > sysVals;
   for ( Int_t iSys = 0; iSys < (Int_t)sysOpts.size(); iSys++ ){

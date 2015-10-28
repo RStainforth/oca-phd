@@ -71,15 +71,23 @@ namespace OCA{
     string GetSOCRunDir( const string& monthYY = "" ) const { 
       return fSOCRunDir + monthYY + "/"; 
     }
+
     // Get the full path directory to where the OCARun files are stored.
     // OCARun files traditionally stored by month and year.
     string GetOCARunDir( const string& monthYY = "" ) const { 
       return fOCARunDir + monthYY + "/"; 
     }
+
     // Get the full path directory to where the RDT files are stored
     // RDT files traditionally stored by month and year
     string GetRDTRunDir( const string& monthYY = "" ) const { 
       return fRDTRunDir + monthYY + "/"; 
+    }
+
+    // Get the full path directory to where the DQXX files are stored
+    // DQXX files traditionally stored by month and year
+    string GetDQXXDir( const string& monthYY = "" ) const { 
+      return fDQXXDir + monthYY + "/"; 
     }
 
     // Get the full path directory to the output directory for fits
@@ -173,6 +181,8 @@ namespace OCA{
                                      // the OCARun files are held.
     string fRDTRunDir;               // The full system path of the directory where 
                                      // the RDT files are held.
+    string fDQXXDir;                 // The full system path of the directory where 
+                                     // the DQXX files are held.
     string fOutputDir;               // The full system path of the directory where 
                                      // the output files (e.g. fits) are held.
     string fSystematicsDir;          // The full system path of the directory where 

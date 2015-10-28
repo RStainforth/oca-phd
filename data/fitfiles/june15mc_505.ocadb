@@ -1,5 +1,5 @@
 {
-name : "FITFILE",
+type : "FITFILE",
 index: "fit_setup",
 
 valid_begin: [0, 0],

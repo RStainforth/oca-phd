@@ -32,8 +32,9 @@ RATLIB		:= -L$(RATROOT)/lib -lRATEvent_$(RATSYSTEM) -lrat_$(RATSYSTEM)
 
 # Compile and link flags for OCA
 OCACFLAGS := -I./
+OCA_SNO_CFLAGS := -I$(OCA_SNOPLUS_ROOT)/include
 OCA_SNOPLUS_LIB    := -L. -lOCA_SNOPLUS
-OCA_SNO_LIB   := -L. -LOCA_SNO
+OCA_SNO_LIB   := -L$(OCA_SNOPLUS_ROOT)/lib -lOCA_SNO
 
 PICFLAG	:= -fPIC
 
@@ -75,7 +76,7 @@ DICT_H	:= OCA_LinkDef.h
 DICT_C	:= OCA_Dict.C
 DICT_O	:= $(patsubst %.C,%.o,$(DICT_C))
 
-OCA_EXE	:= soc2oca oca2fit oca2marquardt oca2fit2eff oca2scint makedatastore
+OCA_EXE	:= soc2oca oca2fit oca2marquardt oca2fit2eff oca2scint makedatastore rdt2soc
 
 # N. Barros - 22-11-2011 : Removed from the targets as the source file seems to be missing. Maybe a missing commit?
 # sjmptest
@@ -186,10 +187,10 @@ makedatastore: makedatastore.o $(OCAL)
 	$(CXX) $(CXXFLAGS) -o $@ \
 	 $< ${DEPLIBS} ${RATLIB} ${OCA_SNOPLUS_LIB}
 
-#rdt2osc: rdt2soc.o $(OCAL)
-#	@echo " == Executing $@ =="
-#	$(CXX) $(CXXFLAGS) -o $@ \
-#	 $< ${DEPLIBS} ${RATLIB} ${OCA_SNOPLUS_LIB} ${OCA_SNO_LIB}
+rdt2soc: rdt2soc.o $(OCAL)
+	@echo " == Executing $@ =="
+	$(CXX) $(CXXFLAGS) -o $@ \
+	 $< ${DEPLIBS} ${RATLIB} ${OCA_SNOPLUS_LIB} ${OCA_SNO_LIB}
 
 $(OCAL): $(OCAO) $(DICT_O)
 	@echo " == Executing OCA-SNOPLUS $@ =="
@@ -221,4 +222,4 @@ $(DICT_C): $(DICT_H) $(OCAO) $(OCAH)
 
 %.o:	%.cc
 #	@echo Rule for .cc files
-	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${OCACFLAGS} -DCOMPILED_ROOT -c $<
+	$(CXX) ${PICFLAG} ${DEPCFLAGS} ${RATCFLAGS} ${OCACFLAGS} ${OCA_SNO_CFLAGS} -DCOMPILED_ROOT -c $<

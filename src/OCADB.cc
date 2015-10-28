@@ -42,6 +42,7 @@ void OCADB::ClearDB()
   fSOCRunDir = "";
   fOCARunDir = "";
   fRDTRunDir = "";
+  fDQXXDir = "";
   fOutputDir = "";
   fSystematicsDir = "";
   
@@ -59,6 +60,7 @@ void OCADB::ClearDB()
   fSOCRunDir = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/runs/soc/";
   fOCARunDir = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/runs/ocarun/";
   fRDTRunDir = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/runs/rdt/";
+  fDQXXDir = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/dqxx/";
   fOutputDir = getenv( "OCA_SNOPLUS_ROOT" ) + (string)"/output/";
   fSystematicsDir = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/systematics/";
   

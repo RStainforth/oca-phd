@@ -1,0 +1,78 @@
+*LOG
+*---  Non-Standard Titles File: qcut_parameters.dat              1 May 2000
+*---                 Banks: QCUT
+*LOG OFF
+*DO  QCUT   1   -i(30I 5F 4I 4F 2I 2F 2I 2F 2I 4F 7I 10F)  #.  QCut parameters
+#.
+#.    Contact:  M. Boulay, Queen's
+#.
+#.       Standard Database Header
+#.
+19750101        0 20380517 03331900  #.  1..4   Intrinsic validity
+       0        0        0           #.  5..7   Data type, Task type, Format no.
+       0        0        0           #.  8..10  Creation Date, Time, Source Id.
+19750101        0 20380517 03331900  #. 11..14  Effective validity
+       0        0                    #. 15..16  Entry Date Time
+0 0 0 0                              #. 17..20  Spare
+0 0 0 0 0                            #. 21..30  Temporary data (not in database)
+0 0 0 0 0 
+#.
+#.    End of Standard Database Header
+#.
+#. QCutRailed parameters (kCutRailed)
+-250.   #. Low HL rail
+-250.   #. Low HS rail
+350.    #. uncalibrated rail
+60.     #. fTEarly
+250.    #. fTLate
+10000.  #. fCutWindow
+#.
+#. QCutENoise parameters (kCutENoise)
+200      #. Max PMTs in crate
+6        #. Max PMTs in PC
+1000000. #. Cut Window
+#. QCutBurst parameters (retrigger, kCutBurst1)
+2       #. Number of events in burst
+0       #. Minimum Nhits	
+1000.   #. Burst window
+100000. #. Cut window
+#. QCutNph parameters (kCutNph)
+20.     #. Mean Low charge (ADC CAP)
+80.     #. Mean High charge (ADC CAP)
+#. QCutBurst (large nhit) parameters (kCutBurst2)
+20      #. Number of events in burst
+40      #. Minimum Nhits	
+1.e9    #. Burst window
+1.e9    #. Cut window
+#. QCutBurst (high rate) parameters (kCutBurst3)
+60      #. Number of events in burst
+2       #. Minimum Nhits	
+1.e8    #. Burst window
+1.e9    #. Cut window
+#. QCutMuon parameters (kCutMuon)
+5       #. Min owls
+150     #. MinNhits 
+5000.   #. RingTime
+20.e9   #. Spallation time
+0.0     #. RMS min
+90.0    #. RMS max
+2       #. Max NECKs
+#. QCutNECK parameters (kCutNECK)
+2       #. Min NECKs 
+5000.   #. Cut Window
+#. QCutOD parameters (kCutOD)
+2       #. Min BUTTs
+5       #. Min OWLs
+5       #. Min SUM
+5000.   #. Cut window
+#. QCutAMB parameters (kCutAMB)
+61.5     #. EsumIntPED
+1.04     #. EsumIntMean
+7.69     #. EsumIntSlopeRMS
+0.087    #. EsumIntOffsetRMS
+4.0      #. EsumIntCut
+7.65     #. EsumPeakPED
+0.079    #. EsumPeakMean
+0.75     #. EsumPeakSlopeRMS
+0.0075   #. EsumPeakOffsetRMS
+4.0      #. EsumPeakCut

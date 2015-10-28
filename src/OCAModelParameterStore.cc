@@ -24,7 +24,7 @@ ClassImp( OCAModelParameterStore )
 //////////////////////////////////////
 //////////////////////////////////////
 
-OCAModelParameterStore::OCAModelParameterStore( string storeName )
+OCAModelParameterStore::OCAModelParameterStore( string& storeName )
 {
 
   // Set the store name.
@@ -77,8 +77,8 @@ OCAModelParameterStore::OCAModelParameterStore( string storeName )
 OCAModelParameterStore::~OCAModelParameterStore()
 {
 
-  delete fCurrentAngularResponseBins;
-  delete fCurrentLBDistributionBins;
+  if ( !fCurrentAngularResponseBins ){ delete fCurrentAngularResponseBins; }
+  if ( !fCurrentLBDistributionBins ){ delete fCurrentLBDistributionBins; }
 
 }
 
@@ -118,7 +118,7 @@ void OCAModelParameterStore::SeedParameters( std::string& fitFileName )
   TTree* tmpTree = (TTree*)tmpFile->Get( "nominal;1" );
 
   OCAModelParameterStore* tmpStore = new OCAModelParameterStore( fStoreName );
-  tmpTree->SetBranchAddress( "nominal", &(*tmpStore) );
+  tmpTree->SetBranchAddress( "nominal;1", &(*tmpStore) );
 
   fNLBDistributionMaskParameters = tmpStore->GetNLBDistributionMaskParameters();
   fNPMTAngularResponseBins = tmpStore->GetNPMTAngularResponseBins();
@@ -472,7 +472,7 @@ void OCAModelParameterStore::WriteToROOTFile( const char* fileName, const char* 
   file->WriteTObject( lbDistributionTF1 );
 
   // Declare a new branch pointing to the parameter store
-  parTree->Branch( branchName, (*this).ClassName(), &(*this), 32000, 99 );
+  parTree->Branch( branchName, (this)->ClassName(), &(*this), 32000, 99 );
   file->cd();
 
   // Fill the tree and write it to the file

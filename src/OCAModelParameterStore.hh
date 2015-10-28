@@ -41,7 +41,8 @@ namespace OCA{
   public:
 
     // The constructor and destructor of the OCAModelParameterStore object.
-    OCAModelParameterStore ( string storeName = "OCAModelParameterStore" );
+    OCAModelParameterStore(){ }
+    OCAModelParameterStore ( string& storeName );
     ~OCAModelParameterStore();
 
     /////////////////////////////////

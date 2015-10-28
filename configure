@@ -21,7 +21,15 @@ then
 else
  printf "RAT environment file (or path) does not exist!\nCheck and try again. \n\n"
  exit 1
-fi 
+fi
+
+printf "\n\n"
+
+printf "Example laserball data is available at science1.snolab.ca, if you have a SNOLAB user account, please enter your username. \n\n"
+SNOLABUSERNAME=""
+printf "Enter Username: "
+read -e snolabusername
+SNOLABUSERNAME="$snolabusername"
 
 printf "\n\n"
 
@@ -36,6 +44,7 @@ printf "%-25s" "Generating oca_env_snoplus.sh..."
 cat > env_oca_snoplus.sh << EOF
 #!/bin/bash
 
+export SNOLAB_USERNAME=$SNOLABUSERNAME
 export OCA_SNOPLUS_ROOT=$OCAROOT
 export OCA_SNOPLUS_DATA=$OCADATA
 
@@ -54,7 +63,8 @@ source $OCAROOT/src/sno/env_oca_sno.sh
 EOF
 
 printf "\n"
-[[ -e env_oca.sh ]] && chmod +x env_oca.sh && printf "env_oca.sh has been created!\n\nPlease type 'source env_oca_snoplus.sh' at the command line here and then install OCA by typing:\n\n'make clean', 'make' and 'make install'\n\nrespectively at the command line in the '"
+[[ -e env_oca_snoplus.sh ]] && chmod +x env_oca_snoplus.sh && printf "env_oca_snoplus.sh has been created!\n\nPlease type 'source env_oca_snoplus.sh' at the command line here and then install OCA by typing:\n\n'make clean', 'make' and 'make install'\n\nrespectively at the command line in the '"
 printf `pwd`
 printf "/src' directory.\n\n"
-printf "Remember: You need to 'source env_oca_snoplus.sh' each time you use OCA\n\n"
+printf "Note A: You need to 'source env_oca_snoplus.sh' each time you use OCA\n\n"
+printf "Note B: If you would like to use the SNO+ and SNO OCA libraries in ROOT as part of your own analysis, copy the rootinit.C file to your RAT directory\n\n"
