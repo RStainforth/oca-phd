@@ -96,6 +96,9 @@ namespace OCA{
     // Get the full path directory to the systematics directory
     string GetSystematicsDir(){ return fSystematicsDir; }
 
+    // Get the full path directory to the fit files directory
+    string GetFitFilesDir(){ return fFitFilesDir; }
+
     // Get a field of type 'string' from the current 'fit-file'
     // based on the table name, 'tableName', field name 'fieldName
     // and relevant index 'indexName' (optional)
@@ -187,6 +190,8 @@ namespace OCA{
                                      // the output files (e.g. fits) are held.
     string fSystematicsDir;          // The full system path of the directory where 
                                      // the systematics files are held.
+    string fFitFilesDir;             // The full system path of the directory where 
+                                     // the fit files are held.
     
     ClassDef( OCADB, 1 );
     

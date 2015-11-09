@@ -227,7 +227,6 @@ void OCAModelParameterStore::AddParameters( const char* fileName )
 
     // Laserball distribution hisotgram.
     else if ( paramList[ iStr ] == "laserball_distribution" ){
-      cout << "now on lb-type" << endl;
       fLBDistributionType = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_type" ), "parameter_setup" );
       if ( fLBDistributionType == 0 ){
         fNLBDistributionCosThetaBins = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_cos_theta_bins" ), "parameter_setup" );

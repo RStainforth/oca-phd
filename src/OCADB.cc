@@ -45,6 +45,7 @@ void OCADB::ClearDB()
   fDQXXDir = "";
   fOutputDir = "";
   fSystematicsDir = "";
+  fFitFilesDir = "";
   
   // The current 'fit-file' this DB is accessing from
   // has an empty path
@@ -63,6 +64,7 @@ void OCADB::ClearDB()
   fDQXXDir = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/dqxx/";
   fOutputDir = getenv( "OCA_SNOPLUS_ROOT" ) + (string)"/output/";
   fSystematicsDir = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/systematics/";
+  fFitFilesDir = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/fitfiles/";
   
 }
 
