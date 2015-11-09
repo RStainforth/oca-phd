@@ -45,6 +45,7 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <map>
 
 using namespace std;
@@ -145,13 +146,29 @@ int main( int argc, char** argv ){
   // following each round of fitting.
   std::vector< Double_t > chiSqLims = lDB.GetDoubleVectorField( "FITFILE", "chisq_lims", "fit_procedure" );
 
+  stringstream myStream;
+  string myString = "";
+
   for ( Size_t iFit = 0; iFit < chiSqLims.size(); iFit++ ){
+
+    lChiSq->EvaluateGlobalResidual();
+
+    myStream << chiSqLims[ iFit ];
+    myStream >> myString;
+    myStream.clear();
+
+    TH1F* resPlot = new TH1F( ( myString + "-plot" ).c_str(), ( myString + "-plot-name" ).c_str(),
+                              100, -10.0, 10.0 );
     
     // Update the chisquare filter to a new maximum limit.
     lFilterStore->UpdateFilter( "filter_chi_square", 
                                ( lFilterStore->GetFilter( "filter_chi_square" ) ).GetMinValue(), 
                                chiSqLims[ iFit ] );
-    cout << "about to filter data" << endl;
+
+    // lFilterStore->UpdateFilter( "filter_dynamic_residual", 
+    //                             lChiSq->GetResidualMean() - 2.0 * lChiSq->GetResidualStd(), 
+    //                             lChiSq->GetResidualMean() + 2.0 * lChiSq->GetResidualStd() );
+
     // Filter the data.
     lDataFiller->FilterData( lFilterStore, lData, lChiSq );
 
@@ -169,9 +186,91 @@ int main( int argc, char** argv ){
     if ( iFit == chiSqLims.size() - 1 ){
       *finalStore = *lData;
     }
-    *lData = *ogStore;
+    if ( iFit == 1 ){
+      *ogStore = *lData;
+    }
+    else{
+      *lData = *ogStore;
+    }
+
+    vector< OCAPMT >::iterator iDP;
+    vector< OCAPMT >::iterator iDPBegin = lData->GetOCAPMTsIterBegin();
+    vector< OCAPMT >::iterator iDPEnd = lData->GetOCAPMTsIterEnd();
+    for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
+      resPlot->Fill( lChiSq->EvaluateResidual( *iDP ) );
+    }
+
+    TCanvas* myC = new TCanvas( "myC", "myC", 600, 400 );
+    resPlot->Draw();
+    myC->Print( ( myString + "-plot.eps" ).c_str() );
+    myString.clear();
     
   }
+
+  // Float_t curChiSq = 0.0;
+  // Float_t prevChiSq = -10.0;
+
+  // stringstream myStream;
+  // string myString = "";
+
+  // Int_t iCount = 0;
+  // while ( ( TMath::Abs( curChiSq - prevChiSq ) > 0.001 ) && iCount < 100 ){
+  //   myStream << iCount;
+  //   myStream >> myString;
+  //   myStream.clear();
+
+  //   TH1F* resPlot = new TH1F( ( myString + "-plot" ).c_str(), ( myString + "-plot-name" ).c_str(),
+  //                             100, -10.0, 10.0 );
+
+  //   if ( iCount == 0 ){ prevChiSq = -10.0; }
+  //   else{ prevChiSq = curChiSq; }
+  //   iCount++;
+  //   cout << "On iteration: " << iCount << endl;
+
+  //   lChiSq->EvaluateGlobalResidual();
+  //   Float_t upp = lChiSq->GetResidualMean() + ( ( ( 100 - iCount ) * 3.0 ) / 100 ) * lChiSq->GetResidualStd();
+  //   Float_t lower = lChiSq->GetResidualMean() - ( ( ( 100 - iCount ) * 3.0 ) / 100 ) * lChiSq->GetResidualStd();
+  //   cout << "Mean is: : " << lChiSq->GetResidualMean();
+  //   cout << "Upper Limit: " << upp << endl;
+  //   cout << "Lower Limit: " << lower << endl;
+  //   Float_t upperChiLimit = 0.0;
+  //   if ( lower * lower >= upp * upp ){ upperChiLimit = lower * lower; }
+  //   else{ upperChiLimit = upp * upp; }
+    
+  //   // Update the chisquare filter to a new maximum limit.
+  //   lFilterStore->UpdateFilter( "filter_chi_square", 
+  //                               0.0, upperChiLimit );
+  //   lFilterStore->UpdateFilter( "filter_dynamic_residual", 
+  //                               lower, upp );
+
+  //   lDataFiller->FilterData( lFilterStore, lData, lChiSq );
+  //   lFilterStore->PrintFilterCutInformation();
+  //   lFilterStore->ResetFilterConditionCounters();
+
+  //   lChiSq->PerformOpticsFit( iCount );
+  //   curChiSq = lChiSq->EvaluateGlobalChiSquare() / ( lData->GetNDataPoints() - lParStore->GetNGlobalVariableParameters() - 1 ) ;
+  //   cout << "Current ChiSq: " << curChiSq << endl;
+  //   cout << "Previous ChiSq: " << prevChiSq << endl;
+
+  //   if ( iCount == 100 - 1 || TMath::Abs( curChiSq - prevChiSq ) < 0.01 ){
+  //     *finalStore = *lData;
+  //   }
+
+  //   vector< OCAPMT >::iterator iDP;
+  //   vector< OCAPMT >::iterator iDPBegin = lData->GetOCAPMTsIterBegin();
+  //   vector< OCAPMT >::iterator iDPEnd = lData->GetOCAPMTsIterEnd();
+  //   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
+  //     resPlot->Fill( lChiSq->EvaluateResidual( *iDP ) );
+  //   }
+
+  //   TCanvas* myC = new TCanvas( "myC", "myC", 600, 400 );
+  //   resPlot->Draw();
+  //   myC->Print( ( myString + "-plot.eps" ).c_str() );
+  //   myString.clear();
+    
+  //   //*lData = *ogStore;
+    
+  // } 
 
   lChiSq->EvaluateGlobalChiSquare();
 
@@ -252,6 +351,9 @@ int main( int argc, char** argv ){
   }
   rawEffAvgTot /= (Float_t)nGoodPMTs;
 
+
+  TCanvas* exampleCanvas = new TCanvas( "example-canvas", "example canvas", 600, 400 );
+  TH1F* exampleHisto = new TH1F("example-histo", "example histo", 1000.0, 0.0, 10.0 );
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ){
     
     // Calculate the model prediction and the data value
@@ -260,20 +362,29 @@ int main( int argc, char** argv ){
     dataValue = iDP->GetMPECorrOccupancy();
     pmtEff = dataValue / modelPrediction;
 
+
     // The incident angle.
     Int_t incAngle = (Int_t)( TMath::ACos( iDP->GetCosTheta() ) * TMath::RadToDeg() );
     Float_t varVal = ( ( pmtEff / rawEffAvg[ iDP->GetID() ] ) / rawEffAvgTot );
+    exampleHisto->Fill( varVal );
     Float_t statVal = TMath::Sqrt( 1.0 / iDP->GetPromptPeakCounts() );
+    //cout << "StatVal is: " << statVal << endl;
     Float_t histoVal = TMath::Sqrt( ( varVal * varVal ) - ( statVal * statVal ) );
+    //cout << "HistoVal is: " << varVal << endl;
+    //cout << "------------" << endl;
 
     if ( histoVal > 0.0 && !std::isnan( pmtEff ) && !std::isinf( pmtEff ) ){
       effHistos[ incAngle ].Fill( histoVal );
     }    
   }
+  
+  exampleHisto->Draw();
+  exampleCanvas->Print("example_pmEff.eps");
 
   TGraph* myPlot = new TGraph();
 
   for ( Int_t iIndex = 0; iIndex < 90; iIndex++ ){
+    //cout << "effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean(): " << effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean() << endl;
     if ( effHistos[ iIndex ].GetMean() != 0.0
          && (Float_t)( effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean() ) < 1.0 ){
       myPlot->SetPoint( iIndex, 
@@ -311,7 +422,8 @@ int main( int argc, char** argv ){
       Float_t varPar = fitFunc->GetParameter( 0 )
         + ( fitFunc->GetParameter( 1 ) * incAngle )
         + ( fitFunc->GetParameter( 2 ) * incAngle * incAngle );
-      iDPL->SetPMTVariability( varPar );
+      //iDPL->SetPMTVariability( varPar );
+      iDPL->SetPMTVariability( myPlot->Eval( incAngle ) );
     }
     else{
       iDPL->SetPMTVariability( -1.0 );
@@ -334,7 +446,7 @@ int main( int argc, char** argv ){
   // Write the fit to a .root file.
   // These .root files are typically held in the
   // '$OCA_SNOPLUS_ROOT/output/fits/' directory.
-  lParStore->WriteToROOTFile( fitROOTPath.c_str() );
+  lParStore->WriteToROOTFile( fitROOTPath, systematicName );
   lParStore->WriteToRATDBFile( fitRATDBPath.c_str() );
 
   lData->WriteToFile( ( fitName + ".root" ).c_str() );

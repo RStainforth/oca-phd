@@ -246,6 +246,12 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
   Float_t dInnerAVExtinction = parPtr->GetInnerAVExtinctionLengthPar();
   Float_t dAVExtinction =  parPtr->GetAVExtinctionLengthPar();
   Float_t dWaterExtinction = parPtr->GetWaterExtinctionLengthPar();
+  if ( parPtr->GetWaterFill() ){
+    dWaterExtinction = parPtr->GetInnerAVExtinctionLengthPar();
+  }
+  else{
+    dWaterExtinction = parPtr->GetWaterExtinctionLengthPar();
+  }
 
   // For this data point use the run index to assign the correct
   // laserball normalisation for the off-axis run. All the
@@ -315,9 +321,15 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
 
     // The derivatives with respect to the extinction lengths in the
     // inner AV, AV and water regions.
-    derivativePars[ parPtr->GetInnerAVExtinctionLengthParIndex() ] = -dInnerAV;
+    //derivativePars[ parPtr->GetInnerAVExtinctionLengthParIndex() ] = -dInnerAV;
     derivativePars[ parPtr->GetAVExtinctionLengthParIndex() ] = -dAV;
-    derivativePars[ parPtr->GetWaterExtinctionLengthParIndex() ] = -dWater;
+    if ( parPtr->GetWaterFill() ){
+      derivativePars[ parPtr->GetInnerAVExtinctionLengthParIndex() ] = -(dWater+dInnerAV);
+    }
+    else{
+      derivativePars[ parPtr->GetWaterExtinctionLengthParIndex() ] = -dWater;
+      derivativePars[ parPtr->GetInnerAVExtinctionLengthParIndex() ] = -dInnerAV;
+    }
 
     // The derivative with respect to the PMT angular response
     // from the off-axis run.
@@ -500,7 +512,13 @@ Float_t OCAOpticsModel::ModelPrediction( const OCAPMT& dataPoint )
   // are stored in inverse lengths, mm^-1.
   Float_t dInnerAVExtinction = parPtr->GetInnerAVExtinctionLengthPar();
   Float_t dAVExtinction =  parPtr->GetAVExtinctionLengthPar();
-  Float_t dWaterExtinction = parPtr->GetWaterExtinctionLengthPar();
+  Float_t dWaterExtinction = 1.0;
+  if ( parPtr->GetWaterFill() ){
+    dWaterExtinction = parPtr->GetInnerAVExtinctionLengthPar();
+  }
+  else{
+    dWaterExtinction = parPtr->GetWaterExtinctionLengthPar();
+  }
 
   // Use the obtained normalisation bin obtain the current value for the
   // intensity normalisation for the off-axis run.

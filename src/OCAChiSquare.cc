@@ -21,6 +21,26 @@ OCAChiSquare::OCAChiSquare()
   fDataStore = NULL;
   fModel = NULL;
 
+  fChiSq = 0.0;
+  fResidualMean = 0.0;
+  fResidualStd = 0.0;
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
+Float_t OCAChiSquare::EvaluateResidual( OCAPMT& dPoint )
+{
+
+  Float_t modelOccRatio = fModel->ModelOccRatioPrediction( dPoint );
+
+  Float_t occRatio = 0.0;
+  Float_t occRatioErr = 0.0;
+  OCAMath::CalculateMPEOccRatio( dPoint, occRatio, occRatioErr );
+
+  return ( occRatio - modelOccRatio ) / occRatioErr;
+
 }
 
 //////////////////////////////////////
@@ -60,27 +80,70 @@ Float_t OCAChiSquare::EvaluateChiSquare( OCAPMT& dPoint )
 //////////////////////////////////////
 //////////////////////////////////////
 
+void OCAChiSquare::EvaluateGlobalResidual()
+{
+
+  fResidualMean = 0.0;
+  fResidualStd = 0.0;
+
+  // Create an iterator to loop through all the data points.
+  vector< OCAPMT >::iterator iD;
+  Int_t nGoodPoints = 0;
+  for ( iD = fDataStore->GetOCAPMTsIterBegin();
+        iD != fDataStore->GetOCAPMTsIterEnd();
+        iD++ ){
+   
+    Float_t resVal = EvaluateResidual( *(iD) );
+    (*iD).SetChiSquareResidual( resVal );
+    if ( !std::isnan( resVal ) && !std::isinf( resVal ) ){
+      fResidualMean += resVal;
+      nGoodPoints++;
+    }
+
+  }
+
+  fResidualMean /= nGoodPoints;
+
+  for ( iD = fDataStore->GetOCAPMTsIterBegin();
+        iD != fDataStore->GetOCAPMTsIterEnd();
+        iD++ ){
+   
+    Float_t resStdVal = TMath::Power( EvaluateResidual( *(iD) ) - fResidualMean, 2 );
+    if ( !std::isnan( resStdVal ) && !std::isinf( resStdVal ) ){
+      fResidualStd += resStdVal;
+    }
+
+  }
+  
+  fResidualStd = TMath::Sqrt( fResidualStd / nGoodPoints );
+
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 Float_t OCAChiSquare::EvaluateGlobalChiSquare()
 {
   
   // Calculate the total chisquare over all datapoints (PMTs) in the dataset.
-  Float_t chiSq = 0.0;
+  fChiSq = 0.0;
 
   // Create an iterator to loop through all the data points.
   vector< OCAPMT >::iterator iD;
-
   for ( iD = fDataStore->GetOCAPMTsIterBegin();
         iD != fDataStore->GetOCAPMTsIterEnd();
         iD++ ){
    
     // Add the chi-square value for this data-point to the overall
     // chi-square.
-    chiSq += EvaluateChiSquare( *(iD) );
-
+    if ( !std::isnan( EvaluateChiSquare( *(iD) ) )
+         &&
+         !std::isinf( EvaluateChiSquare( *(iD) ) ) ){
+      fChiSq += EvaluateChiSquare( *(iD) );
+    }
   }
 
-  // Return the global chi-square value.
-  return chiSq;
+  return fChiSq;
 
 }
 

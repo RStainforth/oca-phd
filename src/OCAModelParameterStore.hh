@@ -55,7 +55,7 @@ namespace OCA{
     }
 
     // Seed Parameters from a pre-existing file
-    void SeedParameters( std::string& fitFileName );
+    void SeedParameters( string& fitFileName );
 
     // Add a complete set of parameters from a 'fit-file'.
     void AddParameters( const char* fileName );
@@ -64,8 +64,8 @@ namespace OCA{
     void PrintParameterInfo();
     
     // Write the parameters to a .root file
-    void WriteToROOTFile( const char* fileName = "OCAModelParameterStore.root",
-                          const char* branchName = "nominal" );
+    void WriteToROOTFile( string& fileName,
+                          string& branchName );
 
     // Write the parameters to a .ratdb file
     void WriteToRATDBFile( const char* fileName = "OCAModelParameterStore.root" );
@@ -95,6 +95,19 @@ namespace OCA{
     /////////////////////////////////
     ////////     GETTERS     ////////
     /////////////////////////////////
+
+    // Return the OCAModelParameter object corresponding to this index.
+    OCAModelParameter GetParameter( Int_t parIndex ){ return fParameters[ parIndex]; }
+
+    // Get the boolean flag to denote whether or not the parameters
+    // were seeded.
+    Bool_t GetSeededParameters(){ return fSeededParameters; }
+
+    // Get the name of the fit which was used as the seed
+    string GetSeedFile(){ return fSeedFile; }
+
+    // Get the boolean flag to denote whether or not the water region and inner AV region share the same material (i.e. waterfill).
+    Bool_t GetWaterFill(){ return fWaterFill; }
 
     // Get the pointer to the array of parameters.
     Float_t* GetParametersPtr() { return fParametersPtr; }
@@ -321,6 +334,11 @@ namespace OCA{
 
     string fStoreName;                               // The store name.
     string fSystematicName;                          // The systematic name.
+
+    Bool_t fSeededParameters;                        // Boolean flag to denote whether or not the parameters were seeded.
+    string fSeedFile;                                // The name of the fit which was used as the seed.
+
+    Bool_t fWaterFill;                               // Boolean flag to denote wehther or not the inner AV and water regions share the same material (i.e. waterfill). 
 
     Int_t fCurrentLBDistributionBin;                 //! The current laserball distribution bin for the off-axis run.
     

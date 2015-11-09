@@ -347,6 +347,9 @@ namespace OCA{
     // Get the model predicted occupancy ratio for this PMT
     Float_t GetModelOccupancyRatio() const { return fModelOccupancyRatio; }
 
+    // Get the chi-square residual for this PMT
+    Float_t GetChiSquareResidual() const { return fChiSquareResidual; }
+
     // Get the error on the occupancy ratio for this PMT
     Float_t GetOccupancyRatioErr() const { return fOccupancyRatioErr; }
 
@@ -628,6 +631,9 @@ namespace OCA{
     // Set the model predicted occupancy ratio for this PMT
     void SetModelOccupancyRatio( const Float_t occRatio ){ fModelOccupancyRatio = occRatio; }
 
+    // Set the chi-square residual for this PMT
+    void SetChiSquareResidual( const Float_t resVal ){ fChiSquareResidual = resVal; }
+
     // Set the error on the occupancy ratio for this PMT
     void SetOccupancyRatioErr( const Float_t occRatioErr ){ fOccupancyRatioErr = occRatioErr; }
 
@@ -758,6 +764,7 @@ namespace OCA{
     Float_t fOccupancyRatio;                       // Occupancy ratio of fMPECorrOccupancy / fCentralMPECorrOccupancy
     Float_t fModelOccupancyRatio;                  // Model Occupancy ratio
     Float_t fOccupancyRatioErr;                    // Error on the (data) occupancy ratio
+    Float_t fChiSquareResidual;                    // The ChiSquare residual value
 
     Float_t fModelOccupancy;                       // Model predicted occupancy.
     

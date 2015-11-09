@@ -1,0 +1,24 @@
+source $OCA_SNOPLUS_ROOT/env_oca_snoplus.sh
+./soc2oca_labppo_337.sh
+./soc2oca_labppo_369.sh
+./soc2oca_labppo_385.sh
+./soc2oca_labppo_400.sh
+./soc2oca_labppo_420.sh
+./soc2oca_labppo_505.sh
+./soc2oca_labppote0p3bismsb_337.sh
+./soc2oca_labppote0p3bismsb_369.sh
+./soc2oca_labppote0p3bismsb_385.sh
+./soc2oca_labppote0p3bismsb_420.sh
+./soc2oca_labppote0p3bismsb_446.sh
+./soc2oca_labppote0p3bismsb_505.sh
+./soc2oca_labppote0p3perylene_337.sh
+./soc2oca_labppote0p3perylene_369.sh
+./soc2oca_labppote0p3perylene_385.sh
+./soc2oca_labppote0p3perylene_420.sh
+./soc2oca_labppote0p3perylene_490.sh
+./soc2oca_labppote0p3perylene_505.sh
+./soc2oca_water_337.sh
+./soc2oca_water_369.sh
+./soc2oca_water_385.sh
+./soc2oca_water_420.sh
+./soc2oca_water_505.sh

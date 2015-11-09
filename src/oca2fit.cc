@@ -85,7 +85,7 @@ int main( int argc, char** argv ){
 
   // Add the parameters.
   lParStore->AddParameters( argv[1] );
-
+  cout << "TEST1" << endl;
   // Create the OCAOpticsModel object. This is the object
   // which will use the OCAModelParameter objects to compute
   // a model prediction for the optics model.
@@ -99,7 +99,9 @@ int main( int argc, char** argv ){
   // distribution bin entires required for the parameter associated
   // with each bin to vary in the fit.
   Int_t minPMTEntries = lDB.GetIntField( "FITFILE", "pmt_angular_response_min_bin_entries", "parameter_setup" );
-  Int_t minLBDistEntries = lDB.GetIntField( "FITFILE", "laserball_distribution_histogram_min_bin_entries", "parameter_setup" );
+  cout << "TEST2" << endl;
+  Int_t minLBDistEntries = lDB.GetIntField( "FITFILE", "laserball_distribution_min_bin_entries", "parameter_setup" );
+  cout << "TEST3" << endl;
   lModel->SetRequiredNLBDistributionEntries( minLBDistEntries );
   lModel->SetRequiredNPMTAngularRepsonseEntries( minPMTEntries );  
   
@@ -174,7 +176,8 @@ int main( int argc, char** argv ){
   // Write the fit to a .root file.
   // These .root files are typically held in the
   // '$OCA_SNOPLUS_ROOT/output/fits/' directory.
-  lParStore->WriteToROOTFile( fitROOTPath.c_str() );
+  string par = "";
+  lParStore->WriteToROOTFile( fitROOTPath, par  );
   lParStore->WriteToRATDBFile( fitRATDBPath.c_str() );
     
   cout << "\n";

@@ -427,7 +427,7 @@ int main( int argc, char** argv ){
   TTree* runTree = new TTree( "OCARunT", "OCA Run Tree" );
 
   // Declare a new branch pointing to the data stored in the lRun object
-  runTree->Branch( "OCARun", lRunPtr->ClassName(), &(*lRunPtr), 32000, 99 );
+  runTree->Branch( "nominal", lRunPtr->ClassName(), &(*lRunPtr), 32000, 99 );
   file->cd();
 
   for ( Int_t iSys = 0; iSys < (Int_t)sysOpts.size(); iSys++ ){

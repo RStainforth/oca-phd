@@ -85,6 +85,9 @@ namespace OCA{
     // Get the final (fitted/minimised) value of the parameter (post-fit).
     Float_t GetFinalValue() const { return fFinalValue; }
 
+    // Get the error on the final parameter value
+    Float_t GetError(){ return fError; }
+
     // Get the minimum allowed value of the parameter.
     Float_t GetMinValue() const { return fMinValue; }
 
@@ -129,6 +132,9 @@ namespace OCA{
     // Set the final (fitted/minimised) value of the parameter (post-fit).
     void SetFinalValue( const Float_t finalVal ){ fFinalValue = finalVal; }
 
+    // Set the error on the final parameter value
+    void SetError( const Float_t errVal ){ fError = errVal; }
+
     // Set the minimum allowed value of the parameter.
     void SetMinValue( const Float_t minVal ){ fMinValue = minVal; }
     
@@ -153,6 +159,8 @@ namespace OCA{
 
     Float_t fInitialValue;              // Initial value used by minimiser
     Float_t fFinalValue;                // Final fitted value of the parameter
+
+    Float_t fError;                     // The error on the parameter value
 
     Float_t fMinValue;                  // Minimum allowed value of parameter to be used by minimiser
     Float_t fMaxValue;                  // Maximum allowed value of parameter to be used by minimiser

@@ -12,10 +12,10 @@ ClassImp( OCAModelParameter )
 //////////////////////////////////////
 
 OCAModelParameter::OCAModelParameter( std::string parameterName, 
-                                          Int_t index, Float_t initVal, 
-                                          Float_t valLow, Float_t valHigh, 
-                                          Float_t valInc, Int_t nParsInGroup,
-                                          Bool_t varyBool )
+                                      Int_t index, Float_t initVal, 
+                                      Float_t valLow, Float_t valHigh, 
+                                      Float_t valInc, Int_t nParsInGroup,
+                                      Bool_t varyBool )
 {
 
   // Set the parameter name.
@@ -43,6 +43,9 @@ OCAModelParameter::OCAModelParameter( std::string parameterName,
   // Set the final value to 0.0 for now. This will be updated
   // after the fit has been completed.
   SetFinalValue( 0.0 );
+
+  // Set the error on the parameter value to zero first
+  SetError( 0.0 );
   
   // Set the minimum and maximum allowed values for this parameters.
   // Note: Currently not required by the Levenberg-Marquardt algorithm
@@ -70,6 +73,7 @@ OCAModelParameter& OCAModelParameter::operator=( const OCAModelParameter& rhs )
   fIncrementValue = rhs.fIncrementValue;
   fInitialValue = rhs.fInitialValue;
   fFinalValue = rhs.fFinalValue;
+  fError = rhs.fError;
   fMinValue = rhs.fMinValue;
   fMaxValue = rhs.fMaxValue;
   fVary = rhs.fVary;
@@ -88,6 +92,8 @@ void OCAModelParameter::PrintInfo()
   cout << "Parameter Name: " << GetParameterName() << endl;
   cout << "Parameter Index: " << GetIndex() << endl;
   cout << "Parameter Initial Value: " << GetInitialValue() << endl;
+  cout << "Parameter Final Value: " << GetFinalValue() << endl;
+  cout << "Parameter Error Value: " << GetError() << endl;
   cout << "Parameter Range: [" << GetMinValue() << ", " << GetMaxValue() << "]" << endl;
   cout << "Parameter Increment Value: " << GetIncrementValue() << endl;
   if ( GetVary() ){

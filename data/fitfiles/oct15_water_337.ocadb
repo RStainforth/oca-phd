@@ -35,6 +35,7 @@ fit_systematic: "OCARun",
 // Seed with nominal parameter values? (1: Yes, 0: No)
 // Tells the fit whether or not to seed using parameters from
 // a previous fit.
+//seed_initial_parameters: "oct15_water_337",
 seed_initial_parameters: "",
 
 }
@@ -83,8 +84,11 @@ filter_ctr_prompt_counts_max: 2.0e10,
 filter_chi_square_min: 0.0,
 filter_chi_square_max: 1000.0,
 
+filter_dynamic_residual_min: 0.0,
+filter_dynamic_residual_max: 10.0,
+
 filter_fractional_error_min: 0.000001,
-filter_fractional_error_max: 0.1,
+filter_fractional_error_max: 0.03,
 
 }
 
@@ -114,6 +118,8 @@ pass: 0,
 comment: "",
 timestamp: "",
 
+water_fill: 1,
+
 parameters_list: [ "inner_av_extinction_length", "acrylic_extinction_length", "water_extinction_length", "laserball_intensity_mask", "pmt_angular_response", "laserball_distribution", "laserball_run_normalisation" ],
 
 // The extinction length of the inner_av volume in mm-1
@@ -126,7 +132,7 @@ inner_av_extinction_length_vary: 1,
 acrylic_extinction_length_initial_value: 0.000714563,
 
 // Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
-acrylic_extinction_length_vary: 0,
+acrylic_extinction_length_vary: 1,
 
 // The extinction length of the water volume in mm-1
 water_extinction_length_initial_value: 3.0e-5,
@@ -141,11 +147,11 @@ pmt_angular_response_number_of_bins: 90,
 pmt_angular_response_vary: 1,
 
 //
-laserball_distribution_type: 1,
+laserball_distribution_type: 0,
 
 // The minimum number of entries required in each PMT angular response
 // bin for the parameter associated with that parameter to vary in the fit
-pmt_angular_response_min_bin_entries: 25,
+pmt_angular_response_min_bin_entries: 10,
 
 // The number of bins distributed between 0 - 360 degrees for the laserball phi distribution
 laserball_distribution_number_of_phi_bins: 36,
@@ -187,7 +193,7 @@ comment: "",
 timestamp: "",
 
 // The sequential chi-square upper limits to cut initial data-points on for each fit
-chisq_lims: [ 1000.0, 100.0, 50.0, 25.0, 16.0 ],
+chisq_lims: [ 1000.0, 100.0, 25.0, 16.0, 9.0, 9.0 ],
 
 }
 

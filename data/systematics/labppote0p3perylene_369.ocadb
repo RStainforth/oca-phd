@@ -23,8 +23,11 @@ laserball_plus_z_shift: 50.0,
 laserball_minus_z_shift: 50.0,
 
 // Shift in the emitted average wavelength in nm
-lambda_plus_shift: 5.0,
-lambda_minus_shift: 5.0,
+lambda_plus_shift: 19.0,
+lambda_minus_shift: 19.0,
+// The central value of lambda about which the shift +/- shift
+// is applied
+lambda_at_pmt: 489.79,
 
 // Laserball distribution systematics.
 // Note: These aren't applied until the fitting stage, and furthermore

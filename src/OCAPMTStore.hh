@@ -99,9 +99,6 @@ namespace OCA{
     string fStoreFilePath;                 // The full system path of the file.
     vector< OCAPMT > fDataPoints;  // The vector of data point objects.
     
-
-    
-
     ClassDef( OCAPMTStore, 1 );
     
   };

@@ -75,7 +75,7 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
       << ", " << iD->GetLBPos().Y() / 10.0
       << ", " << iD->GetLBPos().Z() / 10.0 
       << " ) cm, Radius = " << iD->GetLBPos().Mag() / 10.0 << " cm" << endl;
-      lFilterStore->PrintFilterCutInformation();
+      //lFilterStore->PrintFilterCutInformation();
       lFilterStore->ResetFilterConditionCounters();
       cout << "----------------------------------------------------\n";
       cout << "####################################################\n";
@@ -209,6 +209,12 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
       
       else if ( filterName == "filter_chi_square" ){
         if ( !iF->CheckCondition( lChiSq->EvaluateChiSquare( *iD ) ) ){
+          validPoint = false; break;
+        }
+      }
+
+      else if ( filterName == "filter_dynamic_residual" ){
+        if ( !iF->CheckCondition( lChiSq->EvaluateResidual( *iD ) ) ){
           validPoint = false; break;
         }
       }
