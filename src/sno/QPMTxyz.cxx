@@ -172,8 +172,8 @@ Int_t QPMTxyz::ReadConstants( const char * filename, const int idate, const int 
 
       char *pmtf = getenv("OCA_SNO_ROOT");
       char pmtfile[100];
-      if ( !strcmp(filename, "read") ) sprintf(pmtfile,"%s/data/pmt_database_ver2.root",pmtf);
-      else sprintf(pmtfile,"%s/data/%s",pmtf,filename);
+      if ( !strcmp(filename, "read") ) sprintf(pmtfile,"%s/data/oca-sno/pmt_database_ver2.root",pmtf);
+      else sprintf(pmtfile,"%s/data/oca-sno/%s",pmtf,filename);
  
       TFile pmt_data(pmtfile,"READ");
       
@@ -194,7 +194,7 @@ Int_t QPMTxyz::ReadConstants( const char * filename, const int idate, const int 
 
   char *pmtf = getenv("OCA_SNO_ROOT");
   char panelfile[100];
-  sprintf(panelfile,"%s/data/%s",pmtf,"batch3concentrator.dat");
+  sprintf(panelfile,"%s/data/oca-sno/%s",pmtf,"batch3concentrator.dat");
   FILE *fdata = fopen(panelfile,"r");
   if ( !fdata )
       {
@@ -214,7 +214,7 @@ Int_t QPMTxyz::ReadConstants( const char * filename, const int idate, const int 
   //Open 75Ohm database (this is nearly obsolete --26/4/2000).
   
   char pmtfile[100];
-  sprintf(pmtfile,"%s/data/%s",pmtf,"pmt_75ohm_data.dat");
+  sprintf(pmtfile,"%s/data/oca-sno/%s",pmtf,"pmt_75ohm_data.dat");
   fdata = fopen(pmtfile,"r");
   Int_t i, npoints;
   if ( !fdata )

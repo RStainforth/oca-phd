@@ -38,6 +38,8 @@ OCAModelParameterStore::OCAModelParameterStore( string& storeName )
   // Ensure the vector which will hold all the parameter objects
   // is empty to begin with.
   fParameters.clear();
+  fParameterValues.clear();
+  fCovarianceMatrixValues.clear();
 
   // Ensure all the pointers are initialised to 'NULL'
   fParametersPtr = NULL;
@@ -158,12 +160,20 @@ void OCAModelParameterStore::SeedParameters( std::string& fitFileName )
 
   fNParameters = tmpStore->GetNParameters();
   cout << "Seed->NParameters: " << fNParameters << endl;
-
+  fParameters.resize( fNParameters + 1 );
+  fCovarianceMatrixValues.resize( fNParameters + 1 );
+  for ( Int_t iPar = 0; iPar <= fNParameters; iPar++ ){
+    vector< Float_t > tmpVec;
+    tmpVec.resize( fNParameters + 1 );
+    fCovarianceMatrixValues.push_back( tmpVec );
+  } 
   vector< OCAModelParameter >::iterator iPar;
   for ( iPar = tmpStore->GetOCAModelParametersIterBegin();
         iPar != tmpStore->GetOCAModelParametersIterEnd();
         iPar++ ){
     fParameters.push_back( *iPar );
+    fParameterValues[ (*iPar).GetIndex() ] = (*iPar).GetFinalValue();
+    fCovarianceMatrixValues[ (*iPar).GetIndex() ] = tmpStore->GetCovarianceMatrixValues()[ (*iPar).GetIndex() ];
   }
 
   AllocateParameterArrays();
@@ -762,9 +772,17 @@ void OCAModelParameterStore::AllocateParameterArrays()
     // Set the initial value of the parameter in the array.
     if ( fSeededParameters ){ 
       fParametersPtr[ iPar->GetIndex() ] = iPar->GetFinalValue();
-      Float_t parErr = iPar->GetError();
-      fCovarianceMatrix[ iPar->GetIndex() ][ iPar->GetIndex() ] = ( parErr * parErr );
-      
+      fParameterValues[ iPar->GetIndex() ] = iPar->GetFinalValue();
+ 
+      vector< OCAModelParameter >::iterator jPar;
+      for ( jPar = GetOCAModelParametersIterBegin();
+            jPar != GetOCAModelParametersIterEnd();
+            jPar++ ){
+        Float_t iParErr = iPar->GetError();
+        Float_t jParErr = iPar->GetError();
+        fCovarianceMatrix[ iPar->GetIndex() ][ jPar->GetIndex() ] = fCovarianceMatrixValues[ iPar->GetIndex() ][ jPar->GetIndex() ];
+        fCovarianceMatrixValues[ iPar->GetIndex() ][ jPar->GetIndex() ] = ( iParErr * jParErr );
+      }
     }
     else{
       fParametersPtr[ iPar->GetIndex() ] = iPar->GetInitialValue();
