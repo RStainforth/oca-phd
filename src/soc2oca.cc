@@ -11,32 +11,62 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:
-///     0X/2014 : RPFS - First Revision, new file.
+///     0X/2015 : RPFS - First Revision, new file.
 ///
 /// DETAIL: Executable to process a main-run SOC file, a central-run SOC file
-///         and an optional wavelength-run SOC file. Both the central- and
-///         wavelength-run files are used calculate corrections to
-///         values associated to the main-run file.
+///         a optional wavelength-run SOC file and an optional wavelength-run
+///         central SOC file.
 ///
 ///         The approach is as follows:
 ///         
-///         main-run file +      ----> 
-///         central-run file +   ---->  soc2oca ---->  OCARun File
-///         wavelength-run file  ---->  
+///         main-run file +             ----> 
+///         central-run file +          ----> soc2oca ---->  OCARun File
+///         wavelength-run file +       ---->
+///         central wavelength-run file ----> 
 ///                             
 ///         The OCARun file contains all the required PMT information
 ///         and corrections for the main-run file ONLY.
 ///
-///         Example Usage (at command line):
+///          Current options: 
+///            -r [Off-Axis-RunID] 
+///            -c [Central-RunID] 
+///            -R [Wavelength-Off-Axis-RunID] 
+///            -C [Wavelength-Central-RunID]
+///            -l [XY] : Laserball position option
+///                   X : Off-Axis run laserball position.
+///                     X = 1 : Off-Axis manipulator laserball position 
+///                     X = 2 : Off-Axis camera laserball position
+///                     X = 3 : Off-Axis fitted laserball position
+///                     X = 4 : Off-Axis fitted laserball position from wavelength run (-R option)
 ///
-///              soc2oca -r [main-run-id] -c [central-run-id] -w [wavelength-run-id]
-///              e.g. soc2oca -r 12121953 -c 30091953 -w 18091989
+///                   Y : Central run laserball position.
+///                     Y = 1 : Central manipulator laserball position
+///                     Y = 2 : Central camera laserball position
+///                     Y = 3 : Central fitted laserball position
+///                     Y = 4 : Central fitted laserball position from wavelength run (-C option)
 ///
-///         soc2oca will then output a file "12121953_OCARun.root" to 
-///         ${OCA_SNOPLUS_DATA}/data/runs/ocarun. 
+///            Note: By convention we will often use the option '-l 44' : wavelength position fits for both
+///            the off-axis and central runs.
+///            -d [MMYY] : The name of the dataset directory in the ${OCA_SNOPLUS_ROOT}/data/runs/soc directory
+///            -s [Systematic-File-Name] : Name of systematic file in the ${OCA_SNOPLUS_ROOT}/data/systematics directory
+///            -h : Display help for this executable 
 ///
-///         Currently BOTH a main-run and central-run file is required. The wavelength
-///         run file is optional.
+///                     Example Usage (at command line):
+///
+///            soc2oca -r 236901 -c 2369039 -R 250501 -C 2505039 -l 44 -d oct15/water -s water_369.ocadb
+///
+///            The above takes the SOC run (236901)[-r] from ${OCA_SNOPLUS_DATA}/data/runs/(oct15/water)[-d] 
+///            and normalises it against the central run (2369039)[-c].
+
+///            The positions used for laserball in both cases is the one from their respective wavelength
+///            run counterparts (44)[-l]; (250501)[-R] and (2505039)[-C] runs respectively.
+///            Systematics are added in separate branches on the ROOT tree as declared in water_369.ocadb[-s].
+///
+///            soc2oca will then output a file "236901_OCARun.root" to 
+///            ${OCA_SNOPLUS_DATA}/data/runs/ocarun/oct15/water 
+///
+///            Currently BOTH a main-run and central-run file is required. The wavelength
+///            run files (off-axis and central) are optional.
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -66,30 +96,6 @@ using namespace std;
 using namespace RAT;
 using namespace OCA;
 
-// Utility class to parse the command line arguments for this executable
-// Current options: 
-// -r [Off-Axis-RunID] 
-// -c [Central-RunID] 
-// -R [Wavelength-Off-Axis-RunID] 
-// -C [Wavelength-Central-RunID]
-// -l [XY] : Laserball position option
-//       X : Off-Axis run laserball position.
-//         X = 1 : Off-Axis manipulator laserball position 
-//         X = 2 : Off-Axis camera laserball position
-//         X = 3 : Off-Axis fitted laserball position
-//         X = 4 : Off-Axis fitted laserball position from wavelength run (-R option)
-//
-//       Y : Central run laserball position.
-//         Y = 1 : Central manipulator laserball position
-//         Y = 2 : Central camera laserball position
-//         Y = 3 : Central fitted laserball position
-//         Y = 4 : Central fitted laserball position from wavelength run (-C option)
-//
-// Note: By convention we will often use the option '-l 44' : wavelength position fits for both
-//       the off-axis and central runs.
-// -d [MMYY] : The name of the dataset directory in the ${OCA_SNOPLUS_ROOT}/data/runs/soc directory
-// -s [Systematic-File-Name] : Name of systematic file in the ${OCA_SNOPLUS_ROOT}/data/systematics directory
-// -h : Display help for this executable 
 class OCACmdOptions 
 {
 public:
@@ -105,10 +111,22 @@ public:
   std::string fMMYY, fSystematicFilePath;
 };
 
-// Declare the three function prototypes used 
+// Declare the function prototypes used.
+
+// Parses the terminal command options.
 OCACmdOptions ParseArguments( int argc, char** argv );
+
+// Adds the SOC TTree to 'socPtr' from the file 'fileName'.
+void AddSOCTree( const char* fileName, RAT::DS::SOC* socPtr );
+
+// Applies the systematic to the ocaRunPtr as defined by the 'systematicOpt' with a
+// corresponding 'systematicVal'.
 void ApplySystematic( OCARun* ocaRunPtr, std::string systematicOpt, Double_t systematicVal );
+
+// Outputs the help log.
 void help();
+
+// Main function.
 int main( int argc, char** argv );
 
 //////////////////////
@@ -155,6 +173,8 @@ int main( int argc, char** argv ){
   lDB.SetFile( ( lDB.GetSystematicsDir() + sysFile ).c_str() );
   cout << "Setting Systematics File: " << ( lDB.GetSystematicsDir() + sysFile ).c_str() << endl;
   std::vector< std::string > sysOpts = lDB.GetStringVectorField( "SYSTEMATICS", "systematics_list", "systematics_setup" );
+
+  // Now add all the systematic values to a vector so they can be applied later.
   std::vector< Float_t > sysVals;
   for ( Int_t iSys = 0; iSys < (Int_t)sysOpts.size(); iSys++ ){
     sysVals.push_back( lDB.GetDoubleField( "SYSTEMATICS", sysOpts[ iSys ], "systematics_setup" ) );
@@ -206,6 +226,7 @@ int main( int argc, char** argv ){
   case 4 : cout << "fitted position from the wavelength run as the laserball position.\n"; break;
   }    
   cout << "--------------------------" << endl;
+
   // Obtain the directory path where the SOC files are located
   // from the environment and create the full filename paths.
   // SOC run filenames currently of the form "[Run-ID]_Run.root"
@@ -298,49 +319,89 @@ int main( int argc, char** argv ){
   // central (lCRun) runs respectively.
   OCARun* lRunPtr = new OCARun();
   OCARun* lCRunPtr = new OCARun();
+
   // Set Default run-IDs
   lRunPtr->SetRunID( rID );
   lCRunPtr->SetRunID( cID );
 
+  // Initialise pointers to the wavelength off-axis and central runs.
   OCARun* lWRRunPtr = NULL;
   OCARun* lWCRunPtr = NULL;
+
+  // This vector of SOC object pointers will temporarily be used
+  // to read the four .root files separately. Loading them all at
+  // once with the RAT::DU::SOCReader object is slow.
+  // socPtr[ 0 ] :  off-axis run.
+  // socPtr[ 1 ] :  central run.
+  // socPtr[ 2 ] :  off-axis wavelength-run.
+  // socPtr[ 3 ] :  central wavelength-run.
+  RAT::DS::SOC** socPtrs = new RAT::DS::SOC*[ 4 ];
+  for ( Int_t iSOC = 0; iSOC < 4; iSOC++ ){
+    socPtrs[ iSOC ] = new RAT::DS::SOC;
+  }
   
-  // Create the SOCReader object <-- This allows for multiple SOC files
-  // to be loaded
+  // Create the SOCReader object in order to load the data base to the
+  // set as used for the off-axis run.
   cout << "Adding off-axis run SOC file: " << endl;
   cout << rIDStr + (string)"_Run.root" << endl;
-  cout << "--------------------------" << endl;
+
   // Add the main-run to the SOC reader first
-  RAT::DU::SOCReader soc( ( socRunDir + rIDStr + (string)"_Run.root" ).c_str() );
+  RAT::DU::SOCReader* soc = new RAT::DU::SOCReader( ( socRunDir + rIDStr + (string)"_Run.root" ).c_str() );
+  *socPtrs[ 0 ] = soc->GetSOC( 0 );
+  delete soc;
+  cout << "Now filling run information from off-axis run SOC file...";
+  lRunPtr->FillRunInfo( socPtrs[ 0 ], rID, rLBPosMode );
+  cout << "done." << endl;
+  delete socPtrs[ 0 ];
+  cout << "--------------------------" << endl;
 
   cout << "Adding central run SOC file: " << endl;
   cout << cIDStr + (string)"_Run.root" << endl;
+  AddSOCTree( ( socRunDir + cIDStr + (string)"_Run.root" ).c_str(), socPtrs[ 1 ] );
+  cout << "Now filling run information from central run SOC file...";
+  lCRunPtr->FillRunInfo( socPtrs[ 1 ], cID, cLBPosMode ); 
+  cout << "done." << endl;
+  delete socPtrs[ 1 ];
   cout << "--------------------------" << endl;
-  // Add the central-run to the SOC reader
-  soc.Add( ( socRunDir + cIDStr + (string)"_Run.root" ).c_str() );
 
-  // If a wavelength off-axis run has been specified, add it to the SOCReader
+  // If a wavelength off-axis run has been specified
   if ( wrID > 0 && rLBPosMode == 4 ){
     lWRRunPtr = new OCARun();
     lWRRunPtr->SetRunID( wrID );
 
     cout << "Adding wavelength off-axis run SOC file: " << endl;
     cout << wrIDStr + (string)"_Run.root" << endl;
+    AddSOCTree( ( socRunDir + wrIDStr + (string)"_Run.root" ).c_str(), socPtrs[ 2 ] );
+    cout << "Now filling run information from wavelength off-axis run SOC file...";
+    lWRRunPtr->FillRunInfo( socPtrs[ 2 ], wrID, 3, false );
+    lRunPtr->SetLBPos( lWRRunPtr->GetLBPos() ); 
+    lRunPtr->SetLBXPosErr( lWRRunPtr->GetLBXPosErr() );
+    lRunPtr->SetLBYPosErr( lWRRunPtr->GetLBYPosErr() );
+    lRunPtr->SetLBZPosErr( lWRRunPtr->GetLBZPosErr() );
+    cout << "done." << endl;
+    delete lWRRunPtr;
+    delete socPtrs[ 2 ];
     cout << "--------------------------" << endl;
-    // Add the central-run to the SOC reader
-    soc.Add( ( socRunDir + wrIDStr + (string)"_Run.root" ).c_str() );
   }
 
-  // If a wavelength central run has been specified, add it to the SOCReader
+  // If a wavelength central run has been specified
   if ( wcID > 0 && cLBPosMode == 4 ){
     lWCRunPtr = new OCARun();
     lWCRunPtr->SetRunID( wcID );
 
     cout << "Adding wavelength central run SOC file: " << endl;
     cout << wcIDStr + (string)"_Run.root" << endl;
+    AddSOCTree( ( socRunDir + wcIDStr + (string)"_Run.root" ).c_str(), socPtrs[ 3 ] );
+    cout << "Now filling run information from wavelength central run SOC file...";
+    lWCRunPtr->FillRunInfo( socPtrs[ 3 ], wcID, 3, false );
+    lCRunPtr->SetLBPos( lWCRunPtr->GetLBPos() ); 
+    lCRunPtr->SetLBXPosErr( lWCRunPtr->GetLBXPosErr() );
+    lCRunPtr->SetLBYPosErr( lWCRunPtr->GetLBYPosErr() );
+    lCRunPtr->SetLBZPosErr( lWCRunPtr->GetLBZPosErr() );      
+    cout << "done." << endl;
+    delete lWCRunPtr;
+    delete socPtrs[ 3 ];
     cout << "--------------------------" << endl;
-    // Add the central-run to the SOC reader
-    soc.Add( ( socRunDir + wcIDStr + (string)"_Run.root" ).c_str() );
   }
 
   // Create LightPathCalculator object;
@@ -350,42 +411,11 @@ int main( int argc, char** argv ){
   RAT::DU::ChanHWStatus chanHW = RAT::DU::Utility::Get()->GetChanHWStatus();
   shadowCalc.SetAllGeometryTolerances( 150.0 );
 
-  // Now fill the OCARuns objects with the respective information
-  // from the SOC files in the SOC reader
-  cout << "Now filling run information from off-axis run SOC file...";
-  lRunPtr->FillRunInfo( soc, rID, rLBPosMode );
-  cout << "done." << endl;
-  cout << "Now filling run information from central run SOC file...";
-  lCRunPtr->FillRunInfo( soc, cID, cLBPosMode ); 
-  cout << "done." << endl;
-
-  if ( wrID > 0 && rLBPosMode == 4){ 
-    cout << "Now filling run information from wavelength off-axis run SOC file...";
-    lWRRunPtr->FillRunInfo( soc, wrID, 3, false );
-    lRunPtr->SetLBPos( lWRRunPtr->GetLBPos() ); 
-    lRunPtr->SetLBXPosErr( lWRRunPtr->GetLBXPosErr() );
-    lRunPtr->SetLBYPosErr( lWRRunPtr->GetLBYPosErr() );
-    lRunPtr->SetLBZPosErr( lWRRunPtr->GetLBZPosErr() );
-    cout << "done." << endl;
-  }
-  delete lWRRunPtr;
-
-  if ( wcID > 0 && cLBPosMode == 4 ){ 
-    cout << "Now filling run information from wavelength central run SOC file...";
-    lWCRunPtr->FillRunInfo( soc, wcID, 3, false );
-    lCRunPtr->SetLBPos( lWCRunPtr->GetLBPos() ); 
-    lCRunPtr->SetLBXPosErr( lWCRunPtr->GetLBXPosErr() );
-    lCRunPtr->SetLBYPosErr( lWCRunPtr->GetLBYPosErr() );
-    lCRunPtr->SetLBZPosErr( lWCRunPtr->GetLBZPosErr() );      
-    cout << "done." << endl;
-  }
-  delete lWCRunPtr;
-
   cout << "Now filling PMT information from off-axis SOC file...";
-  lRunPtr->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, rID );
+  lRunPtr->FillPMTInfo( lightPath, shadowCalc, chanHW, pmtInfo, rID );
   cout << "done." << endl;
   cout << "Now filling PMT information from central SOC file...";
-  lCRunPtr->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, cID );
+  lCRunPtr->FillPMTInfo( lightPath, shadowCalc, chanHW, pmtInfo, cID );
   cout << "done." << endl;
 
   OCARun** sysRuns = new OCARun*[ (Int_t)sysOpts.size() ];
@@ -395,11 +425,11 @@ int main( int argc, char** argv ){
     sysRuns[ iSys ]->CopyOCAPMTInfo( *lRunPtr );
     sysRunsCtr[ iSys ] = new OCARun( *lCRunPtr );
     sysRunsCtr[ iSys ]->CopyOCAPMTInfo( *lCRunPtr );
-    cout << "Now applying systematic " << iSys << ": " << sysOpts[ iSys ] << endl;
+    cout << "Now applying systematic " << iSys << ": " << sysOpts[ iSys ] << "...";
     ApplySystematic( sysRuns[ iSys ], sysOpts[ iSys ], sysVals[ iSys ] );
     ApplySystematic( sysRunsCtr[ iSys ], sysOpts[ iSys ], sysVals[ iSys ] );
-    sysRuns[ iSys ]->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, rID );
-    sysRunsCtr[ iSys ]->FillPMTInfo( soc, lightPath, shadowCalc, chanHW, pmtInfo, cID );
+    sysRuns[ iSys ]->FillPMTInfo( lightPath, shadowCalc, chanHW, pmtInfo, rID );
+    sysRunsCtr[ iSys ]->FillPMTInfo( lightPath, shadowCalc, chanHW, pmtInfo, cID );
     sysRuns[ iSys ]->CrossRunFill( sysRunsCtr[ iSys ] );
     cout << "done.\n";
   }
@@ -540,13 +570,13 @@ void ApplySystematic( OCARun* ocaRunPtr, std::string systematicOpt, Double_t sys
 {
 
   // Laserball position radius scaling 
-  // R_lb -> R_b * systematicVal
+  // R_lb -> R_lb * systematicVal
   if ( systematicOpt == "laserball_r_scale" ){
     ocaRunPtr->SetLBPos( systematicVal * ocaRunPtr->GetLBPos() );
   }
 
   // Laserball position radius shift 
-  // R_lb -> R_b + systematicVal [mm]
+  // R_lb -> R_lb + systematicVal [mm]
   if ( systematicOpt == "laserball_r_shift" ){
     ocaRunPtr->SetLBPos( systematicVal * ocaRunPtr->GetLBPos() );
   }
@@ -616,5 +646,20 @@ void ApplySystematic( OCARun* ocaRunPtr, std::string systematicOpt, Double_t sys
   if ( systematicOpt == "lb_distribution_squared" ){
     cout << "Squared laserball distribution systematic registered. Systematic will be enforced at the fitting stage. Not here" << endl;
   }
+
+}
+
+void AddSOCTree( const char* fileName, RAT::DS::SOC* socPtr )
+{
+
+  TFile* socFile = TFile::Open( fileName, "READ" );
+  TTree* socTree = (TTree*)socFile->Get( "T;1" );
+  RAT::DS::SOC* tmpSoc = new RAT::DS::SOC;
+  socTree->SetBranchAddress( "soc", &(tmpSoc) );
+  socTree->GetEntry();
+  *socPtr = *tmpSoc;
+  delete tmpSoc;
+  socFile->Close();
+  
 
 }

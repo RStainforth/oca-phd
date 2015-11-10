@@ -74,14 +74,13 @@ namespace OCA{
 
     // Fill Run information from a SOC file with run ID 'runID'
     // into the run information stored here (OCARun object).
-    void FillRunInfo( RAT::DU::SOCReader& socR,
+    void FillRunInfo( RAT::DS::SOC* socPtr,
                       UInt_t runID, Int_t lbPosMode, 
                       Bool_t copyPMTInfo = true );
 
     // Fill PMT information from a SOC file with run ID 'runID'
     // into the PMT information stored here (OCAPMT objects).
-    void FillPMTInfo( RAT::DU::SOCReader& socR,
-                      RAT::DU::LightPathCalculator& lLP,
+    void FillPMTInfo( RAT::DU::LightPathCalculator& lLP,
                       RAT::DU::ShadowingCalculator& lSC,
                       RAT::DU::ChanHWStatus& lCHS,
                       RAT::DU::PMTInfo& lDB,

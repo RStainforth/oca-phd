@@ -248,33 +248,33 @@ void OCARun::ClearRun()
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCARun::FillRunInfo( RAT::DU::SOCReader& socR,
+void OCARun::FillRunInfo( RAT::DS::SOC* socPtr,
                           UInt_t runID, Int_t lbPosMode,
                           Bool_t copyPMTInfo )
 {
 
   // Create a new RAT::DS::SOC object to be used
   // in the loop below.
-  RAT::DS::SOC* socPtr = new RAT::DS::SOC;
+  //RAT::DS::SOC* socPtr = new RAT::DS::SOC;
   
   // First check that a SOC file with the 
   // specified runID exists in the SOCReader.
-  for ( Int_t iSOC = 0; iSOC < (Int_t)socR.GetSOCCount(); iSOC++ ){
+  // for ( Int_t iSOC = 0; iSOC < (Int_t)socR.GetSOCCount(); iSOC++ ){
 
-    // Get the SOC entry.
-    *socPtr = socR.GetSOC( iSOC );
+  //   // Get the SOC entry.
+  //   *socPtr = socR.GetSOC( iSOC );
 
-    // Check for the run ID on the SOC file.
-    if ( socPtr->GetRunID() == runID ){ break; }
-    else{ continue; }
+  //   // Check for the run ID on the SOC file.
+  //   if ( socPtr->GetRunID() == runID ){ break; }
+  //   else{ continue; }
     
-    // If the SOC object with the required run ID cannot be found
-    // then return an error.
-    if ( iSOC == ( (Int_t)socR.GetSOCCount() - 1 ) ){
-      cout << "OCARun::Fill: Error: No SOC file with specified run-ID found" << endl;
-      return;
-    }
-  }
+  //   // If the SOC object with the required run ID cannot be found
+  //   // then return an error.
+  //   if ( iSOC == ( (Int_t)socR.GetSOCCount() - 1 ) ){
+  //     cout << "OCARun::Fill: Error: No SOC file with specified run-ID found" << endl;
+  //     return;
+  //   }
+  // }
 
   // Now that a SOC file which matches the run ID specified has been
   // found. We can now begin to fill the OCARun object with all the
@@ -306,15 +306,14 @@ void OCARun::FillRunInfo( RAT::DU::SOCReader& socR,
     CopySOCPMTInfo( *socPtr );
   }
 
-  delete socPtr;
+  //delete socPtr;
 
 }
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCARun::FillPMTInfo( RAT::DU::SOCReader& socR,
-                          RAT::DU::LightPathCalculator& lLP,
+void OCARun::FillPMTInfo( RAT::DU::LightPathCalculator& lLP,
                           RAT::DU::ShadowingCalculator& lSC,
                           RAT::DU::ChanHWStatus& lCHS,
                           RAT::DU::PMTInfo& lDB,
@@ -323,25 +322,25 @@ void OCARun::FillPMTInfo( RAT::DU::SOCReader& socR,
 
   // Create a new RAT::DS::SOC object to be used
   // in the loop below.
-  RAT::DS::SOC* socPtr = new RAT::DS::SOC;
+  //RAT::DS::SOC* socPtr = new RAT::DS::SOC;
   
-  // First check that a SOC file with the 
-  // specified runID exists in the SOCReader.
-  for ( Int_t iSOC = 0; iSOC < (Int_t)socR.GetSOCCount(); iSOC++ ){
-    // Get the SOC entry.
-    *socPtr = socR.GetSOC( iSOC );
+  // // First check that a SOC file with the 
+  // // specified runID exists in the SOCReader.
+  // for ( Int_t iSOC = 0; iSOC < (Int_t)socR.GetSOCCount(); iSOC++ ){
+  //   // Get the SOC entry.
+  //   *socPtr = socR.GetSOC( iSOC );
 
-    // Check for the run ID on the SOC file.
-    if ( socPtr->GetRunID() == runID ){ break; }
-    else{ continue; }
+  //   // Check for the run ID on the SOC file.
+  //   if ( socPtr->GetRunID() == runID ){ break; }
+  //   else{ continue; }
     
-    // If the SOC object with the required run ID cannot be found
-    // then return an error.
-    if ( iSOC == ( (Int_t)socR.GetSOCCount() - 1 ) ){
-      cout << "OCARun::Fill: Error: No SOC file with specified run-ID found" << endl;
-      return;
-    }
-  }
+  //   // If the SOC object with the required run ID cannot be found
+  //   // then return an error.
+  //   if ( iSOC == ( (Int_t)socR.GetSOCCount() - 1 ) ){
+  //     cout << "OCARun::Fill: Error: No SOC file with specified run-ID found" << endl;
+  //     return;
+  //   }
+  // }
   // Create an iterator to loop over the PMTs...
   map< Int_t, OCAPMT >::iterator iLP;
 
@@ -408,7 +407,7 @@ void OCARun::FillPMTInfo( RAT::DU::SOCReader& socR,
     
   }
 
-  delete socPtr;
+  //delete socPtr;
 
 }
 
@@ -595,8 +594,6 @@ void OCARun::CrossRunFill( OCARun* cRun )
   // this one.
   if ( cRun != NULL ){
 
-    cout << "OCARun::CrossRunFill: Filling Central Run Information..." << endl;
-    cout << "--------------------------" << endl;
     map< Int_t, OCAPMT >::iterator iCPMT;
     for( iCPMT = cRun->GetOCAPMTIterBegin(); iCPMT != cRun->GetOCAPMTIterEnd(); iCPMT++ ){
       Int_t pmtID = ( iCPMT->first );

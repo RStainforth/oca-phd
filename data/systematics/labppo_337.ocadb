@@ -7,7 +7,8 @@ valid_end: [0, 0],
 
 systematics_list: [ "laserball_r_scale", "laserball_plus_x_shift",
                     "laserball_plus_y_shift", "laserball_plus_z_shift",
-                    "lambda_plus_shift", "lambda_minus_shift" ],
+                    "lambda_plus_shift", "lambda_minus_shift",
+                    "lb_distribution_flat", "lb_distribution_squared" ],
 
 // Value is the fractional change in the laserball postion radius
 laserball_r_scale: 1.01,
