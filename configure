@@ -59,7 +59,6 @@ if [ "\$system" == "Darwin" ]; then
 fi
 
 export PATH=\$PATH:\$OCA_SNOPLUS_ROOT/bin
-source $OCAROOT/env_oca_sno.sh
 EOF
 
 printf "\n"
