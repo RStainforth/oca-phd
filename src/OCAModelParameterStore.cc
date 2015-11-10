@@ -491,7 +491,7 @@ void OCAModelParameterStore::WriteToROOTFile( string& fileName,
   TTree* parTree = NULL;
 
   // Check that the main-run file exists
-  ifstream rFile( fileName );
+  ifstream rFile( fileName.c_str() );
   if ( rFile ){ 
     file = new TFile( fileName.c_str(), "UPDATE" );
     //parTree = new TTree( ( fStoreName + "-" + branchName ).c_str(), 
