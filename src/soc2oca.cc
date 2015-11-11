@@ -349,8 +349,22 @@ int main( int argc, char** argv ){
   RAT::DU::SOCReader* soc = new RAT::DU::SOCReader( ( socRunDir + rIDStr + (string)"_Run.root" ).c_str() );
   *socPtrs[ 0 ] = soc->GetSOC( 0 );
   delete soc;
-  cout << "Now filling run information from off-axis run SOC file...";
+
+  // Obtain the flag to check whether or not to override the value of lambda
+  // obtained from the RAT::DS::Calib object on the SOC file. We don't do this
+  // for the 'wavelength' runs because the point of those runs is that the
+  // wavelength is good enough for a position fit.
+  Bool_t lambdaOverride = lDB.GetBoolField( "SYSTEMATICS", "override_manip_lambda", "systematics_setup" );
+  cout << "Now filling run information from off-axis run SOC file..." << endl;
+
   lRunPtr->FillRunInfo( socPtrs[ 0 ], rID, rLBPosMode );
+
+  // Override the wavelength value if neccessary.
+  if ( lambdaOverride ){
+    Float_t lambdaVal = lDB.GetDoubleField( "SYSTEMATICS", "lambda_at_pmt", "systematics_setup" );
+    cout << "Overriding wavelength from calib object: " << lRunPtr->GetLambda() << "nm with value from systematics file: " << lambdaVal << "nm" << endl;
+    lRunPtr->SetLambda( lambdaVal );
+  }
   cout << "done." << endl;
   delete socPtrs[ 0 ];
   cout << "--------------------------" << endl;
@@ -358,8 +372,15 @@ int main( int argc, char** argv ){
   cout << "Adding central run SOC file: " << endl;
   cout << cIDStr + (string)"_Run.root" << endl;
   AddSOCTree( ( socRunDir + cIDStr + (string)"_Run.root" ).c_str(), socPtrs[ 1 ] );
-  cout << "Now filling run information from central run SOC file...";
-  lCRunPtr->FillRunInfo( socPtrs[ 1 ], cID, cLBPosMode ); 
+  cout << "Now filling run information from central run SOC file..." << endl;
+  lCRunPtr->FillRunInfo( socPtrs[ 1 ], cID, cLBPosMode );
+
+  // Override the wavelength value if neccessary.
+  if ( lambdaOverride ){
+    Float_t lambdaVal = lDB.GetDoubleField( "SYSTEMATICS", "lambda_at_pmt", "systematics_setup" );
+    cout << "Overriding wavelength from calib object: " << lCRunPtr->GetLambda() << "nm with value from systematics file: " << lambdaVal << "nm" << endl;
+    lCRunPtr->SetLambda( lambdaVal );
+  } 
   cout << "done." << endl;
   delete socPtrs[ 1 ];
   cout << "--------------------------" << endl;

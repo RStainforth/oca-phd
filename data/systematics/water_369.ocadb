@@ -1,9 +1,12 @@
 {
 type: "SYSTEMATICS",
 index: "systematics_setup",
+version: 1,
+run_range: [0, 0],
+pass: 0,
+comment: "",
+timestamp: "",
 
-valid_begin: [0, 0],
-valid_end: [0, 0],
 
 systematics_list: [ "laserball_r_scale", "laserball_plus_x_shift",
                     "laserball_plus_y_shift", "laserball_plus_z_shift",
@@ -26,6 +29,13 @@ laserball_minus_z_shift: 50.0,
 // Shift in the emitted average wavelength in nm
 lambda_plus_shift: 10.0,
 lambda_minus_shift: 10.0,
+
+// Boolean variable to set whether or not to override the default
+// wavelength value stored on the RAT::DS::Calib object on the SOC file.
+// This is particularly important for scintillator data where the wavelength
+// at the PMT is often different to that which was emitted by the laser
+// due to absorption & reemission effects (wavelength shifting) (1 = override, 0 = don't override)
+override_manip_lambda: 1,
 // The central value of lambda about which the shift +/- shift
 // is applied
 lambda_at_pmt: 369.30,

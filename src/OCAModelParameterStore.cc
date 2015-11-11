@@ -38,8 +38,8 @@ OCAModelParameterStore::OCAModelParameterStore( string& storeName )
   // Ensure the vector which will hold all the parameter objects
   // is empty to begin with.
   fParameters.clear();
-  fParameterValues.clear();
-  fCovarianceMatrixValues.clear();
+  //fParameterValues.clear();
+  //fCovarianceMatrixValues.clear();
 
   // Ensure all the pointers are initialised to 'NULL'
   fParametersPtr = NULL;
@@ -84,8 +84,8 @@ OCAModelParameterStore::OCAModelParameterStore( string& storeName )
 OCAModelParameterStore::~OCAModelParameterStore()
 {
 
-  if ( fCurrentAngularResponseBins ){ delete fCurrentAngularResponseBins; }
-  if ( fCurrentLBDistributionBins ){ delete fCurrentLBDistributionBins; }
+  if ( fCurrentAngularResponseBins != NULL && fStoreName != "" ){ delete [] fCurrentAngularResponseBins; }
+  if ( fCurrentLBDistributionBins != NULL && fStoreName != "" ){ delete [] fCurrentLBDistributionBins; }
 
 }
 
@@ -160,20 +160,20 @@ void OCAModelParameterStore::SeedParameters( std::string& fitFileName )
 
   fNParameters = tmpStore->GetNParameters();
   cout << "Seed->NParameters: " << fNParameters << endl;
-  fParameters.resize( fNParameters + 1 );
-  fCovarianceMatrixValues.resize( fNParameters + 1 );
-  for ( Int_t iPar = 0; iPar <= fNParameters; iPar++ ){
-    vector< Float_t > tmpVec;
-    tmpVec.resize( fNParameters + 1 );
-    fCovarianceMatrixValues.push_back( tmpVec );
-  } 
+  // fParameters.resize( fNParameters + 1 );
+  // fCovarianceMatrixValues.resize( fNParameters + 1 );
+  // for ( Int_t iPar = 0; iPar <= fNParameters; iPar++ ){
+  //   vector< Float_t > tmpVec;
+  //   tmpVec.resize( fNParameters + 1 );
+  //   fCovarianceMatrixValues.push_back( tmpVec );
+  // } 
   vector< OCAModelParameter >::iterator iPar;
   for ( iPar = tmpStore->GetOCAModelParametersIterBegin();
         iPar != tmpStore->GetOCAModelParametersIterEnd();
         iPar++ ){
     fParameters.push_back( *iPar );
-    fParameterValues[ (*iPar).GetIndex() ] = (*iPar).GetFinalValue();
-    fCovarianceMatrixValues[ (*iPar).GetIndex() ] = tmpStore->GetCovarianceMatrixValues()[ (*iPar).GetIndex() ];
+    //fParameterValues[ (*iPar).GetIndex() ] = (*iPar).GetFinalValue();
+    //fCovarianceMatrixValues[ (*iPar).GetIndex() ] = tmpStore->GetCovarianceMatrixValues()[ (*iPar).GetIndex() ];
   }
 
   AllocateParameterArrays();
@@ -512,7 +512,7 @@ void OCAModelParameterStore::WriteToROOTFile( string& fileName,
   // Create the parameter Tree
   //TTree* parTree = new TTree( fStoreName.c_str(), fStoreName.c_str() );
 
-  if ( branchName == "OCARun" ){
+  if ( branchName == "nominal" ){
     // Declare a new branch pointing to the parameter store
     TH2F* lbDistribution = GetLBDistributionHistogram();
     //parTree->Write( lbDistribution );
@@ -540,14 +540,15 @@ void OCAModelParameterStore::WriteToROOTFile( string& fileName,
                      &(*lbDistributionTF1), 32000, 99 );
   }
 
-// Declare a new branch pointing to the parameter store
-parTree->Branch( branchName.c_str(), (this)->ClassName(), &(*this), 32000, 99 );
-
+  // Declare a new branch pointing to the parameter store
+  parTree->Branch( branchName.c_str(), (this)->ClassName(), &(*this), 32000, 99 );
+  file->cd();
+  
   //parTree->SetBranchAddress( branchName, &(*this) );
   // Fill the tree and write it to the file
   //branchPtr->Fill();
-parTree->Fill();
-parTree->Write("", TObject::kOverwrite);
+  parTree->Fill();
+  parTree->Write("", TObject::kOverwrite);
 
   file->Close();
   delete file;
@@ -772,17 +773,17 @@ void OCAModelParameterStore::AllocateParameterArrays()
     // Set the initial value of the parameter in the array.
     if ( fSeededParameters ){ 
       fParametersPtr[ iPar->GetIndex() ] = iPar->GetFinalValue();
-      fParameterValues[ iPar->GetIndex() ] = iPar->GetFinalValue();
+      //fParameterValues[ iPar->GetIndex() ] = iPar->GetFinalValue();
  
-      vector< OCAModelParameter >::iterator jPar;
-      for ( jPar = GetOCAModelParametersIterBegin();
-            jPar != GetOCAModelParametersIterEnd();
-            jPar++ ){
-        Float_t iParErr = iPar->GetError();
-        Float_t jParErr = iPar->GetError();
-        fCovarianceMatrix[ iPar->GetIndex() ][ jPar->GetIndex() ] = fCovarianceMatrixValues[ iPar->GetIndex() ][ jPar->GetIndex() ];
-        fCovarianceMatrixValues[ iPar->GetIndex() ][ jPar->GetIndex() ] = ( iParErr * jParErr );
-      }
+      // vector< OCAModelParameter >::iterator jPar;
+      // for ( jPar = GetOCAModelParametersIterBegin();
+      //       jPar != GetOCAModelParametersIterEnd();
+      //       jPar++ ){
+      //   Float_t iParErr = iPar->GetError();
+      //   Float_t jParErr = iPar->GetError();
+      //   fCovarianceMatrix[ iPar->GetIndex() ][ jPar->GetIndex() ] = fCovarianceMatrixValues[ iPar->GetIndex() ][ jPar->GetIndex() ];
+      //   fCovarianceMatrixValues[ iPar->GetIndex() ][ jPar->GetIndex() ] = ( iParErr * jParErr );
+      // }
     }
     else{
       fParametersPtr[ iPar->GetIndex() ] = iPar->GetInitialValue();

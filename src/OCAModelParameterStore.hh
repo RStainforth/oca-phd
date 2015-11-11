@@ -41,8 +41,8 @@ namespace OCA{
   public:
 
     // The constructor and destructor of the OCAModelParameterStore object.
-    OCAModelParameterStore(){ }
-    OCAModelParameterStore ( string& storeName );
+    OCAModelParameterStore() { }
+    OCAModelParameterStore( string& storeName );
     ~OCAModelParameterStore();
 
     /////////////////////////////////
@@ -100,16 +100,16 @@ namespace OCA{
     OCAModelParameter GetParameter( Int_t parIndex ){ return fParameters[ parIndex ]; }
 
     // Return the value of a parameter by its index.
-    Float_t GetParameterValue( Int_t parIndex ){ return fParameterValues[ parIndex ]; }
+    //Float_t GetParameterValue( Int_t parIndex ){ return fParameterValues[ parIndex ]; }
 
     // Return the vector of the parameter values.
-    vector< Float_t > GetParameterValues(){ return fParameterValues; }
+    //vector< Float_t > GetParameterValues(){ return fParameterValues; }
     
     // Return the value of a covariance matrix element by it's index.
-    Float_t GetCovarianceMatrixValue( Int_t iIndex, Int_t jIndex ){ return fCovarianceMatrixValues[ iIndex ][ jIndex ]; }
+    //Float_t GetCovarianceMatrixValue( Int_t iIndex, Int_t jIndex ){ return fCovarianceMatrixValues[ iIndex ][ jIndex ]; }
 
     // Return the value of a covariance matrix element by it's index.
-    vector< vector< Float_t > > GetCovarianceMatrixValues(){ return fCovarianceMatrixValues; }
+    //vector< vector< Float_t > > GetCovarianceMatrixValues(){ return fCovarianceMatrixValues; }
 
     // Get the boolean flag to denote whether or not the parameters
     // were seeded.
@@ -379,8 +379,8 @@ namespace OCA{
     Int_t fNGlobalVariableParameters;                //! The total global number of variable parameters.
 
     vector< OCAModelParameter > fParameters;         // The vector of parameter objects i.e. the store.
-    vector< Float_t > fParameterValues;              // The vector of the direct parameter values.
-    vector< vector< Float_t > > fCovarianceMatrixValues;// The covariance matrix of values.
+    //vector< Float_t > fParameterValues;              //! The vector of the direct parameter values.
+    //vector< vector< Float_t > > fCovarianceMatrixValues;//! The covariance matrix of values.
 
     Float_t* fParametersPtr;                         //! The pointer of parameter values.
     Int_t* fParametersVary;                          //! Array of which parameters vary ( =1 ) and which do not ( =0 ).

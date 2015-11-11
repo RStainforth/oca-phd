@@ -88,7 +88,9 @@ int main( int argc, char** argv ){
   string fitPath = ( lDB.GetFitFilesDir() + Opts.fFitFileName );
   cout << "Setting Fitfile: " << fitPath << endl;
   lDB.SetFile( fitPath.c_str() );
+  cout << "fitName" << endl;
   std::string fitName = lDB.GetStringField( "FITFILE", "fit_name", "fit_setup" );
+  cout << "seedFile" << endl;
   std::string seedFile = lDB.GetStringField( "FITFILE", "seed_initial_parameters", "fit_setup" );
   std::string systematicName = Opts.fSystematic;
 
@@ -106,6 +108,7 @@ int main( int argc, char** argv ){
   // a model prediction for the optics model.
   OCAOpticsModel* lModel = new OCAOpticsModel();
 
+  cout << "set model" << endl;
   // Set a link to the pointer to the OCAModelParameterStore
   // object.
   lModel->SetOCAModelParameterStore( lParStore );
@@ -113,12 +116,16 @@ int main( int argc, char** argv ){
   // Get the minimum number of PMT angular response and Laserball
   // distribution bin entires required for the parameter associated
   // with each bin to vary in the fit.
+  cout << "minPMTEntries" << endl;
   Int_t minPMTEntries = lDB.GetIntField( "FITFILE", "pmt_angular_response_min_bin_entries", "parameter_setup" );
+  cout << "minLBEntries" << endl;
   Int_t minLBDistEntries = lDB.GetIntField( "FITFILE", "laserball_distribution_min_bin_entries", "parameter_setup" );
   lModel->SetRequiredNLBDistributionEntries( minLBDistEntries );
   lModel->SetRequiredNPMTAngularRepsonseEntries( minPMTEntries ); 
   // Add all the run files to the OCARunReader object
-  std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" ); 
+  cout << "run_ids" << endl;
+  std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" );
+  cout << "data_set" << endl; 
   std::string dataSet = lDB.GetStringField( "FITFILE", "data_set", "fit_setup" );
   OCARunReader lReader;
   lReader.SetBranchName( systematicName );
@@ -136,7 +143,7 @@ int main( int argc, char** argv ){
 
   // Initalise a separate storage object for all the filters to cut on
   // the data with
-  OCAFilterStore* lFilterStore = new OCAFilterStore( argv[1] );
+  OCAFilterStore* lFilterStore = new OCAFilterStore( fitPath.c_str() );
 
   // Initalise a data filler object to filter through the raw
   // data using the filters
@@ -152,6 +159,7 @@ int main( int argc, char** argv ){
   // Retrieve information about the fitting procedure 
   // i.e. what subsequent values of the chisquare to cut on 
   // following each round of fitting.
+  cout << "chisqLims" << endl;
   std::vector< Double_t > chiSqLims = lDB.GetDoubleVectorField( "FITFILE", "chisq_lims", "fit_procedure" );
 
   stringstream myStream;

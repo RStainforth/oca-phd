@@ -20,7 +20,7 @@ OCARunReader::OCARunReader()
 {
 
 
-  fBranchName = "OCARun";
+  fBranchName = "nominal";
   // Create a new TChain object with the name
   // "OCARunT".
   fOCARunT = new TChain( "OCARunT" );
@@ -47,7 +47,7 @@ OCARunReader::OCARunReader( vector< Int_t >& runIDs,
                             const string dataSet )
 {
 
-  fBranchName = "OCARun";
+  fBranchName = "nominal";
   // Create a stringstream object and string to help
   // create the file path for the various OCARun files
   // associated with each run ID in the 'runIDs' vector.
@@ -144,6 +144,7 @@ OCARunReader::OCARunReader( Int_t runID )
 
   // Add the OCARun .root file to the OCARunReader.
   Add( filename.c_str() );
+  cout << "OCARunReader: Added: " << filename << endl;
 
   // Set the next counter to zero to begin with.
   fNext = 0;
@@ -222,6 +223,7 @@ void OCARunReader::Add( Int_t runID )
   Long64_t total = fNOCARuns;
 
   fOCARunT->Add( filename.c_str() );
+  cout << "OCARunReader: Added: " << filename << ", " << fBranchName << " branch." << endl;
   fOCARunT->GetEntry( total );
   fListOfRunIDs.push_back( fOCARun->GetRunID() );
 
@@ -265,6 +267,7 @@ void OCARunReader::Add( vector< Int_t >& runIDs,
 
     // Add the file.
     Add( filename.c_str() );
+    cout << "OCARunReader: Added: " << filename << ", " << fBranchName << " branch." << endl;
 
     // Clear the stringstream and string variables
     // in preparation for the next iteration of the loop.
