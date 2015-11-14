@@ -430,7 +430,7 @@ int main( int argc, char** argv ){
   RAT::DU::ShadowingCalculator shadowCalc = RAT::DU::Utility::Get()->GetShadowingCalculator();
   RAT::DU::PMTInfo pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
   RAT::DU::ChanHWStatus chanHW = RAT::DU::Utility::Get()->GetChanHWStatus();
-  shadowCalc.SetAllGeometryTolerances( 150.0 );
+  shadowCalc.SetAllGeometryTolerances( 300.0 );
 
   cout << "Now filling PMT information from off-axis SOC file...";
   lRunPtr->FillPMTInfo( lightPath, shadowCalc, chanHW, pmtInfo, rID );

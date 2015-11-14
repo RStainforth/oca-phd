@@ -64,7 +64,7 @@ namespace OCA{
     /////////////////////////////////
 
     // Evaluate the residual for a single data-point (OCAPMT object).
-    Float_t EvaluateResidual( OCAPMT& dPoint );
+    Float_t EvaluateChiSquareResidual( OCAPMT& dPoint );
 
     // Evaluate the chi-square for a single data-point (OCAPMT object).
     Float_t EvaluateChiSquare( OCAPMT& dPoint );
@@ -72,7 +72,7 @@ namespace OCA{
     // Evaluate the global residual for all the OCAPMT objects
     // that this OCAChiSquare object has access to, as provided by the
     // the 'fDataStore' OCAPMTStore object pointer private variable.
-    void EvaluateGlobalResidual();
+    void EvaluateGlobalChiSquareResidual();
 
     // Evaluate the global chi-square for all the OCAPMT objects
     // that this OCAChiSquare object has access to, as provided by the
@@ -125,25 +125,25 @@ namespace OCA{
     /////////////////////////////////
 
     // Get the current value of the global Chi square.
-    Float_t GetChiSq(){ return fChiSq; }
+    Float_t GetChiSquare(){ return fChiSquare; }
 
     // Get the mean chi square value for the current data set. This
     // can only be called after a call to OCAChiSquare::EvaluateGlobalChiSquare.
-    Float_t GetResidualMean(){ return fResidualMean; }
+    Float_t GetChiSquareResidualMean(){ return fChiSquareResidualMean; }
 
     // Get the standard deviation of the chi square values for the current
     // data set. This can only be called after a call to 
     // OCAChiSquare::EvaluateGlobalChiSquare.
-    Float_t GetResidualStd(){ return fResidualStd; }
+    Float_t GetChiSquareResidualStdDev(){ return fChiSquareResidualStdDev; }
     
   private:
 
-    OCAPMTStore* fDataStore;        // Pointer to the OCAPMTStore object.   
-    OCAOpticsModel* fModel;         // Pointer to the OCAOpticsModel object.
+    OCAPMTStore* fDataStore;           // Pointer to the OCAPMTStore object.   
+    OCAOpticsModel* fModel;            // Pointer to the OCAOpticsModel object.
 
-    Float_t fChiSq;                 // The current value of the global Chi square.
-    Float_t fResidualMean;          // The mean value of all the residual (data - model) values in the current data set.
-    Float_t fResidualStd;           // The standard deviation of all the residual( data - model) values in the current data set.
+    Float_t fChiSquare;                // The current value of the global Chi square.
+    Float_t fChiSquareResidualMean;    // The mean value of all the residual (data - model) values in the current data set.
+    Float_t fChiSquareResidualStdDev;  // The standard deviation of all the residual( data - model) values in the current data set.
  
     ClassDef( OCAChiSquare, 0 );
 

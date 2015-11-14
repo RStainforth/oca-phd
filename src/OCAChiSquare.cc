@@ -21,24 +21,25 @@ OCAChiSquare::OCAChiSquare()
   fDataStore = NULL;
   fModel = NULL;
 
-  fChiSq = 0.0;
-  fResidualMean = 0.0;
-  fResidualStd = 0.0;
+  fChiSquare = 0.0;
+  fChiSquareResidualMean = 0.0;
+  fChiSquareResidualStdDev = 0.0;
 
 }
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t OCAChiSquare::EvaluateResidual( OCAPMT& dPoint )
+Float_t OCAChiSquare::EvaluateChiSquareResidual( OCAPMT& dPoint )
 {
-
+  
   Float_t modelOccRatio = fModel->ModelOccRatioPrediction( dPoint );
-
+  
   Float_t occRatio = 0.0;
   Float_t occRatioErr = 0.0;
   OCAMath::CalculateMPEOccRatio( dPoint, occRatio, occRatioErr );
-
+  dPoint.SetChiSquareResidual( ( occRatio - modelOccRatio ) / occRatioErr );
+  
   return ( occRatio - modelOccRatio ) / occRatioErr;
 
 }
@@ -80,11 +81,11 @@ Float_t OCAChiSquare::EvaluateChiSquare( OCAPMT& dPoint )
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCAChiSquare::EvaluateGlobalResidual()
+void OCAChiSquare::EvaluateGlobalChiSquareResidual()
 {
 
-  fResidualMean = 0.0;
-  fResidualStd = 0.0;
+  fChiSquareResidualMean = 0.0;
+  fChiSquareResidualStdDev = 0.0;
 
   // Create an iterator to loop through all the data points.
   vector< OCAPMT >::iterator iD;
@@ -93,29 +94,29 @@ void OCAChiSquare::EvaluateGlobalResidual()
         iD != fDataStore->GetOCAPMTsIterEnd();
         iD++ ){
    
-    Float_t resVal = EvaluateResidual( *(iD) );
+    Float_t resVal = EvaluateChiSquareResidual( *(iD) );
     (*iD).SetChiSquareResidual( resVal );
     if ( !std::isnan( resVal ) && !std::isinf( resVal ) ){
-      fResidualMean += resVal;
+      fChiSquareResidualMean += resVal;
       nGoodPoints++;
     }
 
   }
 
-  fResidualMean /= nGoodPoints;
+  fChiSquareResidualMean /= nGoodPoints;
 
   for ( iD = fDataStore->GetOCAPMTsIterBegin();
         iD != fDataStore->GetOCAPMTsIterEnd();
         iD++ ){
    
-    Float_t resStdVal = TMath::Power( EvaluateResidual( *(iD) ) - fResidualMean, 2 );
+    Float_t resStdVal = TMath::Power( EvaluateChiSquareResidual( *(iD) ) - fChiSquareResidualMean, 2 );
     if ( !std::isnan( resStdVal ) && !std::isinf( resStdVal ) ){
-      fResidualStd += resStdVal;
+      fChiSquareResidualStdDev += resStdVal;
     }
 
   }
   
-  fResidualStd = TMath::Sqrt( fResidualStd / nGoodPoints );
+  fChiSquareResidualStdDev = TMath::Sqrt( fChiSquareResidualStdDev / nGoodPoints );
 
 }
 
@@ -126,7 +127,7 @@ Float_t OCAChiSquare::EvaluateGlobalChiSquare()
 {
   
   // Calculate the total chisquare over all datapoints (PMTs) in the dataset.
-  fChiSq = 0.0;
+  fChiSquare = 0.0;
 
   // Create an iterator to loop through all the data points.
   vector< OCAPMT >::iterator iD;
@@ -139,11 +140,11 @@ Float_t OCAChiSquare::EvaluateGlobalChiSquare()
     if ( !std::isnan( EvaluateChiSquare( *(iD) ) )
          &&
          !std::isinf( EvaluateChiSquare( *(iD) ) ) ){
-      fChiSq += EvaluateChiSquare( *(iD) );
+      fChiSquare += EvaluateChiSquare( *(iD) );
     }
   }
 
-  return fChiSq;
+  return fChiSquare;
 
 }
 
@@ -272,7 +273,6 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
     // 'weightVal', i.e. the derivative with respect to a particular parameter
     // multiplied by the error on that data point
     for ( lVar = 1; lVar <= nVariablePar; lVar++ ) {
-	
       weightVal = dDataValDParameters[ variableParameterIndex[ lVar ] ] * dataError2;
       // Now add these 'weightings' by derivative to the corresponding entry
       // in the matrix of derivatives 'derivativeMatrix'
@@ -324,7 +324,7 @@ void  OCAChiSquare::FitEvaluateModel( OCAPMT& dPoint, Float_t testParameters[],
   // Save the current parameters in the model...
   Float_t *tempParameterSave = new Float_t[ nParameters ];
   *tempParameterSave = *fModel->GetOCAModelParameterStore()->GetParametersPtr(); 
-
+  
   // ...and set use the ones just passed to this method; the trial parameters.
   fModel->GetOCAModelParameterStore()->SetParametersPtr( testParameters );
 
@@ -500,6 +500,7 @@ Int_t OCAChiSquare::Minimise( Float_t testParameters[], Int_t parametersVary[],
   // Add the change in the parameters to the parameter array.
   for ( jVar = 0, lVar = 1; lVar <= nParameters; lVar++ ){
     if ( parametersVary[ lVar ] ) { 
+      if ( std::isnan( aTrial[ lVar ] ) ){ cout << "aTRIAL" << endl; }
       aTrial[ lVar ] = testParameters[ lVar ] + matrixLine[ ++jVar ];
     }
   } 
@@ -713,5 +714,10 @@ void OCAChiSquare::PerformOpticsFit( const Int_t passNum )
   printf( "Reduced Chi-Square = %.5f / ( %i - %i ) = %.5f\n-----------------------\n",
           chiSquare, nDataPoints, nVaryingParameters,
           chiSquare / ( nDataPoints - nVaryingParameters ) );
+
+  fModel->GetOCAModelParameterStore()->SetFinalChiSquare( chiSquare );
+  fModel->GetOCAModelParameterStore()->SetNumberOfDataPoints( nDataPoints );
+  Float_t redChiSquare = chiSquare / ( nDataPoints - nVaryingParameters );
+  fModel->GetOCAModelParameterStore()->SetReducedChiSquare( redChiSquare );
   
 }

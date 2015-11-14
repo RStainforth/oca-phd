@@ -55,8 +55,8 @@ using namespace OCA;
 class OCACmdOptions 
 {
 public:
-  OCACmdOptions( ) : fFitFileName( "" ), fSystematic( "" ) { }
-  std::string fFitFileName, fSystematic;
+  OCACmdOptions( ) : fFitFileName( "" ), fSystematic( "" ), fSeedFile( "" ) { }
+  std::string fFitFileName, fSystematic, fSeedFile;
 };
 
 // Declare the functions which will be used in the executable
@@ -147,27 +147,34 @@ int main( int argc, char** argv ){
 
   // Initalise a data filler object to filter through the raw
   // data using the filters
+  cout << "new filler" << endl;
   OCADataFiller* lDataFiller = new OCADataFiller();
 
   // Backup the original data store which is cut on at the top
   // level as part of each loop iteration below.
+  cout << "new ofStore" << endl;
   OCAPMTStore* ogStore = new OCAPMTStore();
+  cout << "new finalstore" << endl;
   OCAPMTStore* finalStore = new OCAPMTStore();
+  cout << "equality" << endl;
   *ogStore = *lData;
+  cout << "normalisations" << endl;
   lModel->InitialiseLBRunNormalisations( lData );
 
   // Retrieve information about the fitting procedure 
   // i.e. what subsequent values of the chisquare to cut on 
   // following each round of fitting.
-  cout << "chisqLims" << endl;
+  Bool_t updateFinalChiSqLim = false;
+  cout << "chiSqLims" << endl;
   std::vector< Double_t > chiSqLims = lDB.GetDoubleVectorField( "FITFILE", "chisq_lims", "fit_procedure" );
+  Int_t nInitChiSqLims = (Int_t)chiSqLims.size();
 
   stringstream myStream;
   string myString = "";
 
   for ( Size_t iFit = 0; iFit < chiSqLims.size(); iFit++ ){
 
-    lChiSq->EvaluateGlobalResidual();
+    lChiSq->EvaluateGlobalChiSquareResidual();
 
     myStream << chiSqLims[ iFit ];
     myStream >> myString;
@@ -180,10 +187,6 @@ int main( int argc, char** argv ){
     lFilterStore->UpdateFilter( "filter_chi_square", 
                                ( lFilterStore->GetFilter( "filter_chi_square" ) ).GetMinValue(), 
                                chiSqLims[ iFit ] );
-
-    // lFilterStore->UpdateFilter( "filter_dynamic_residual", 
-    //                             lChiSq->GetResidualMean() - 2.0 * lChiSq->GetResidualStd(), 
-    //                             lChiSq->GetResidualMean() + 2.0 * lChiSq->GetResidualStd() );
 
     // Filter the data.
     lDataFiller->FilterData( lFilterStore, lData, lChiSq );
@@ -198,103 +201,31 @@ int main( int argc, char** argv ){
     // Perform the optics fit.
     lChiSq->PerformOpticsFit( iFit );
 
-    // Set the data to the original set of data point values.
-    if ( iFit == chiSqLims.size() - 1 ){
-      *finalStore = *lData;
-    }
-    if ( iFit == 1 ){
-      *ogStore = *lData;
-    }
-    else{
-      *lData = *ogStore;
-    }
+    *finalStore = *lData;
+    *lData = *ogStore;
 
     vector< OCAPMT >::iterator iDP;
     vector< OCAPMT >::iterator iDPBegin = lData->GetOCAPMTsIterBegin();
     vector< OCAPMT >::iterator iDPEnd = lData->GetOCAPMTsIterEnd();
     for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
-      resPlot->Fill( lChiSq->EvaluateResidual( *iDP ) );
+      resPlot->Fill( lChiSq->EvaluateChiSquareResidual( *iDP ) );
     }
 
     TCanvas* myC = new TCanvas( "myC", "myC", 600, 400 );
     resPlot->Draw();
     myC->Print( ( myString + "-plot.eps" ).c_str() );
     myString.clear();
+
+    if ( ( iFit == nInitChiSqLims - 1 ) && !updateFinalChiSqLim ){
+      chiSqLims.push_back( resPlot->GetRMS() * resPlot->GetRMS() );
+      chiSqLims.push_back( resPlot->GetRMS() * resPlot->GetRMS() );
+      updateFinalChiSqLim = false;
+      cout << "oca2fit: Added final chi square limit based on residual RMS^2 = " << resPlot->GetRMS() * resPlot->GetRMS() << endl;
+    }
     
-  }
-
-  // Float_t curChiSq = 0.0;
-  // Float_t prevChiSq = -10.0;
-
-  // stringstream myStream;
-  // string myString = "";
-
-  // Int_t iCount = 0;
-  // while ( ( TMath::Abs( curChiSq - prevChiSq ) > 0.001 ) && iCount < 100 ){
-  //   myStream << iCount;
-  //   myStream >> myString;
-  //   myStream.clear();
-
-  //   TH1F* resPlot = new TH1F( ( myString + "-plot" ).c_str(), ( myString + "-plot-name" ).c_str(),
-  //                             100, -10.0, 10.0 );
-
-  //   if ( iCount == 0 ){ prevChiSq = -10.0; }
-  //   else{ prevChiSq = curChiSq; }
-  //   iCount++;
-  //   cout << "On iteration: " << iCount << endl;
-
-  //   lChiSq->EvaluateGlobalResidual();
-  //   Float_t upp = lChiSq->GetResidualMean() + ( ( ( 100 - iCount ) * 3.0 ) / 100 ) * lChiSq->GetResidualStd();
-  //   Float_t lower = lChiSq->GetResidualMean() - ( ( ( 100 - iCount ) * 3.0 ) / 100 ) * lChiSq->GetResidualStd();
-  //   cout << "Mean is: : " << lChiSq->GetResidualMean();
-  //   cout << "Upper Limit: " << upp << endl;
-  //   cout << "Lower Limit: " << lower << endl;
-  //   Float_t upperChiLimit = 0.0;
-  //   if ( lower * lower >= upp * upp ){ upperChiLimit = lower * lower; }
-  //   else{ upperChiLimit = upp * upp; }
-    
-  //   // Update the chisquare filter to a new maximum limit.
-  //   lFilterStore->UpdateFilter( "filter_chi_square", 
-  //                               0.0, upperChiLimit );
-  //   lFilterStore->UpdateFilter( "filter_dynamic_residual", 
-  //                               lower, upp );
-
-  //   lDataFiller->FilterData( lFilterStore, lData, lChiSq );
-  //   lFilterStore->PrintFilterCutInformation();
-  //   lFilterStore->ResetFilterConditionCounters();
-
-  //   lChiSq->PerformOpticsFit( iCount );
-  //   curChiSq = lChiSq->EvaluateGlobalChiSquare() / ( lData->GetNDataPoints() - lParStore->GetNGlobalVariableParameters() - 1 ) ;
-  //   cout << "Current ChiSq: " << curChiSq << endl;
-  //   cout << "Previous ChiSq: " << prevChiSq << endl;
-
-  //   if ( iCount == 100 - 1 || TMath::Abs( curChiSq - prevChiSq ) < 0.01 ){
-  //     *finalStore = *lData;
-  //   }
-
-  //   vector< OCAPMT >::iterator iDP;
-  //   vector< OCAPMT >::iterator iDPBegin = lData->GetOCAPMTsIterBegin();
-  //   vector< OCAPMT >::iterator iDPEnd = lData->GetOCAPMTsIterEnd();
-  //   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
-  //     resPlot->Fill( lChiSq->EvaluateResidual( *iDP ) );
-  //   }
-
-  //   TCanvas* myC = new TCanvas( "myC", "myC", 600, 400 );
-  //   resPlot->Draw();
-  //   myC->Print( ( myString + "-plot.eps" ).c_str() );
-  //   myString.clear();
-    
-  //   //*lData = *ogStore;
-    
-  // } 
+  } 
 
   lChiSq->EvaluateGlobalChiSquare();
-
-  // After performing all the iterations and fits with different chi-square
-  // limit cross check all the parameters in the OCAModelParameterStore.
-  // This essentially ensures that all the values are correct before finishing
-  // the fit.
-  lParStore->CrossCheckParameters();
 
   // Now begin the calculation of the relative PMT efficiencies,
   // the PMT variability and the normalised PMT efficiencies.
@@ -372,35 +303,40 @@ int main( int argc, char** argv ){
   TH1F* exampleHisto = new TH1F("example-histo", "example histo", 1000.0, 0.0, 10.0 );
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ){
     
-    // Calculate the model prediction and the data value
-    // of the occupancy.
-    modelPrediction = lModel->ModelPrediction( *iDP );
-    dataValue = iDP->GetMPECorrOccupancy();
-    pmtEff = dataValue / modelPrediction;
-
-
-    // The incident angle.
-    Int_t incAngle = (Int_t)( TMath::ACos( iDP->GetCosTheta() ) * TMath::RadToDeg() );
-    Float_t varVal = ( ( pmtEff / rawEffAvg[ iDP->GetID() ] ) / rawEffAvgTot );
-    exampleHisto->Fill( varVal );
-    Float_t statVal = TMath::Sqrt( 1.0 / iDP->GetPromptPeakCounts() );
-    //cout << "StatVal is: " << statVal << endl;
-    Float_t histoVal = TMath::Sqrt( ( varVal * varVal ) - ( statVal * statVal ) );
-    //cout << "HistoVal is: " << varVal << endl;
-    //cout << "------------" << endl;
-
-    if ( histoVal > 0.0 && !std::isnan( pmtEff ) && !std::isinf( pmtEff ) ){
-      effHistos[ incAngle ].Fill( histoVal );
-    }    
+    if ( iDP->GetLBPos().Mag() > 1000.0 ){
+      // Calculate the model prediction and the data value
+      // of the occupancy.
+      modelPrediction = lModel->ModelPrediction( *iDP );
+      dataValue = iDP->GetMPECorrOccupancy();
+      pmtEff = dataValue / modelPrediction;
+      
+      
+      // The incident angle.
+      Int_t incAngle = (Int_t)( TMath::ACos( iDP->GetCosTheta() ) * TMath::RadToDeg() );
+      Float_t varVal = ( ( pmtEff / rawEffAvg[ iDP->GetID() ] ) / rawEffAvgTot );
+      exampleHisto->Fill( varVal );
+      Float_t statVal = TMath::Sqrt( 1.0 / iDP->GetPromptPeakCounts() );
+      //cout << "StatVal is: " << statVal << endl;
+      Float_t histoVal = TMath::Sqrt( ( varVal * varVal ) - ( statVal * statVal ) );
+      //cout << "HistoVal is: " << varVal << endl;
+      //cout << "------------" << endl;
+      
+      if ( histoVal > 0.0 && !std::isnan( pmtEff ) && !std::isinf( pmtEff ) ){
+        effHistos[ incAngle ].Fill( histoVal );
+        iDP->SetRawEfficiency( histoVal );
+      }
+    }
   }
   
   exampleHisto->Draw();
-  exampleCanvas->Print("example_pmEff.eps");
+  string outputDir = lDB.GetOutputDir();
+  string filePath = outputDir + "fits/";
+  exampleCanvas->Print( ( filePath + fitName + "_pmt_efficiencies.eps" ).c_str() );
+  exampleCanvas->Print( ( filePath + fitName + "_pmt_efficiencies.root" ).c_str() );
 
   TGraph* myPlot = new TGraph();
 
   for ( Int_t iIndex = 0; iIndex < 90; iIndex++ ){
-    //cout << "effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean(): " << effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean() << endl;
     if ( effHistos[ iIndex ].GetMean() != 0.0
          && (Float_t)( effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean() ) < 1.0 ){
       myPlot->SetPoint( iIndex, 
@@ -423,9 +359,8 @@ int main( int argc, char** argv ){
 
   myPlot->Draw( "AP" );
 
-  string outputDir = lDB.GetOutputDir();
-  string filePath = outputDir + "fits/";
   effAngleC->Print( ( filePath + fitName + "_pmt_variability.eps" ).c_str() );
+  effAngleC->Print( ( filePath + fitName + "_pmt_variability.root" ).c_str() );
 
   vector< OCAPMT >::iterator iDPL;
   vector< OCAPMT >::iterator iDPBeginL = lData->GetOCAPMTsIterBegin();
@@ -438,8 +373,7 @@ int main( int argc, char** argv ){
       Float_t varPar = fitFunc->GetParameter( 0 )
         + ( fitFunc->GetParameter( 1 ) * incAngle )
         + ( fitFunc->GetParameter( 2 ) * incAngle * incAngle );
-      //iDPL->SetPMTVariability( varPar );
-      iDPL->SetPMTVariability( myPlot->Eval( incAngle ) );
+      iDPL->SetPMTVariability( varPar );
     }
     else{
       iDPL->SetPMTVariability( -1.0 );
@@ -453,8 +387,6 @@ int main( int argc, char** argv ){
   // the fit.
   lParStore->CrossCheckParameters();
 
-  //lData->WriteToFile( ( fitName + "_oca2fit.root" ).c_str() );
-
   // Create the full file path for the output fit file.
   string fitROOTPath = lDB.GetOutputDir() + "fits/" + fitName + ".root";
   string fitRATDBPath = lDB.GetOutputDir() + "fits/" + fitName + ".ratdb";
@@ -465,7 +397,7 @@ int main( int argc, char** argv ){
   lParStore->WriteToROOTFile( fitROOTPath, systematicName );
   lParStore->WriteToRATDBFile( fitRATDBPath.c_str() );
 
-  lData->WriteToFile( ( fitName + ".root" ).c_str() );
+  lData->WriteToFile( ( fitName + "_unfiltered.root" ).c_str() );
   finalStore->WriteToFile( ( fitName + "_filtered.root" ).c_str() );
   
     
@@ -487,20 +419,22 @@ OCACmdOptions ParseArguments( int argc, char** argv)
 {
   static struct option opts[] = { {"help", 0, NULL, 'h'},
                                   {"fit-file-name", 1, NULL, 'f'},
-                                  {"systematic", 1, NULL, 's'},
+                                  {"systematic-branch", 1, NULL, 'b'},
+                                  {"seed-file", 1, NULL, 's'},
                                   {0,0,0,0} };
   
   OCACmdOptions options;
   int option_index = 0;
-  int c = getopt_long(argc, argv, "h:f:s:", opts, &option_index);
+  int c = getopt_long(argc, argv, "h:f:b:s:", opts, &option_index);
   while (c != -1) {
     switch (c) {
     case 'h': help(); break;
     case 'f': options.fFitFileName = (std::string)optarg; break;
-    case 's': options.fSystematic = (std::string)optarg; break;
+    case 'b': options.fSystematic = (std::string)optarg; break;
+    case 's': options.fSeedFile = (std::string)optarg; break;
     }
     
-    c = getopt_long(argc, argv, "h:f:s:", opts, &option_index);
+    c = getopt_long(argc, argv, "h:f:b:s:", opts, &option_index);
   }
   
   stringstream idStream;
@@ -515,11 +449,11 @@ void help(){
 
   cout << "\n";
   cout << "SNO+ OCA - oca2fit" << "\n";
-  cout << "Description: This executable performs the OCA optics fit. \n";
-  cout << "Usage: oca2fit [-h] [-f fit-file-name] [-s systematic]\n";
-  cout << " -h, --help            Display this help message and exit \n";
-  cout << " -r, --fit-file-name   Set the run ID for the corresponding SOC run file to be processed for a OCARun fit file \n";
-  cout << " -s, --systematic      Set the corresponding central run ID file \n";
+  cout << "Description: This executable performs the OCA Optics fit. \n";
+  cout << "Usage: oca2fit [-f fit-file-name] [-b branch-systematic] [-s seed-file (optional)]\n";
+  cout << " -r, --fit-file-name          The name of the fit file in the ${OCA_SNOPLUS_ROOT}/data/fitfiles directory \n";
+  cout << " -b, --systematic-branch      Set the systematic branch on the OCARun files on which to perform the fit over \n";
+  cout << " -s, --seed-file              (Optional) The name of a previous fit from which to seed in the ${OCA_SNOPLUS_ROOT}/output/fits directory \n"; 
   
 }
 

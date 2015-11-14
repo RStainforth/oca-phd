@@ -37,7 +37,7 @@ OCAFilter::OCAFilter( const std::string filterName,
 //////////////////////////////////////
 
 OCAFilter::OCAFilter( const std::string filterName, 
-                          const Bool_t boolVal )
+                      const Bool_t boolVal )
 {
 
   // Set the filter name.

@@ -263,6 +263,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
   // intensity normalisation for the off-axis run.
   Float_t normVal = parPtr->GetLBRunNormalisationPar( dataPoint.GetRunIndex() );
   Float_t normCtrVal = dataPoint.GetCentralLBIntensityNorm();
+
   // Obtain the differences between the off-axis and central
   // runs for the distances in the inner AV, AV and water regions.
   Float_t dInnerAV = dataPoint.GetDistInInnerAV() 
@@ -318,6 +319,10 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
   // with respect to the individual model components.
 
   if ( derivativePars != NULL ){
+    
+    for ( Int_t iPar = 1; iPar <= parPtr->GetNParameters(); iPar++ ){
+      derivativePars[ iPar ] = 0.0; 
+    }
 
     // The derivatives with respect to the extinction lengths in the
     // inner AV, AV and water regions.
@@ -333,121 +338,56 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
 
     // The derivative with respect to the PMT angular response
     // from the off-axis run.
-    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() ] = 0.0;
-    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() + 1 ] = 0.0;
-    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() ] = ( 1.0 - interpolFrac ) /  angResp;
+    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() ] = ( 1.0 - interpolFrac ) / angResp;
     derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() + 1 ] = interpolFrac / angResp;
-    //cout << "( 1.0 - interpolFrac ) / angResp is: "  << ( 1.0 - interpolFrac ) / angResp << endl;
-    //cout << "interpolFrac / angResp is: "  << interpolFrac / angResp << endl;
-    //cout << "PMT Angular Sum: " << interpolFrac + ( 1.0 - interpolFrac ) << endl;
+
     // The derivative with respect to the PMT angular response
     // from the central run.
-    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] = 0.0;
-    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() + 1 ] = 0.0;
-    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] -= ( 1.0 - interpolFracCtr ) / angRespCtr;
-    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() + 1 ] -= interpolFracCtr /  angRespCtr;
-    //cout << "( 1.0 - interpolFracCtr ) / angRespCtr is: "  << ( 1.0 - interpolFracCtr ) / angRespCtr << endl;
-    //cout << "interpolFracCtr / angRespCtr is: "  << interpolFracCtr / angRespCtr << endl;
-    //cout << "------------------" << endl;
-    // The derivative with respect to the laserball 
-    // isotropy distribution from the off-axis run.
-    // derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] = 0.0;
-    // derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] = 1.0 / intensity;
-    //if ( phiFrac[ 0 ] == 0.0 && phiFrac[ 1 ] == 0.0 && cosThetaFrac[ 0 ] == 0.0 && cosThetaFrac[ 1 ] == 0.0 ){
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiff[ 0 ] ] = 1.0 / intensity;
-      //}
-    //else{
+    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] -= ( 1.0 - interpolFrac ) / angRespCtr;
+    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() + 1 ] -= interpolFracCtr / angRespCtr;
+
+    // Binned Laserball Histogram
     if ( parPtr->GetLBDistributionType() == 0 ){
-    derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] = 0.0;
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiff[ 1 ] ] = 0.0;
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiff[ 2 ] ] = 0.0;
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiff[ 3 ] ] = 0.0;
 
-    derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] = 1.0 / intensity; 
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiff[ 1 ] ] = ( phiFrac[ 1 ] * cosThetaFrac[ 0 ] ) / ( intensity );     
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiff[ 2 ] ] = ( phiFrac[ 0 ] * cosThetaFrac[ 1 ] ) / ( intensity );
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiff[ 3 ] ] = ( phiFrac[ 1 ] * cosThetaFrac[ 1 ] ) / ( intensity );
-    //cout << "diffOne: " << ( phiFrac[ 0 ] * cosThetaFrac[ 0 ] ) / ( intensity ) << " and recip: " << 1.0/intensity << " and intensity: " << intensity << endl;
-    //cout << "diffTwo: " << ( phiFrac[ 1 ] * cosThetaFrac[ 0 ] ) / ( intensity ) << " and recip: " << 1.0/intensity << endl;
-    //cout << "diffThree: " << ( phiFrac[ 0 ] * cosThetaFrac[ 1 ] ) / ( intensity ) << " and recip: " << 1.0/intensity << endl;
-    //cout << "diffFour: " << ( phiFrac[ 1 ] * cosThetaFrac[ 1 ] ) / ( intensity ) << " and recip: " << 1.0/intensity << endl;
-    //cout << "Total Sum: " << (phiFrac[ 0 ] * cosThetaFrac[ 0 ]) + (phiFrac[ 0 ] * cosThetaFrac[ 1 ]) + (phiFrac[ 1 ] * cosThetaFrac[ 0 ]) + (phiFrac[ 1 ] * cosThetaFrac[ 1 ]) << endl;
-    //cout << "-------------" << endl;
-      //}
-    // The derivative with respect to the laserball 
-    // isotropy distribution from the central run.
-    // derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCentralCurrentLBDistributionBin() ] = 0.0;
-    // derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCentralCurrentLBDistributionBin() ] -= 1.0 / intensityCtr;
-    //if ( phiFracCtr[ 0 ] == 0.0 && phiFracCtr[ 1 ] == 0.0 && cosThetaFracCtr[ 0 ] == 0.0 && phiFracCtr[ 1 ] == 0.0 ){
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 0 ] ] -= 1.0 / intensityCtr;
-      //}  
-    //else{
-    derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCentralCurrentLBDistributionBin() ] = 0.0;
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 1 ] ] = 0.0;
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 2 ] ] = 0.0;
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 3 ] ] = 0.0;
+      // The derivative with respect to the laserball 
+      // isotropy distribution from the off-axis run.
+      derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCurrentLBDistributionBin() ] = 1.0 / intensity;
 
-    derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCentralCurrentLBDistributionBin() ] -= 1.0 / intensityCtr;
+      // The derivative with respect to the laserball 
+      // isotropy distribution from the central run.
+      derivativePars[ parPtr->GetLBDistributionParIndex() + parPtr->GetCentralCurrentLBDistributionBin() ] -= 1.0 / intensityCtr;
     }
-
+    
+    // Sinusoidal Laserball Histogram
     if ( parPtr->GetLBDistributionType() == 1 ){
       Double_t* parlb = new Double_t[1+parPtr->GetNLBParametersPerSinWaveSlice()];
       Float_t phi = dataPoint.GetRelLBPhi();
       if ( phi < -1.0 * TMath::Pi() ){ phi += 2.0 * TMath::Pi(); }
       if ( phi > TMath::Pi() ){ phi -= 2.0 * TMath::Pi(); }
-      //Double_t* lbphi = new Double_t(phi);
       for(int i=0; i<parPtr->GetNLBParametersPerSinWaveSlice(); i++) {parlb[1+i] = parPtr->GetLBDistributionPar(parPtr->GetCurrentLBDistributionBin()*parPtr->GetNLBParametersPerSinWaveSlice()+i);}
       for(int i=0; i<parPtr->GetNLBParametersPerSinWaveSlice(); i++){
         parlb[0] = (Double_t)i;
         derivativePars[parPtr->GetLBDistributionParIndex()
-                       +parPtr->GetCurrentLBDistributionBin()*parPtr->GetNLBParametersPerSinWaveSlice()+i] = 0.0;
-        derivativePars[parPtr->GetLBDistributionParIndex()
-                       +parPtr->GetCurrentLBDistributionBin()*parPtr->GetNLBParametersPerSinWaveSlice()+i] = ModelDLBDistributionSinWave(phi,parlb)/intensity;
-        //cout << "ModelDLBDistributionSinWave(lbphi,parlb)/intensity: " << ModelDLBDistributionSinWave(lbphi,parlb)/intensity << endl;
-        //cout << "intensity: " << intensity << endl;
-        //cout << "ModelDLBDistributionSinWave(lbphi,parlb): " << ModelDLBDistributionSinWave(lbphi,parlb) << endl;
-        //cout << "-----------------" << endl;
+                       +parPtr->GetCurrentLBDistributionBin()*parPtr->GetNLBParametersPerSinWaveSlice()+i] = ModelDLBDistributionSinWave(phi,parlb) / intensity;
+
       }
-      //delete [] parlb;
-      //delete lbphi;
+
       Double_t* parlbCtr = new Double_t[1+parPtr->GetNLBParametersPerSinWaveSlice()];
       phi = dataPoint.GetCentralRelLBPhi();
       if ( phi < -1.0 * TMath::Pi() ){ phi += 2.0 * TMath::Pi(); }
       if ( phi > TMath::Pi() ){ phi -= 2.0 * TMath::Pi(); }
-      //Double_t* lbphiCtr = new Double_t(phi);
       for(int i=0; i<parPtr->GetNLBParametersPerSinWaveSlice(); i++) {parlbCtr[1+i] = parPtr->GetLBDistributionPar(parPtr->GetCentralCurrentLBDistributionBin()*parPtr->GetNLBParametersPerSinWaveSlice()+i);}
-      for(int i=0; i<parPtr->GetNLBParametersPerSinWaveSlice(); i++){
-        derivativePars[parPtr->GetLBDistributionParIndex()
-                       +parPtr->GetCentralCurrentLBDistributionBin()*parPtr->GetNLBParametersPerSinWaveSlice()+i] = 0.0;
-      }
       for(int i=0; i<parPtr->GetNLBParametersPerSinWaveSlice(); i++){
         parlbCtr[0] = (Double_t)i;
         derivativePars[parPtr->GetLBDistributionParIndex()
                        +parPtr->GetCentralCurrentLBDistributionBin()*parPtr->GetNLBParametersPerSinWaveSlice()+i] -= ModelDLBDistributionSinWave(phi,parlbCtr)/intensityCtr;
-        //cout << "ModelDLBDistributionSinWave(lbphi,parlb)/intensityCtr: " << ModelDLBDistributionSinWave(lbphi,parlb)/intensityCtr << endl;
-        //cout << "intensityCtr: " << intensityCtr << endl;
-        //cout << "ModelDLBDistributionSinWave(lbphi,parlb): " << ModelDLBDistributionSinWave(lbphi,parlb) << endl;
-        //cout << "-----------------" << endl;
       }
       delete [] parlbCtr;
       delete [] parlb;
-      //delete lbphiCtr;
 
     }
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 1 ] ] -= ( phiFracCtr[ 1 ] * cosThetaFracCtr[ 0 ] ) / ( intensityCtr );     
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 2 ] ] -= ( phiFracCtr[ 0 ] * cosThetaFracCtr[ 1 ] ) / ( intensityCtr );
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 3 ] ] -= ( phiFracCtr[ 1 ] * cosThetaFracCtr[ 1 ] ) / ( intensityCtr );
-    //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 0 ] ] -= 1.0 / ( intensityCtr ); 
-      //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 1 ] ] -= ( phiFracCtr[ 1 ] * cosThetaFracCtr[ 0 ] ) / ( intensityCtr );     
-      //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 2 ] ] -= ( phiFracCtr[ 0 ] * cosThetaFracCtr[ 1 ] ) / ( intensityCtr );
-      //derivativePars[ parPtr->GetLBDistributionParIndex() + binsToDiffCtr[ 3 ] ] -= ( phiFracCtr[ 1 ] * cosThetaFracCtr[ 1 ] ) / ( intensityCtr );
-      //}
 
-    // The derivative with respect to the run normalisation
-    // from the off-axis run.
-    derivativePars[ parPtr->GetLBRunNormalisationParIndex() + parPtr->GetCurrentLBRunNormalisationBin() ] = 0.0;
     derivativePars[ parPtr->GetLBRunNormalisationParIndex() + parPtr->GetCurrentLBRunNormalisationBin() ] = 1.0 / normVal;
-    //derivativePars[ parPtr->GetLBRunNormalisationParIndex() + parPtr->GetCurrentLBRunNormalisationBin() ] -= 1.0 / normCtrVal;
 
     // Now we compute the derivative with respect to 
     // each of the parameters in the laserball distribution
@@ -457,7 +397,6 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
     for ( Int_t iVal = 0; iVal < parPtr->GetNLBDistributionMaskParameters(); iVal++ ){ parMask[ 1 + iVal ] = parPtr->GetLBDistributionMaskPar( iVal ); }
     for ( Int_t iVal = 0; iVal < parPtr->GetNLBDistributionMaskParameters(); iVal++ ){
       parMask[ 0 ] = (Double_t)iVal;
-      derivativePars[ parPtr->GetLBDistributionMaskParIndex() + iVal ] = 0.0;
       derivativePars[ parPtr->GetLBDistributionMaskParIndex() + iVal ] = ModelLBDistributionMaskDeriviative( lbCTheta, parMask ) / intensityPoly;
     }
     delete [] parMask;
@@ -471,7 +410,7 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
     for ( Int_t iVal = 0; iVal < parPtr->GetNLBDistributionMaskParameters(); iVal++ ){ parMaskCtr[ 1 + iVal ] = parPtr->GetLBDistributionMaskPar( iVal ); }
     for ( Int_t iVal = 0; iVal < parPtr->GetNLBDistributionMaskParameters(); iVal++ ){
       parMaskCtr[ 0 ] = (Double_t)iVal;
-      derivativePars[ parPtr->GetLBDistributionMaskParIndex() + iVal ] -= ModelLBDistributionMaskDeriviative( lbCTheta, parMaskCtr ) / intensityCtrPoly;
+      derivativePars[ parPtr->GetLBDistributionMaskParIndex() + iVal ] -= ModelLBDistributionMaskDeriviative( lbCThetaCtr, parMaskCtr ) / intensityCtrPoly;
     }
     delete [] parMaskCtr;
     delete lbCThetaCtr;
@@ -636,6 +575,11 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCAPMT& dataPoint, std::strin
     }
 
     Float_t laserLight = (Float_t)ModelLBDistributionSinWave( phi, par );
+    // if ( std::isnan( laserLight ) ){
+    //   cout << "iTheta * nPhi + 0: " << iTheta * nPhi + 0 << endl;
+    //   cout << "iTheta * nPhi + 1: " << iTheta * nPhi + 1 << endl;
+    //   cout << "nPhi: " << nPhi << endl;
+    // }
     delete [] par;
     //delete aPhi;
 
@@ -679,8 +623,8 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCAPMT& dataPoint, std::strin
     parPtr->SetCentralCurrentLBDistributionBin( iLBDist ); 
   }
 
-  //binsToDiff[ 0 ] = iLBDist;
-  parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDist );
+  binsToDiff[ 0 ] = iLBDist;
+  //parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDist );
   return parPtr->GetLBDistributionPar( iLBDist );
 
   //vector< Int_t > bins;
@@ -689,36 +633,70 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCAPMT& dataPoint, std::strin
   Int_t iLBDistPhiInterpol = iTheta * parPtr->GetNLBDistributionPhiBins() + ( iPhi + 1 );
   Int_t iLBDistThetaInterpol = ( iTheta + 1 ) * parPtr->GetNLBDistributionPhiBins() + iPhi;
   Int_t iLBDistPhiThetaInterpol =  ( iTheta + 1 ) * parPtr->GetNLBDistributionPhiBins() + ( iPhi + 1 );
-  if ( iPhi + 1 >= parPtr->GetNLBDistributionPhiBins() 
-       &&
-       iTheta + 1 >= parPtr->GetNLBDistributionCosThetaBins() ){
-    iLBDistPhiThetaInterpol = ( iTheta ) * parPtr->GetNLBDistributionPhiBins() + iPhi;
-  }
-  if ( iPhi + 1 >= parPtr->GetNLBDistributionPhiBins()
-       &&
-       iTheta + 1 < parPtr->GetNLBDistributionCosThetaBins() ){
-    iLBDistPhiInterpol = iTheta * parPtr->GetNLBDistributionPhiBins() + iPhi;
-    iLBDistPhiThetaInterpol =  ( iTheta + 1 ) * parPtr->GetNLBDistributionPhiBins() + iPhi;
-  }
-  if ( iPhi + 1 < parPtr->GetNLBDistributionPhiBins()
-       &&
-       iTheta + 1 >= parPtr->GetNLBDistributionCosThetaBins() ){ 
-    iLBDistPhiThetaInterpol = ( iTheta ) * parPtr->GetNLBDistributionPhiBins() + ( iPhi + 1 );
-    iLBDistThetaInterpol = ( iTheta ) * parPtr->GetNLBDistributionPhiBins() + iPhi;
-  }
 
   binsToDiff[ 0 ] = iLBDist;
   binsToDiff[ 1 ] = iLBDistPhiInterpol;
   binsToDiff[ 2 ] = iLBDistThetaInterpol;
   binsToDiff[ 3 ] = iLBDistPhiThetaInterpol;
 
+  if ( iPhi + 1 >= parPtr->GetNLBDistributionPhiBins() 
+       &&
+       iTheta + 1 >= parPtr->GetNLBDistributionCosThetaBins() ){
+    phiInterpolFrac[ 0 ] = 1.0;
+    phiInterpolFrac[ 1 ] = 0.0;
+    cosThetaInterpolFrac[ 0 ] = 1.0; 
+    cosThetaInterpolFrac[ 1 ] = 0.0;
+    return parPtr->GetLBDistributionPar( iLBDist );
+    //iLBDistPhiThetaInterpol = ( iTheta ) * parPtr->GetNLBDistributionPhiBins() + iPhi;
+  }
+  if ( iPhi + 1 >= parPtr->GetNLBDistributionPhiBins()
+       &&
+       iTheta + 1 < parPtr->GetNLBDistributionCosThetaBins() ){
+    phiInterpolFrac[ 0 ] = 1.0;
+    phiInterpolFrac[ 1 ] = 0.0;
+    cosThetaInterpolFrac[ 0 ] = 1.0; 
+    cosThetaInterpolFrac[ 1 ] = 0.0;
+    return parPtr->GetLBDistributionPar( iLBDist );
+    //iLBDistPhiInterpol = iTheta * parPtr->GetNLBDistributionPhiBins() + iPhi;
+    //iLBDistPhiThetaInterpol =  ( iTheta + 1 ) * parPtr->GetNLBDistributionPhiBins() + iPhi;
+  }
+  if ( iPhi + 1 < parPtr->GetNLBDistributionPhiBins()
+       &&
+       iTheta + 1 >= parPtr->GetNLBDistributionCosThetaBins() ){ 
+    phiInterpolFrac[ 0 ] = 1.0;
+    phiInterpolFrac[ 1 ] = 0.0;
+    cosThetaInterpolFrac[ 0 ] = 1.0; 
+    cosThetaInterpolFrac[ 1 ] = 0.0;
+    return parPtr->GetLBDistributionPar( iLBDist );
+    //iLBDistPhiThetaInterpol = ( iTheta ) * parPtr->GetNLBDistributionPhiBins() + ( iPhi + 1 );
+    //iLBDistThetaInterpol = ( iTheta ) * parPtr->GetNLBDistributionPhiBins() + iPhi;
+  }
+
   Float_t phiVal = ( ( phi + TMath::Pi() ) / ( 2 * TMath::Pi() ) * parPtr->GetNLBDistributionPhiBins() );
   Float_t cosThetaVal = ( ( 1 + cosTheta ) / 2.0 * parPtr->GetNLBDistributionCosThetaBins() );
 
-  phiInterpolFrac[ 0 ] = ( ceil( phiVal ) - phiVal ) / ( ceil( phiVal ) - floor( phiVal ) );
-  phiInterpolFrac[ 1 ] = ( phiVal - floor( phiVal ) ) / ( ceil( phiVal ) - floor( phiVal ) );
-  cosThetaInterpolFrac[ 0 ] = ( ceil( cosThetaVal ) - cosThetaVal ) / ( ceil( cosThetaVal ) - floor ( cosThetaVal ) );
-  cosThetaInterpolFrac[ 1 ] = ( cosThetaVal - floor( cosThetaVal ) ) / ( ceil( cosThetaVal ) - floor ( cosThetaVal ) );
+  Float_t fracPhi = phiVal - floor( phiVal );
+  Float_t fracTheta = cosThetaVal - floor( cosThetaVal );
+  Float_t valXX = parPtr->GetLBDistributionPar( iLBDist );
+  Float_t valXY = parPtr->GetLBDistributionPar( iLBDistPhiInterpol );
+  Float_t valYX = parPtr->GetLBDistributionPar( iLBDistThetaInterpol );
+  Float_t valYY = parPtr->GetLBDistributionPar( iLBDistPhiThetaInterpol );
+
+  Float_t partOne = ( 1.0 - fracPhi ) * ( ( 1.0 - fracTheta )*valXX + fracTheta*valXY );
+  Float_t partTwo = fracPhi * ( ( 1.0 - fracTheta )*valYX + fracTheta*valYY );
+
+  phiInterpolFrac[ 0 ] = ( 1.0 - fracPhi ) * ( 1.0 - fracTheta );
+  phiInterpolFrac[ 1 ] = ( 1.0 - fracPhi ) * fracTheta;
+  cosThetaInterpolFrac[ 0 ] = fracPhi * ( 1.0 - fracTheta ); 
+  cosThetaInterpolFrac[ 1 ] = fracPhi * fracTheta;
+
+  return partOne + partTwo;
+  //return partOne + partTwo;
+
+  // phiInterpolFrac[ 0 ] = ( ceil( phiVal ) - phiVal ) / ( ceil( phiVal ) - floor( phiVal ) );
+  // phiInterpolFrac[ 1 ] = ( phiVal - floor( phiVal ) ) / ( ceil( phiVal ) - floor( phiVal ) );
+  // cosThetaInterpolFrac[ 0 ] = ( ceil( cosThetaVal ) - cosThetaVal ) / ( ceil( cosThetaVal ) - floor ( cosThetaVal ) );
+  // cosThetaInterpolFrac[ 1 ] = ( cosThetaVal - floor( cosThetaVal ) ) / ( ceil( cosThetaVal ) - floor ( cosThetaVal ) );
   
   if ( !parPtr->GetParametersVary()[ parPtr->GetLBDistributionParIndex() + iLBDist ]
        || !parPtr->GetParametersVary()[ parPtr->GetLBDistributionParIndex() + iLBDistPhiInterpol ]
@@ -751,22 +729,22 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCAPMT& dataPoint, std::strin
     
     // Final interpolation
     Float_t interpolVal = cosThetaInterpolFrac[ 0 ] * valXY1 + cosThetaInterpolFrac[ 1 ] * valXY2;
-
+    
     if ( phiInterpolFrac[ 0 ] * cosThetaInterpolFrac[ 0 ] != 0.0 ){
       parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDist );
     }
-    // if ( phiInterpolFrac[ 1 ] * cosThetaInterpolFrac[ 0 ] >= 0.0 ){
-    //   parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDistPhiInterpol );
-    // }
-    // if ( phiInterpolFrac[ 0 ] * cosThetaInterpolFrac[ 1 ] >= 0.0 ){
-    //   parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDistThetaInterpol );
-    // }
-    // if ( phiInterpolFrac[ 1 ] * cosThetaInterpolFrac[ 1 ] >= 0.0 ){
-    //   parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDistPhiThetaInterpol );
-    // }
+    if ( phiInterpolFrac[ 1 ] * cosThetaInterpolFrac[ 0 ] >= 0.0 ){
+      parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDistPhiInterpol );
+    }
+    if ( phiInterpolFrac[ 0 ] * cosThetaInterpolFrac[ 1 ] >= 0.0 ){
+      parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDistThetaInterpol );
+    }
+    if ( phiInterpolFrac[ 1 ] * cosThetaInterpolFrac[ 1 ] >= 0.0 ){
+      parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDistPhiThetaInterpol );
+    }
     //cout << "interpolVal is: " << interpolVal << endl;
-    //return interpolVal;
-    return parPtr->GetLBDistributionPar( iLBDist );
+    return interpolVal;
+    //return parPtr->GetLBDistributionPar( iLBDist );
     
   }
   
@@ -786,16 +764,14 @@ Double_t OCAOpticsModel::ModelLBDistributionSinWave(Float_t& a,Double_t *par)
   // corresponding to a[0] = phi.
   //
   // par[0] specifies number of parameters; par[1] through par[par[0]] are
-  // the parameters themselves.  Can't use fNdistwave inside static class function!
-
-  // see QOCAFit::ModelLBDist() when modifying...
+  // the parameters themselves.
 
   Double_t phi          = a;
   Double_t amplitude_ac = par[1];
   Double_t frequency    = 1.;
   Double_t phase        = par[2];
   Double_t amplitude_dc = 1.;
-  Double_t lbd = amplitude_ac*sin(frequency*phi + phase) + amplitude_dc;
+  Double_t lbd = amplitude_ac*sin( frequency * phi + phase ) + amplitude_dc;
 
   return lbd;
 }
@@ -807,8 +783,6 @@ Double_t OCAOpticsModel::ModelDLBDistributionSinWave(Float_t& a,Double_t *par)
   // parameter identified by the index in par[0], and evaluated at
   // phi = a[0].
 
-  // see QOCAFit::ModelLBDist() when modifying...
-
   Int_t ipar = (Int_t) par[0];
   Double_t phi          = a;
   Double_t amplitude_ac = par[1];
@@ -817,8 +791,8 @@ Double_t OCAOpticsModel::ModelDLBDistributionSinWave(Float_t& a,Double_t *par)
   Double_t dlbd;
 
   // actual derivatives
-  if(ipar == 0) dlbd = sin(frequency*phi + phase);
-  else if(ipar == 1) dlbd = amplitude_ac*cos(frequency*phi + phase);
+  if( ipar == 0 ) dlbd = sin(frequency*phi + phase);
+  else if( ipar == 1 ) dlbd = amplitude_ac*cos(frequency*phi + phase);
   else dlbd = 0.0;
   
   return dlbd;
@@ -858,7 +832,7 @@ Float_t OCAOpticsModel::ModelLBDistributionMask( const OCAPMT& dataPoint, std::s
   //       iPar-- ){
 
   //   polynomialVal = polynomialVal * onePlus + parPtr->GetLBDistributionMaskPar( iPar );
-    
+  //   cout << "polynomialVal is: " << polynomialVal << endl;
   // }
 
   for ( Int_t iPar = 1; iPar < parPtr->GetNLBDistributionMaskParameters(); iPar++ ){
@@ -884,7 +858,6 @@ Float_t OCAOpticsModel::ModelLBDistributionMaskDeriviative( Double_t* aPtr, Doub
   Double_t onePlus = 1.0 + cosTheta;
   
   Double_t dlbM = TMath::Power( onePlus, iPar );
-  
   return dlbM;
   
 }
@@ -910,7 +883,7 @@ Float_t OCAOpticsModel::ModelAngularResponse( const OCAPMT& dataPoint, std::stri
     angle = TMath::ACos( dataPoint.GetCosTheta() ) * 180.0 / TMath::Pi();
   }
   else if ( runType == "central" ){ 
-    angle = TMath::ACos( dataPoint.GetCentralCosTheta() ) * 180.0 / TMath::Pi(); 
+    angle = TMath::ACos( dataPoint.GetCentralCosTheta() ) * 180.0 / TMath::Pi();
   }
 
   // Calculate the associated bin representative of this angle.
@@ -929,7 +902,7 @@ Float_t OCAOpticsModel::ModelAngularResponse( const OCAPMT& dataPoint, std::stri
   }
 
   interpolFrac = 0.0;
-  parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponseParIndex() + iAng );
+  //parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponseParIndex() + iAng );
   //return  parPtr->GetPMTAngularResponsePar( iAng );
 
   if ( !fModelParameterStore->GetParametersVary()[ parPtr->GetPMTAngularResponseParIndex() + iAng ]

@@ -29,6 +29,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TF1.h"
+#include "TMatrix.h"
 
 #include <string>
 
@@ -102,14 +103,14 @@ namespace OCA{
     // Return the value of a parameter by its index.
     //Float_t GetParameterValue( Int_t parIndex ){ return fParameterValues[ parIndex ]; }
 
-    // Return the vector of the parameter values.
-    //vector< Float_t > GetParameterValues(){ return fParameterValues; }
+    // // Return the vector of the parameter values.
+    // vector< Float_t > GetParameterValues(){ return fParameterValues; }
     
     // Return the value of a covariance matrix element by it's index.
-    //Float_t GetCovarianceMatrixValue( Int_t iIndex, Int_t jIndex ){ return fCovarianceMatrixValues[ iIndex ][ jIndex ]; }
+    Float_t GetCovarianceMatrixValue( Int_t rowIndex, Int_t colIndex ){ return fCovarianceMatrixValues[ rowIndex ][ colIndex ]; }
 
-    // Return the value of a covariance matrix element by it's index.
-    //vector< vector< Float_t > > GetCovarianceMatrixValues(){ return fCovarianceMatrixValues; }
+    // // Return the value of a covariance matrix element by it's index.
+    TMatrix GetCovarianceMatrixValues(){ return fCovarianceMatrixValues; }
 
     // Get the boolean flag to denote whether or not the parameters
     // were seeded.
@@ -290,9 +291,23 @@ namespace OCA{
     vector< OCAModelParameter >::iterator GetOCAModelParametersIterBegin(){ return fParameters.begin(); }
     vector< OCAModelParameter >::iterator GetOCAModelParametersIterEnd(){ return fParameters.end(); }
 
+    // Get the vector of the current bins which are active on the current data point
+    // for the laserball distribution.
     vector< Int_t >* GetCurrentLBDistributionBins(){ return fCurrentLBDistributionBins; }
 
+    // Get the vector of the current bins which are active on the current data point
+    // for the angular repsonse distribution.
     vector< Int_t >* GetCurrentAngularResponseBins(){ return fCurrentAngularResponseBins; }
+
+
+    // Get the final value of the chisquare for this set of parameters.
+    Float_t GetFinalChiSquare(){ return fFinalChiSquare; }
+
+    // Get the number of data points from which these parameters were fitted.
+    Int_t GetNumberOfDataPoints(){ return fNumberOfDataPoints; }
+
+    // Get the reduced chi square value.
+    Float_t GetReducedChiSquare(){ return fReducedChiSquare; }
 
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -338,72 +353,90 @@ namespace OCA{
     // by the 'covar' array of arrays.
     void SetCovarianceMatrix( Float_t** covar ) { fCovarianceMatrix = covar; }
 
+    // Set the vector of the current bins which are active on the current data point
+    // for the laserball distribution.
     void SetCurrentLBDistributionBins( vector< Int_t >& vec ){ *fCurrentLBDistributionBins = vec; }
 
+    // Set the vector of the current bins which are active on the current data point
+    // for the angular repsonse distribution.
     void SetCurrentAngularResponseBins( vector< Int_t >& vec ){ *fCurrentAngularResponseBins = vec; }
+
+    // Set the final value of the chisquare for this set of parameters.
+    void SetFinalChiSquare( Float_t& chiSq ){ fFinalChiSquare = chiSq; }
+
+    // Set the number of data points from which these parameters were fitted.
+    void SetNumberOfDataPoints( Int_t& numDP ){ fNumberOfDataPoints = numDP; }
+
+    // Set the reduced chi square value.
+    void SetReducedChiSquare( Float_t& chiRed ){ fReducedChiSquare = chiRed; }
 
   private:
 
-    string fStoreName;                               // The store name.
-    string fSystematicName;                          // The systematic name.
+    string fStoreName;                                      // The store name.
+    string fSystematicName;                                 // The systematic name.
 
-    Bool_t fSeededParameters;                        // Boolean flag to denote whether or not the parameters were seeded.
-    string fSeedFile;                                // The name of the fit which was used as the seed.
+    Bool_t fSeededParameters;                               // Boolean flag to denote whether or not the parameters were seeded.
+    string fSeedFile;                                       // The name of the fit which was used as the seed.
 
-    Bool_t fWaterFill;                               // Boolean flag to denote wehther or not the inner AV and water regions share the same material (i.e. waterfill). 
+    Bool_t fWaterFill;                                      // Boolean flag to denote wehther or not the inner AV and water regions share the same material (i.e. waterfill). 
 
-    Int_t fCurrentLBDistributionBin;                 //! The current laserball distribution bin for the off-axis run.
+    Int_t fCurrentLBDistributionBin;                        //! The current laserball distribution bin for the off-axis run.
     
-    Int_t fCentralCurrentLBDistributionBin;          //! The current laserball distribution for the central run.
+    Int_t fCentralCurrentLBDistributionBin;                 //! The current laserball distribution for the central run.
 
-    Int_t fCurrentPMTAngularResponseBin;             //! The current angular response bin for the off-axis run.
+    Int_t fCurrentPMTAngularResponseBin;                    //! The current angular response bin for the off-axis run.
 
-    Int_t fCentralCurrentPMTAngularResponseBin;      //! The current angular response bin for the off-axis run.
+    Int_t fCentralCurrentPMTAngularResponseBin;             //! The current angular response bin for the off-axis run.
 
-    Int_t fCurrentLBRunNormalisationBin;             //! The current index for the laserball normalisation.
+    Int_t fCurrentLBRunNormalisationBin;                    //! The current index for the laserball normalisation.
 
-    Int_t fNLBDistributionMaskParameters;            // The number of laserball mask parameters.
-    Int_t fNPMTAngularResponseBins;                  // The number of PMT Angular Response Bins.
-    Int_t fNLBDistributionCosThetaBins;              // The number of bins in cos theta ( -1.0, 1.0 ) for the laserball distribution 2d histogram.
-    Int_t fNLBDistributionPhiBins;                   // The number of bins in phi ( 0.0, 360.0 ) for the laserball distribution 2d hisotgram.
-    Int_t fNLBRunNormalisations;                     // The total number of run normalisations ( = number of laserball runs ).
-    Int_t fNLBSinWaveSlices;                         // The total number of slices in theta for the sin-wave laserball angular distribution.
-    Int_t fNLBParametersPerSinWaveSlice;             // The number of parameters per sin wave theta slice in the sin-wave laserball angular distribution.
-    Int_t fLBDistributionType;                       // Get the laserball angular distribution type (0: binned, 1: sin-wave).
-    Int_t fNLBDistributionPars;                      // Total number of laserball distribution parameters; regardless of the type (binned or sin-wave)
+    Int_t fNLBDistributionMaskParameters;                   // The number of laserball mask parameters.
+    Int_t fNPMTAngularResponseBins;                         // The number of PMT Angular Response Bins.
+    Int_t fNLBDistributionCosThetaBins;                     // The number of bins in cos theta ( -1.0, 1.0 ) for the laserball distribution 2d histogram.
+    Int_t fNLBDistributionPhiBins;                          // The number of bins in phi ( -0.0, 360.0 ) for the laserball distribution 2d hisotgram. (NOTE: SNO+ coordinates are ( -180.0, 180.0 )
+    Int_t fNLBRunNormalisations;                            // The total number of run normalisations ( = number of laserball runs ).
+    Int_t fNLBSinWaveSlices;                                // The total number of slices in theta for the sin-wave laserball angular distribution.
+    Int_t fNLBParametersPerSinWaveSlice;                    // The number of parameters per sin wave theta slice in the sin-wave laserball angular distribution.
+    Int_t fLBDistributionType;                              // Get the laserball angular distribution type (0: binned, 1: sin-wave).
+    Int_t fNLBDistributionPars;                             // Total number of laserball distribution parameters; regardless of the type (binned or sin-wave)
 
-    Int_t fNParameters;                              // The number of parameters in the store.
+    Int_t fNParameters;                                     // The number of parameters in the store.
 
-    Int_t fNCurrentVariableParameters;               //! The total number of current variable parameters.
+    Int_t fNCurrentVariableParameters;                      //! The total number of current variable parameters.
 
-    Int_t fNGlobalVariableParameters;                //! The total global number of variable parameters.
+    Int_t fNGlobalVariableParameters;                       // The total global number of variable parameters.
 
-    vector< OCAModelParameter > fParameters;         // The vector of parameter objects i.e. the store.
-    //vector< Float_t > fParameterValues;              //! The vector of the direct parameter values.
-    //vector< vector< Float_t > > fCovarianceMatrixValues;//! The covariance matrix of values.
+    vector< OCAModelParameter > fParameters;                // The vector of parameter objects i.e. the store.
+    //vector< Float_t > fParameterValues;                   //! The vector of the direct parameter values.
+    TMatrix fCovarianceMatrixValues;                        // The covariance matrix of values.
 
-    Float_t* fParametersPtr;                         //! The pointer of parameter values.
-    Int_t* fParametersVary;                          //! Array of which parameters vary ( =1 ) and which do not ( =0 ).
+    Float_t* fParametersPtr;                                //! The pointer of parameter values.
+    Int_t* fParametersVary;                                 //! Array of which parameters vary ( =1 ) and which do not ( =0 ).
 
-    Float_t** fCovarianceMatrix;                     //! [ fNParameters + 1 ][ fNParameters + 1 ] Covariance matrix.
-    Float_t** fDerivativeMatrix;                     //! [ fNParameters + 1 ][ fNParameters + 1 ] Curvature matrix.
+    Float_t** fCovarianceMatrix;                            //! [ fNParameters + 1 ][ fNParameters + 1 ] Covariance matrix.
+    Float_t** fDerivativeMatrix;                            //! [ fNParameters + 1 ][ fNParameters + 1 ] Curvature matrix.
 
-    Int_t fNBaseVariableParameters;                  //! The number of base variable parameters, 
-                                                     // i.e. the parameters which vary that do not include:
-                                                     // - PMT angular response
-                                                     // - Laserball distribution histogram 
-                                                     // - Laserball Run normalisations
-                                                     // i.e. fNBaseVariableParameters + all the variable parameters in the following:
-                                                     // - PMT angular response, 
-                                                     // - Laserball distribution and run normalisations at the last evaluated data point.
+    Int_t fNBaseVariableParameters;                         //! The number of base variable parameters, 
+                                                            // i.e. the parameters which vary that do not include:
+                                                            // - PMT angular response
+                                                            // - Laserball distribution histogram/sinusoidal parameters 
+                                                            // - Laserball Run normalisations
+                                                            // i.e. fNBaseVariableParameters + all the variable parameters in the following:
+                                                            // - PMT angular response, 
+                                                            // - Laserball distribution and run normalisations at the last evaluated data point.
 
-    Int_t*** fPMTAngularResponseIndex;               //! Look-up table for unique variable parameters in the PMT angular response.
+    Int_t*** fPMTAngularResponseIndex;                      //! Look-up table for unique variable parameters in the PMT angular response.
 
-    Int_t* fVariableParameterIndex;                  //! Look-up table for the ordered variable parameter indices.
-    Int_t* fVariableParameterMap;                    //! Look-up table for the variable parameters (global).
+    Int_t* fVariableParameterIndex;                         //! Look-up table for the ordered variable parameter indices.
+    Int_t* fVariableParameterMap;                           //! Look-up table for the variable parameters (global).
 
-    vector< Int_t >* fCurrentLBDistributionBins;     //!
-    vector< Int_t >* fCurrentAngularResponseBins;    //!
+    vector< Int_t >* fCurrentLBDistributionBins;            //!
+    vector< Int_t >* fCurrentAngularResponseBins;           //!
+
+    Float_t fFinalChiSquare;                                // Final ChiSquare value evaluated for this data set.
+    Int_t fNumberOfDataPoints;                              // The number of data points for which the above value
+                                                            // of the chisquare was evaluated.
+    Float_t fReducedChiSquare;                              // ( fFinalChiSquare / ( fNumberDataPoints - fNGlobalVariableParameters );
 
     ClassDef( OCAModelParameterStore, 1 )
 

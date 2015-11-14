@@ -214,7 +214,7 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
       }
 
       else if ( filterName == "filter_dynamic_residual" ){
-        if ( !iF->CheckCondition( lChiSq->EvaluateResidual( *iD ) ) ){
+        if ( !iF->CheckCondition( lChiSq->EvaluateChiSquareResidual( *iD ) ) ){
           validPoint = false; break;
         }
       }

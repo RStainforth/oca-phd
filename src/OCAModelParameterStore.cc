@@ -29,6 +29,7 @@ OCAModelParameterStore::OCAModelParameterStore( string& storeName )
 
   // Set the store name.
   fStoreName = storeName;
+  fSystematicName = "";
 
   fSeededParameters = false;
   fSeedFile = "";
@@ -38,8 +39,8 @@ OCAModelParameterStore::OCAModelParameterStore( string& storeName )
   // Ensure the vector which will hold all the parameter objects
   // is empty to begin with.
   fParameters.clear();
-  //fParameterValues.clear();
-  //fCovarianceMatrixValues.clear();
+  // fParameterValues.clear();
+  fCovarianceMatrixValues.ResizeTo( 0, 0 );
 
   // Ensure all the pointers are initialised to 'NULL'
   fParametersPtr = NULL;
@@ -75,6 +76,10 @@ OCAModelParameterStore::OCAModelParameterStore( string& storeName )
   fNLBDistributionPars = -1;
   
   fNParameters = -1;
+
+  fFinalChiSquare = -10.0;
+  fNumberOfDataPoints = -10;
+  fReducedChiSquare = -10.0;
   
 }
 
@@ -84,8 +89,8 @@ OCAModelParameterStore::OCAModelParameterStore( string& storeName )
 OCAModelParameterStore::~OCAModelParameterStore()
 {
 
-  if ( fCurrentAngularResponseBins != NULL && fStoreName != "" ){ delete [] fCurrentAngularResponseBins; }
-  if ( fCurrentLBDistributionBins != NULL && fStoreName != "" ){ delete [] fCurrentLBDistributionBins; }
+  //if ( fCurrentAngularResponseBins != NULL && fStoreName != "" ){ delete [] fCurrentAngularResponseBins; }
+  //if ( fCurrentLBDistributionBins != NULL && fStoreName != "" ){ delete [] fCurrentLBDistributionBins; }
 
 }
 
@@ -125,10 +130,10 @@ void OCAModelParameterStore::SeedParameters( std::string& fitFileName )
   std::string seedFilePath = lDB.GetOutputDir() + "fits/" + fitFileName + ".root";
   
   TFile* tmpFile = TFile::Open( ( seedFilePath ).c_str() );
-  TTree* tmpTree = (TTree*)tmpFile->Get( ( fitFileName +  "-OCARun;1" ).c_str() );
+  TTree* tmpTree = (TTree*)tmpFile->Get( ( fitFileName +  ";1" ).c_str() );
 
   OCAModelParameterStore* tmpStore = new OCAModelParameterStore( fStoreName );
-  tmpTree->SetBranchAddress( "OCARun", &(tmpStore) );
+  tmpTree->SetBranchAddress( "nominal", &(tmpStore) );
   tmpTree->GetEntry( 0 );
 
   fWaterFill = tmpStore->GetWaterFill();
@@ -401,10 +406,11 @@ void OCAModelParameterStore::AddParameters( const char* fileName )
 
       // Now loop over each angular response parameter and initialise its initial values;
       for ( Int_t iPar = 1; iPar <= fNLBDistributionPars; iPar++ ){
+        //Bool_t parVary = varyBool;
         if ( fLBDistributionType == 0 ){ initVal = 1.0; }
         if ( fLBDistributionType == 1 && iPar % 2 == 1 ){ initVal = 0.01; }
         if ( fLBDistributionType == 1 && iPar % 2 == 0 ){ initVal = 1.0; }
-
+        //if ( fLBDistributionType == 1 && iPar == 1 ){ parVary = false; }
         // The laserball distribution parameters in the histogram will not vary beyond 0.0 and 2.0, so set
         // these accordingly
         minVal = 0.0;
@@ -472,9 +478,7 @@ void OCAModelParameterStore::AddParameters( const char* fileName )
 
   }
 
-  if ( fWaterFill ){
-    fParameters[ GetWaterExtinctionLengthParIndex()-1 ].SetVary( false );
-  }
+  if ( fWaterFill ){ fParameters[ GetWaterExtinctionLengthParIndex() - 1 ].SetVary( false ); }
 
   fNParameters = (Int_t)fParameters.size();
 
@@ -488,55 +492,52 @@ void OCAModelParameterStore::WriteToROOTFile( string& fileName,
                                               string& branchName )
 {
   TFile* file = NULL;
-  TTree* parTree = NULL;
 
   // Check that the main-run file exists
   ifstream rFile( fileName.c_str() );
   if ( rFile ){ 
     file = new TFile( fileName.c_str(), "UPDATE" );
-    //parTree = new TTree( ( fStoreName + "-" + branchName ).c_str(), 
-    //                     ( fStoreName + "-" + branchName ).c_str() ); 
-    //parTree = (TTree*)file->Get( ( fStoreName + ";1" ).c_str() );
-    //parTree = new TTree( fStoreName.c_str(), fStoreName.c_str() );
   }
   else{ 
     file = new TFile( fileName.c_str(), "CREATE" ); 
-    //parTree = new TTree( fStoreName.c_str(), fStoreName.c_str() );
   }
+  rFile.close();
 
-  parTree = new TTree( ( fStoreName + "-" + branchName ).c_str(), 
-                       ( fStoreName + "-" + branchName ).c_str() );
-
-  //TFile* file = TFile::Open( fileName, "RECREATE" );
-
-  // Create the parameter Tree
-  //TTree* parTree = new TTree( fStoreName.c_str(), fStoreName.c_str() );
+  TTree* parTree = new TTree( ( fStoreName + "-" + branchName ).c_str(), 
+                              ( fStoreName + "-" + branchName ).c_str() );
 
   if ( branchName == "nominal" ){
-    // Declare a new branch pointing to the parameter store
     TH2F* lbDistribution = GetLBDistributionHistogram();
-    //parTree->Write( lbDistribution );
-    parTree->Branch( "Angular LB Distribution", lbDistribution->ClassName(), 
-                     &(*lbDistribution), 32000, 99 );
+    if ( fLBDistributionType == 0 ){
+      file->WriteTObject( lbDistribution, "Laserball Angular Distribution Histogram (Binned)", "Overwrite" );
+      parTree->Branch( "Laserball Angular Distribution Histogram (Binned)", lbDistribution->ClassName(), 
+                       &(*lbDistribution), 32000, 99 );
+    }
+    if ( fLBDistributionType == 1 ){
+      file->WriteTObject( lbDistribution, "Laserball Angular Distribution Histogram (Sinusoidal)", "Overwrite" );
+      parTree->Branch( "Laserball Angular Distribution Histogram (Sinusoidal)", lbDistribution->ClassName(), 
+                       &(*lbDistribution), 32000, 99 );
+    }
+
     
     TH2F* lbDistributionIntensity = GetLBDistributionIntensityHistogram();
-    //parTree->Write( lbDistributionIntensity );
-    parTree->Branch( "Intensity LB Distribution", lbDistributionIntensity->ClassName(), 
+    file->WriteTObject( lbDistributionIntensity, "Laserball Intensity Distribution Histogram", "Overwrite" );
+    parTree->Branch( "Laserball Intensity Distribution Histogram", lbDistributionIntensity->ClassName(), 
                      &(*lbDistributionIntensity), 32000, 99 );
     
     TH1F* angularResponse = GetPMTAngularResponseHistogram();
-    //parTree->Write( angularResponse );
+    file->WriteTObject( angularResponse, "PMT Angular Response", "Overwrite" );
     parTree->Branch( "PMT Angular Response", angularResponse->ClassName(), 
                      &(*angularResponse), 32000, 99 );
     
     TF1* angularResponseTF1 = GetPMTAngularResponseFunction();
-    //parTree->Write( angularResponseTF1 );
+    file->WriteTObject( angularResponseTF1, "PMT Angular Response Function", "Overwrite" );
     parTree->Branch( "PMT Angular Response Function", angularResponseTF1->ClassName(), 
                      &(*angularResponseTF1), 32000, 99 );
     
     TF1* lbDistributionTF1 = GetLBDistributionMaskFunction();
-    //parTree->Write( lbDistributionTF1 );
-    parTree->Branch( "LB Distribution Mask", lbDistributionTF1->ClassName(), 
+    file->WriteTObject( lbDistributionTF1, "Laserball Distribution Mask", "Overwrite" );
+    parTree->Branch( "Laserball Distribution Mask", lbDistributionTF1->ClassName(), 
                      &(*lbDistributionTF1), 32000, 99 );
   }
 
@@ -544,16 +545,14 @@ void OCAModelParameterStore::WriteToROOTFile( string& fileName,
   parTree->Branch( branchName.c_str(), (this)->ClassName(), &(*this), 32000, 99 );
   file->cd();
   
-  //parTree->SetBranchAddress( branchName, &(*this) );
   // Fill the tree and write it to the file
-  //branchPtr->Fill();
   parTree->Fill();
   parTree->Write("", TObject::kOverwrite);
 
   file->Close();
   delete file;
-  cout << "The OCA::OCAModelParameterStore has been written to the branch:\n";
-  cout << branchName << "\n";
+  cout << "The OCA::OCAModelParameterStore has been written to the TTree:\n";
+  cout << ( fStoreName + "-" + branchName ) << "\n";
   cout << "And saved to the ROOT file:\n";
   cout << fileName << "\n";
 
@@ -748,6 +747,8 @@ void OCAModelParameterStore::AllocateParameterArrays()
 
   // Allocate the memory for the covariance and derivative matrices.
   fCovarianceMatrix = OCAMath::OCAMatrix( 1, fNParameters, 1, fNParameters );
+  fCovarianceMatrixValues.ResizeTo( fNParameters + 1, fNParameters + 1 );
+  fCovarianceMatrixValues[ 0 ][ 0 ] = 0.0;
   fDerivativeMatrix = OCAMath::OCAMatrix( 1, fNParameters, 1, fNParameters );
 
   // First initialise all the values in the above pointers to zero.
@@ -782,7 +783,7 @@ void OCAModelParameterStore::AllocateParameterArrays()
       //   Float_t iParErr = iPar->GetError();
       //   Float_t jParErr = iPar->GetError();
       //   fCovarianceMatrix[ iPar->GetIndex() ][ jPar->GetIndex() ] = fCovarianceMatrixValues[ iPar->GetIndex() ][ jPar->GetIndex() ];
-      //   fCovarianceMatrixValues[ iPar->GetIndex() ][ jPar->GetIndex() ] = ( iParErr * jParErr );
+      //   //fCovarianceMatrixValues[ iPar->GetIndex() ][ jPar->GetIndex() ] = ( iParErr * jParErr );
       // }
     }
     else{
@@ -914,40 +915,6 @@ void OCAModelParameterStore::IdentifyVaryingParameters()
     }
 
   }
-
-  // vector< Int_t >* lbBins = GetCurrentLBDistributionBins();
-  // vector< Int_t >* angBins = GetCurrentAngularResponseBins();
-  // //cout << "lbBins->size: " << lbBins->size() << endl;
-  // for ( Int_t iPar = 0; iPar < lbBins->size(); iPar++ ){
-  //   //cout << "lbBins: " << iPar << " is: " << lbBins->at( iPar ) << endl;
-  // }
-  // //cout << "angBins->size: " << angBins->size() << endl;
-  // //cout << "------------" << endl;
-  // for ( Int_t iPar = 0; iPar < angBins->size(); iPar++ ){
-  //   //cout << "angBins: " << iPar << " is: " << angBins->at( iPar ) << endl;
-  // }
-  // angBins->insert( angBins->end(), lbBins->begin(), lbBins->end() );
-  // //cout << "angBins->size now: " << angBins->size() << endl;  
-  // std::sort ( angBins->begin(), angBins->end() );
-  // for ( Int_t iEl = 0; iEl < angBins->size(); iEl++ ){
-  //   if ( iEl < angBins->size() - 1 ){
-  //     if ( angBins->at( iEl ) == angBins->at( iEl + 1 ) ){
-  //       angBins->at( iEl ) = 0;
-  //     }
-  //   }
-  // }
-  // //cout << "angBins->size now two: " << angBins->size() << endl;
-
-  // for ( Int_t iPar = 0; iPar < angBins->size(); iPar++ ){
-  //   //cout << "going to vary: " << angBins->at( iPar ) << endl;
-  //   if ( fParametersVary[ angBins->at( iPar ) ] ){
-  //     //cout << "going to vary: " << angBins->at( iPar ) << endl;
-  //     fVariableParameterIndex[ ++fNCurrentVariableParameters ] = angBins->at( iPar );
-  //   } 
-  // }
-  // //cout << "------------" << endl;
-  // angBins->clear();
-  // lbBins->clear();
  
   // Identify which bins varied, and in which order for the
   // laserball distribution. Then give the associated parameter indices
@@ -1058,12 +1025,6 @@ void OCAModelParameterStore::IdentifyBaseVaryingParameters()
     }
   }
 
-  // if(fLBDistributionType == 1){
-  //   for (int i=0; i<fNLBSinWaveSlices * fNLBParametersPerSinWaveSlice; i++)
-  //     if (fParametersVary[ GetLBDistributionParIndex() + i ]) 
-  //       fVariableParameterIndex[++fNBaseVariableParameters] = GetLBDistributionParIndex() + i;
-  // }
-
 }
 
 //////////////////////////////////////
@@ -1085,11 +1046,10 @@ void OCAModelParameterStore::IdentifyGlobalVaryingParameters()
 void OCAModelParameterStore::CrossCheckParameters()
 {
 
-  // Now put each of the initial parameter values into the
-  // parameter pointer array from the vector of OCAModelParameter objects.
-  // i.e. OCAModelParameter --> Pointer Array (fParametersPtr).
-  // And also assign whether or not the parameter will vary.
-  // i.e. OCAModelParameter --> Pointer Array (fParametersVary);
+  // This routine ensures that all the parameters are assigned to their
+  // correct values and errors. This also fills in the full covariance
+  // matrix, a vector of individual parameter values and the
+  // chisquare, and residual chisquare values.
   vector< OCAModelParameter >::iterator iPar;
   for ( iPar = GetOCAModelParametersIterBegin();
         iPar != GetOCAModelParametersIterEnd();
@@ -1102,7 +1062,14 @@ void OCAModelParameterStore::CrossCheckParameters()
       iPar->SetError( TMath::Sqrt( covValue ) );
     }
 
-  }  
+  }
+
+  for ( Int_t iVar = 1; iVar <= fNParameters; iVar++ ){
+    for ( Int_t jVar = 1; jVar <= fNParameters; jVar++ ){
+      fCovarianceMatrixValues[ iVar ][ jVar ] = fCovarianceMatrix[ iVar ][ jVar ];
+    }
+
+  }
 
 }
 
@@ -1119,7 +1086,7 @@ TH1F* OCAModelParameterStore::GetPMTAngularResponseHistogram()
   Int_t nBins = GetNPMTAngularResponseBins();
 
   // Declare a hisotgram object.
-  TH1F* hHisto  = new TH1F( "AngRespH", "Relative PMT Angular Response", 
+  TH1F* hHisto  = new TH1F( "PMT Angular Response", "Relative PMT Angular Response", 
                             nBins, 0, 90 );
 
   // Loop over each of the parameters and set the error.
@@ -1210,7 +1177,7 @@ TF1* OCAModelParameterStore::GetPMTAngularResponseFunction()
   parVals[ GetNPMTAngularResponseBins() + 1 ] = 2;
 
   // Create the function object.
-  TF1* funcObj = new TF1( "Angular Response", SPMTAngularResponse, 0, 90, 1 + GetNPMTAngularResponseBins() + 1 );
+  TF1* funcObj = new TF1( "PMT Angular Response Function", SPMTAngularResponse, 0, 90, 1 + GetNPMTAngularResponseBins() + 1 );
 
   // Set the parameters.
   funcObj->SetParameters( parVals );
@@ -1287,7 +1254,7 @@ TH2F* OCAModelParameterStore::GetLBDistributionHistogram()
   TH2F* lbDistributionHist;
 
   if ( fLBDistributionType == 0 ){
-    lbDistributionHist = new TH2F( "lbDistributionHist", "Laserball Angular Distribution Histogram",
+    lbDistributionHist = new TH2F( "Laserball Angular Distribution Histogram (Binned)", "Laserball Angular Distribution Histogram (Binned)",
                                    nPhiBins, -1 * TMath::Pi(), 1.0 * TMath::Pi(), 
                                    nCThetaBins, -1.0, 1.0 );
 
@@ -1311,7 +1278,7 @@ TH2F* OCAModelParameterStore::GetLBDistributionHistogram()
   }
 
   if ( fLBDistributionType == 1 ){
-    lbDistributionHist = new TH2F( "lbDistributionHist", "Laserball Angular Distribution Histogram",
+    lbDistributionHist = new TH2F( "Laserball Angular Distribution Histogram (Sinusoidal)", "Laserball Angular Distribution Histogram (Sinusoidal)",
                                    36, -1 * TMath::Pi(), 1.0 * TMath::Pi(), 
                                    nCThetaBins, -1.0, 1.0 );
 
@@ -1328,7 +1295,7 @@ TH2F* OCAModelParameterStore::GetLBDistributionHistogram()
         // Set the bin content to the parameter value for each bin.
         // The (+1) is because the 0-th bin in a ROOT histogram
         // is the underflow bin.
-        Float_t lbDistVal = 1.0 +  lbDistPtr[ iTheta * 2 ] * TMath::Sin( 1.0 * phiVal + lbDistPtr[ iTheta * 2 + 1 ] ); 
+        Float_t lbDistVal = 1.0 + lbDistPtr[ iTheta * 2 ] * TMath::Sin( 1.0 * phiVal + lbDistPtr[ iTheta * 2 + 1 ] ); 
         lbDistributionHist->SetCellContent( jPhi + 1, iTheta + 1, 
                                             lbDistVal );
       }
@@ -1506,7 +1473,7 @@ TH2F* OCAModelParameterStore::GetLBDistributionIntensityHistogram()
   TH2F* lbDistributionIntHist;
 
   if ( fLBDistributionType == 0 ){
-    lbDistributionIntHist = new TH2F( "lbDistributionIntensityHist", "Laserball Intensity Distribution Histogram",
+    lbDistributionIntHist = new TH2F( "Laserball Intensity Distribution Histogram", "Laserball Intensity Distribution Histogram",
                                       nPhiBins, -1.0 * TMath::Pi(), TMath::Pi(), 
                                       nCThetaBins, -1.0, 1.0 );
     
