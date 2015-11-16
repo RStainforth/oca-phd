@@ -105,10 +105,11 @@ public:
                      fRIDStr( "" ), fCIDStr( "" ), 
                      fWRIDStr( "" ), fWCIDStr( "" ),
                      fLBPosModeStr( "" ),
-                     fMMYY( "" ), fSystematicFilePath( "" ) { }
+                     fMMYY( "" ), fSystematicFilePath( "" ),
+                     fGeometryOption( "snoplus" ) { }
   Long64_t fRID, fCID, fWRID, fWCID, fLBPosMode;
   std::string fRIDStr, fCIDStr, fWRIDStr, fWCIDStr, fLBPosModeStr;
-  std::string fMMYY, fSystematicFilePath;
+  std::string fMMYY, fSystematicFilePath, fGeometryOption;
 };
 
 // Declare the function prototypes used.
@@ -153,6 +154,9 @@ int main( int argc, char** argv ){
   // Get the directory in MMYY format for where the SOC files are stored.
   std::string dirMMYY = Opts.fMMYY;
 
+  // Set the geometry option
+  std::string geomOpt = Opts.fGeometryOption;
+
   // Get the laserball position mode to use for the off-axis and central runs.
   // These positions form the basis for the calculation of distances,
   // solidangle, Fresnel transmission coefficients, incidents angles etc.
@@ -179,6 +183,31 @@ int main( int argc, char** argv ){
   for ( Int_t iSys = 0; iSys < (Int_t)sysOpts.size(); iSys++ ){
     sysVals.push_back( lDB.GetDoubleField( "SYSTEMATICS", sysOpts[ iSys ], "systematics_setup" ) );
   }
+
+  //////////////////////////////////////////////////////////////
+  // First load all the PMT information from the RAT database //
+  //////////////////////////////////////////////////////////////
+  DB* db = DB::Get();
+  string data = getenv("GLG4DATA");
+  Log::Assert( data != "", "DSReader::BeginOfRun: GLG4DATA is empty, where is the data?" );
+  db->LoadDefaults();
+
+  if ( geomOpt == "sno" ){
+    db->Load( ( data + "/geo/sno_d2o.geo" ).c_str() );
+    db->Load( ( data + "/pmt/snoman.ratdb" ).c_str() );
+  }
+  if ( geomOpt == "snoplus" ){
+    db->Load( ( data + "/geo/snoplus.geo" ).c_str() );
+    db->Load( ( data + "/pmt/airfill2.ratdb" ).c_str() );
+  }
+
+  RAT::DU::Utility::Get()->BeginOfRun();
+  RAT::DU::LightPathCalculator lightPath = RAT::DU::Utility::Get()->GetLightPathCalculator();
+  RAT::DU::ShadowingCalculator shadowCalc = RAT::DU::Utility::Get()->GetShadowingCalculator();
+  RAT::DU::PMTInfo pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
+  RAT::DU::ChanHWStatus chanHW = RAT::DU::Utility::Get()->GetChanHWStatus();
+  shadowCalc.SetAllGeometryTolerances( 150.0 );
+  //////////////////////////////////////////////////////////////
 
   cout << "\n";
   cout << "###############################" << endl;
@@ -346,9 +375,10 @@ int main( int argc, char** argv ){
   cout << rIDStr + (string)"_Run.root" << endl;
 
   // Add the main-run to the SOC reader first
-  RAT::DU::SOCReader* soc = new RAT::DU::SOCReader( ( socRunDir + rIDStr + (string)"_Run.root" ).c_str() );
-  *socPtrs[ 0 ] = soc->GetSOC( 0 );
-  delete soc;
+  //RAT::DU::SOCReader* soc = new RAT::DU::SOCReader( ( socRunDir + rIDStr + (string)"_Run.root" ).c_str(), false );
+  AddSOCTree( ( socRunDir + rIDStr + (string)"_Run.root" ).c_str(), socPtrs[ 0 ] );
+  //*socPtrs[ 0 ] = soc->GetSOC( 0 );
+  //delete soc;
 
   // Obtain the flag to check whether or not to override the value of lambda
   // obtained from the RAT::DS::Calib object on the SOC file. We don't do this
@@ -424,13 +454,6 @@ int main( int argc, char** argv ){
     delete socPtrs[ 3 ];
     cout << "--------------------------" << endl;
   }
-
-  // Create LightPathCalculator object;
-  RAT::DU::LightPathCalculator lightPath = RAT::DU::Utility::Get()->GetLightPathCalculator();
-  RAT::DU::ShadowingCalculator shadowCalc = RAT::DU::Utility::Get()->GetShadowingCalculator();
-  RAT::DU::PMTInfo pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
-  RAT::DU::ChanHWStatus chanHW = RAT::DU::Utility::Get()->GetChanHWStatus();
-  shadowCalc.SetAllGeometryTolerances( 300.0 );
 
   cout << "Now filling PMT information from off-axis SOC file...";
   lRunPtr->FillPMTInfo( lightPath, shadowCalc, chanHW, pmtInfo, rID );
@@ -523,6 +546,7 @@ OCACmdOptions ParseArguments( int argc, char** argv)
                                   {"laserball-pos-mode", 1, NULL, 'l'},
                                   {"month-year-directory", 1, NULL, 'd'},
                                   {"systematics-file", 1, NULL, 's'},
+                                  {"geometry", 1, NULL, 'g'},
                                   {0,0,0,0} };
   
   OCACmdOptions options;
@@ -538,9 +562,10 @@ OCACmdOptions ParseArguments( int argc, char** argv)
     case 'l': options.fLBPosMode = atol( optarg ); break;
     case 's': options.fSystematicFilePath = (std::string)optarg; break;
     case 'd': options.fMMYY = (std::string)optarg; break;
+    case 'g': options.fGeometryOption = (std::string)optarg; break;
     }
     
-    c = getopt_long(argc, argv, "h:r:c:R:C:l:d:s:", opts, &option_index);
+    c = getopt_long(argc, argv, "h:r:c:R:C:l:d:s:g:", opts, &option_index);
   }
   
   stringstream idStream;

@@ -51,6 +51,7 @@
 #include "RAT/DU/Utility.hh"
 #include "RAT/DU/LightPathCalculator.hh"
 #include "RAT/DU/PMTInfo.hh"
+#include "RAT/DS/Meta.hh"
 #include "RAT/Log.hh"
 
 #include "OCARun.hh"
@@ -194,7 +195,7 @@ int main( int argc, char** argv ){
   fittedVertex.SetNegativeTimeError( 5.0, true );
   socFitResult.SetVertex( 0, fittedVertex );
 
-  socFile->SetFitResult( "lbFit", socFitResult );
+  socFile->SetFitResult( "lbfit", socFitResult );
 
   for ( Int_t iPMT = 0; iPMT < (Int_t)pmtInfo.GetCount(); iPMT++ ){
 
@@ -221,10 +222,16 @@ int main( int argc, char** argv ){
   std::string fileName = ( socRunDir + rIDStr + "_Run.root" );
   
   TFile* myFile = new TFile( fileName.c_str(), "RECREATE" );
+  myFile->cd();
   TTree* myTree = new TTree( "T", "RAT Tree" );
   myTree->Branch( "soc", socFile->ClassName(), &socFile, 32000, 99 );
   myTree->Fill();
   myTree->Write();
+  TTree* runTree = new TTree( "runT", "RAT Run Tree" );
+  RAT::DS::Run* runBranch = new RAT::DS::Run();
+  runTree->Branch( "run", runBranch->ClassName(), &runBranch, 32000, 99 );
+  runTree->Fill();
+  runTree->Write();
   myFile->Close();
 
   cout << "The SOC File: " << fileName << " has been created" << endl;
