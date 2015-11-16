@@ -85,7 +85,7 @@ int main( int argc, char** argv ){
   OCAModelParameterStore* lParStore = new OCAModelParameterStore( fitName );
 
   // Add the parameters.
-  lParStore->AddParameters( argv[1] );
+  //lParStore->AddParameters( argv[1] );
 
   // Create the OCAOpticsModel object. This is the object
   // which will use the OCAModelParameter objects to compute

@@ -39,7 +39,7 @@ OCAModelParameterStore::OCAModelParameterStore( string& storeName )
   // Ensure the vector which will hold all the parameter objects
   // is empty to begin with.
   fParameters.clear();
-  // fParameterValues.clear();
+  fParameterValues.ResizeTo( 0 );
   fCovarianceMatrixValues.ResizeTo( 0, 0 );
 
   // Ensure all the pointers are initialised to 'NULL'
@@ -120,83 +120,205 @@ void OCAModelParameterStore::PrintParameterInfo()
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCAModelParameterStore::SeedParameters( std::string& fitFileName )
+Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName, 
+                                               string& fitFileName )
 {
+
+  // The idea of this is to seed the parameter values and errors from a previous
+  // fit and use them as the initial values for a new fit. So, from the previous
+  // fit we retrieve the parameter values and their errors, the actual model setup though
+  // is as defined in the fit file. E.g. we can seed the fitted PMT Angular response from a
+  // previous fit (where the PMT angular response varied) but it could be set to be
+  // fixed in the current fit file. This is why this method feature database calls.
+
+  // Create a OCADB object so that the 'fit-file' can be read.
+  OCADB lDB;
+
+  // Tell the OCADB object where to read the information from.
+  lDB.SetFile( fitFileName.c_str() );
 
   fSeededParameters = true;
   fSeedFile = fitFileName;
+  fParameters.clear();
 
-  OCADB lDB;
-  std::string seedFilePath = lDB.GetOutputDir() + "fits/" + fitFileName + ".root";
+  std::string seedFilePath = lDB.GetOutputDir() + "fits/" + seedFileName + ".root";
+  cout << "OCAModelParameterStore::SeedParameters: Seeding from:\n";
+  cout << seedFilePath << endl;
   
   TFile* tmpFile = TFile::Open( ( seedFilePath ).c_str() );
-  TTree* tmpTree = (TTree*)tmpFile->Get( ( fitFileName +  ";1" ).c_str() );
+  TTree* tmpTree = (TTree*)tmpFile->Get( ( seedFileName +  "-nominal;1" ).c_str() );
 
   OCAModelParameterStore* tmpStore = new OCAModelParameterStore( fStoreName );
   tmpTree->SetBranchAddress( "nominal", &(tmpStore) );
   tmpTree->GetEntry( 0 );
 
-  fWaterFill = tmpStore->GetWaterFill();
+  // Check whether we are attempting a water fill fit.
+  fWaterFill = lDB.GetBoolField( "FITFILE", "water_fill", "parameter_setup" );
 
-  fNLBDistributionMaskParameters = tmpStore->GetNLBDistributionMaskParameters();
-  cout << "Seed->Mask Parameters: " << fNLBDistributionMaskParameters << endl;
-  fNPMTAngularResponseBins = tmpStore->GetNPMTAngularResponseBins();
-  cout << "Seed->Angular Response Bins: " << fNPMTAngularResponseBins << endl;
-  
-  fNLBDistributionCosThetaBins = tmpStore->GetNLBDistributionCosThetaBins();
-  fNLBDistributionPhiBins = tmpStore->GetNLBDistributionPhiBins();
-  cout << "Seed->Cos Theta Bins: " << fNLBDistributionCosThetaBins << endl;
-  cout << "Seed->Phi Bins: " << fNLBDistributionPhiBins << endl;
+  fParameters.clear();
 
-  
-  fNLBRunNormalisations = tmpStore->GetNLBRunNormalisations();
-  fNLBSinWaveSlices = tmpStore->GetNLBSinWaveSlices();
-  cout << "Seed->Run Normalisations: " << fNLBRunNormalisations << endl;
-  cout << "Seed->Sin Wave Slices: " << fNLBSinWaveSlices << endl;
-
-  fNLBParametersPerSinWaveSlice = tmpStore->GetNLBParametersPerSinWaveSlice();
-  cout << "Seed->LB Parameters Per Slice: " << fNLBParametersPerSinWaveSlice << endl;
-
-  fLBDistributionType = tmpStore->GetLBDistributionType();
-  cout << "Seed->LB Distribution Type: " << fLBDistributionType << endl;
-
-  fNLBDistributionPars = tmpStore->GetNLBDistributionPars();
-  cout << "Seed->LB Distribution Pars: " << fNLBDistributionPars << endl;
-
-  fNParameters = tmpStore->GetNParameters();
-  cout << "Seed->NParameters: " << fNParameters << endl;
-  // fParameters.resize( fNParameters + 1 );
-  // fCovarianceMatrixValues.resize( fNParameters + 1 );
-  // for ( Int_t iPar = 0; iPar <= fNParameters; iPar++ ){
-  //   vector< Float_t > tmpVec;
-  //   tmpVec.resize( fNParameters + 1 );
-  //   fCovarianceMatrixValues.push_back( tmpVec );
-  // } 
+  // First retrieve the attenuation length parameters
   vector< OCAModelParameter >::iterator iPar;
+  vector< OCAModelParameter >::iterator jPar;
   for ( iPar = tmpStore->GetOCAModelParametersIterBegin();
         iPar != tmpStore->GetOCAModelParametersIterEnd();
         iPar++ ){
-    fParameters.push_back( *iPar );
-    //fParameterValues[ (*iPar).GetIndex() ] = (*iPar).GetFinalValue();
-    //fCovarianceMatrixValues[ (*iPar).GetIndex() ] = tmpStore->GetCovarianceMatrixValues()[ (*iPar).GetIndex() ];
+    if ( iPar->GetIndex() == GetInnerAVExtinctionLengthParIndex() ){
+      fParameters.push_back( *iPar );
+      // (-1) because 'push_back' starts at 0
+      fParameters[ GetInnerAVExtinctionLengthParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "inner_av_extinction_length_vary", "parameter_setup" ) );
+    }
+    if ( iPar->GetIndex() == GetAVExtinctionLengthParIndex() ){
+      fParameters.push_back( *iPar );
+      // (-1) because 'push_back' starts at 0
+      fParameters[ GetAVExtinctionLengthParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "acrylic_extinction_length_vary", "parameter_setup" ) );
+    }
+    if ( iPar->GetIndex() == GetWaterExtinctionLengthParIndex() ){
+      fParameters.push_back( *iPar );
+      // (-1) because 'push_back' starts at 0
+      fParameters[ GetWaterExtinctionLengthParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "water_extinction_length_vary", "parameter_setup" ) );
+    }
+  }
+  
+  // (+1 because the first mask parameter is fixed to 1.0)
+  Int_t fileNMaskParameters = lDB.GetIntField( "FITFILE", "laserball_intensity_mask_number_of_parameters", "parameter_setup" ) + 1;
+  Int_t seedNMaskParameters = tmpStore->GetNLBDistributionMaskParameters();
+  if ( fileNMaskParameters == seedNMaskParameters ){
+    fNLBDistributionMaskParameters = seedNMaskParameters;
+    cout << "Seeding Number of Laserball Mask Parameters: " << fNLBDistributionMaskParameters << endl;
+    for ( iPar = tmpStore->GetOCAModelParametersIterBegin();
+          iPar != tmpStore->GetOCAModelParametersIterEnd();
+          iPar++ ){
+      if ( iPar->GetIndex() > 3 
+           &&
+           iPar->GetIndex() <= 3 + fNLBDistributionMaskParameters ){
+        fParameters.push_back( *iPar );
+        fParameters[ iPar->GetIndex()-1 ].SetVary( lDB.GetBoolField( "FITFILE", "laserball_intensity_mask_vary", "parameter_setup" ) );
+      }
+    }
+  }
+  else{
+    cout << "OCAModelParameterStore::SeedParameters: Error, number of mask parameters on fitfile: " << fileNMaskParameters << ", differs from the seed file: " << seedNMaskParameters << ". Aborting..." << endl;
+    return false;
+  }
+
+  Int_t fileNAngularResponseBins = lDB.GetIntField( "FITFILE", "pmt_angular_response_number_of_bins", "parameter_setup" );
+  Int_t seedNAngularResponseBins = tmpStore->GetNPMTAngularResponseBins();
+  if ( fileNAngularResponseBins == seedNAngularResponseBins ){
+    fNPMTAngularResponseBins = seedNAngularResponseBins;
+    cout << "Seeding Number of Angular Response Bins: " << fNPMTAngularResponseBins << endl;
+    for ( iPar = tmpStore->GetOCAModelParametersIterBegin();
+          iPar != tmpStore->GetOCAModelParametersIterEnd();
+          iPar++ ){
+      if ( iPar->GetIndex() > 3 + fNLBDistributionMaskParameters 
+           &&
+           iPar->GetIndex() <= 3 + fNLBDistributionMaskParameters + fNPMTAngularResponseBins ){
+        fParameters.push_back( *iPar );
+        fParameters[ iPar->GetIndex()-1 ].SetVary( lDB.GetBoolField( "FITFILE", "pmt_angular_response_vary", "parameter_setup" ) );
+      }
+    }
+  }
+  else{
+    cout << "OCAModelParameterStore::SeedParameters: Error, number of PMT angular response bin on fitfile: " << fileNAngularResponseBins << ", differs from the seed file: " << seedNAngularResponseBins << ". Aborting..." << endl;
+    return false;
+  }
+  
+  Int_t fileLBDistributionType = lDB.GetIntField( "FITFILE", "laserball_distribution_type", "parameter_setup" );
+  Int_t seedLBDistributionType = tmpStore->GetLBDistributionType();
+  if ( fileLBDistributionType == seedLBDistributionType ){
+    cout << "Seeding Laserball DistributionType: " << seedLBDistributionType;
+    if ( seedLBDistributionType == 0 ){ 
+      cout << " Binned Histogram." << endl; 
+      fNLBDistributionCosThetaBins = tmpStore->GetNLBDistributionCosThetaBins();
+      fNLBDistributionPhiBins = tmpStore->GetNLBDistributionPhiBins();
+      fNLBDistributionPars = tmpStore->GetNLBDistributionPars();
+      cout << "Seeding Cos Theta Bins: " << fNLBDistributionCosThetaBins << endl;
+      cout << "Seeding Phi Bins: " << fNLBDistributionPhiBins << endl;
+      cout << "Seeding Laserball Distribution Pars: " << fNLBDistributionPars << endl;
+    }
+    if ( seedLBDistributionType == 1 ){ 
+      cout << " Sinusoidal Function." << endl; 
+      fNLBSinWaveSlices = tmpStore->GetNLBSinWaveSlices();
+      fNLBParametersPerSinWaveSlice = tmpStore->GetNLBParametersPerSinWaveSlice();
+      fNLBDistributionPars = tmpStore->GetNLBDistributionPars();
+      cout << "Seeding Sin Wave Slices: " << fNLBSinWaveSlices << endl;   
+      cout << "Seeding Laserball Parameters Per Slice: " << fNLBParametersPerSinWaveSlice << endl;
+      cout << "Seeding Laserball Distribution Pars: " << fNLBDistributionPars << endl;
+    }
+    else{ return false; }
+    fLBDistributionType = tmpStore->GetLBDistributionType();
+    for ( iPar = tmpStore->GetOCAModelParametersIterBegin();
+          iPar != tmpStore->GetOCAModelParametersIterEnd();
+          iPar++ ){
+      if ( iPar->GetIndex() > 3 + fNLBDistributionMaskParameters + fNPMTAngularResponseBins
+           &&
+           iPar->GetIndex() <= 3 + fNLBDistributionMaskParameters + fNPMTAngularResponseBins + fNLBDistributionPars ){
+        fParameters.push_back( *iPar );
+        fParameters[ iPar->GetIndex()-1 ].SetVary( lDB.GetBoolField( "FITFILE", "laserball_distribution_vary", "parameter_setup" ) );
+      }
+    }
+  }
+  else{
+    cout << "OCAModelParameterStore::SeedParameters: Error, laserball distribution type on fitfile: " << fileLBDistributionType << ", differs from the seed file: " << seedLBDistributionType << ". Aborting..." << endl;
+    return false;
+  }
+
+  
+  vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" );
+  fNLBRunNormalisations = (Int_t)( runIDs.size() );
+  for ( Int_t nNorms = 1; nNorms <= fNLBRunNormalisations; nNorms++ ){
+    
+    Int_t parIndex = 3 + 
+      fNLBDistributionMaskParameters + 
+      fNPMTAngularResponseBins + 
+      fNLBDistributionPars + 
+      nNorms;
+    OCAModelParameter lParameter( "laserball_run_normalisations", parIndex, 300.0, 
+                                  -100.0, 100.0, -10.0, fNLBRunNormalisations, 
+                                  lDB.GetIntField( "FITFILE", "laserball_run_normalisation_vary", "parameter_setup" ) );
+    fParameters.push_back( lParameter );
+  }
+  
+  fNParameters = fParameters.size();
+
+  // Resize the parameter vector and covariance matrix, and then zero all the values...
+  fParameterValues.ResizeTo( fNParameters + 1 );
+  fCovarianceMatrixValues.ResizeTo( fNParameters + 1, fNParameters + 1 );
+  for ( Int_t iVal = 0; iVal < fNParameters + 1; iVal++ ){
+    fParameterValues( iVal ) = 0.0;
+    for ( Int_t jVal = 0; jVal < fNParameters + 1; jVal++ ){
+      fCovarianceMatrixValues[ iVal ][ jVal ] = 0.0;
+    }
+  }
+
+  // Now assign the values where applicable, but omit normalisation parameters.
+  TMatrix tmpMatrix = tmpStore->GetCovarianceMatrixValues();
+  TVector tmpVector = tmpStore->GetParameterValues();
+  for ( Int_t iParam = 1; iParam < GetLBRunNormalisationParIndex(); iParam++ ){
+    fParameterValues( iParam ) = tmpVector( iParam );
+    for ( Int_t jParam = 1; jParam < GetLBRunNormalisationParIndex(); jParam++ ){
+      fCovarianceMatrixValues[ iParam ][ jParam ] = tmpMatrix[ iParam ][ jParam ];
+    }
   }
 
   AllocateParameterArrays();
   delete tmpStore;
+
+  return true;
 
 }
 
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCAModelParameterStore::AddParameters( const char* fileName )
+void OCAModelParameterStore::AddParameters( string& fileName )
 {
 
   // Create a OCADB object so that the 'fit-file' can be read.
   OCADB lDB;
 
   // Tell the OCADB object where to read the information from.
-  lDB.SetFile( fileName );
+  lDB.SetFile( fileName.c_str() );
 
   // Initialise the variables which will be defined
   // for each parameter which is to be created in the
@@ -747,8 +869,6 @@ void OCAModelParameterStore::AllocateParameterArrays()
 
   // Allocate the memory for the covariance and derivative matrices.
   fCovarianceMatrix = OCAMath::OCAMatrix( 1, fNParameters, 1, fNParameters );
-  fCovarianceMatrixValues.ResizeTo( fNParameters + 1, fNParameters + 1 );
-  fCovarianceMatrixValues[ 0 ][ 0 ] = 0.0;
   fDerivativeMatrix = OCAMath::OCAMatrix( 1, fNParameters, 1, fNParameters );
 
   // First initialise all the values in the above pointers to zero.
@@ -774,17 +894,12 @@ void OCAModelParameterStore::AllocateParameterArrays()
     // Set the initial value of the parameter in the array.
     if ( fSeededParameters ){ 
       fParametersPtr[ iPar->GetIndex() ] = iPar->GetFinalValue();
-      //fParameterValues[ iPar->GetIndex() ] = iPar->GetFinalValue();
- 
-      // vector< OCAModelParameter >::iterator jPar;
-      // for ( jPar = GetOCAModelParametersIterBegin();
-      //       jPar != GetOCAModelParametersIterEnd();
-      //       jPar++ ){
-      //   Float_t iParErr = iPar->GetError();
-      //   Float_t jParErr = iPar->GetError();
-      //   fCovarianceMatrix[ iPar->GetIndex() ][ jPar->GetIndex() ] = fCovarianceMatrixValues[ iPar->GetIndex() ][ jPar->GetIndex() ];
-      //   //fCovarianceMatrixValues[ iPar->GetIndex() ][ jPar->GetIndex() ] = ( iParErr * jParErr );
-      // }
+      vector< OCAModelParameter >::iterator jPar;
+      for ( jPar = GetOCAModelParametersIterBegin();
+            jPar != GetOCAModelParametersIterEnd();
+            jPar++ ){
+        fCovarianceMatrix[ iPar->GetIndex() ][ jPar->GetIndex() ] = fCovarianceMatrixValues[ iPar->GetIndex() ][ jPar->GetIndex() ];
+      }
     }
     else{
       fParametersPtr[ iPar->GetIndex() ] = iPar->GetInitialValue();
@@ -1064,11 +1179,17 @@ void OCAModelParameterStore::CrossCheckParameters()
 
   }
 
-  for ( Int_t iVar = 1; iVar <= fNParameters; iVar++ ){
-    for ( Int_t jVar = 1; jVar <= fNParameters; jVar++ ){
-      fCovarianceMatrixValues[ iVar ][ jVar ] = fCovarianceMatrix[ iVar ][ jVar ];
+  fCovarianceMatrixValues.ResizeTo( 0, 0 );
+  fParameterValues.ResizeTo( 0 );
+  fCovarianceMatrixValues.ResizeTo( 1 + fNParameters, 1 + fNParameters );
+  fParameterValues.ResizeTo( 1 + fNParameters );
+  for ( Int_t iVar = 0; iVar <= fNParameters; iVar++ ){
+    if ( iVar == 0 ){ fParameterValues( iVar ) = 0.0; }
+    else{ fParameterValues( iVar ) = fParametersPtr[ iVar ]; }
+    for ( Int_t jVar = 0; jVar <= fNParameters; jVar++ ){
+      if ( iVar * jVar == 0 ){ fCovarianceMatrixValues[ iVar ][ jVar ] = 0.0; }
+      else{ fCovarianceMatrixValues[ iVar ][ jVar ] = fCovarianceMatrix[ iVar ][ jVar ]; }
     }
-
   }
 
 }

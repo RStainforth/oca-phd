@@ -75,7 +75,7 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
       << ", " << iD->GetLBPos().Y() / 10.0
       << ", " << iD->GetLBPos().Z() / 10.0 
       << " ) cm, Radius = " << iD->GetLBPos().Mag() / 10.0 << " cm" << endl;
-      //lFilterStore->PrintFilterCutInformation();
+      lFilterStore->PrintFilterCutInformation();
       lFilterStore->ResetFilterConditionCounters();
       cout << "----------------------------------------------------\n";
       cout << "####################################################\n";

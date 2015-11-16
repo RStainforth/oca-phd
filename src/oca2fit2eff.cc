@@ -88,10 +88,8 @@ int main( int argc, char** argv ){
   string fitPath = ( lDB.GetFitFilesDir() + Opts.fFitFileName );
   cout << "Setting Fitfile: " << fitPath << endl;
   lDB.SetFile( fitPath.c_str() );
-  cout << "fitName" << endl;
   std::string fitName = lDB.GetStringField( "FITFILE", "fit_name", "fit_setup" );
-  cout << "seedFile" << endl;
-  std::string seedFile = lDB.GetStringField( "FITFILE", "seed_initial_parameters", "fit_setup" );
+  std::string seedFile = Opts.fSeedFile;
   std::string systematicName = Opts.fSystematic;
 
   // Create the OCAModelParameterStore object which stores
@@ -99,16 +97,20 @@ int main( int argc, char** argv ){
   OCAModelParameterStore* lParStore = new OCAModelParameterStore( fitName );
   
   // Seed the parameters...
-  if ( seedFile != "" ){ lParStore->SeedParameters( seedFile ); }
+  if ( seedFile != "" ){ 
+    if ( !lParStore->SeedParameters( seedFile, fitPath ) ){
+      cout << "Unsuccessful seed! Abort" << endl;
+      return 1;
+    }
+  }
   // ...or add the parameters as specified in the fit file
-  else{ lParStore->AddParameters( fitPath.c_str() ); }
+  else{ lParStore->AddParameters( fitPath ); }
 
   // Create the OCAOpticsModel object. This is the object
   // which will use the OCAModelParameter objects to compute
   // a model prediction for the optics model.
   OCAOpticsModel* lModel = new OCAOpticsModel();
 
-  cout << "set model" << endl;
   // Set a link to the pointer to the OCAModelParameterStore
   // object.
   lModel->SetOCAModelParameterStore( lParStore );
@@ -116,16 +118,13 @@ int main( int argc, char** argv ){
   // Get the minimum number of PMT angular response and Laserball
   // distribution bin entires required for the parameter associated
   // with each bin to vary in the fit.
-  cout << "minPMTEntries" << endl;
   Int_t minPMTEntries = lDB.GetIntField( "FITFILE", "pmt_angular_response_min_bin_entries", "parameter_setup" );
-  cout << "minLBEntries" << endl;
   Int_t minLBDistEntries = lDB.GetIntField( "FITFILE", "laserball_distribution_min_bin_entries", "parameter_setup" );
   lModel->SetRequiredNLBDistributionEntries( minLBDistEntries );
-  lModel->SetRequiredNPMTAngularRepsonseEntries( minPMTEntries ); 
+  lModel->SetRequiredNPMTAngularRepsonseEntries( minPMTEntries );
+ 
   // Add all the run files to the OCARunReader object
-  cout << "run_ids" << endl;
   std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" );
-  cout << "data_set" << endl; 
   std::string dataSet = lDB.GetStringField( "FITFILE", "data_set", "fit_setup" );
   OCARunReader lReader;
   lReader.SetBranchName( systematicName );
@@ -147,18 +146,13 @@ int main( int argc, char** argv ){
 
   // Initalise a data filler object to filter through the raw
   // data using the filters
-  cout << "new filler" << endl;
   OCADataFiller* lDataFiller = new OCADataFiller();
 
   // Backup the original data store which is cut on at the top
   // level as part of each loop iteration below.
-  cout << "new ofStore" << endl;
   OCAPMTStore* ogStore = new OCAPMTStore();
-  cout << "new finalstore" << endl;
   OCAPMTStore* finalStore = new OCAPMTStore();
-  cout << "equality" << endl;
   *ogStore = *lData;
-  cout << "normalisations" << endl;
   lModel->InitialiseLBRunNormalisations( lData );
 
   // Retrieve information about the fitting procedure 
@@ -191,13 +185,6 @@ int main( int argc, char** argv ){
     // Filter the data.
     lDataFiller->FilterData( lFilterStore, lData, lChiSq );
 
-    // Print the filter cut information.
-    lFilterStore->PrintFilterCutInformation();
-
-    // Print how amny data points passed/failed this round of
-    // filter cuts.
-    lFilterStore->ResetFilterConditionCounters();
-
     // Perform the optics fit.
     lChiSq->PerformOpticsFit( iFit );
 
@@ -226,6 +213,7 @@ int main( int argc, char** argv ){
   } 
 
   lChiSq->EvaluateGlobalChiSquare();
+  lChiSq->EvaluateGlobalChiSquareResidual();
 
   // Now begin the calculation of the relative PMT efficiencies,
   // the PMT variability and the normalised PMT efficiencies.

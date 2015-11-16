@@ -44,10 +44,21 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <getopt.h>
 
 using namespace std;
 using namespace OCA;
 
+class OCACmdOptions 
+{
+public:
+  OCACmdOptions( ) : fFitFileName( "" ), fSystematic( "" ), fSeedFile( "" ) { }
+  std::string fFitFileName, fSystematic, fSeedFile;
+};
+
+// Declare the functions which will be used in the executable
+OCACmdOptions ParseArguments( int argc, char** argv );
+void help();
 // Declare the functions which will be used in the executable
 int main( int argc, char** argv );
 
@@ -56,12 +67,8 @@ int main( int argc, char** argv );
 
 int main( int argc, char** argv ){
 
-  // Check that the 'oca2minuit' executable has been used properly 
-  if ( argc != 2 ){
-    cout << "oca2fit: Error! No path specified for the OCA fit-file.\n";
-    cout << "Usage: oca2fit /path/to/fit-file.ratdb\n";
-    return 1;
-  }
+  // Parse arguments passed to the command line
+  OCACmdOptions Opts = ParseArguments( argc, argv );
 
   cout << "\n";
   cout << "#############################" << endl;
@@ -76,15 +83,21 @@ int main( int argc, char** argv ){
   // Initialise the database loader to parse the 'fit-file' passed 
   // at the command line.
   OCADB lDB;
-  lDB.SetFile( argv[1] );
+  string fitPath = ( lDB.GetFitFilesDir() + Opts.fFitFileName );
+  cout << "Setting Fitfile: " << fitPath << endl;
+  lDB.SetFile( fitPath.c_str() );
+  cout << "fitName" << endl;
   std::string fitName = lDB.GetStringField( "FITFILE", "fit_name", "fit_setup" );
+  cout << "seedFile" << endl;
+  std::string seedFile = lDB.GetStringField( "FITFILE", "seed_initial_parameters", "fit_setup" );
+  std::string systematicName = Opts.fSystematic;
 
   // Create the OCAModelParameterStore object which stores
   // the parameters for the optics model.
   OCAModelParameterStore* lParStore = new OCAModelParameterStore( fitName );
 
   // Add the parameters.
-  lParStore->AddParameters( argv[1] );
+  lParStore->AddParameters( fitPath );
   cout << "TEST1" << endl;
   // Create the OCAOpticsModel object. This is the object
   // which will use the OCAModelParameter objects to compute
@@ -187,3 +200,54 @@ int main( int argc, char** argv ){
   cout << "\n";
   
 }
+
+///////////////////////////
+///                     ///
+///  UTILITY FUNCTIONS  ///
+///                     ///
+///////////////////////////
+
+OCACmdOptions ParseArguments( int argc, char** argv) 
+{
+  static struct option opts[] = { {"help", 0, NULL, 'h'},
+                                  {"fit-file-name", 1, NULL, 'f'},
+                                  {"systematic-branch", 1, NULL, 'b'},
+                                  {"seed-file", 1, NULL, 's'},
+                                  {0,0,0,0} };
+  
+  OCACmdOptions options;
+  int option_index = 0;
+  int c = getopt_long(argc, argv, "h:f:b:s:", opts, &option_index);
+  while (c != -1) {
+    switch (c) {
+    case 'h': help(); break;
+    case 'f': options.fFitFileName = (std::string)optarg; break;
+    case 'b': options.fSystematic = (std::string)optarg; break;
+    case 's': options.fSeedFile = (std::string)optarg; break;
+    }
+    
+    c = getopt_long(argc, argv, "h:f:b:s:", opts, &option_index);
+  }
+  
+  stringstream idStream;
+
+  return options;
+}
+
+//////////////////////
+//////////////////////
+
+void help(){
+
+  cout << "\n";
+  cout << "SNO+ OCA - oca2fit" << "\n";
+  cout << "Description: This executable performs the OCA Optics fit. \n";
+  cout << "Usage: oca2fit [-f fit-file-name] [-b branch-systematic] [-s seed-file (optional)]\n";
+  cout << " -r, --fit-file-name          The name of the fit file in the ${OCA_SNOPLUS_ROOT}/data/fitfiles directory \n";
+  cout << " -b, --systematic-branch      Set the systematic branch on the OCARun files on which to perform the fit over \n";
+  cout << " -s, --seed-file              (Optional) The name of a previous fit from which to seed in the ${OCA_SNOPLUS_ROOT}/output/fits directory \n"; 
+  
+}
+
+//////////////////////
+//////////////////////

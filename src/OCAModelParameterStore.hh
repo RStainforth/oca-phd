@@ -30,6 +30,7 @@
 #include "TH2F.h"
 #include "TF1.h"
 #include "TMatrix.h"
+#include "TVector.h"
 
 #include <string>
 
@@ -56,10 +57,11 @@ namespace OCA{
     }
 
     // Seed Parameters from a pre-existing file
-    void SeedParameters( string& fitFileName );
+    Bool_t SeedParameters( string& seedFilename, 
+                           string& fitFileName );
 
     // Add a complete set of parameters from a 'fit-file'.
-    void AddParameters( const char* fileName );
+    void AddParameters( string& fileName );
 
     // Print all the parameter information about each parameter in the store.
     void PrintParameterInfo();
@@ -101,10 +103,10 @@ namespace OCA{
     OCAModelParameter GetParameter( Int_t parIndex ){ return fParameters[ parIndex ]; }
 
     // Return the value of a parameter by its index.
-    //Float_t GetParameterValue( Int_t parIndex ){ return fParameterValues[ parIndex ]; }
+    Float_t GetParameterValue( Int_t parIndex ){ return fParameterValues( parIndex ); }
 
     // // Return the vector of the parameter values.
-    // vector< Float_t > GetParameterValues(){ return fParameterValues; }
+    TVector GetParameterValues(){ return fParameterValues; }
     
     // Return the value of a covariance matrix element by it's index.
     Float_t GetCovarianceMatrixValue( Int_t rowIndex, Int_t colIndex ){ return fCovarianceMatrixValues[ rowIndex ][ colIndex ]; }
@@ -407,7 +409,7 @@ namespace OCA{
     Int_t fNGlobalVariableParameters;                       // The total global number of variable parameters.
 
     vector< OCAModelParameter > fParameters;                // The vector of parameter objects i.e. the store.
-    //vector< Float_t > fParameterValues;                   //! The vector of the direct parameter values.
+    TVector fParameterValues;                               // The vector of the direct parameter values.
     TMatrix fCovarianceMatrixValues;                        // The covariance matrix of values.
 
     Float_t* fParametersPtr;                                //! The pointer of parameter values.
