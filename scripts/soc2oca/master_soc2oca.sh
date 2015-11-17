@@ -22,6 +22,7 @@ source $OCA_SNOPLUS_ROOT/env_oca_snoplus.sh
 ./soc2oca_d2o_385.sh
 ./soc2oca_d2o_420.sh
 ./soc2oca_d2o_505.sh
+./soc2oca_d2o_620.sh
 ./soc2oca_water_337.sh
 ./soc2oca_water_369.sh
 ./soc2oca_water_385.sh
