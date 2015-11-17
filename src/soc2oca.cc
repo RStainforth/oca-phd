@@ -11,10 +11,10 @@
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:
-///     0X/2015 : RPFS - First Revision, new file.
+///     11/2015 : RPFS - First Revision, new file.
 ///
 /// DETAIL: Executable to process a main-run SOC file, a central-run SOC file
-///         a optional wavelength-run SOC file and an optional wavelength-run
+///         an optional wavelength-run SOC file and an optional wavelength-run
 ///         central SOC file.
 ///
 ///         The approach is as follows:
@@ -35,13 +35,13 @@
 ///            -l [XY] : Laserball position option
 ///                   X : Off-Axis run laserball position.
 ///                     X = 1 : Off-Axis manipulator laserball position 
-///                     X = 2 : Off-Axis camera laserball position
+///                     X = 2 : Off-Axis camera laserball position [placeholder, not currently in]
 ///                     X = 3 : Off-Axis fitted laserball position
 ///                     X = 4 : Off-Axis fitted laserball position from wavelength run (-R option)
 ///
 ///                   Y : Central run laserball position.
 ///                     Y = 1 : Central manipulator laserball position
-///                     Y = 2 : Central camera laserball position
+///                     Y = 2 : Central camera laserball position [placeholder, not currently in]
 ///                     Y = 3 : Central fitted laserball position
 ///                     Y = 4 : Central fitted laserball position from wavelength run (-C option)
 ///
@@ -57,7 +57,7 @@
 ///
 ///            The above takes the SOC run (236901)[-r] from ${OCA_SNOPLUS_DATA}/data/runs/(oct15/water)[-d] 
 ///            and normalises it against the central run (2369039)[-c].
-
+///
 ///            The positions used for laserball in both cases is the one from their respective wavelength
 ///            run counterparts (44)[-l]; (250501)[-R] and (2505039)[-C] runs respectively.
 ///            Systematics are added in separate branches on the ROOT tree as declared in water_369.ocadb[-s].
@@ -67,6 +67,12 @@
 ///
 ///            Currently BOTH a main-run and central-run file is required. The wavelength
 ///            run files (off-axis and central) are optional.
+///
+///            Note: If you are using this on original SNO data, you will need to add
+///                  the option '-g sno' to the terminal line command, this is to ensure
+///                  that the correct geometry is loaded by the ShadowingCalculator, we
+///                  have AV hold-down rope shadowing in SNO+, but the ropes weren't
+///                  there in SNO.
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -137,7 +143,13 @@ int main( int argc, char** argv ){
 
   // Parse arguments passed to the command line
   OCACmdOptions Opts = ParseArguments( argc, argv );
-  
+
+  cout << "\n";
+  cout << "###############################" << endl;
+  cout << "######## SOC2OCA START ########" << endl;
+  cout << "###############################" << endl;
+  cout << "\n";
+
   // Define the run IDs of the off-axis-, central- and wavelength-run files.
   Long64_t rID = Opts.fRID;
   Long64_t cID = Opts.fCID;
@@ -184,9 +196,10 @@ int main( int argc, char** argv ){
     sysVals.push_back( lDB.GetDoubleField( "SYSTEMATICS", sysOpts[ iSys ], "systematics_setup" ) );
   }
 
-  //////////////////////////////////////////////////////////////
-  // First load all the PMT information from the RAT database //
-  //////////////////////////////////////////////////////////////
+  // First load all the PMT and detector information from the RAT database
+  // Need to make sure we load the PMT positions for either a SNO+ or SNO
+  // data set (some PMTs have been moved/removed/repaired/thrown away from
+  // SNO to SNO+).
   DB* db = DB::Get();
   string data = getenv("GLG4DATA");
   Log::Assert( data != "", "DSReader::BeginOfRun: GLG4DATA is empty, where is the data?" );
@@ -208,12 +221,6 @@ int main( int argc, char** argv ){
   RAT::DU::ChanHWStatus chanHW = RAT::DU::Utility::Get()->GetChanHWStatus();
   shadowCalc.SetAllGeometryTolerances( 150.0 );
   //////////////////////////////////////////////////////////////
-
-  cout << "\n";
-  cout << "###############################" << endl;
-  cout << "######## SOC2OCA START ########" << endl;
-  cout << "###############################" << endl;
-  cout << "\n";
   
   // Check that an off-axis-run ID has been specified.
   if ( rID < 0 ){ cout << "soc2oca error: No off-axis run ID specified. Aborting" << endl; return 1; }
@@ -369,16 +376,10 @@ int main( int argc, char** argv ){
     socPtrs[ iSOC ] = new RAT::DS::SOC;
   }
   
-  // Create the SOCReader object in order to load the data base to the
-  // set as used for the off-axis run.
+  // Add the off-axis run first.
   cout << "Adding off-axis run SOC file: " << endl;
   cout << rIDStr + (string)"_Run.root" << endl;
-
-  // Add the main-run to the SOC reader first
-  //RAT::DU::SOCReader* soc = new RAT::DU::SOCReader( ( socRunDir + rIDStr + (string)"_Run.root" ).c_str(), false );
   AddSOCTree( ( socRunDir + rIDStr + (string)"_Run.root" ).c_str(), socPtrs[ 0 ] );
-  //*socPtrs[ 0 ] = soc->GetSOC( 0 );
-  //delete soc;
 
   // Obtain the flag to check whether or not to override the value of lambda
   // obtained from the RAT::DS::Calib object on the SOC file. We don't do this
@@ -551,10 +552,10 @@ OCACmdOptions ParseArguments( int argc, char** argv)
   
   OCACmdOptions options;
   int option_index = 0;
-  int c = getopt_long(argc, argv, "h:r:c:R:C:l:d:s:", opts, &option_index);
+  int c = getopt_long(argc, argv, "hr:c:R:C:l:d:s:", opts, &option_index);
   while (c != -1) {
     switch (c) {
-    case 'h': cout << "HELP GOES HERE" << endl; break;
+    case 'h': help(); exit(0); break;
     case 'r': options.fRID = atol( optarg ); break;
     case 'c': options.fCID = atol( optarg ); break;
     case 'R': options.fWRID = atol( optarg ); break;
@@ -565,7 +566,7 @@ OCACmdOptions ParseArguments( int argc, char** argv)
     case 'g': options.fGeometryOption = (std::string)optarg; break;
     }
     
-    c = getopt_long(argc, argv, "h:r:c:R:C:l:d:s:g:", opts, &option_index);
+    c = getopt_long(argc, argv, "hr:c:R:C:l:d:s:g:", opts, &option_index);
   }
   
   stringstream idStream;
@@ -600,12 +601,17 @@ void help(){
 
   cout << "\n";
   cout << "SNO+ OCA - soc2oca" << "\n";
-  cout << "Description: This executable processes SOC run files and outputs OCARun (.root) files to be used in the optics fit. \n";
-  cout << "Usage: soc2oca [-h] [-r run-id] [-c central-run-id] [-w wavelength-run-id] \n";
-  cout << " -h, --help                Display this help message and exit \n";
-  cout << " -r, --run-id              Set the run ID for the corresponding SOC run file to be processed for a OCARun fit file \n";
-  cout << " -c, --central-run-id      Set the corresponding central run ID file \n";
-  cout << " -w, --wavelength-run-id   Set the corresponding wavelength run ID file \n";
+  cout << "Description: This executable processes SOC run files and outputs OCARun files to be used in the optics fit. \n";
+  cout << "Usage: soc2oca [-h] [-r run-id] [-c central-run-id] [-R wavelength-run-id] [-C central-wavelength-run-id] -l [laserball-pos-mode] -d [month-year-directory] -s [systematics-file] -g [geometry] \n";
+  cout << " -h, --help                      Display this help message and exit \n";
+  cout << " -r, --run-id                    Set the run ID for the corresponding SOC run ID to be processed for a OCARun fit file \n";
+  cout << " -c, --central-run-id            Set the corresponding central run ID \n";
+  cout << " -R, --wavelength-run-id         Set the corresponding wavelength run ID \n";
+  cout << " -C, --wavelength-central-run-id Set the corresponding central wavelength central run ID \n";
+  cout << " -l, --laserball-pos-mode        Set the position modes to be used for the laserball positions during the fit, see soc2oca.cc header comment \n";
+  cout << " -d, --month-year-directory      The name of the folder in ${OCA_SNOPLUS_ROOT}/data/runs/soc where to obtain the SOC run files from \n";
+  cout << " -s, --systematics-file          The name of the systematics file in ${OCA_SNOPLUS_ROOT}/data/systematics to apply \n";
+  cout << " -g, --geometry                  You don't need to use this if you're using SNO+ data. If you are using SNO data, use \'-g sno\' \n";
   
 }
 
@@ -624,7 +630,9 @@ void ApplySystematic( OCARun* ocaRunPtr, std::string systematicOpt, Double_t sys
   // Laserball position radius shift 
   // R_lb -> R_lb + systematicVal [mm]
   if ( systematicOpt == "laserball_r_shift" ){
-    ocaRunPtr->SetLBPos( systematicVal * ocaRunPtr->GetLBPos() );
+    TVector3 lbPos = ocaRunPtr->GetLBPos();
+    lbPos.SetMag( lbPos.Mag() + systematicVal );
+    ocaRunPtr->SetLBPos( lbPos );
   }
 
   // Laserball position x-position +ve shift
@@ -668,7 +676,7 @@ void ApplySystematic( OCARun* ocaRunPtr, std::string systematicOpt, Double_t sys
   // Rz_lb -> Rz_lb - systematicVal [mm]
   if ( systematicOpt == "laserball_minus_z_shift" ){
     TVector3 lbPos = ocaRunPtr->GetLBPos();
-    lbPos.SetZ( lbPos.Z() + systematicVal );
+    lbPos.SetZ( lbPos.Z() - systematicVal );
     ocaRunPtr->SetLBPos( lbPos );
   }
 
@@ -681,16 +689,6 @@ void ApplySystematic( OCARun* ocaRunPtr, std::string systematicOpt, Double_t sys
   // Lambda_lb -> Lambda_lb - systemacVal[nm]
   if ( systematicOpt == "lambda_minus_shift" ){
     ocaRunPtr->SetLambda( ocaRunPtr->GetLambda() - systematicVal );
-  }
-
-  // Dummy systematic for flat LB distribution
-  if ( systematicOpt == "lb_distribution_flat" ){
-    cout << "Flat laserball distribution systematic registered. Systematic will be enforced at the fitting stage. Not here" << endl;
-  }
-
-  // Dummy systematic for LB distribution squared
-  if ( systematicOpt == "lb_distribution_squared" ){
-    cout << "Squared laserball distribution systematic registered. Systematic will be enforced at the fitting stage. Not here" << endl;
   }
 
 }
@@ -707,5 +705,4 @@ void AddSOCTree( const char* fileName, RAT::DS::SOC* socPtr )
   delete tmpSoc;
   socFile->Close();
   
-
 }
