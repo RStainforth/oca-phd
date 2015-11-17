@@ -76,7 +76,7 @@ DICT_H	:= OCA_LinkDef.h
 DICT_C	:= OCA_Dict.C
 DICT_O	:= $(patsubst %.C,%.o,$(DICT_C))
 
-OCA_EXE	:= soc2oca oca2fit makedatastore rdt2soc
+OCA_EXE	:= rdt2soc soc2oca oca2fit
 
 # N. Barros - 22-11-2011 : Removed from the targets as the source file seems to be missing. Maybe a missing commit?
 # sjmptest
@@ -163,11 +163,6 @@ soc2oca: soc2oca.o $(OCAL)
 	 $< ${DEPLIBS} ${RATLIB} ${OCA_SNOPLUS_LIB}
 
 oca2fit: oca2fit.o $(OCAL)
-	@echo " == Executing OCA-SNOPLUS $@ =="
-	$(CXX) $(CXXFLAGS) -o $@ \
-	 $< ${DEPLIBS} ${RATLIB} ${OCA_SNOPLUS_LIB}
-
-makedatastore: makedatastore.o $(OCAL)
 	@echo " == Executing OCA-SNOPLUS $@ =="
 	$(CXX) $(CXXFLAGS) -o $@ \
 	 $< ${DEPLIBS} ${RATLIB} ${OCA_SNOPLUS_LIB}
