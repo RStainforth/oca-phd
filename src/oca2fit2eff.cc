@@ -4,23 +4,43 @@
 ///
 /// EXECUTABLE: oca2fit2eff
 ///
-/// BRIEF: The class which defines the optical response model
-///        of PMTs.
+/// BRIEF: This executable performs the OCA optics fit. In order
+///        to do this you need to specify a 'fitfile' located in
+///        the ${OCA_SNOPLUS_ROOT}/data/fitfiles directory.
+///        The fitfile defines the parameters and initial values
+///        to be used in the fit. The results of the fit are written
+///        to the ${OCA_SNOPLUS_ROOT}/output/fits directory. The data
+///        which was used is stored in a OCAPMTStore object in the
+///        ${OCA_SNOPLUS_ROOT}/output/data directory.
 ///                
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:
-///     04/2015 : RPFS - First Revision, new file.
+///     11/2015 : RPFS - First Revision, new file.
 ///
 /// DETAIL: This executable performs the optics fit and writes
-///         the results out to a file. This executable is started
-///         by typing 'oca2fit [path-to-fit-file]' where the
-///         the '[path-to-fit-file]' is the full system path
-///         to the 'fit-file', typically stored in the 
-///         '$OCA_SNOPLUS_ROOT/data/fit_files/' directory.
-///         At the end of this executable the result of the fit
-///         are written out to a .root file and place in the
-///         'OCA_SNOPLUS_ROOT/output/fits/' directory.
+///         the results out to a file.
+///         E.g. at the command line:
+///            
+///            oca2fit2eff -f oct15_labppo_337.ocadb
+///
+///         This would run a fit to the model over the files
+///         specificed in the ${OCA_SNOPLUS_ROOT}/data/fitfiles
+///         directory. An additional option [-s] is also avaialble
+///         E.g
+///            oca2fit2eff -f oct15_labppo_337.ocadb -s seed_file.root
+///
+///         The '-s' denotes the option to seed the parameters from values
+///         stored on a previous fit file in the ${OCA_SNOPLUS_ROOT}/output/fits
+///         directory.
+///
+///
+///         Once the fit has been completed, the PMT efficiencies are 
+///         computed in order to calculate the PMT-PMT variablity. These
+///         values are then put onto the OCAPMT objects (the data points
+///         in the fit) such that they can be used for a subsequent fit
+///         by the 'oca2fit' executable. It is expected that for MC data
+///         this executable (oca2fit2eff) should be sufficient. 
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -95,6 +115,7 @@ int main( int argc, char** argv ){
   // Create the OCAModelParameterStore object which stores
   // the parameters for the optics model.
   OCAModelParameterStore* lParStore = new OCAModelParameterStore( fitName );
+  lParStore->SetSystematicName( systematicName );
   
   // Seed the parameters...
   if ( seedFile != "" ){ 
@@ -114,6 +135,10 @@ int main( int argc, char** argv ){
   // Set a link to the pointer to the OCAModelParameterStore
   // object.
   lModel->SetOCAModelParameterStore( lParStore );
+  // Note this only changes the state of the parameters for the following
+  // systematics: distance_to_pmt, laserball_intensity2, laserball_intensity_flat
+  // All other systematics have their changes applied at the OCARun level.
+  lModel->ApplySystematics();
 
   // Get the minimum number of PMT angular response and Laserball
   // distribution bin entires required for the parameter associated
@@ -127,7 +152,16 @@ int main( int argc, char** argv ){
   std::vector< Int_t > runIDs = lDB.GetIntVectorField( "FITFILE", "run_ids", "run_setup" );
   std::string dataSet = lDB.GetStringField( "FITFILE", "data_set", "fit_setup" );
   OCARunReader lReader;
-  lReader.SetBranchName( systematicName );
+
+  if ( systematicName == "distance_to_pmt"
+       || systematicName == "laserball_distribution2"
+       || systematicName == "laserball_distribution_flat"
+       || systematicName == "chi_square_lim_16"
+       || systematicName == "chi_square_lim_9"
+       || systematicName == "chi_square_lim_res_rms" ){
+    lReader.SetBranchName( "nominal" );
+  }
+  else{ lReader.SetBranchName( systematicName ); }
   lReader.Add( runIDs, dataSet );
   
   // Create and add the run information to a OCAPMTStore object.
@@ -159,8 +193,19 @@ int main( int argc, char** argv ){
   // i.e. what subsequent values of the chisquare to cut on 
   // following each round of fitting.
   Bool_t updateFinalChiSqLim = false;
-  cout << "chiSqLims" << endl;
   std::vector< Double_t > chiSqLims = lDB.GetDoubleVectorField( "FITFILE", "chisq_lims", "fit_procedure" );
+  if ( systematicName == "chi_square_lim_16" ){
+    cout << "ChiSquare systematic: Setting upper limit to 16.0" << endl;
+    Float_t chis[] = { 1000.0, 100.0, 50.0, 25.0, 16.0, 16.0 };
+    chiSqLims.resize( 6 );
+    chiSqLims.assign( chis, chis + 6 );
+  }
+  if ( systematicName == "chi_square_lim_9" ){
+    cout << "ChiSquare systematic: Setting upper limit to 9.0" << endl;
+    Float_t chis[] = { 1000.0, 100.0, 50.0, 25.0, 16.0, 9.0, 9.0 };
+    chiSqLims.resize( 7 );
+    chiSqLims.assign( chis, chis + 7 );
+  }
   Int_t nInitChiSqLims = (Int_t)chiSqLims.size();
 
   stringstream myStream;
@@ -203,7 +248,9 @@ int main( int argc, char** argv ){
     myC->Print( ( myString + "-plot.eps" ).c_str() );
     myString.clear();
 
-    if ( ( iFit == nInitChiSqLims - 1 ) && !updateFinalChiSqLim ){
+    if ( ( iFit == nInitChiSqLims - 1 ) && !updateFinalChiSqLim
+         && systematicName != "chi_square_lim_16" 
+         && systematicName != "chi_square_lim_9" ){
       chiSqLims.push_back( resPlot->GetRMS() * resPlot->GetRMS() );
       chiSqLims.push_back( resPlot->GetRMS() * resPlot->GetRMS() );
       updateFinalChiSqLim = false;
@@ -220,8 +267,6 @@ int main( int argc, char** argv ){
 
   // First calculate the raw efficiencies which is:
   // MPE-Corrected-Occupancy / Model Prediction.
-
-
   vector< OCAPMT >::iterator iDP;
   vector< OCAPMT >::iterator iDPBegin = finalStore->GetOCAPMTsIterBegin();
   vector< OCAPMT >::iterator iDPEnd = finalStore->GetOCAPMTsIterEnd();
@@ -377,17 +422,21 @@ int main( int argc, char** argv ){
 
   // Create the full file path for the output fit file.
   string fitROOTPath = lDB.GetOutputDir() + "fits/" + fitName + ".root";
-  string fitRATDBPath = lDB.GetOutputDir() + "fits/" + fitName + ".ratdb";
 
   // Write the fit to a .root file.
   // These .root files are typically held in the
   // '$OCA_SNOPLUS_ROOT/output/fits/' directory.
   lParStore->WriteToROOTFile( fitROOTPath, systematicName );
-  lParStore->WriteToRATDBFile( fitRATDBPath.c_str() );
 
-  lData->WriteToFile( ( fitName + "_unfiltered.root" ).c_str() );
-  finalStore->WriteToFile( ( fitName + "_filtered.root" ).c_str() );
-  
+  if ( systematicName == "nominal" ){
+    string fitRATDBPath = lDB.GetOutputDir() + "fits/" + fitName + ".ratdb";
+    lParStore->WriteToRATDBFile( fitRATDBPath.c_str() );
+  }
+
+  if ( systematicName == "nominal" ){
+    lData->WriteToFile( ( fitName + "_unfiltered.root" ).c_str() );
+    finalStore->WriteToFile( ( fitName + "_filtered.root" ).c_str() );
+  }
     
   cout << "\n";
   cout << "#############################" << endl;

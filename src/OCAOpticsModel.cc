@@ -223,9 +223,34 @@ void OCAOpticsModel::InitialiseLBRunNormalisations( OCAPMTStore* lData )
 //////////////////////////////////////
 //////////////////////////////////////
 
+void OCAOpticsModel::ApplySystematics()
+{
+
+  // Obtain a pointer to the parameters for use in this calculation
+  // for the model prediction of the occupancy ratio.
+  OCAModelParameterStore* parPtr = GetOCAModelParameterStore();
+  
+
+  // Flat laserball distribution, fixed to relative intesity of 1.0
+  if ( parPtr->GetSystematicName() == "laserball_distribution_flat" ){
+    cout << "OCAOpticsModel::ApplySystematic: Setting laserball distribution to flat" << endl;
+
+    for ( Int_t iPar = parPtr->GetLBDistributionParIndex();
+          iPar < parPtr->GetLBDistributionParIndex() 
+            + parPtr->GetNLBDistributionPars();
+          iPar++ ){
+      parPtr->GetParametersVary()[ iPar ] = 0;
+      parPtr->GetParametersPtr()[ iPar ] = 1.0;
+    }
+  }
+  
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_t* derivativePars )
 {
-  //cout << "about to evaluate" << endl;
   // Obtain a pointer to the parameters for use in this calculation
   // for the model prediction of the occupancy ratio.
   OCAModelParameterStore* parPtr = GetOCAModelParameterStore();
@@ -268,6 +293,14 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
   // runs for the distances in the inner AV, AV and water regions.
   Float_t dInnerAV = dataPoint.GetDistInInnerAV() 
     - dataPoint.GetCentralDistInInnerAV();
+
+  // The 'distance_to_pmt' systematic is applied such that
+  // it reduces the effective distance through the Innner AV region.
+  // This is to account for the radius of the laserball, and the distance
+  // the light must travel through it before being emitted.
+  if ( parPtr->GetSystematicName() == "distance_to_pmt" ){
+    dInnerAV -= 50.0;
+  }
   Float_t dAV = dataPoint.GetDistInAV() 
     - dataPoint.GetCentralDistInAV();
   Float_t dWater = dataPoint.GetDistInWater() 
@@ -293,6 +326,13 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
   Int_t binsToDiffCtr[ 4 ];
   Float_t intensity = ModelLBDistribution( dataPoint, "off-axis", phiFrac, cosThetaFrac, binsToDiff );
   Float_t intensityCtr = ModelLBDistribution( dataPoint, "central", phiFracCtr, cosThetaFracCtr, binsToDiffCtr );
+
+  // The 'laserball_distribution2' systematic is applied such that
+  // it squares the intensity of the angular laserball distribution.
+  if ( parPtr->GetSystematicName() == "laserball_distribution2" ){
+    intensity *= intensity;
+    intensityCtr *= intensityCtr;
+  }
 
   // Compute the ratio for the isotropy part.
   intensityRatio = intensity / intensityCtr;
@@ -462,11 +502,17 @@ Float_t OCAOpticsModel::ModelPrediction( const OCAPMT& dataPoint )
   // Use the obtained normalisation bin obtain the current value for the
   // intensity normalisation for the off-axis run.
   Float_t normVal = parPtr->GetLBRunNormalisationPar( dataPoint.GetRunIndex() );
-  //normVal *= dataPoint.GetCentralLBIntensityNorm();
 
   // Obtain the distances from the off-axis 
   // runs for the distances in the inner AV, AV and water regions.
   Float_t dInnerAV = dataPoint.GetDistInInnerAV();
+  // The 'distance_to_pmt' systematic is applied such that
+  // it reduces the effective distance through the Innner AV region.
+  // This is to account for the radius of the laserball, and the distance
+  // the light must travel through it before being emitted.
+  if ( parPtr->GetSystematicName() == "distance_to_pmt" ){
+    dInnerAV -= 50.0;
+  }
   Float_t dAV = dataPoint.GetDistInAV();
   Float_t dWater = dataPoint.GetDistInWater();
 
@@ -485,6 +531,11 @@ Float_t OCAOpticsModel::ModelPrediction( const OCAPMT& dataPoint )
   Float_t cosThetaFrac[ 2 ];
   Int_t binsToDiff[ 4 ];
   Float_t intensity = ModelLBDistribution( dataPoint, "off-axis", phiFrac, cosThetaFrac, binsToDiff );
+  // The 'laserball_distribution2' systematic is applied such that
+  // it squares the intensity of the angular laserball distribution.
+  if ( parPtr->GetSystematicName() == "laserball_distribution2" ){
+    intensity *= intensity;
+  }
 
   // Model the laserball distribution mask for this data point
   // for the off-axis run.

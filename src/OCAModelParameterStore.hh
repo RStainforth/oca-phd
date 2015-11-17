@@ -99,6 +99,9 @@ namespace OCA{
     ////////     GETTERS     ////////
     /////////////////////////////////
 
+    // Get the name of the systematic being applied (if at all).
+    string GetSystematicName(){ return fSystematicName; }
+
     // Return the OCAModelParameter object corresponding to this index.
     OCAModelParameter GetParameter( Int_t parIndex ){ return fParameters[ parIndex ]; }
 
@@ -314,6 +317,9 @@ namespace OCA{
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
+
+    // Set the name of the systematic being applied (if at all).
+    void SetSystematicName( string& sysName ){ fSystematicName = sysName; }
 
     // After evaluating a specific data point, set the current 
     // PMT angular response bin from the off-axis run.

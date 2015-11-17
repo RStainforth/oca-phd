@@ -57,6 +57,11 @@ namespace OCA{
     // off-axis values stored on the data point objects.
     void InitialiseLBRunNormalisations( OCAPMTStore* lData );
 
+    // Internally check the parameters to see if any systematics changes
+    // to them needs to be applied. This is usually for the following systematics:
+    //     - laserball_distribution_flat
+    void ApplySystematics();
+
     /////////////////////////////////
     ////////     METHODS     ////////
     /////////////////////////////////

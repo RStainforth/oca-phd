@@ -4,8 +4,17 @@
 ///
 /// EXECUTABLE: ocafit
 ///
-/// BRIEF: The class which defines the optical response model
-///        of PMTs.
+/// BRIEF: This executable performs the OCA optics fit over a
+///        OCAPMTStore object (produced by oca2fit2eff). This executable
+///        is only really applicable for actual REAL data (not MC). Currently
+///        this is SNO data, :( . In order
+///        to do this you need to specify a 'fitfile' located in
+///        the ${OCA_SNOPLUS_ROOT}/data/fitfiles directory.
+///        The fitfile defines the parameters and initial values
+///        to be used in the fit. The results of the fit are written
+///        to the ${OCA_SNOPLUS_ROOT}/output/fits directory. The data
+///        which was used is stored in a OCAPMTStore object in the
+///        ${OCA_SNOPLUS_ROOT}/output/data directory.
 ///                
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
@@ -13,14 +22,20 @@
 ///     04/2015 : RPFS - First Revision, new file.
 ///
 /// DETAIL: This executable performs the optics fit and writes
-///         the results out to a file. This executable is started
-///         by typing 'oca2fit [path-to-fit-file]' where the
-///         the '[path-to-fit-file]' is the full system path
-///         to the 'fit-file', typically stored in the 
-///         '$OCA_SNOPLUS_ROOT/data/fit_files/' directory.
-///         At the end of this executable the result of the fit
-///         are written out to a .root file and place in the
-///         'OCA_SNOPLUS_ROOT/output/fits/' directory.
+///         the results out to a file.
+///         E.g. at the command line:
+///            
+///            oca2fit -f oct15_labppo_337.ocadb
+///
+///         This would run a fit to the model over the files
+///         specificed in the ${OCA_SNOPLUS_ROOT}/data/fitfiles
+///         directory. An additional option [-s] is also avaialble
+///         E.g
+///            oca2fit -f oct15_labppo_337.ocadb -s seed_file.root
+///
+///         The '-s' denotes the option to seed the parameters from values
+///         stored on a previous fit file in the ${OCA_SNOPLUS_ROOT}/output/fits
+///         directory.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -59,7 +74,6 @@ public:
 // Declare the functions which will be used in the executable
 OCACmdOptions ParseArguments( int argc, char** argv );
 void help();
-// Declare the functions which will be used in the executable
 int main( int argc, char** argv );
 
 //////////////////////
@@ -86,19 +100,25 @@ int main( int argc, char** argv ){
   string fitPath = ( lDB.GetFitFilesDir() + Opts.fFitFileName );
   cout << "Setting Fitfile: " << fitPath << endl;
   lDB.SetFile( fitPath.c_str() );
-  cout << "fitName" << endl;
   std::string fitName = lDB.GetStringField( "FITFILE", "fit_name", "fit_setup" );
-  cout << "seedFile" << endl;
-  std::string seedFile = lDB.GetStringField( "FITFILE", "seed_initial_parameters", "fit_setup" );
+  std::string seedFile = Opts.fSeedFile;
   std::string systematicName = Opts.fSystematic;
 
   // Create the OCAModelParameterStore object which stores
   // the parameters for the optics model.
   OCAModelParameterStore* lParStore = new OCAModelParameterStore( fitName );
+  lParStore->SetSystematicName( systematicName );
 
-  // Add the parameters.
-  lParStore->AddParameters( fitPath );
-  cout << "TEST1" << endl;
+  // Seed the parameters...
+  if ( seedFile != "" ){ 
+    if ( !lParStore->SeedParameters( seedFile, fitPath ) ){
+      cout << "Unsuccessful seed! Abort" << endl;
+      return 1;
+    }
+  }
+  // ...or add the parameters as specified in the fit file
+  else{ lParStore->AddParameters( fitPath ); }
+
   // Create the OCAOpticsModel object. This is the object
   // which will use the OCAModelParameter objects to compute
   // a model prediction for the optics model.
@@ -107,6 +127,11 @@ int main( int argc, char** argv ){
   // Set a link to the pointer to the OCAModelParameterStore
   // object.
   lModel->SetOCAModelParameterStore( lParStore );
+
+  // Note this only changes the state of the parameters for the following
+  // systematics: distance_to_pmt, laserball_intensity2, laserball_intensity_flat
+  // All other systematics have their changes applied at the OCARun level.
+  lModel->ApplySystematics();
 
   // Get the minimum number of PMT angular response and Laserball
   // distribution bin entires required for the parameter associated
