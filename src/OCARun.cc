@@ -292,7 +292,6 @@ void OCARun::FillRunInfo( RAT::DS::SOC* socPtr,
   }
   if ( lbPosMode == 3 ){
     // The fitted laserball position.
-    cout << "Getting the LB Fit!" << endl;
     RAT::DS::FitResult lbFit = socPtr->GetFitResult( "lbfit" );
     RAT::DS::FitVertex lbVertex = lbFit.GetVertex( 0 );
     

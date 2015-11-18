@@ -264,7 +264,7 @@ int main( int argc, char** argv ){
          && systematicName != "chi_square_lim_9" ){
       chiSqLims.push_back( resPlot->GetRMS() * resPlot->GetRMS() );
       chiSqLims.push_back( resPlot->GetRMS() * resPlot->GetRMS() );
-      updateFinalChiSqLim = false;
+      updateFinalChiSqLim = true;
       cout << "oca2fit: Added final chi square limit based on residual RMS^2 = " << resPlot->GetRMS() * resPlot->GetRMS() << endl;
     }
     

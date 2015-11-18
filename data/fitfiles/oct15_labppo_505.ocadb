@@ -9,7 +9,7 @@ timestamp: "",
 
 // This is the directory path in $OCA_ROOT/data/runs/ocarun/*data_set*
 // where to find the OCA-run files.
-data_set: "labppo/oct15",
+data_set: "oct15/labppo",
 
 // This is the name of the fit file to be written to the
 // $OCA_ROOT/output/fits directory

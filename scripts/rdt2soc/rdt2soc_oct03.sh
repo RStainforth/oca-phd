@@ -1,4 +1,4 @@
-source $(OCA_SNOPLUS_ROOT)/env_oca_snoplus.sh
+source ${OCA_SNOPLUS_ROOT}/env_oca_snoplus.sh
 rdt2soc -r 034705 -d oct03
 rdt2soc -r 034707 -d oct03
 rdt2soc -r 034709 -d oct03

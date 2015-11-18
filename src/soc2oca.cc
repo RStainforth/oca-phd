@@ -208,10 +208,40 @@ int main( int argc, char** argv ){
   if ( geomOpt == "sno" ){
     db->Load( ( data + "/geo/sno_d2o.geo" ).c_str() );
     db->Load( ( data + "/pmt/snoman.ratdb" ).c_str() );
+    db->SetS( "DETECTOR", "geo_file", "geo/sno_d2o.geo" );
+    db->SetS( "DETECTOR", "pmt_info_file", "/pmt/snoman.ratdb" );
   }
-  if ( geomOpt == "snoplus" ){
+  else if ( geomOpt == "labppo" ){
     db->Load( ( data + "/geo/snoplus.geo" ).c_str() );
     db->Load( ( data + "/pmt/airfill2.ratdb" ).c_str() );
+    db->SetS( "DETECTOR", "geo_file", "geo/snoplus.geo" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/airfill2.ratdb" );
+    db->SetS( "GEO", "inner_av", "material", "labppo_scintillator" );
+  }
+  else if ( geomOpt == "water" ){
+    db->Load( ( data + "/geo/snoplus.geo" ).c_str() );
+    db->Load( ( data + "/pmt/airfill2.ratdb" ).c_str() );
+    db->SetS( "DETECTOR", "geo_file", "geo/snoplus.geo" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/airfill2.ratdb" );
+    db->SetS( "GEO", "inner_av", "material", "lightwater_sno" );
+  }
+  else if ( geomOpt == "labppote0p3perylene" ){
+    db->Load( ( data + "/geo/snoplus.geo" ).c_str() );
+    db->Load( ( data + "/pmt/airfill2.ratdb" ).c_str() );
+    db->SetS( "DETECTOR", "geo_file", "geo/snoplus.geo" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/airfill2.ratdb" );
+    db->SetS( "GEO", "inner_av", "material", "te_0p3_labppo_scintillator_Perylene_Feb2015" );
+  }
+  else if ( geomOpt == "labppote0p3bismsb" ){
+    db->Load( ( data + "/geo/snoplus.geo" ).c_str() );
+    db->Load( ( data + "/pmt/airfill2.ratdb" ).c_str() );
+    db->SetS( "DETECTOR", "geo_file", "geo/snoplus.geo" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/airfill2.ratdb" );
+    db->SetS( "GEO", "inner_av", "material", "te_0p3_labppo_scintillator_bisMSB_Feb2015" );
+  }
+  else{
+    cout << "Unknown geometry option: " << geomOpt << ". Abort." << endl;
+    return 1; 
   }
 
   RAT::DU::Utility::Get()->BeginOfRun();
