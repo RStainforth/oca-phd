@@ -9,11 +9,11 @@ timestamp: "",
 
 // This is the directory path in $OCA_ROOT/data/runs/ocarun/*data_set*
 // where to find the OCA-run files.
-data_set: "water/oct15",
+data_set: "labppote0p3bismsb/oct15",
 
 // This is the name of the fit file to be written to the
 // $OCA_ROOT/output/fits directory
-fit_name: "oct15_water_337",
+fit_name: "oct15_labppote0p3bismsb_337",
 
 // For reference, this is a list of the possible systematics
 // which can be calculated via the 'oca2fit' -b options
@@ -46,13 +46,13 @@ pass: 0,
 comment: "",
 timestamp: "",
 
-run_ids: [ 233701, 233702, 233703, 233704, 233705, 233706, 
-233707, 233708, 233709, 2337010, 2337011, 2337012, 
-2337013, 2337014, 2337015, 2337016, 2337017, 2337018, 
-2337019, 2337020, 2337021, 2337022, 2337023, 2337024, 
-2337025, 2337026, 2337027, 2337028, 2337029, 2337030, 
-2337031, 2337032, 2337033, 2337034, 2337035, 2337036, 
-2337037, 2337038, 2337039 ], 
+run_ids: [ 433701, 433702, 433703, 433704, 433705, 433706, 
+433707, 433708, 433709, 4337010, 4337011, 4337012, 
+4337013, 4337014, 4337015, 4337016, 4337017, 4337018, 
+4337019, 4337020, 4337021, 4337022, 4337023, 4337024, 
+4337025, 4337026, 4337027, 4337028, 4337029, 4337030, 
+4337031, 4337032, 4337033, 4337034, 4337035, 4337036, 
+4337037, 4337038, 4337039 ], 
 
 }
 
@@ -116,7 +116,7 @@ pass: 0,
 comment: "",
 timestamp: "",
 
-water_fill: 1,
+water_fill: 0,
 
 parameters_list: [ "inner_av_extinction_length", "acrylic_extinction_length", "water_extinction_length", "laserball_intensity_mask", "pmt_angular_response", "laserball_distribution", "laserball_run_normalisation" ],
 

@@ -9,11 +9,11 @@ timestamp: "",
 
 // This is the directory path in $OCA_ROOT/data/runs/ocarun/*data_set*
 // where to find the OCA-run files.
-data_set: "water/oct15",
+data_set: "labppote0p3perylene/oct15",
 
 // This is the name of the fit file to be written to the
 // $OCA_ROOT/output/fits directory
-fit_name: "oct15_water_337",
+fit_name: "oct15_labppote0p3perylene_505",
 
 // For reference, this is a list of the possible systematics
 // which can be calculated via the 'oca2fit' -b options
@@ -46,13 +46,13 @@ pass: 0,
 comment: "",
 timestamp: "",
 
-run_ids: [ 233701, 233702, 233703, 233704, 233705, 233706, 
-233707, 233708, 233709, 2337010, 2337011, 2337012, 
-2337013, 2337014, 2337015, 2337016, 2337017, 2337018, 
-2337019, 2337020, 2337021, 2337022, 2337023, 2337024, 
-2337025, 2337026, 2337027, 2337028, 2337029, 2337030, 
-2337031, 2337032, 2337033, 2337034, 2337035, 2337036, 
-2337037, 2337038, 2337039 ], 
+run_ids: [ 350501, 350502, 350503, 350504, 350505, 350506, 
+350507, 350508, 350509, 3505010, 3505011, 3505012, 
+3505013, 3505014, 3505015, 3505016, 3505017, 3505018, 
+3505019, 3505020, 3505021, 3505022, 3505023, 3505024, 
+3505025, 3505026, 3505027, 3505028, 3505029, 3505030, 
+3505031, 3505032, 3505033, 3505034, 3505035, 3505036, 
+3505037, 3505038, 3505039 ], 
 
 }
 
@@ -116,7 +116,7 @@ pass: 0,
 comment: "",
 timestamp: "",
 
-water_fill: 1,
+water_fill: 0,
 
 parameters_list: [ "inner_av_extinction_length", "acrylic_extinction_length", "water_extinction_length", "laserball_intensity_mask", "pmt_angular_response", "laserball_distribution", "laserball_run_normalisation" ],
 
@@ -127,7 +127,7 @@ inner_av_extinction_length_initial_value: 3.0e-05,
 inner_av_extinction_length_vary: 1,
 
 // The extinction length of the av volume in mm-1
-acrylic_extinction_length_initial_value: 5.66896749660372734e-03,
+acrylic_extinction_length_initial_value: 7.14361085556447506e-04,
 
 // Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
 acrylic_extinction_length_vary: 0,
