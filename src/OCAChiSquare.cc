@@ -500,7 +500,9 @@ Int_t OCAChiSquare::Minimise( Float_t testParameters[], Int_t parametersVary[],
   // Add the change in the parameters to the parameter array.
   for ( jVar = 0, lVar = 1; lVar <= nParameters; lVar++ ){
     if ( parametersVary[ lVar ] ) { 
-      if ( std::isnan( aTrial[ lVar ] ) ){ cout << "aTRIAL" << endl; }
+      if ( std::isnan( aTrial[ lVar ] ) ){ 
+        cout << "OCAChiSquare::Minimise: Error! Encountered a 'nan' trial variable." << endl; 
+      }
       aTrial[ lVar ] = testParameters[ lVar ] + matrixLine[ ++jVar ];
     }
   } 

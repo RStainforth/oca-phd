@@ -9,7 +9,7 @@ timestamp: "",
 
 // This is the directory path in $OCA_ROOT/data/runs/ocarun/*data_set*
 // where to find the OCA-run files.
-data_set: "labppo/oct15",
+data_set: "oct15/labppo",
 
 // This is the name of the fit file to be written to the
 // $OCA_ROOT/output/fits directory
@@ -65,7 +65,7 @@ pass: 0,
 comment: "",
 timestamp: "",
 
-filter_list: [ "filter_prompt_counts", "filter_ctr_prompt_counts", "filter_chi_square", "filter_mpe_occupancy", "filter_mpe_ctr_occupancy" ],
+filter_list: [ "filter_prompt_counts", "filter_ctr_prompt_counts", "filter_chi_square" ],
 
 filter_mpe_occupancy_min: 0.01,
 filter_mpe_occupancy_max: 0.06,
@@ -73,10 +73,10 @@ filter_mpe_occupancy_max: 0.06,
 filter_mpe_ctr_occupancy_min: 0.02,
 filter_mpe_ctr_occupancy_max: 0.05,
 
-filter_prompt_counts_min: 1000.0,
+filter_prompt_counts_min: 750.0,
 filter_prompt_counts_max: 2.0e10,
 
-filter_ctr_prompt_counts_min: 4000.0,
+filter_ctr_prompt_counts_min: 3000.0,
 filter_ctr_prompt_counts_max: 2.0e10,                      
 
 filter_chi_square_min: 0.0,
@@ -127,7 +127,7 @@ inner_av_extinction_length_initial_value: 3.0e-05,
 inner_av_extinction_length_vary: 1,
 
 // The extinction length of the av volume in mm-1
-acrylic_extinction_length_initial_value: 8.98587866686284542e-04,
+acrylic_extinction_length_initial_value: 1.0e-03,
 
 // Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
 acrylic_extinction_length_vary: 0,

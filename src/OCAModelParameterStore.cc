@@ -174,7 +174,7 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
       fParameters[ GetAVExtinctionLengthParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "acrylic_extinction_length_vary", "parameter_setup" ) );
     }
     if ( iPar->GetIndex() == GetWaterExtinctionLengthParIndex() ){
-      fParameters.push_back( *iPar );
+        fParameters.push_back( *iPar );
       // (-1) because 'push_back' starts at 0
       fParameters[ GetWaterExtinctionLengthParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "water_extinction_length_vary", "parameter_setup" ) );
     }
@@ -192,8 +192,17 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
       if ( iPar->GetIndex() > 3 
            &&
            iPar->GetIndex() <= 3 + fNLBDistributionMaskParameters ){
+        Bool_t varyCond = lDB.GetBoolField( "FITFILE", "laserball_intensity_mask_vary", "parameter_setup" );
         fParameters.push_back( *iPar );
-        fParameters[ iPar->GetIndex()-1 ].SetVary( lDB.GetBoolField( "FITFILE", "laserball_intensity_mask_vary", "parameter_setup" ) );
+        if ( varyCond && ( iPar->GetIndex() == 3 + 1 ) ){ 
+          fParameters[ iPar->GetIndex()-1 ].SetVary( false );
+        }
+        else if ( varyCond && ( iPar->GetIndex() > 3 + 1 ) ){
+          fParameters[ iPar->GetIndex()-1 ].SetVary( varyCond );
+        }
+        else{
+          fParameters[ iPar->GetIndex()-1 ].SetVary( varyCond );
+        }
       }
     }
   }
@@ -300,6 +309,8 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
       fCovarianceMatrixValues[ iParam ][ jParam ] = tmpMatrix[ iParam ][ jParam ];
     }
   }
+
+  if ( fWaterFill ){ fParameters[ GetWaterExtinctionLengthParIndex() - 1 ].SetVary( false ); }
 
   AllocateParameterArrays();
   delete tmpStore;
@@ -1173,6 +1184,13 @@ void OCAModelParameterStore::CrossCheckParameters()
     iPar->SetFinalValue( fParametersPtr[ iPar->GetIndex() ] );
     iPar->SetVary( fParametersVary[ iPar->GetIndex() ] );
     Float_t covValue = fCovarianceMatrix[ iPar->GetIndex() ][ iPar->GetIndex() ];
+
+    // In the case of water fill, we will set the outer water
+    // region to the value fitted to the first
+    if ( fWaterFill && iPar->GetIndex() == GetWaterExtinctionLengthParIndex() ){
+      iPar->SetFinalValue( fParametersPtr[ iPar->GetIndex() ] );
+    }
+      
     if ( covValue > 0.0 ){
       iPar->SetError( TMath::Sqrt( covValue ) );
     }

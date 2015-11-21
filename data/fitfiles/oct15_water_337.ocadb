@@ -65,18 +65,18 @@ pass: 0,
 comment: "",
 timestamp: "",
 
-filter_list: [ "filter_prompt_counts", "filter_ctr_prompt_counts", "filter_chi_square" ],
+filter_list: [ "filter_prompt_counts", "filter_ctr_prompt_counts", "filter_chi_square"  ],
 
-filter_mpe_occupancy_min: 0.01,
-filter_mpe_occupancy_max: 0.06,
+filter_mpe_occupancy_min: 0.02,
+filter_mpe_occupancy_max: 0.1,
 
 filter_mpe_ctr_occupancy_min: 0.02,
 filter_mpe_ctr_occupancy_max: 0.05,
 
-filter_prompt_counts_min: 1000.0,
+filter_prompt_counts_min: 750.0,
 filter_prompt_counts_max: 2.0e10,
 
-filter_ctr_prompt_counts_min: 4000.0,
+filter_ctr_prompt_counts_min: 3000.0,
 filter_ctr_prompt_counts_max: 2.0e10,                      
 
 filter_chi_square_min: 0.0,
@@ -85,8 +85,8 @@ filter_chi_square_max: 1000.0,
 filter_dynamic_residual_min: 0.0,
 filter_dynamic_residual_max: 10.0,
 
-filter_fractional_error_min: 0.000001,
-filter_fractional_error_max: 0.03,
+filter_fractional_error_min: 0.0,
+filter_fractional_error_max: 0.25,
 
 }
 
@@ -121,22 +121,26 @@ water_fill: 1,
 parameters_list: [ "inner_av_extinction_length", "acrylic_extinction_length", "water_extinction_length", "laserball_intensity_mask", "pmt_angular_response", "laserball_distribution", "laserball_run_normalisation" ],
 
 // The extinction length of the inner_av volume in mm-1
-inner_av_extinction_length_initial_value: 3.0e-05,
+inner_av_extinction_length_initial_value: 5.0e-05,
 
 // Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
 inner_av_extinction_length_vary: 1,
 
 // The extinction length of the av volume in mm-1
-acrylic_extinction_length_initial_value: 5.66896749660372734e-03,
+//acrylic_extinction_length_initial_value: 5.66896749660372734e-03,
+//acrylic_extinction_length_initial_value: 4.76543325930833817e-03,
+//acrylic_extinction_length_initial_value: 6.74053793773055077e-03,
+//acrylic_extinction_length_initial_value: 0.00697492,
+acrylic_extinction_length_initial_value: 5.0e-05
 
 // Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
-acrylic_extinction_length_vary: 0,
+acrylic_extinction_length_vary: 1,
 
 // The extinction length of the water volume in mm-1
-water_extinction_length_initial_value: 3.0e-05,
+water_extinction_length_initial_value: 5.0e-05,
 
 // Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
-water_extinction_length_vary: 0,
+water_extinction_length_vary: 1,
 
 // The number of bins distributed between 0 - 90 degrees for the PMT angular response
 pmt_angular_response_number_of_bins: 90,

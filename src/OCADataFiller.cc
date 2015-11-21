@@ -219,6 +219,12 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
         }
       }
 
+      else if ( filterName == "filter_z_pos" ){
+        if ( !iF->CheckCondition( iD->GetPos().Z() ) ){
+          validPoint = false; break;
+        }
+      }
+
       else{
         cout << "OCADataFiller: Unknown filter: '" << filterName << "'\n";
         cout << "Try adding filter to LOCAsDataFiller::FilterData.\n";
