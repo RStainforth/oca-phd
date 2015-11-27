@@ -61,11 +61,13 @@
 #include "TCanvas.h"
 #include "TGraph.h"
 #include "TStyle.h"
+#include "TF1.h"
 
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <map>
+#include <fstream>
 #include <getopt.h>
 
 using namespace std;
@@ -74,9 +76,9 @@ using namespace OCA;
 class OCACmdOptions 
 {
 public:
-  OCACmdOptions( ) : fFitFileName( "" ), fSystematic( "" ), fSeedFile( "" ), fPMTVariability( false ) { }
+  OCACmdOptions( ) : fFitFileName( "" ), fSystematic( "" ), fSeedFile( "" ), fPMTVariability( false ), fCalculatePMTVariability( false ) { }
   std::string fFitFileName, fSystematic, fSeedFile;
-  bool fPMTVariability;
+  bool fPMTVariability, fCalculatePMTVariability;
 };
 
 // Declare the functions which will be used in the executable
@@ -84,8 +86,11 @@ OCACmdOptions ParseArguments( int argc, char** argv );
 void help();
 void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore, 
                                    OCAPMTStore* fullDataStore,
-                                   OCAOpticsModel* ocaModel, 
+                                   OCAOpticsModel* ocaModel,
+                                   OCAModelParameterStore* ocaPars, 
                                    string& fitNameStr );
+void RetrievePMTVariabilityParameters( OCAModelParameterStore* ocaPars,
+                                       string& fitName );
 int main( int argc, char** argv );
 
 //////////////////////
@@ -159,26 +164,27 @@ int main( int argc, char** argv ){
   // Create and add the run information to a OCAPMTStore object.
   OCAPMTStore* lData;
 
-  if ( !Opts.fPMTVariability ){
-    lData = new OCAPMTStore();
-    OCARunReader lReader;
-    
-    if ( systematicName == "distance_to_pmt"
-         || systematicName == "laserball_distribution2"
-         || systematicName == "laserball_distribution_flat"
-         || systematicName == "chi_square_lim_16"
-         || systematicName == "chi_square_lim_9"
-         || systematicName == "chi_square_lim_res_rms" ){
-      lReader.SetBranchName( "nominal" );
-    }
-    else{ lReader.SetBranchName( systematicName ); }
-    lReader.Add( runIDs, dataSet );
-    
-    lData->AddData( lReader );
+  if ( Opts.fPMTVariability ){
+    // Try and retrieve the PMT variability values from a previous nominal
+    // fit which used the '-c' option
+    RetrievePMTVariabilityParameters( lParStore, fitName );
   }
-  else{
-    lData = new OCAPMTStore( fitName );
+  lData = new OCAPMTStore();
+  OCARunReader lReader;
+    
+  if ( systematicName == "distance_to_pmt"
+       || systematicName == "laserball_distribution2"
+       || systematicName == "laserball_distribution_flat"
+       || systematicName == "chi_square_lim_16"
+       || systematicName == "chi_square_lim_9"
+       || systematicName == "chi_square_lim_res_rms" ){
+    lReader.SetBranchName( "nominal" );
   }
+  else{ lReader.SetBranchName( systematicName ); }
+  lReader.Add( runIDs, dataSet );
+    
+  lData->AddData( lReader );
+
   // Create a pointer to a new OCAChiSquare and set a link
   // to each of the data and the model.
   OCAChiSquare* lChiSq = new OCAChiSquare();
@@ -203,7 +209,6 @@ int main( int argc, char** argv ){
   // Retrieve information about the fitting procedure 
   // i.e. what subsequent values of the chisquare to cut on 
   // following each round of fitting.
-  Bool_t updateFinalChiSqLim = false;
   std::vector< Double_t > chiSqLims = lDB.GetDoubleVectorField( "FITFILE", "chisq_lims", "fit_procedure" );
   if ( systematicName == "chi_square_lim_16" ){
     cout << "ChiSquare systematic: Setting upper limit to 16.0" << endl;
@@ -217,7 +222,6 @@ int main( int argc, char** argv ){
     chiSqLims.resize( 7 );
     chiSqLims.assign( chis, chis + 7 );
   }
-  Int_t nInitChiSqLims = (Int_t)chiSqLims.size();
 
   stringstream myStream;
   string myString = "";
@@ -254,26 +258,49 @@ int main( int argc, char** argv ){
       resPlot->Fill( lChiSq->EvaluateChiSquareResidual( *iDP ) );
     }
 
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0001);
     TCanvas* myC = new TCanvas( "myC", "myC", 600, 400 );
     resPlot->Draw();
-    myC->Print( ( myString + "-plot.eps" ).c_str() );
+
+    TF1 *gausFit = new TF1( "gausFit","gaus", -2.5, 2.5 );
+    gausFit->SetParName( 0, "Normalisation" );
+    gausFit->SetParName( 1, "Mean" );
+    gausFit->SetParName( 2, "Sigma" );
+    gausFit->SetLineColor( 2 );
+    gausFit->SetLineWidth( 2 );
+    resPlot->Fit( "gausFit", "r" );
+
+    cout << "Gaussian Normalisation: " << gausFit->GetParameter( 0 ) << endl;
+    cout << "Gaussian Mean: " << gausFit->GetParameter( 1 ) << endl;
+    cout << "Gaussian Sigma: " << gausFit->GetParameter( 2 ) << endl;
+    cout << "---------------" << endl;
+    resPlot->SetTitle( "Chi-Square Residual" );
+    resPlot->GetXaxis()->SetTitle( "Occ^{model} - Occ^{dat} / #sigma" );
+    resPlot->GetYaxis()->SetTitle( "Counts" );
+    string outputDir = lDB.GetOutputDir();
+    string filePath = outputDir + "fits/";
+    myC->Print( ( filePath + fitName + "-" + myString + "-plot.eps" ).c_str() );
+    myC->Print( ( filePath + fitName + "-" + myString + "-plot.root" ).c_str() );
     myString.clear();
 
-    if ( ( iFit == nInitChiSqLims - 1 ) && !updateFinalChiSqLim
-         && systematicName != "chi_square_lim_16" 
-         && systematicName != "chi_square_lim_9" ){
-      chiSqLims.push_back( resPlot->GetRMS() * resPlot->GetRMS() );
-      chiSqLims.push_back( resPlot->GetRMS() * resPlot->GetRMS() );
-      updateFinalChiSqLim = true;
-      cout << "oca2fit: Added final chi square limit based on residual RMS^2 = " << resPlot->GetRMS() * resPlot->GetRMS() << endl;
+    if ( ( systematicName == "chi_square_lim_16" && chiSqLims[ iFit ] == 16.0 )
+         ||
+         ( systematicName == "chi_square_lim_9" && chiSqLims[ iFit ] == 9.0 ) ){
+      break;
     }
     
   } 
 
+  lChiSq->SetPointerToData( finalStore );
   lChiSq->EvaluateGlobalChiSquare();
   lChiSq->EvaluateGlobalChiSquareResidual();
 
-  if ( Opts.fPMTVariability ){ CalculatePMTToPMTVariability( finalStore, lData, lModel, fitName ); }
+  lChiSq->SetPointerToData( lData );
+  lChiSq->EvaluateGlobalChiSquare();
+  lChiSq->EvaluateGlobalChiSquareResidual();
+
+  if ( Opts.fCalculatePMTVariability ){ CalculatePMTToPMTVariability( finalStore, lData, lModel, lParStore, fitName ); }
 
   // After performing all the iterations and fits with different chi-square
   // limit cross check all the parameters in the OCAModelParameterStore.
@@ -320,11 +347,12 @@ OCACmdOptions ParseArguments( int argc, char** argv)
                                   {"systematic-branch", 1, NULL, 'b'},
                                   {"seed-file", 1, NULL, 's'},
                                   {"pmt-to-pmt-variability", 0, NULL, 'v'},
+                                  {"calculate-variability", 0, NULL, 'c'},
                                   {0,0,0,0} };
   
   OCACmdOptions options;
   int option_index = 0;
-  int c = getopt_long(argc, argv, "h:f:b:s:v", opts, &option_index);
+  int c = getopt_long(argc, argv, "h:f:b:s:vc", opts, &option_index);
   while (c != -1) {
     switch (c) {
     case 'h': help(); break;
@@ -332,9 +360,10 @@ OCACmdOptions ParseArguments( int argc, char** argv)
     case 'b': options.fSystematic = (std::string)optarg; break;
     case 's': options.fSeedFile = (std::string)optarg; break;
     case 'v': options.fPMTVariability = true; break;
+    case 'c': options.fCalculatePMTVariability = true; break;
     }
     
-    c = getopt_long(argc, argv, "h:f:b:s:v", opts, &option_index);
+    c = getopt_long(argc, argv, "h:f:b:s:vc", opts, &option_index);
   }
   
   stringstream idStream;
@@ -364,6 +393,7 @@ void help(){
 void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore, 
                                    OCAPMTStore* fullDataStore,
                                    OCAOpticsModel* ocaModel,
+                                   OCAModelParameterStore* ocaPars,
                                    string& fitNameStr )
 {
 
@@ -502,6 +532,11 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   vector< OCAPMT >::iterator iDPBeginL = fullDataStore->GetOCAPMTsIterBegin();
   vector< OCAPMT >::iterator iDPEndL = fullDataStore->GetOCAPMTsIterEnd();
 
+  // Set the values of the polynomial for the PMT variability of this set.
+  ocaPars->SetPMTVariabilityParameters( fitFunc->GetParameter( 0 ),
+                                        fitFunc->GetParameter( 1 ),
+                                        fitFunc->GetParameter( 2 ) );
+  
   for ( iDPL = iDPBeginL; iDPL != iDPEndL; iDPL++ ) {
 
     Float_t incAngle = TMath::ACos( iDPL->GetCosTheta() ) * TMath::RadToDeg();
@@ -516,4 +551,39 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
     }
 
   }
+}
+
+
+void RetrievePMTVariabilityParameters( OCAModelParameterStore* ocaPars,
+                                       string& fitName )
+{
+
+  // Attempt to find a previous fit which contains the polynomial values
+  // for the PMT variability error correction.
+  OCADB tmpDB;
+  string filePath = tmpDB.GetOutputDir() + "fits/" + fitName + ".root";
+  cout << "Attempting to retrieve the PMT variability polynomial values from: " << endl;
+  cout << filePath << ", nominal branch" <<  endl;
+
+  ifstream prevFile( filePath.c_str() );
+  if ( prevFile.good() ){
+    cout << "Found previous fit file, will add the PMT variability parmaeters" << endl;
+  }
+  else{
+    cout << "File not found. No PMT variability parameters wil be added" << endl;
+    return;
+  }
+
+  // Open the file and add the PMT variability parameters
+  TFile* tmpFile = TFile::Open( ( filePath ).c_str() );
+  TTree* tmpTree = (TTree*)tmpFile->Get( ( fitName + "-nominal;1" ).c_str() );
+  OCAModelParameterStore* tmpStore = new OCAModelParameterStore();
+  tmpTree->SetBranchAddress( "nominal", &(tmpStore) );
+  tmpTree->GetEntry( 0 );
+  TVector polPars = tmpStore->GetPMTVariabilityParameters();
+  ocaPars->SetPMTVariabilityParameters( polPars[ 0 ], polPars[ 1 ], polPars[ 2 ] );
+  cout << "Added parameters: p0: " << polPars[ 0 ]
+       << ", p1: " << polPars[ 1 ] << ", p2: " << polPars[ 2 ] << endl;
+  tmpFile->Close();
+
 }

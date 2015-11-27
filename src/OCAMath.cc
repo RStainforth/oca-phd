@@ -3,6 +3,7 @@
 
 #include "TMath.h"
 #include "TObject.h"
+#include "TVector.h"
 
 #include <iostream>
 #include <cmath>
@@ -74,28 +75,25 @@ Double_t OCAMath::OccRatioErr( const OCAPMT* pmt ){
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t OCAMath::CalculatePMTVariabilityError( const OCAPMT& dPoint )
+Float_t OCAMath::CalculatePMTVariabilityError( const OCAPMT& dPoint,
+                                               TVector& polPars )
 {
 
-  // If the PMT variability has not yet been calculated for this data point
-  // then it will be negative, in which case return 0.0 for this calculation.
-  if( dPoint.GetPMTVariability() < 0.0
-      || dPoint.GetMPECorrOccupancy() == 0.0 ){ return 0.0; }
-  else{
-    return dPoint.GetPMTVariability();
+  // If the polynomial parameters haven't been set, then we aren't using
+  // the PMT variablity error corrections; therefore return 0.0.
+  // The default state for the polynomial parameters is negative.
+  // See the OCAModelParameterStore constructor for details.
+  if ( polPars( 0 ) < 0 ){ return 0.0; }
+  Float_t theta = TMath::ACos( dPoint.GetCosTheta() ) * TMath::RadToDeg();
+
+  Float_t polValue = 0.0;
+  // Compute the value of the error in terms of the polynomial function;
+  // a linear superposition of different degrees in theta.
+  for ( Int_t iPol = 0; iPol < polPars.GetNoElements(); iPol++ ){
+    polValue += polPars( iPol ) * TMath::Power( theta, iPol );
   }
 
-  // Otherwise, can calculate the PMT variability term.
-  Float_t par0 = 0.0268;
-  Float_t par1 = 5.809e-05;
-  Float_t par2 = 4.919e-06;
-  Float_t incidentAngle = TMath::ACos( dPoint.GetCosTheta() ) * 180.0 / TMath::Pi();
-
-  Float_t var = par0
-    + par1 * ( incidentAngle )
-    + par2 * ( incidentAngle * incidentAngle );
-
-  return var;
+  return polValue;
 
 }
 
@@ -113,7 +111,7 @@ void OCAMath::CalculateMPEOccRatio( const OCAPMT& dPoint, Float_t& occRatio, Flo
   Float_t solidACtr = dPoint.GetCentralSolidAngle();
 
   Float_t fresnelT = dPoint.GetFresnelTCoeff();
-  Float_t fresnelTCtr = dPoint.GetFresnelTCoeff();
+  Float_t fresnelTCtr = dPoint.GetCentralFresnelTCoeff();
 
   Float_t geomRatio = solidACtr/solidA * fresnelTCtr/fresnelT;
 

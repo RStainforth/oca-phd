@@ -40,6 +40,8 @@
 #include "OCAPMT.hh"
 #include "OCAPMT.hh"
 
+#include "TVector.h"
+
 
 namespace OCA{
 
@@ -71,7 +73,8 @@ namespace OCA{
 
     // Calculate the error due to the PMT variability on a single
     // PMT as represented by a OCAPMT object.
-    static Float_t CalculatePMTVariabilityError( const OCAPMT& dPoint );
+    static Float_t CalculatePMTVariabilityError( const OCAPMT& dPoint,
+                                                 TVector& polPars );
 
     // Given a OCAPMT object, this calculates both the
     // MPE corrected occupancy ratio and its error. The ratio

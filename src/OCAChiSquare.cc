@@ -5,6 +5,8 @@
 #include "OCAMath.hh"
 #include "OCAOpticsModel.hh"
 
+#include "TVector.h"
+
 using namespace OCA;
 using namespace std;
 
@@ -65,8 +67,10 @@ Float_t OCAChiSquare::EvaluateChiSquare( OCAPMT& dPoint )
   Float_t occRatioErr = 0.0;
   OCAMath::CalculateMPEOccRatio( dPoint, occRatio, occRatioErr );
 
+  TVector polPars = fModel->GetOCAModelParameterStore()->GetPMTVariabilityParameters();
+
   Float_t occRatioError2 = occRatioErr * occRatioErr;
-  Float_t variabilityError2 = TMath::Power( occRatio * OCAMath::CalculatePMTVariabilityError( dPoint ), 2 );
+  Float_t variabilityError2 = TMath::Power( occRatio * OCAMath::CalculatePMTVariabilityError( dPoint, polPars ), 2 );
 
   // Calculate the difference between the model prediction
   // and the data value ( the residual for the chi-square calculation ).
@@ -240,7 +244,9 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
     Float_t occRatio = 0.0;
     OCAMath::CalculateMPEOccRatio( *iDP, occRatio, occRatioErr );
     Float_t occRatioErr2 = occRatioErr * occRatioErr;
-    Float_t variabilityErr2 = TMath::Power( occRatio * OCAMath::CalculatePMTVariabilityError( *iDP ), 2 );
+    TVector polPars = fModel->GetOCAModelParameterStore()->GetPMTVariabilityParameters();
+
+    Float_t variabilityErr2 = TMath::Power( occRatio * OCAMath::CalculatePMTVariabilityError( *iDP, polPars ), 2 );
     //cout << "variabilityErr2: " << variabilityErr2 << endl;
     //cout << "occRatioErr2: " << occRatioErr2 << endl;
     dataError2 = 1.0 / ( occRatioErr2 + variabilityErr2 );

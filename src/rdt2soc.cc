@@ -155,8 +155,23 @@ int main( int argc, char** argv ){
   socFile->GetCalib().SetTime( 350.0 );
   socFile->GetCalib().SetPos( 10.0 * (*rQRdt.GetManipPos()) );
   TVector3 lbDir( 1.0, 0.0, 0.0 );
-  lbDir.SetPhi( ( TMath::PiOver2() ) * rQRdt.GetOrientation() );
-  socFile->GetCalib().SetDir( lbDir );
+  Int_t lbOriOG = (Int_t)rQRdt.GetOrientation();
+  Int_t lbOri = 0;
+  // Need to convert from SNO laserball orientations
+  // to the new SNO+ orientation
+  // Need to convert (SNO):0123:SWNE to (SNO+):0123:ENWS
+  if ( lbOriOG == 0 ){ lbOri = 3; }
+  if ( lbOriOG == 1 ){ lbOri = 2; }
+  if ( lbOriOG == 2 ){ lbOri = 1; }
+  if ( lbOriOG == 3 ){ lbOri = 0; }
+
+  Float_t or_x = 0.0;
+  Float_t or_y = 0.0;
+  if ( lbOri == 0 ){ or_x = 1.0; or_y = 0.0; } // East
+  if ( lbOri == 1 ){ or_x = 0.0; or_y = 1.0; } // North
+  if ( lbOri == 2 ){ or_x = -1.0; or_y = 0.0; } // West
+  if ( lbOri == 3 ){ or_x = 0.0; or_y = -1.0; } // South
+  socFile->GetCalib().SetDir( TVector3( or_x, or_y, 0.0 ) );
 
   // This field is for MC only, so we set to an unphysical value.
   socFile->GetCalib().SetIntensity( -1000 );

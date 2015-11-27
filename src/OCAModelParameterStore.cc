@@ -80,6 +80,11 @@ OCAModelParameterStore::OCAModelParameterStore( string& storeName )
   fFinalChiSquare = -10.0;
   fNumberOfDataPoints = -10;
   fReducedChiSquare = -10.0;
+
+  fPMTVariabilityParameters.ResizeTo( 3 );
+  fPMTVariabilityParameters( 0 ) = -999;
+  fPMTVariabilityParameters( 1 ) = -999;
+  fPMTVariabilityParameters( 2 ) = -999;
   
 }
 
@@ -169,9 +174,14 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
       fParameters[ GetInnerAVExtinctionLengthParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "inner_av_extinction_length_vary", "parameter_setup" ) );
     }
     if ( iPar->GetIndex() == GetAVExtinctionLengthParIndex() ){
+      Bool_t varyCond = lDB.GetBoolField( "FITFILE", "acrylic_extinction_length_vary", "parameter_setup" );
       fParameters.push_back( *iPar );
-      // (-1) because 'push_back' starts at 0
-      fParameters[ GetAVExtinctionLengthParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "acrylic_extinction_length_vary", "parameter_setup" ) );
+      if ( !varyCond ){ 
+        // (-1) because 'push_back' starts at 0
+        cout << "OCAModelParameterStore::SeedParameters: Acrylic is set to be fixed, overwriting seed value with the one from the fit file..." << endl;
+        fParameters[ GetAVExtinctionLengthParIndex() - 1 ].SetFinalValue( lDB.GetDoubleField( "FITFILE", "acrylic_extinction_length_initial_value", "parameter_setup" ) );
+      }
+      fParameters[ GetAVExtinctionLengthParIndex() - 1 ].SetVary( varyCond );
     }
     if ( iPar->GetIndex() == GetWaterExtinctionLengthParIndex() ){
         fParameters.push_back( *iPar );
@@ -1188,7 +1198,7 @@ void OCAModelParameterStore::CrossCheckParameters()
     // In the case of water fill, we will set the outer water
     // region to the value fitted to the first
     if ( fWaterFill && iPar->GetIndex() == GetWaterExtinctionLengthParIndex() ){
-      iPar->SetFinalValue( fParametersPtr[ iPar->GetIndex() ] );
+      iPar->SetFinalValue( fParametersPtr[ GetInnerAVExtinctionLengthParIndex() ] );
     }
       
     if ( covValue > 0.0 ){

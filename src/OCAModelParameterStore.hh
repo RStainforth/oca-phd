@@ -314,6 +314,9 @@ namespace OCA{
     // Get the reduced chi square value.
     Float_t GetReducedChiSquare(){ return fReducedChiSquare; }
 
+    // Get the PMT variability parameters from this data-set
+    TVector GetPMTVariabilityParameters(){ return fPMTVariabilityParameters; }
+
     /////////////////////////////////
     ////////     SETTERS     ////////
     /////////////////////////////////
@@ -377,6 +380,13 @@ namespace OCA{
 
     // Set the reduced chi square value.
     void SetReducedChiSquare( Float_t& chiRed ){ fReducedChiSquare = chiRed; }
+
+    // Set the PMT variability parameters from this data-set
+    void SetPMTVariabilityParameters( Float_t parZero, Float_t parOne, Float_t parTwo ){ 
+      fPMTVariabilityParameters( 0 ) = parZero;
+      fPMTVariabilityParameters( 1 ) = parOne;
+      fPMTVariabilityParameters( 2 ) = parTwo;
+    }
 
   private:
 
@@ -445,6 +455,12 @@ namespace OCA{
     Int_t fNumberOfDataPoints;                              // The number of data points for which the above value
                                                             // of the chisquare was evaluated.
     Float_t fReducedChiSquare;                              // ( fFinalChiSquare / ( fNumberDataPoints - fNGlobalVariableParameters );
+
+    TVector fPMTVariabilityParameters;                      // This is a vector of 3 parameters which define the PMT 
+                                                            // variability polynomial of the form:
+                                                            //     pmt_variability(theta) = p0 
+                                                            //                              + p1 * theta
+                                                            //                              + p2 * theta * theta
 
     ClassDef( OCAModelParameterStore, 1 )
 

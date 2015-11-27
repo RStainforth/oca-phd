@@ -136,7 +136,10 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
 
       // Filter to check fractional error
       else if ( filterName == "filter_fractional_error" ){
-        if ( !iF->CheckCondition( iD->GetOccupancyRatioErr() / iD->GetOccupancyRatio() ) ){ 
+        Float_t ratio = 0.0;
+        Float_t ratioErr = 0.0;
+        OCAMath::CalculateMPEOccRatio( *iD, ratio, ratioErr );
+        if ( !iF->CheckCondition( ratioErr / ratio ) ){ 
           validPoint = false; break;
         }
       }

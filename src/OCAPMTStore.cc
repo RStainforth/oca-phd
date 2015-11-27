@@ -23,14 +23,15 @@ OCAPMTStore::OCAPMTStore( std::string storeName )
 
   OCADB lDB;
   string outputDir = lDB.GetOutputDir();
-  string filePath = outputDir + "datastore/" + storeName + ".root";
+  string filePath = outputDir + "datastore/" + storeName + "_unfiltered.root";
   ifstream tmpFile( filePath.c_str() );
   if ( tmpFile ){
     
     // Create a new TFile object to open the OCAPMTStore.
     TFile* dataFile = TFile::Open( filePath.c_str(), "READ" );
     TTree* fileTree = new TTree();
-    fileTree = (TTree*)dataFile->Get( ( storeName + ".root;1" ).c_str() );
+    const char* treeName = ( storeName + "_unfiltered.root;1" ).c_str();
+    fileTree = (TTree*)dataFile->Get( treeName );
     OCAPMTStore* lStore = new OCAPMTStore();
     fileTree->SetBranchAddress( "OCAPMTStore", &lStore );
     fileTree->GetEntry( 0 );
@@ -40,7 +41,6 @@ OCAPMTStore::OCAPMTStore( std::string storeName )
     vector< OCAPMT >::iterator iDPEnd = lStore->GetOCAPMTsIterEnd();
     
     for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ){
-      
       OCAPMT dp( *iDP );
       AddDataPoint( dp );
       
