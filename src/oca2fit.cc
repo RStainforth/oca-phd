@@ -223,18 +223,21 @@ int main( int argc, char** argv ){
     chiSqLims.assign( chis, chis + 7 );
   }
 
+  // Create a root file to store the residual plots
+  string resPlotFileName = ( lDB.GetOutputDir() + "fits/" + fitName + "-res-plots.root" );
+  TFile* resPlots = new TFile( resPlotFileName.c_str(), "RECREATE" );
   stringstream myStream;
-  string myString = "";
+  string chiLimString = "";
 
   for ( Size_t iFit = 0; iFit < chiSqLims.size(); iFit++ ){
 
     lChiSq->EvaluateGlobalChiSquareResidual();
 
     myStream << chiSqLims[ iFit ];
-    myStream >> myString;
+    myStream >> chiLimString;
     myStream.clear();
 
-    TH1F* resPlot = new TH1F( ( myString + "-plot" ).c_str(), ( myString + "-plot-name" ).c_str(),
+    TH1F* resPlot = new TH1F( ( chiLimString + "-plot" ).c_str(), ( chiLimString + "-plot-name" ).c_str(),
                               100, -10.0, 10.0 );
     
     // Update the chisquare filter to a new maximum limit.
@@ -258,11 +261,6 @@ int main( int argc, char** argv ){
       resPlot->Fill( lChiSq->EvaluateChiSquareResidual( *iDP ) );
     }
 
-    gStyle->SetOptStat(0);
-    gStyle->SetOptFit(0001);
-    TCanvas* myC = new TCanvas( "myC", "myC", 600, 400 );
-    resPlot->Draw();
-
     TF1 *gausFit = new TF1( "gausFit","gaus", -2.5, 2.5 );
     gausFit->SetParName( 0, "Normalisation" );
     gausFit->SetParName( 1, "Mean" );
@@ -278,19 +276,14 @@ int main( int argc, char** argv ){
     resPlot->SetTitle( "Chi-Square Residual" );
     resPlot->GetXaxis()->SetTitle( "Occ^{model} - Occ^{dat} / #sigma" );
     resPlot->GetYaxis()->SetTitle( "Counts" );
-    string outputDir = lDB.GetOutputDir();
-    string filePath = outputDir + "fits/";
-    myC->Print( ( filePath + fitName + "-" + myString + "-plot.eps" ).c_str() );
-    myC->Print( ( filePath + fitName + "-" + myString + "-plot.root" ).c_str() );
-    myString.clear();
-
-    if ( ( systematicName == "chi_square_lim_16" && chiSqLims[ iFit ] == 16.0 )
-         ||
-         ( systematicName == "chi_square_lim_9" && chiSqLims[ iFit ] == 9.0 ) ){
-      break;
-    }
+    resPlot->GetYaxis()->SetTitleOffset( 1.2 );
+    resPlots->WriteTObject( resPlot, ( chiLimString + "-resPlot" ).c_str(), "Overwrite" );
+    resPlots->WriteTObject( gausFit, ( chiLimString + "-gausFit" ).c_str(), "Overwrite" );
+    chiLimString.clear();
     
   } 
+
+  resPlots->Close();
 
   lChiSq->SetPointerToData( finalStore );
   lChiSq->EvaluateGlobalChiSquare();
@@ -398,7 +391,7 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
 {
 
   // First calculate the raw efficiencies which is:
-  // MPE-Corrected-Occupancy / Model Prediction.
+  // MPE-Corrected-Occupancy / Model Prediction = raw efficiency.
   vector< OCAPMT >::iterator iDP;
   vector< OCAPMT >::iterator iDPBegin = finalDataStore->GetOCAPMTsIterBegin();
   vector< OCAPMT >::iterator iDPEnd = finalDataStore->GetOCAPMTsIterEnd();
@@ -409,6 +402,9 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   Float_t dataValue = 1.0;
   Float_t pmtEff = 0.0;
 
+  // This creates a pointer to 90 histograms. Each incident angle
+  // from 0 - 90 -degrees will have its own histogram to store
+  // the PMT efficiencies.
   TH1F* effHistos = new TH1F[ 90 ];
   for ( Int_t iHist = 0; iHist < 90; iHist++ ){
     effHistos[ iHist ].SetBins( 10000.0, 0.0, 10.0 );
@@ -464,11 +460,9 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   rawEffAvgTot /= (Float_t)nGoodPMTs;
 
 
-  TCanvas* exampleCanvas = new TCanvas( "example-canvas", "example canvas", 600, 400 );
-  TH1F* exampleHisto = new TH1F("example-histo", "example histo", 1000.0, 0.0, 10.0 );
+  TH1F* pmtEffHisto = new TH1F("pmt-Eff-Histo", "PMT Efficiency Histogram", 1000.0, 0.0, 10.0 );
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ){
     
-    if ( iDP->GetLBPos().Mag() > 1000.0 ){
       // Calculate the model prediction and the data value
       // of the occupancy.
       modelPrediction = ocaModel->ModelPrediction( *iDP );
@@ -479,26 +473,27 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
       // The incident angle.
       Int_t incAngle = (Int_t)( TMath::ACos( iDP->GetCosTheta() ) * TMath::RadToDeg() );
       Float_t varVal = ( ( pmtEff / rawEffAvg[ iDP->GetID() ] ) / rawEffAvgTot );
-      exampleHisto->Fill( varVal );
+      pmtEffHisto->Fill( varVal );
       Float_t statVal = TMath::Sqrt( 1.0 / iDP->GetPromptPeakCounts() );
-      //cout << "StatVal is: " << statVal << endl;
       Float_t histoVal = TMath::Sqrt( ( varVal * varVal ) - ( statVal * statVal ) );
-      //cout << "HistoVal is: " << varVal << endl;
-      //cout << "------------" << endl;
       
       if ( histoVal > 0.0 && !std::isnan( pmtEff ) && !std::isinf( pmtEff ) ){
         effHistos[ incAngle ].Fill( histoVal );
         iDP->SetRawEfficiency( histoVal );
       }
-    }
   }
+
+  pmtEffHisto->GetXaxis()->SetTitle( "PMT Efficiency Estimator" );
+  pmtEffHisto->GetYaxis()->SetTitle( "Counts / 100" );
+  pmtEffHisto->GetYaxis()->SetTitleOffset( 1.2 );
+  pmtEffHisto->SetTitle( "PMT Efficieny Estimators" );
   
-  exampleHisto->Draw();
   OCADB lDB;
   string outputDir = lDB.GetOutputDir();
   string filePath = outputDir + "fits/";
-  exampleCanvas->Print( ( filePath + fitNameStr + "_pmt_efficiencies.eps" ).c_str() );
-  exampleCanvas->Print( ( filePath + fitNameStr + "_pmt_efficiencies.root" ).c_str() );
+  string pmtVarPlotFileName = ( filePath + fitNameStr + "-pmt-variability.root" );
+  TFile* pmtVarPlots = new TFile( pmtVarPlotFileName.c_str(), "RECREATE" );
+  pmtVarPlots->WriteTObject( pmtEffHisto, ( fitNameStr + "-pmt-efficiencies" ).c_str(), "Overwrite" );
 
   TGraph* myPlot = new TGraph();
 
@@ -510,8 +505,6 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
                         (Float_t)( effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean() ) );
     }
   }
-  
-  TCanvas* effAngleC = new TCanvas( "effAngleC", "PMT Incident Angle Variability", 600, 400 );
   
   myPlot->SetMarkerStyle( 7 );
   myPlot->SetMarkerColor( 2 );
@@ -525,8 +518,9 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
 
   myPlot->Draw( "AP" );
 
-  effAngleC->Print( ( filePath + fitNameStr + "_pmt_variability.eps" ).c_str() );
-  effAngleC->Print( ( filePath + fitNameStr + "_pmt_variability.root" ).c_str() );
+  pmtVarPlots->WriteTObject( myPlot, ( fitNameStr + "-pmt-variability" ).c_str(), "Overwrite" );
+  pmtVarPlots->WriteTObject( fitFunc, ( fitNameStr + "-variability-function" ).c_str(), "Overwrite" );
+  pmtVarPlots->Close();
 
   vector< OCAPMT >::iterator iDPL;
   vector< OCAPMT >::iterator iDPBeginL = fullDataStore->GetOCAPMTsIterBegin();

@@ -53,10 +53,12 @@ void OCAOpticsModel::IdentifyVaryingPMTAngularResponseBins( OCAPMTStore* lData )
   // Create an array which will, for each bin, store the number of entries
   // for the corresponding PMT angular response bin of the same index.
   Int_t* pmtAngValid = new Int_t[ nPMTResponseBins ];
+  Int_t* pmtAngValid2 = new Int_t[ nPMTResponseBins ];
 
   // Initialise each value in the array to 0 to begin with.
   for ( Int_t iAng = 0; iAng < nPMTResponseBins; iAng++ ){ 
-    pmtAngValid[ iAng ] = 0; 
+    pmtAngValid[ iAng ] = 0;
+    pmtAngValid2[ iAng ] = 0; 
   }
 
   Float_t interpolFrac = 0.0;
@@ -73,7 +75,13 @@ void OCAOpticsModel::IdentifyVaryingPMTAngularResponseBins( OCAPMTStore* lData )
 
     // For the corresponding entry in the array, i.e. the counter,
     // increment it's value by one.
-    pmtAngValid[ fModelParameterStore->GetCurrentPMTAngularResponseBin() ]++;
+    Int_t curAngResp = fModelParameterStore->GetCurrentPMTAngularResponseDistribution();
+    if ( curAngResp == 0 ){
+      pmtAngValid[ fModelParameterStore->GetCurrentPMTAngularResponseBin() ]++;
+    }
+    if ( curAngResp == 1 ){
+      pmtAngValid2[ fModelParameterStore->GetCurrentPMTAngularResponseBin() ]++;
+    }
 
   }
 
@@ -87,6 +95,8 @@ void OCAOpticsModel::IdentifyVaryingPMTAngularResponseBins( OCAPMTStore* lData )
   for ( Int_t iAng = 0; iAng < nPMTResponseBins; iAng++ ){
 
     Bool_t parVary = fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ];
+    Bool_t parVary2 = fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponse2ParIndex() + iAng ];
+    Int_t nPMTDist = fModelParameterStore->GetNPMTAngularResponseDistributions();
 
     // If the number of entries is less than the requirement,
     // or if the bin is the first in the PMT angular response
@@ -96,6 +106,7 @@ void OCAOpticsModel::IdentifyVaryingPMTAngularResponseBins( OCAPMTStore* lData )
       if ( ( pmtAngValid[ iAng ] < fRequiredNPMTAngularResponseEntries 
              || iAng == 0 ) ){ 
         fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 0;
+        fModelParameterStore->GetParametersPtr()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 1.0;
       }
       
       // If the number of entries exceeds the required amount
@@ -106,12 +117,32 @@ void OCAOpticsModel::IdentifyVaryingPMTAngularResponseBins( OCAPMTStore* lData )
     }
     else{
       fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 0;
+      fModelParameterStore->GetParametersPtr()[ fModelParameterStore->GetPMTAngularResponseParIndex() + iAng ] = 1.0;
     }
-      
 
+    if ( nPMTDist == 2 ){
+      if ( parVary2 ){
+        if ( ( pmtAngValid2[ iAng ] < fRequiredNPMTAngularResponseEntries 
+               || iAng == 0 ) ){ 
+          fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponse2ParIndex() + iAng ] = 0;
+          fModelParameterStore->GetParametersPtr()[ fModelParameterStore->GetPMTAngularResponse2ParIndex() + iAng ] = 1.0;
+        }
+        
+        // If the number of entries exceeds the required amount
+        // then vary the associated parameter in the parameter array.
+        else{
+          fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponse2ParIndex() + iAng ] = 1;
+        }
+      }
+      else{
+        fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetPMTAngularResponse2ParIndex() + iAng ] = 0;
+        fModelParameterStore->GetParametersPtr()[ fModelParameterStore->GetPMTAngularResponse2ParIndex() + iAng ] = 1.0;
+      } 
+    }
   }
 
   delete pmtAngValid;
+  delete pmtAngValid2;
 
 }
 
@@ -162,7 +193,7 @@ void OCAOpticsModel::IdentifyVaryingLBDistributionBins( OCAPMTStore* lData )
     for ( Int_t iLB = 0; iLB < nLBDistBins; iLB++ ){
       
       Bool_t parVary = fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB ];
-      
+
       // If the number of entries is less than the requirement,
       // or if the bin is the first in the laserball
       // distribution ( i.e. iLB = 0 ) then keep the associated
@@ -186,6 +217,77 @@ void OCAOpticsModel::IdentifyVaryingLBDistributionBins( OCAPMTStore* lData )
     }
     
     delete lbAngValid;
+  }
+
+  else{
+
+    // Obtain the number of laserball distribution bins.
+    Int_t nLBDistBins = fModelParameterStore->GetNLBSinWaveSlices();
+    
+    // Create an array which will, for each bin, store the number of entries
+    // for the corresponding laserball distribution bin of the same index.
+    Int_t* lbAngValid = new Int_t[ nLBDistBins ];
+    
+    // Initialise each value in the array to 0 to begin with. 
+    for ( Int_t iLB = 0; iLB < nLBDistBins; iLB++ ){ 
+      lbAngValid[ iLB ] = 0; 
+    }
+    
+    // Loop over all the data points stored in the OCAPMTStore object.
+    std::vector< OCAPMT >::iterator iDP;
+    for ( iDP = lData->GetOCAPMTsIterBegin(); 
+          iDP != lData->GetOCAPMTsIterEnd(); 
+          iDP++ ) {
+      
+      // We need to model the laserball distribution first to assign the
+      // current laserball distribution bin for this data point.
+      // i.e. we need to assign fCurrentLBDistributionBin.
+      Float_t phiFrac[ 2 ];
+      Float_t cosThetaFrac[ 2 ];
+      Int_t binsToDiff[ 4 ];
+      ModelLBDistribution( *iDP, "off-axis", phiFrac, cosThetaFrac, binsToDiff );
+      
+      // For the corresponding entry in the array, i.e. the counter,
+      // increment it's value by one.
+      lbAngValid[ fModelParameterStore->GetCurrentLBDistributionBin() ]++;
+      
+    }
+
+    Int_t nPhi = fModelParameterStore->GetNLBParametersPerSinWaveSlice();
+    
+    // Now loop over all the entries checking how many entries are
+    // there for each bin. If the number of entries
+    // exceeds the minimum required amount then set that parameter
+    // to vary. If not, keep that particular bin in the laserball
+    // distribution fixed.
+    for ( Int_t iLB = 0; iLB < nLBDistBins; iLB++ ){
+      
+      Bool_t parVary = fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() 
+                                                                  + iLB * nPhi ];
+      
+      // If the number of entries is less than the requirement
+      if ( parVary ){
+        if ( lbAngValid[ iLB ] < fRequiredNLBDistributionEntries ){ 
+          fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB * nPhi ] = 0;
+          fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB * nPhi + 1 ] = 0;
+        }
+        
+        // If the number of entries exceeds the required amount
+        // then vary the associated parameter in the parameter array.
+        else{
+          fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB * nPhi ] = 1;
+          fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB * nPhi + 1 ] = 1;
+        }
+      }
+      else{
+        fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB * nPhi ] = 0;
+        fModelParameterStore->GetParametersVary()[ fModelParameterStore->GetLBDistributionParIndex() + iLB * nPhi + 1 ] = 0;
+      }
+      
+    }
+    
+    delete lbAngValid;
+
   }
 }
 
@@ -376,15 +478,21 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
       derivativePars[ parPtr->GetInnerAVExtinctionLengthParIndex() ] = -dInnerAV;
     }
 
+    Int_t curPMTDist = parPtr->GetCurrentPMTAngularResponseDistribution();
     // The derivative with respect to the PMT angular response
     // from the off-axis run.
-    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() ] = ( 1.0 - interpolFrac ) / angResp;
-    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() + 1 ] = interpolFrac / angResp;
-
-    // The derivative with respect to the PMT angular response
-    // from the central run.
-    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] -= ( 1.0 - interpolFrac ) / angRespCtr;
-    derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() + 1 ] -= interpolFracCtr / angRespCtr;
+    if ( curPMTDist == 0 ){
+      derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() ] = ( 1.0 - interpolFrac ) / angResp;
+      derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCurrentPMTAngularResponseBin() + 1 ] = interpolFrac / angResp;
+      derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] -= ( 1.0 - interpolFracCtr ) / angRespCtr;
+      derivativePars[ parPtr->GetPMTAngularResponseParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() + 1 ] -= interpolFracCtr / angRespCtr;
+    }
+    else{
+      derivativePars[ parPtr->GetPMTAngularResponse2ParIndex() + parPtr->GetCurrentPMTAngularResponseBin() ] = ( 1.0 - interpolFrac ) / angResp;
+      derivativePars[ parPtr->GetPMTAngularResponse2ParIndex() + parPtr->GetCurrentPMTAngularResponseBin() + 1 ] = interpolFrac / angResp;
+      derivativePars[ parPtr->GetPMTAngularResponse2ParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() ] -= ( 1.0 - interpolFracCtr ) / angRespCtr;
+      derivativePars[ parPtr->GetPMTAngularResponse2ParIndex() + parPtr->GetCentralCurrentPMTAngularResponseBin() + 1 ] -= interpolFracCtr / angRespCtr;
+    }
 
     // Binned Laserball Histogram
     if ( parPtr->GetLBDistributionType() == 0 ){
@@ -618,7 +726,6 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCAPMT& dataPoint, std::strin
   }
 
   if ( parPtr->GetLBDistributionType() == 1 ){
-    //Double_t* aPhi = new Double_t( (Double_t)phi );
     Double_t* par = new Double_t[ 1 + nPhi ];
     par[ 0 ] = nPhi;
     for ( Int_t iPar = 0; iPar < nPhi; iPar++ ){
@@ -626,13 +733,7 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCAPMT& dataPoint, std::strin
     }
 
     Float_t laserLight = (Float_t)ModelLBDistributionSinWave( phi, par );
-    // if ( std::isnan( laserLight ) ){
-    //   cout << "iTheta * nPhi + 0: " << iTheta * nPhi + 0 << endl;
-    //   cout << "iTheta * nPhi + 1: " << iTheta * nPhi + 1 << endl;
-    //   cout << "nPhi: " << nPhi << endl;
-    // }
     delete [] par;
-    //delete aPhi;
 
     // value to the current values held by the OCAModelParameterStore
     // object.
@@ -952,16 +1053,36 @@ Float_t OCAOpticsModel::ModelAngularResponse( const OCAPMT& dataPoint, std::stri
     parPtr->SetCentralCurrentPMTAngularResponseBin( iAng ); 
   }
 
-  interpolFrac = 0.0;
-  //parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponseParIndex() + iAng );
-  //return  parPtr->GetPMTAngularResponsePar( iAng );
+  Int_t curDist = 0;
+  if ( parPtr->GetNPMTAngularResponseDistributions() > 1
+       &&
+       dataPoint.GetPos().Z() > parPtr->GetPMTAngularResponseZSplit() ){
+    parPtr->SetCurrentPMTAngularResponseDistribution( 1 );
+    curDist = 1;
+  }
+  else{
+    parPtr->SetCurrentPMTAngularResponseDistribution( 0 );
+  }
 
-  if ( !fModelParameterStore->GetParametersVary()[ parPtr->GetPMTAngularResponseParIndex() + iAng ]
-       ||
-       !fModelParameterStore->GetParametersVary()[ parPtr->GetPMTAngularResponseParIndex() + iAng + 1 ] ){
-    interpolFrac = 0.0;
-    parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponseParIndex() + iAng );
-    return  parPtr->GetPMTAngularResponsePar( iAng ); 
+  interpolFrac = 0.0;
+
+  if ( curDist == 0 ){
+    if ( !fModelParameterStore->GetParametersVary()[ parPtr->GetPMTAngularResponseParIndex() + iAng ]
+         ||
+         !fModelParameterStore->GetParametersVary()[ parPtr->GetPMTAngularResponseParIndex() + iAng + 1 ] ){
+      interpolFrac = 0.0;
+      parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponseParIndex() + iAng );
+      return parPtr->GetPMTAngularResponsePar( iAng );
+    }
+  }
+  else{
+    if ( !fModelParameterStore->GetParametersVary()[ parPtr->GetPMTAngularResponse2ParIndex() + iAng ]
+         ||
+         !fModelParameterStore->GetParametersVary()[ parPtr->GetPMTAngularResponse2ParIndex() + iAng + 1 ] ){
+      interpolFrac = 0.0;
+      parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponse2ParIndex() + iAng );
+      return parPtr->GetPMTAngularResponse2Par( iAng );
+    }
   }
   
   // Return the PMT angular response parameter associated with
@@ -970,16 +1091,27 @@ Float_t OCAOpticsModel::ModelAngularResponse( const OCAPMT& dataPoint, std::stri
   // Interpolations begin:
   Float_t pmtAngularResponse = 1.0;
   Float_t binWidth = 90.0 / parPtr->GetNPMTAngularResponseBins();
-  Float_t slope = ( parPtr->GetPMTAngularResponsePar( iAng + 1 ) - parPtr->GetPMTAngularResponsePar( iAng ) ) / binWidth;
+  Float_t slope = 0.0;
+  if ( curDist == 0 ){
+    slope = ( parPtr->GetPMTAngularResponsePar( iAng + 1 ) - parPtr->GetPMTAngularResponsePar( iAng ) ) / binWidth;
+  }
+  else{
+    slope = ( parPtr->GetPMTAngularResponse2Par( iAng + 1 ) - parPtr->GetPMTAngularResponse2Par( iAng ) ) / binWidth;
+  }
   Float_t deltaTheta = ( angle - floor( angle ) );
   interpolFrac = ( deltaTheta * slope ) / binWidth;
   interpolFrac = ( ( 1.0 - TMath::Cos( interpolFrac * TMath::Pi() ) ) / 2.0 );
- 
-  //vector< Int_t > bins;
-  //parPtr->GetCurrentAngularResponseBins()->insert( parPtr->GetCurrentAngularResponseBins()->begin(), bins.begin(), bins.end() );
-  pmtAngularResponse = ( parPtr->GetPMTAngularResponsePar( iAng ) * ( 1.0 - interpolFrac ) ) + ( parPtr->GetPMTAngularResponsePar( iAng + 1 ) * interpolFrac );
-  parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponseParIndex() + iAng );
-  parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponseParIndex() + iAng + 1 );
+
+  if ( curDist == 0 ){
+    pmtAngularResponse = ( parPtr->GetPMTAngularResponsePar( iAng ) * ( 1.0 - interpolFrac ) ) + ( parPtr->GetPMTAngularResponsePar( iAng + 1 ) * interpolFrac );
+    parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponseParIndex() + iAng );
+    parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponseParIndex() + iAng + 1 );
+  }
+  else{
+    pmtAngularResponse = ( parPtr->GetPMTAngularResponse2Par( iAng ) * ( 1.0 - interpolFrac ) ) + ( parPtr->GetPMTAngularResponse2Par( iAng + 1 ) * interpolFrac );
+    parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponse2ParIndex() + iAng );
+    parPtr->GetCurrentAngularResponseBins()->push_back( parPtr->GetPMTAngularResponse2ParIndex() + iAng + 1 );
+  }
 
   return pmtAngularResponse;
 

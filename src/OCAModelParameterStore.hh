@@ -162,6 +162,9 @@ namespace OCA{
     // PMT angular response bin from the off-axis run.
     Int_t GetCurrentPMTAngularResponseBin() const { return fCurrentPMTAngularResponseBin; }
 
+    // Get the current angular response distribution being used for the current data point.
+    Int_t GetCurrentPMTAngularResponseDistribution() const { return fCurrentPMTAngularResponseDistribution; }
+
     // After evaluating a specific data point, get the current 
     // PMT angular response bin from the central run.
     Int_t GetCentralCurrentPMTAngularResponseBin() const { return fCentralCurrentPMTAngularResponseBin; }
@@ -184,6 +187,12 @@ namespace OCA{
 
     // Get the number of pmt angular response bins.
     Int_t GetNPMTAngularResponseBins() const { return fNPMTAngularResponseBins; }
+
+    // Get the number of pmt angular response distributions.
+    Int_t GetNPMTAngularResponseDistributions() const { return fNPMTAngularResponseDistributions; }
+
+    // Get the z-split values for which PMT angular responses are split
+    Float_t GetPMTAngularResponseZSplit() const { return fPMTAngularResponseZSplit; }
 
     // Get the number of laserball distribution cos theta bins.
     Int_t GetNLBDistributionCosThetaBins(){ return fNLBDistributionCosThetaBins; }
@@ -233,18 +242,24 @@ namespace OCA{
     // Get the index for the start of the pmt angular response parameters.
     Int_t GetPMTAngularResponseParIndex() const { return 3 + fNLBDistributionMaskParameters + 1; }
 
+    // Get the index for the start of the pmt angular response parameters.
+    Int_t GetPMTAngularResponse2ParIndex() const { return 3 + fNLBDistributionMaskParameters + fNPMTAngularResponseBins + 1; }
+
     // Get the 'iPar'-th PMT angular response parameter.
     Float_t GetPMTAngularResponsePar( const Int_t iPar ) { return fParametersPtr[ GetPMTAngularResponseParIndex() + iPar ]; }
+
+    // Get the 'iPar'-th PMT angular response2 parameter.
+    Float_t GetPMTAngularResponse2Par( const Int_t iPar ) { return fParametersPtr[ GetPMTAngularResponse2ParIndex() + iPar ]; }
     
     // Get the index for the start of the laserball distribution hisotgram parameters.
-    Int_t GetLBDistributionParIndex() const { return 3 + fNLBDistributionMaskParameters + fNPMTAngularResponseBins + 1; }
+    Int_t GetLBDistributionParIndex() const { return 3 + fNLBDistributionMaskParameters + ( fNPMTAngularResponseBins * fNPMTAngularResponseDistributions ) + 1; }
 
     // Get the 'iPar'-th laserball distribution parameter.
     Float_t GetLBDistributionPar( const Int_t iPar ) { return fParametersPtr[ GetLBDistributionParIndex() + iPar ]; } 
     
     // Get the index for the start of the run normalisation parameters.
     Int_t GetLBRunNormalisationParIndex() const { return 3 + fNLBDistributionMaskParameters 
-        + fNPMTAngularResponseBins + fNLBDistributionPars + 1; }
+        + ( fNPMTAngularResponseBins * fNPMTAngularResponseDistributions ) + fNLBDistributionPars + 1; }
 
     // Get the 'iPar'-th laserball normalisation parameter.
     // i.e. The off-axis normalisation value for the 'iPar'-th run in
@@ -253,14 +268,14 @@ namespace OCA{
 
     // Return the PMT angular response in the binned form as it is stored
     // in the model.
-    TH1F* GetPMTAngularResponseHistogram();
+    TH1F* GetPMTAngularResponseHistogram( const Int_t dist = 0 );
 
     // Get the error on the 'nVal'-th PMT angular response parameter.
-    Float_t GetPMTAngularResponseError( const Int_t nVal );
+    Float_t GetPMTAngularResponseError( const Int_t nVal, const Int_t dist = 0 );
 
     // Return the PMT angular response as a function based off of the
     // binned form as it is stored in the model.
-    TF1* GetPMTAngularResponseFunction();
+    TF1* GetPMTAngularResponseFunction( const Int_t dist = 0 );
 
     // Static function used to calculate the PMT angular response function
     // above. (OCAModelParameterStore::GetPMTAngularResponseFunction()).
@@ -327,6 +342,9 @@ namespace OCA{
     // After evaluating a specific data point, set the current 
     // PMT angular response bin from the off-axis run.
     void SetCurrentPMTAngularRepsonseBin( const Int_t iBin ){ fCurrentPMTAngularResponseBin = iBin; }
+
+    // Set the current angular response distribution being used for the current data point.
+    void SetCurrentPMTAngularResponseDistribution( const Int_t iDist ){ fCurrentPMTAngularResponseDistribution = iDist; }
 
     // After evaluating a specific data point, set the current 
     // PMT angular response bin from the central run.
@@ -406,10 +424,16 @@ namespace OCA{
 
     Int_t fCentralCurrentPMTAngularResponseBin;             //! The current angular response bin for the off-axis run.
 
+    Int_t fCurrentPMTAngularResponseDistribution;          //! The current distribution for the PMT angular response (in the case of more than one)
+
     Int_t fCurrentLBRunNormalisationBin;                    //! The current index for the laserball normalisation.
 
     Int_t fNLBDistributionMaskParameters;                   // The number of laserball mask parameters.
     Int_t fNPMTAngularResponseBins;                         // The number of PMT Angular Response Bins.
+    Int_t fNPMTAngularResponseDistributions;                // The number of PMT Angular Response Distributions (defaults is one, but more than one
+                                                            // can be considered for asymmertry studies).
+    Float_t fPMTAngularResponseZSplit;                      // In the case of more than one PMT angular response distribution, we can divide them by the
+                                                            // z-coordinate in the of the PMT in the PSUP 
     Int_t fNLBDistributionCosThetaBins;                     // The number of bins in cos theta ( -1.0, 1.0 ) for the laserball distribution 2d histogram.
     Int_t fNLBDistributionPhiBins;                          // The number of bins in phi ( -0.0, 360.0 ) for the laserball distribution 2d hisotgram. (NOTE: SNO+ coordinates are ( -180.0, 180.0 )
     Int_t fNLBRunNormalisations;                            // The total number of run normalisations ( = number of laserball runs ).

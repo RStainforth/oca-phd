@@ -74,7 +74,11 @@ OCAModelParameterStore::OCAModelParameterStore( string& storeName )
   fNLBParametersPerSinWaveSlice = -1;
   fLBDistributionType = -1;
   fNLBDistributionPars = -1;
-  
+
+  fNPMTAngularResponseDistributions = -1;
+  fPMTAngularResponseZSplit = -99999.9;
+  fCurrentPMTAngularResponseDistribution = -1;
+
   fNParameters = -1;
 
   fFinalChiSquare = -10.0;
@@ -176,11 +180,6 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
     if ( iPar->GetIndex() == GetAVExtinctionLengthParIndex() ){
       Bool_t varyCond = lDB.GetBoolField( "FITFILE", "acrylic_extinction_length_vary", "parameter_setup" );
       fParameters.push_back( *iPar );
-      if ( !varyCond ){ 
-        // (-1) because 'push_back' starts at 0
-        cout << "OCAModelParameterStore::SeedParameters: Acrylic is set to be fixed, overwriting seed value with the one from the fit file..." << endl;
-        fParameters[ GetAVExtinctionLengthParIndex() - 1 ].SetFinalValue( lDB.GetDoubleField( "FITFILE", "acrylic_extinction_length_initial_value", "parameter_setup" ) );
-      }
       fParameters[ GetAVExtinctionLengthParIndex() - 1 ].SetVary( varyCond );
     }
     if ( iPar->GetIndex() == GetWaterExtinctionLengthParIndex() ){
@@ -225,15 +224,26 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
   Int_t seedNAngularResponseBins = tmpStore->GetNPMTAngularResponseBins();
   if ( fileNAngularResponseBins == seedNAngularResponseBins ){
     fNPMTAngularResponseBins = seedNAngularResponseBins;
+    fNPMTAngularResponseDistributions = lDB.GetIntField( "FITFILE", "pmt_angular_response_n_distributions", "parameter_setup" );
+    fPMTAngularResponseZSplit = lDB.GetDoubleField( "FITFILE", "pmt_angular_response_z_split", "parameter_setup" );
     cout << "Seeding Number of Angular Response Bins: " << fNPMTAngularResponseBins << endl;
-    for ( iPar = tmpStore->GetOCAModelParametersIterBegin();
-          iPar != tmpStore->GetOCAModelParametersIterEnd();
-          iPar++ ){
-      if ( iPar->GetIndex() > 3 + fNLBDistributionMaskParameters 
-           &&
-           iPar->GetIndex() <= 3 + fNLBDistributionMaskParameters + fNPMTAngularResponseBins ){
-        fParameters.push_back( *iPar );
-        fParameters[ iPar->GetIndex()-1 ].SetVary( lDB.GetBoolField( "FITFILE", "pmt_angular_response_vary", "parameter_setup" ) );
+    Int_t uLim = 1;
+    Int_t nBins = fNPMTAngularResponseBins;
+    Int_t nDistSeed = tmpStore->GetNPMTAngularResponseDistributions();
+    cout << "nDistSeed is: " << nDistSeed << endl;
+    cout << "fNPMTAngularResponseDistributions is: " << fNPMTAngularResponseDistributions << endl;
+    if ( nDistSeed == 1 && fNPMTAngularResponseDistributions == 2 ){ uLim = 2; nBins = fNPMTAngularResponseBins; }
+    if ( nDistSeed == 2 && fNPMTAngularResponseDistributions == 2 ){ uLim = 1; nBins = 2 * fNPMTAngularResponseBins; }
+    for ( Int_t iDist = 0; iDist < uLim; iDist++ ){
+      for ( iPar = tmpStore->GetOCAModelParametersIterBegin();
+            iPar != tmpStore->GetOCAModelParametersIterEnd();
+            iPar++ ){
+        if ( iPar->GetIndex() > 3 + fNLBDistributionMaskParameters 
+             &&
+             iPar->GetIndex() <= 3 + fNLBDistributionMaskParameters + nBins ){
+          fParameters.push_back( *iPar );
+          fParameters[ iPar->GetIndex()-1 ].SetVary( lDB.GetBoolField( "FITFILE", "pmt_angular_response_vary", "parameter_setup" ) );
+        }
       }
     }
   }
@@ -309,18 +319,60 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
       fCovarianceMatrixValues[ iVal ][ jVal ] = 0.0;
     }
   }
+  
 
   // Now assign the values where applicable, but omit normalisation parameters.
-  TMatrix tmpMatrix = tmpStore->GetCovarianceMatrixValues();
-  TVector tmpVector = tmpStore->GetParameterValues();
-  for ( Int_t iParam = 1; iParam < GetLBRunNormalisationParIndex(); iParam++ ){
-    fParameterValues( iParam ) = tmpVector( iParam );
-    for ( Int_t jParam = 1; jParam < GetLBRunNormalisationParIndex(); jParam++ ){
-      fCovarianceMatrixValues[ iParam ][ jParam ] = tmpMatrix[ iParam ][ jParam ];
+  TMatrix seedMatrix = tmpStore->GetCovarianceMatrixValues();
+  TVector seedValues = tmpStore->GetParameterValues();
+
+  Int_t nPMTDist = fNPMTAngularResponseDistributions;
+  Int_t nSeedPMTDist = tmpStore->GetNPMTAngularResponseDistributions();
+
+  if ( nPMTDist == nSeedPMTDist ){
+    for ( Int_t iParam = 0; iParam < GetLBRunNormalisationParIndex(); iParam++ ){
+      fParameterValues( iParam ) = seedValues( iParam );
+      for ( Int_t jParam = 1; jParam < GetLBRunNormalisationParIndex(); jParam++ ){
+        fCovarianceMatrixValues[ iParam ][ jParam ] = seedMatrix[ iParam ][ jParam ];
+      }
+    }
+  }
+  
+  else if ( nPMTDist == 2 && nSeedPMTDist == 1 ){
+    for ( Int_t iParam = 0; iParam < GetLBRunNormalisationParIndex(); iParam++ ){
+      if ( iParam == GetPMTAngularResponse2ParIndex() ){
+        for ( Int_t ipar = 0; ipar < fNPMTAngularResponseBins; ipar++ ){
+          fParameterValues( iParam + ipar ) = seedValues( iParam + ipar - fNPMTAngularResponseBins );
+        }
+      }
+      if ( iParam >= GetLBDistributionParIndex() ){
+        fParameterValues( iParam ) = seedValues( iParam - fNPMTAngularResponseBins );
+      }
+      if ( iParam < GetPMTAngularResponse2ParIndex() ){
+        fParameterValues( iParam ) = seedValues( iParam );
+      }  
+    }    
+  }
+
+  else if ( nPMTDist == 1 && nSeedPMTDist == 2 ){
+    for ( Int_t iParam = 0; iParam < tmpStore->GetLBRunNormalisationParIndex(); iParam++ ){
+      if ( iParam >= tmpStore->GetPMTAngularResponse2ParIndex() && iParam < GetLBRunNormalisationParIndex() ){
+        fParameterValues( iParam ) = seedValues( iParam + fNPMTAngularResponseBins );
+      }
+      if ( iParam < tmpStore->GetPMTAngularResponse2ParIndex() ){
+        fParameterValues( iParam ) = seedValues( iParam );
+      }
     }
   }
 
+  else{
+    cout << "SeedParameters::Warning, unspecified number of PMT angular response distributions, abort." << endl; return false;
+  }
+
   if ( fWaterFill ){ fParameters[ GetWaterExtinctionLengthParIndex() - 1 ].SetVary( false ); }
+
+  for ( Int_t iParam = 1; iParam <= (Int_t)fParameters.size(); iParam++ ){
+    fParameters[ iParam-1 ].SetIndex( iParam );
+  }
 
   AllocateParameterArrays();
   delete tmpStore;
@@ -488,50 +540,57 @@ void OCAModelParameterStore::AddParameters( string& fileName )
 
     if ( paramList[ iStr ] == "pmt_angular_response" ){
 
-      nParsInGroup = fNPMTAngularResponseBins;
-
-      varyBool = lDB.GetBoolField( "FITFILE", (string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
-
-      Float_t angleVal = 0.0;
-      // Now loop over each angular response parameter and initialise its initial values;
-      for ( Int_t iPar = 1; iPar <= nParsInGroup; iPar++ ){
-
-        angleVal = ( iPar - 0.5 ) * ( 90.0 / fNPMTAngularResponseBins ); // Centre of each bin...
-        if ( angleVal < 36.0 ){ 
-          if ( iPar == 1.0 ){ initVal = 1.0; }
-          else{
-            initVal = 1.0 + ( 0.002222 * angleVal ); 
-          }
-        }
-        else{ initVal = 1.0; }
-
-        // Fix the bin containing the zero degrees value to 1.0
-        if ( iPar == 0 ){ initVal = 1.0; }
-
-        Bool_t parVary = varyBool;
-        // If the angular response has been set to vary, then the first parameter is held fixed, all others can vary
-        if ( varyBool == true && iPar == 0 ){ parVary = false; }
-
-        // The angular response parameters have an absolutel minimum of 1.0, and are allowed to 
-        // go up to 2.0, however it usually doesn't get much higher than 1.25
-        minVal = 1.0;
-        maxVal = 1.25;
-
-        // The increment value is currently not used, so set to something unphysical (might have use for this in a future fitting routine)
-        incVal = -10.0;
-
-        lStream << "_";
-        lStream << iPar;
-        lStream >> parStr;
-
-        Int_t parIndex = 3 + 
-          fNLBDistributionMaskParameters + 
-          iPar;
-        OCAModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, 
-                                        minVal, maxVal, incVal, nParsInGroup, parVary );
-        AddParameter( lParameter );
+      fNPMTAngularResponseDistributions = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_n_distributions" ), "parameter_setup" );
+      fPMTAngularResponseZSplit = lDB.GetDoubleField( "FITFILE", (string)( paramList[ iStr ] + "_z_split" ), "parameter_setup" );
+      for ( Int_t iDist = 0; iDist < fNPMTAngularResponseDistributions; iDist++ ){
+        nParsInGroup = fNPMTAngularResponseBins;
         
-        lStream.clear();
+        varyBool = lDB.GetBoolField( "FITFILE", (string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
+        
+        Float_t angleVal = 0.0;
+        // Now loop over each angular response parameter and initialise its initial values;
+        for ( Int_t iPar = 1; iPar <= nParsInGroup; iPar++ ){
+          
+          angleVal = ( iPar - 0.5 ) * ( 90.0 / fNPMTAngularResponseBins ); // Centre of each bin...
+          if ( angleVal < 36.0 ){ 
+            if ( iPar == 1.0 ){ initVal = 1.0; }
+            else{
+              initVal = 1.0 + ( 0.002222 * angleVal ); 
+            }
+          }
+          else{ initVal = 1.0; }
+          
+          // Fix the bin containing the zero degrees value to 1.0
+          if ( iPar == 1 ){ initVal = 1.0; }
+          
+          Bool_t parVary = varyBool;
+          // If the angular response has been set to vary, then the first parameter is held fixed, all others can vary
+          if ( varyBool == true && iPar == 1 ){ parVary = false; }
+          
+          // The angular response parameters have an absolutel minimum of 1.0, and are allowed to 
+          // go up to 2.0, however it usually doesn't get much higher than 1.25
+          minVal = 1.0;
+          maxVal = 1.25;
+          
+          // The increment value is currently not used, so set to something unphysical (might have use for this in a future fitting routine)
+          incVal = -10.0;
+          
+          lStream << iDist;
+          lStream << "_";
+          lStream << iPar;
+          lStream >> parStr;
+          
+          Int_t parIndex = 3 + 
+            fNLBDistributionMaskParameters +
+            ( fNPMTAngularResponseBins * iDist ) +
+            iPar;
+          OCAModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, 
+                                        minVal, maxVal, incVal, nParsInGroup, parVary );
+          AddParameter( lParameter );
+        
+          lStream.clear();
+       
+        }
       }
 
     }
@@ -568,7 +627,7 @@ void OCAModelParameterStore::AddParameters( string& fileName )
 
         Int_t parIndex = 3 + 
           fNLBDistributionMaskParameters + 
-          fNPMTAngularResponseBins + 
+          ( fNPMTAngularResponseBins * fNPMTAngularResponseDistributions ) + 
           iPar;
         OCAModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, 
                                         minVal, maxVal, incVal, fNLBDistributionPars, varyBool );
@@ -607,7 +666,7 @@ void OCAModelParameterStore::AddParameters( string& fileName )
 
         Int_t parIndex = 3 + 
           fNLBDistributionMaskParameters + 
-          fNPMTAngularResponseBins + 
+          ( fNPMTAngularResponseBins * fNPMTAngularResponseDistributions ) + 
           fNLBDistributionPars + 
           iPar;
         OCAModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, 
@@ -624,6 +683,14 @@ void OCAModelParameterStore::AddParameters( string& fileName )
   if ( fWaterFill ){ fParameters[ GetWaterExtinctionLengthParIndex() - 1 ].SetVary( false ); }
 
   fNParameters = (Int_t)fParameters.size();
+
+  cout << "GetInnerAVExtinctionLengthParIndex = " << GetInnerAVExtinctionLengthParIndex() << endl;
+  cout << "GetAVExtinctionLengthParIndex = " << GetAVExtinctionLengthParIndex() << endl;
+  cout << "GetWaterExtinctionLengthParIndex = " << GetWaterExtinctionLengthParIndex() << endl;
+  cout << "GetLBDistributionMaskParIndex = " << GetLBDistributionMaskParIndex() << endl;
+  cout << "GetPMTAngularResponseParIndex = " << GetPMTAngularResponseParIndex() << endl;
+  cout << "GetLBDistributionParIndex = " << GetLBDistributionParIndex() << endl;
+  cout << "GetLBRunNormalisationParIndex = " << GetLBRunNormalisationParIndex() << endl;
 
   AllocateParameterArrays();
 }
@@ -672,11 +739,24 @@ void OCAModelParameterStore::WriteToROOTFile( string& fileName,
     file->WriteTObject( angularResponse, "PMT Angular Response", "Overwrite" );
     parTree->Branch( "PMT Angular Response", angularResponse->ClassName(), 
                      &(*angularResponse), 32000, 99 );
+
     
     TF1* angularResponseTF1 = GetPMTAngularResponseFunction();
     file->WriteTObject( angularResponseTF1, "PMT Angular Response Function", "Overwrite" );
     parTree->Branch( "PMT Angular Response Function", angularResponseTF1->ClassName(), 
                      &(*angularResponseTF1), 32000, 99 );
+
+    if ( GetNPMTAngularResponseDistributions() > 1 ){
+      TH1F* angularResponse2 = GetPMTAngularResponseHistogram( 1 );
+      file->WriteTObject( angularResponse2, "PMT Angular Response 2", "Overwrite" );
+      parTree->Branch( "PMT Angular Response 2", angularResponse2->ClassName(), 
+                       &(*angularResponse2), 32000, 99 );
+
+      TF1* angularResponse2TF1 = GetPMTAngularResponseFunction( 1 );
+      file->WriteTObject( angularResponse2TF1, "PMT Angular Response 2 Function", "Overwrite" );
+      parTree->Branch( "PMT Angular Response Function", angularResponse2TF1->ClassName(), 
+                       &(*angularResponse2TF1), 32000, 99 );
+    }
     
     TF1* lbDistributionTF1 = GetLBDistributionMaskFunction();
     file->WriteTObject( lbDistributionTF1, "Laserball Distribution Mask", "Overwrite" );
@@ -1045,7 +1125,12 @@ void OCAModelParameterStore::IdentifyVaryingParameters()
   // which vary for the current data point.
   for ( iVal = 1; iVal <= fPMTAngularResponseIndex[ fCurrentPMTAngularResponseBin ][ fCentralCurrentPMTAngularResponseBin ][ 0 ]; iVal++ ){
     
-    parnum = GetPMTAngularResponseParIndex() + fPMTAngularResponseIndex[ fCurrentPMTAngularResponseBin ][ fCentralCurrentPMTAngularResponseBin ][ iVal ];
+    if ( GetCurrentPMTAngularResponseDistribution() == 0 ){
+      parnum = GetPMTAngularResponseParIndex() + fPMTAngularResponseIndex[ fCurrentPMTAngularResponseBin ][ fCentralCurrentPMTAngularResponseBin ][ iVal ];
+    }
+    else{
+      parnum = GetPMTAngularResponse2ParIndex() + fPMTAngularResponseIndex[ fCurrentPMTAngularResponseBin ][ fCentralCurrentPMTAngularResponseBin ][ iVal ];
+    }
     if ( fParametersVary[ parnum ] ){
       fVariableParameterIndex[ ++fNCurrentVariableParameters ] = parnum;
     }
@@ -1225,7 +1310,7 @@ void OCAModelParameterStore::CrossCheckParameters()
 //////////////////////////////////////
 //////////////////////////////////////
 
-TH1F* OCAModelParameterStore::GetPMTAngularResponseHistogram()
+TH1F* OCAModelParameterStore::GetPMTAngularResponseHistogram( Int_t dist )
 {
 
   // Returns a pointer to a histogram which contains the binned angular response
@@ -1240,8 +1325,14 @@ TH1F* OCAModelParameterStore::GetPMTAngularResponseHistogram()
 
   // Loop over each of the parameters and set the error.
   for ( Int_t iBin = 0; iBin < nBins; iBin++ ) {
-    hHisto->SetBinContent( iBin + 1.0, GetPMTAngularResponsePar( iBin ) );
-    hHisto->SetBinError( iBin + 1.0, GetPMTAngularResponseError( iBin ) );
+    if ( dist == 0 ){
+      hHisto->SetBinContent( iBin + 1.0, GetPMTAngularResponsePar( iBin ) );
+      hHisto->SetBinError( iBin + 1.0, GetPMTAngularResponseError( iBin, 0 ) );
+    }
+    else{
+      hHisto->SetBinContent( iBin + 1.0, GetPMTAngularResponse2Par( iBin ) );
+      hHisto->SetBinError( iBin + 1.0, GetPMTAngularResponseError( iBin, 1 ) );
+    }
   }
 
   // Set the titles of the x and y axes.
@@ -1260,7 +1351,7 @@ TH1F* OCAModelParameterStore::GetPMTAngularResponseHistogram()
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t OCAModelParameterStore::GetPMTAngularResponseError( const Int_t angPar )
+Float_t OCAModelParameterStore::GetPMTAngularResponseError( const Int_t angPar, const Int_t dist )
 {
   
   // Return the square root of the diagonal element in the
@@ -1275,8 +1366,13 @@ Float_t OCAModelParameterStore::GetPMTAngularResponseError( const Int_t angPar )
 
     // Get the diagonal matrix cooresponding to the error^2 corresponding
     // to this parameter.
-    Float_t coVar = fCovarianceMatrix[ GetPMTAngularResponseParIndex() + angPar ][ GetPMTAngularResponseParIndex() + angPar ];
-
+    Float_t coVar = 0.0;
+    if ( dist == 0 ){
+      coVar = fCovarianceMatrix[ GetPMTAngularResponseParIndex() + angPar ][ GetPMTAngularResponseParIndex() + angPar ];
+    }
+    else{
+      coVar = fCovarianceMatrix[ GetPMTAngularResponse2ParIndex() + angPar ][ GetPMTAngularResponse2ParIndex() + angPar ];      
+    }
     // If the element is positive, return the square root i.e. the error.
     if ( coVar >= 0.0 ){ return sqrt( coVar ); }
 
@@ -1300,7 +1396,7 @@ Float_t OCAModelParameterStore::GetPMTAngularResponseError( const Int_t angPar )
 //////////////////////////////////////
 //////////////////////////////////////
 
-TF1* OCAModelParameterStore::GetPMTAngularResponseFunction()
+TF1* OCAModelParameterStore::GetPMTAngularResponseFunction( const Int_t dist )
 {
 
   // Returns a pointer to a function with parameters equal to angular response
@@ -1311,7 +1407,13 @@ TF1* OCAModelParameterStore::GetPMTAngularResponseFunction()
   Double_t* parVals = new Double_t[ 1 + GetNPMTAngularResponseBins() + 1 ];
 
   // Get the pointer to the PMT angular response parameters.
-  Float_t* angResp = &fParametersPtr[ GetPMTAngularResponseParIndex() ];
+  Float_t* angResp = NULL;
+  if ( dist == 0 ){ 
+    angResp = &fParametersPtr[ GetPMTAngularResponseParIndex() ];
+  }
+  else{
+    angResp = &fParametersPtr[ GetPMTAngularResponse2ParIndex() ];
+  }
 
   // Set the first value to the number of bins.
   parVals[ 0 ] = GetNPMTAngularResponseBins();
