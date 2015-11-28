@@ -225,7 +225,8 @@ int main( int argc, char** argv ){
 
   // Create a root file to store the residual plots
   string resPlotFileName = ( lDB.GetOutputDir() + "fits/" + fitName + "-res-plots.root" );
-  TFile* resPlots = new TFile( resPlotFileName.c_str(), "RECREATE" );
+  TFile* resPlots = NULL;
+  if ( systematicName == "nominal" ){ resPlots = new TFile( resPlotFileName.c_str(), "RECREATE" ); }
   stringstream myStream;
   string chiLimString = "";
 
@@ -236,9 +237,6 @@ int main( int argc, char** argv ){
     myStream << chiSqLims[ iFit ];
     myStream >> chiLimString;
     myStream.clear();
-
-    TH1F* resPlot = new TH1F( ( chiLimString + "-plot" ).c_str(), ( chiLimString + "-plot-name" ).c_str(),
-                              100, -10.0, 10.0 );
     
     // Update the chisquare filter to a new maximum limit.
     lFilterStore->UpdateFilter( "filter_chi_square", 
@@ -254,36 +252,39 @@ int main( int argc, char** argv ){
     *finalStore = *lData;
     *lData = *ogStore;
 
-    vector< OCAPMT >::iterator iDP;
-    vector< OCAPMT >::iterator iDPBegin = lData->GetOCAPMTsIterBegin();
-    vector< OCAPMT >::iterator iDPEnd = lData->GetOCAPMTsIterEnd();
-    for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
-      resPlot->Fill( lChiSq->EvaluateChiSquareResidual( *iDP ) );
+    if ( systematicName == "nominal" ){
+      TH1F* resPlot = new TH1F( ( chiLimString + "-plot" ).c_str(), ( chiLimString + "-plot-name" ).c_str(),
+                                100, -10.0, 10.0 );
+      vector< OCAPMT >::iterator iDP;
+      vector< OCAPMT >::iterator iDPBegin = lData->GetOCAPMTsIterBegin();
+      vector< OCAPMT >::iterator iDPEnd = lData->GetOCAPMTsIterEnd();
+      for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
+        resPlot->Fill( lChiSq->EvaluateChiSquareResidual( *iDP ) );
+      }
+      
+      TF1 *gausFit = new TF1( "gausFit","gaus", -2.5, 2.5 );
+      gausFit->SetParName( 0, "Normalisation" );
+      gausFit->SetParName( 1, "Mean" );
+      gausFit->SetParName( 2, "Sigma" );
+      gausFit->SetLineColor( 2 );
+      gausFit->SetLineWidth( 2 );
+      resPlot->Fit( "gausFit", "r" );
+      
+      cout << "Gaussian Normalisation: " << gausFit->GetParameter( 0 ) << endl;
+      cout << "Gaussian Mean: " << gausFit->GetParameter( 1 ) << endl;
+      cout << "Gaussian Sigma: " << gausFit->GetParameter( 2 ) << endl;
+      cout << "---------------" << endl;
+      resPlot->SetTitle( "Chi-Square Residual" );
+      resPlot->GetXaxis()->SetTitle( "Occ^{model} - Occ^{dat} / #sigma" );
+      resPlot->GetYaxis()->SetTitle( "Counts" );
+      resPlot->GetYaxis()->SetTitleOffset( 1.2 );
+      resPlots->WriteTObject( resPlot, ( chiLimString + "-resPlot" ).c_str(), "Overwrite" );
+      resPlots->WriteTObject( gausFit, ( chiLimString + "-gausFit" ).c_str(), "Overwrite" );
+      chiLimString.clear();
     }
-
-    TF1 *gausFit = new TF1( "gausFit","gaus", -2.5, 2.5 );
-    gausFit->SetParName( 0, "Normalisation" );
-    gausFit->SetParName( 1, "Mean" );
-    gausFit->SetParName( 2, "Sigma" );
-    gausFit->SetLineColor( 2 );
-    gausFit->SetLineWidth( 2 );
-    resPlot->Fit( "gausFit", "r" );
-
-    cout << "Gaussian Normalisation: " << gausFit->GetParameter( 0 ) << endl;
-    cout << "Gaussian Mean: " << gausFit->GetParameter( 1 ) << endl;
-    cout << "Gaussian Sigma: " << gausFit->GetParameter( 2 ) << endl;
-    cout << "---------------" << endl;
-    resPlot->SetTitle( "Chi-Square Residual" );
-    resPlot->GetXaxis()->SetTitle( "Occ^{model} - Occ^{dat} / #sigma" );
-    resPlot->GetYaxis()->SetTitle( "Counts" );
-    resPlot->GetYaxis()->SetTitleOffset( 1.2 );
-    resPlots->WriteTObject( resPlot, ( chiLimString + "-resPlot" ).c_str(), "Overwrite" );
-    resPlots->WriteTObject( gausFit, ( chiLimString + "-gausFit" ).c_str(), "Overwrite" );
-    chiLimString.clear();
-    
   } 
 
-  resPlots->Close();
+  if ( systematicName == "nominal" && resPlots != NULL ){ resPlots->Close(); }
 
   lChiSq->SetPointerToData( finalStore );
   lChiSq->EvaluateGlobalChiSquare();

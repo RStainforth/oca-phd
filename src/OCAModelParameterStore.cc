@@ -265,7 +265,7 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
       cout << "Seeding Phi Bins: " << fNLBDistributionPhiBins << endl;
       cout << "Seeding Laserball Distribution Pars: " << fNLBDistributionPars << endl;
     }
-    if ( seedLBDistributionType == 1 ){ 
+    else if ( seedLBDistributionType == 1 ){ 
       cout << " Sinusoidal Function." << endl; 
       fNLBSinWaveSlices = tmpStore->GetNLBSinWaveSlices();
       fNLBParametersPerSinWaveSlice = tmpStore->GetNLBParametersPerSinWaveSlice();
