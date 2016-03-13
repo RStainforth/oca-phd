@@ -14,7 +14,7 @@
 ///
 /// DETAIL: Utility class used to calculate mathematical formulae
 ///         required in the optics fit. This currently includes
-///         calculations for the multiple photoelectron counts
+///         calculations for the multiple photoelectron counts correction
 ///         at the PMTs, and the working arrays for the 
 ///         Levenberg-Marquardt algorithm. The functions:
 ///     
@@ -65,11 +65,6 @@ namespace OCA{
     static Double_t MPECorrectedNPromptCorr( const Double_t mpeOcc, 
                                              const Double_t nPrompt, 
                                              const Double_t nPulses );
-
-    // **SOON TO BE DEPRECATED** - Calculates the OccRatio error.
-    // This will ultimately be replaced by the function below:
-    // OCAMath::CalculateMPEOccRatio.
-    static Double_t OccRatioErr( const OCAPMT* pmt );
 
     // Calculate the error due to the PMT variability on a single
     // PMT as represented by a OCAPMT object.
