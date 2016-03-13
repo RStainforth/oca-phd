@@ -5,7 +5,8 @@
 /// CLASS: OCA::OCAPMTStore
 ///
 /// BRIEF: Simple class to store a set of data points
-///        ready for use in the fitting process
+///        ready for use in the fitting process. These data points
+///        being OCAPMT objects.
 ///                
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
@@ -97,7 +98,7 @@ namespace OCA{
 
     string fStoreName;                     // The store name.
     string fStoreFilePath;                 // The full system path of the file.
-    vector< OCAPMT > fDataPoints;  // The vector of data point objects.
+    vector< OCAPMT > fDataPoints;          // The vector of data point objects.
     
     ClassDef( OCAPMTStore, 1 );
     
