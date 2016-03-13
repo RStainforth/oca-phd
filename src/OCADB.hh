@@ -158,7 +158,7 @@ namespace OCA{
     ////////     SETTERS     ////////
     /////////////////////////////////
 
-    // Set an arbitrary file in .ratdb format from where this 
+    // Set an arbitrary file in .ocadb format from where this 
     // OCADB object loads data from
     void SetFile( const char* file ); 
     
