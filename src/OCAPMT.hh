@@ -14,7 +14,7 @@
 ///
 /// DETAIL: This data structure contains all the information
 ///         for a specific PMT in a run, required as an input
-///         to a OCAPMT object for us in an optics 
+///         to an OCAPMT object for use in an optics 
 ///         fit/analysis using OCA.
 ///
 ///         Herein lies information specific to the PMT itself,
@@ -25,7 +25,7 @@
 ///         traditionally are used for the fit:
 ///                   - The off-axis run.
 ///                   - The normalising central run.
-///                   - The off-axis run at a different wavelength.
+///                   - The same off-axis run position at a different wavelength (traditionally 505 nm)
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -63,7 +63,7 @@ namespace OCA{
     /////////////////////////////////
     
     // Initialise and clear all the private member variables
-    // to non-physical/interpretive values before assigning them
+    // to non-physical values before assigning them
     // using OCAPMT::AddSOCPMTData.
     void ClearPMT();
 

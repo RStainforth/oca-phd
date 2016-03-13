@@ -412,7 +412,7 @@ void OCAPMT::ProcessLightPath( RAT::DU::LightPathCalculator& lPath,
 
       // NOTE: Current neck distances need fixing
       // in RAT::DU::LightPathCalculator.
-      //SetDistInNeck( lPath.GetDistInNeck() );
+      // SetDistInNeck( lPath.GetDistInNeck() );
     }
 
     // Set the light path distances through the three
@@ -444,8 +444,7 @@ void OCAPMT::ProcessLightPath( RAT::DU::LightPathCalculator& lPath,
     // This 'average' value is the most reliable.
     SetCosTheta( lPath.GetCosThetaAvg() );
 
-    // Set the DQXX flag (=1 by default whilst RAT functionality
-    // for the SOCPMTs is made compatible with the flags).
+    // Set the channel ahrdware status flag for this PMT in this run.
     if ( chanHW.IsChannelOnline( GetID() ) ){ SetCHSFlag( 1 ); }
     else{ SetCHSFlag( 0 ); }
 
@@ -506,7 +505,7 @@ void OCAPMT::VerifyPMT()
 
   // Check that the distances in the inner AV, AV 
   // and water regions have sensible values.
-  if ( fDistInInnerAV < 0.0 || fDistInInnerAV > 12500.0 ){ 
+  if ( fDistInInnerAV < 0.0 || fDistInInnerAV > 12100.0 ){ 
     SetIsVerified( false ); return; 
   }
   if ( fDistInAV < 0.0 || fDistInAV > 1000.0 ){ 

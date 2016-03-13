@@ -8,7 +8,6 @@
 #pragma link C++ class OCA::OCADB+;
 #pragma link C++ class OCA::OCARunReader+;
 #pragma link C++ class OCA::OCAChiSquare+;
-#pragma link C++ class OCA::OCAFit+;
 #pragma link C++ class OCA::OCAMath+;
 #pragma link C++ class OCA::OCAFilter+;
 #pragma link C++ class OCA::OCAFilterStore+;
