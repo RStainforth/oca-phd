@@ -407,8 +407,10 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   // from 0 - 90 -degrees will have its own histogram to store
   // the PMT efficiencies.
   TH1F* effHistos = new TH1F[ 90 ];
+  TH1F* effOccErr = new TH1F[ 90 ];
   for ( Int_t iHist = 0; iHist < 90; iHist++ ){
     effHistos[ iHist ].SetBins( 10000.0, 0.0, 10.0 );
+    effOccErr[ iHist ].SetBins( 10000.0, 0.0, 10.0 );
   }
 
   // Now need to calculate the average of each PMT efficiency across each run.
@@ -476,11 +478,16 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
       Float_t varVal = ( ( pmtEff / rawEffAvg[ iDP->GetID() ] ) / rawEffAvgTot );
       pmtEffHisto->Fill( varVal );
       Float_t statVal = TMath::Sqrt( 1.0 / iDP->GetPromptPeakCounts() );
-      Float_t histoVal = TMath::Sqrt( ( varVal * varVal ) - ( statVal * statVal ) );
+      //Float_t histoVal = TMath::Sqrt( ( varVal * varVal ) - ( statVal * statVal ) );
+      Float_t histoVal = varVal;
+      cout << " varVal2 - statVal2 = histoVal2 :: " << varVal * varVal << " - " << statVal * statVal << " = " << histoVal * histoVal << endl;
+      cout << "histoVal: " << histoVal << endl;
+      cout << "--------" << endl;
       
       if ( histoVal > 0.0 && !std::isnan( pmtEff ) && !std::isinf( pmtEff ) ){
         effHistos[ incAngle ].Fill( histoVal );
-        iDP->SetRawEfficiency( histoVal );
+        iDP->SetRawEfficiency( pmtEff );
+        effOccErr[ incAngle ].Fill( statVal );
       }
   }
 
@@ -497,21 +504,31 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   pmtVarPlots->WriteTObject( pmtEffHisto, ( fitNameStr + "-pmt-efficiencies" ).c_str(), "Overwrite" );
 
   TGraph* myPlot = new TGraph();
+  TGraph* statPlot = new TGraph();
 
   for ( Int_t iIndex = 0; iIndex < 90; iIndex++ ){
     if ( effHistos[ iIndex ].GetMean() != 0.0
          && (Float_t)( effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean() ) < 1.0 ){
       myPlot->SetPoint( iIndex, 
                         (Float_t)( iIndex + 0.5 ),
-                        (Float_t)( effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean() ) );
+                        TMath::Sqrt((Float_t)( TMath::Power( effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean(), 2 ) ) ) );
+      statPlot->SetPoint( iIndex,
+                          (Float_t)( iIndex + 0.5 ),
+                          effOccErr[ iIndex ].GetMean() );
     }
   }
   
   myPlot->SetMarkerStyle( 7 );
   myPlot->SetMarkerColor( 2 );
-  myPlot->GetXaxis()->SetTitle( "Indicent PMT Angle [degrees]" );
-  myPlot->GetYaxis()->SetTitle( "PMT Variability / degree" );
-  myPlot->SetTitle( "PMT Variability" );
+  myPlot->GetXaxis()->SetTitle( "Indicent Angle at PMT [degrees]" );
+  myPlot->GetYaxis()->SetTitle( "Coefficient of Variation / degree" );
+  myPlot->SetTitle( "Coefficient of Variation by Incident Angle" );
+
+  statPlot->SetMarkerStyle( 7 );
+  statPlot->SetMarkerColor( 1 );
+  statPlot->GetXaxis()->SetTitle( "Indicent PMT Angle [degrees]" );
+  statPlot->GetYaxis()->SetTitle( "Mean Occupancy Uncertainty / degree" );
+  statPlot->SetTitle( "Mean Occupancy Uncertainty by Incident Angle" );
 
   TF1* fitFunc = new TF1("fitFunc", "pol2", 2.0, 43.0 );
   myPlot->Fit("fitFunc");
@@ -521,6 +538,7 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
 
   pmtVarPlots->WriteTObject( myPlot, ( fitNameStr + "-pmt-variability" ).c_str(), "Overwrite" );
   pmtVarPlots->WriteTObject( fitFunc, ( fitNameStr + "-variability-function" ).c_str(), "Overwrite" );
+  pmtVarPlots->WriteTObject( statPlot, ( fitNameStr + "-stat-uncertainty" ).c_str(), "Overwrite" );
   pmtVarPlots->Close();
 
   vector< OCAPMT >::iterator iDPL;

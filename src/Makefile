@@ -1,31 +1,20 @@
+# Author: Rob Stainforth
+#
 # Makefile for OCA
 #
 # Do 'make clean' at the command line after modifications to this makefile
 #
-# OCA depends solely on ROOT. It therefore tries to get as
+# OCA depends on ROOT. It therefore tries to get as
 # much information from ROOT as possible through 'root-config'
 
 # Compile and link flags imported from ROOT 
 ROOTCFLAGS  := $(shell root-config --cflags)
 ROOTLIB     := $(shell root-config --libs) -lMinuit
 
-# Compile and link flags imported from GEANT4 
-GEANT4CFLAGS  := $(shell geant4-config --cflags)
-GEANT4LLIB    := $(shell geant4-config --libs)
+DEPCFLAGS   := ${ROOTCFLAGS}
+DEPLIBS     := ${ROOTLIB}
 
-# CLHEP Isn't installed by default, so we don't need to use the below just yet.
-# Compile and link flags imported from CLHEP 
-# CLHEPCFLAGS := $(shell clhep-config --include)
-# CLHEPLIB    := $(shell clhep-config --libs)
-
-# Compile and link flags imported from CURL 
-CURLCFLAGS  := $(shell curl-config --cflags)
-CURLLIB     := $(shell curl-config --libs)
-
-DEPCFLAGS   := ${ROOTCFLAGS} ${GEANT4CFLAGS} ${CLHEPCFLAGS} ${CURLCFLAGS}
-DEPLIBS     := ${ROOTLIB} ${GEANT4LIB} ${CLHEPLIB} ${CURLLIB}
-
-# The name of the library depends on the value of RATSYSTEM, which must be setup to link against rat anyway.
+# The name of the library depends on the value of RATSYSTEM, which must be setup to link against RAT anyway.
 # Compile and link flags imported from RAT
 RATCFLAGS   := -I$(RATROOT)/include -I$(RATROOT)/include/RAT -I$(RATROOT)/include/RAT/DS
 RATLIB		:= -L$(RATROOT)/lib -lRATEvent_$(RATSYSTEM) -lrat_$(RATSYSTEM)
@@ -50,7 +39,6 @@ ifneq ($(findstring macosx, $(ARCH)),)
 	LDOPTS  := -dynamiclib -single_module -undefined dynamic_lookup
 
 # Shouldn't need the below statement anymore - will keep it here for legacy control.
-#LINKCMD := install_name_tool -change lib/libRATEvent_$(RATSYSTEM).so @rpath/libRATEvent_$(RATSYSTEM).so libOCA.so
 
 endif
 ifneq ($(findstring $(ARCH), $(strip linux debian redhat)),)
@@ -78,13 +66,11 @@ DICT_O	:= $(patsubst %.C,%.o,$(DICT_C))
 
 OCA_EXE	:= rdt2soc soc2oca oca2fit
 
-# N. Barros - 22-11-2011 : Removed from the targets as the source file seems to be missing. Maybe a missing commit?
-# sjmptest
-
 # Creates a list of all of the *.hh files in the current directory (same directory as the Makefile) EXCEPT the filenames
 # defined by the values of $DICT_H, and $DICT_C but with the .C extension replaced by .h
 # i.e. Not the files OCA_LinkDef.h and OCA_Dict.C
 OCAH		:= $(filter-out $(DICT_H) $(patsubst %.C,%.h,$(DICT_C)),$(notdir $(shell find $(OCA_SRC) -name "*.hh")))
+
 # Creates a list of all of the *.cc files in the current directory (same directory as the Makefile) EXCEPT the filenames
 # defined by the values of $OCA_EXE, with .cc attached i.e. Not oca.cc
 OCAC		:= $(filter-out $(addsuffix .cc,$(OCA_EXE)),$(notdir $(shell find $(OCA_SRC) -name "*.cc")))

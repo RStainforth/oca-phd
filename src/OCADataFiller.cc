@@ -143,6 +143,16 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
           validPoint = false; break;
         }
       }
+
+      // Filter to check fractional error
+      else if ( filterName == "filter_occupancy_ratio" ){
+        Float_t ratio = 0.0;
+        Float_t ratioErr = 0.0;
+        OCAMath::CalculateMPEOccRatio( *iD, ratio, ratioErr );
+        if ( !iF->CheckCondition( ratio ) ){ 
+          validPoint = false; break;
+        }
+      }
       
       // Filters to check the various distances in the 
       // inner AV, AV and water regions in terms of the 

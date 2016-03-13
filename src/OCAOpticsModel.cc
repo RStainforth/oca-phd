@@ -1039,7 +1039,7 @@ Float_t OCAOpticsModel::ModelAngularResponse( const OCAPMT& dataPoint, std::stri
   }
 
   // Calculate the associated bin representative of this angle.
-  Int_t iAng = (Int_t)( angle * parPtr->GetNPMTAngularResponseBins() / 90.0 );
+  Int_t iAng = (Int_t)( floor( angle ) * parPtr->GetNPMTAngularResponseBins() / 90.0 );
   if ( iAng < 0 ){ iAng = 0; }
   if ( iAng >= parPtr->GetNPMTAngularResponseBins() ){ iAng = parPtr->GetNPMTAngularResponseBins() - 1; }
 

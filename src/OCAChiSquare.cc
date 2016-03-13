@@ -27,6 +27,9 @@ OCAChiSquare::OCAChiSquare()
   fChiSquareResidualMean = 0.0;
   fChiSquareResidualStdDev = 0.0;
 
+  // Default, skip 1 PMT i.e. skip no PMTs
+  fNDataPointsSkip = 1;
+
 }
 
 //////////////////////////////////////
@@ -59,22 +62,25 @@ Float_t OCAChiSquare::EvaluateChiSquare( OCAPMT& dPoint )
 
   // Calculate the occupancy ratio from the data for this
   // data point.
-  // Note: For now this just returns the statistical error
-  // on the occupancy ratio. It does not account for the correction
-  // due to the PMT incident angle. This will need to be implemented
-  // in the future.
   Float_t occRatio = 0.0;
   Float_t occRatioErr = 0.0;
   OCAMath::CalculateMPEOccRatio( dPoint, occRatio, occRatioErr );
 
+  // This retrieves the parameters that define the polynomial estimator for the
+  // PMT variability.
   TVector polPars = fModel->GetOCAModelParameterStore()->GetPMTVariabilityParameters();
-
+  
+  // Statistical error on the occupancy ratio
   Float_t occRatioError2 = occRatioErr * occRatioErr;
-  Float_t variabilityError2 = TMath::Power( occRatio * OCAMath::CalculatePMTVariabilityError( dPoint, polPars ), 2 );
 
+  // PMT variability error on the occupancy ratio. This will be zero is the PMT variability is
+  // not available.
+  Float_t variabilityError2 = occRatio * occRatio * OCAMath::CalculatePMTVariabilityError( dPoint, polPars );
   // Calculate the difference between the model prediction
   // and the data value ( the residual for the chi-square calculation ).
   Float_t residual = ( occRatio - modelOccRatio );
+
+  // The chisquare
   Float_t chiSq =  ( residual * residual ) / ( occRatioError2 + variabilityError2 );
 
   // Return the chi-square value.
@@ -93,6 +99,9 @@ void OCAChiSquare::EvaluateGlobalChiSquareResidual()
 
   // Create an iterator to loop through all the data points.
   vector< OCAPMT >::iterator iD;
+
+  // Loop through and use all 'good' data points i.e. not 'nan' or 'inf'
+  // to calculate the mean chisquare residual.
   Int_t nGoodPoints = 0;
   for ( iD = fDataStore->GetOCAPMTsIterBegin();
         iD != fDataStore->GetOCAPMTsIterEnd();
@@ -107,8 +116,11 @@ void OCAChiSquare::EvaluateGlobalChiSquareResidual()
 
   }
 
+  // Divide through to calculate the chisquare residual.
   fChiSquareResidualMean /= nGoodPoints;
 
+  // Using the value of the mean, calculate the standard deviation
+  // of the chisquare residuals.
   for ( iD = fDataStore->GetOCAPMTsIterBegin();
         iD != fDataStore->GetOCAPMTsIterEnd();
         iD++ ){
@@ -127,18 +139,23 @@ void OCAChiSquare::EvaluateGlobalChiSquareResidual()
 //////////////////////////////////////
 //////////////////////////////////////
 
-Float_t OCAChiSquare::EvaluateGlobalChiSquare()
+Float_t OCAChiSquare::EvaluateGlobalChiSquare( Int_t nPoints )
 {
   
   // Calculate the total chisquare over all datapoints (PMTs) in the dataset.
   fChiSquare = 0.0;
-
+  Int_t pointSkip = 0;
+  if ( nPoints > 0 ){
+    pointSkip = ( fDataStore->GetNDataPoints() / nPoints );
+  }
+  else{ pointSkip = 1; }
+  Int_t nP = 0;
   // Create an iterator to loop through all the data points.
   vector< OCAPMT >::iterator iD;
   for ( iD = fDataStore->GetOCAPMTsIterBegin();
-        iD != fDataStore->GetOCAPMTsIterEnd();
-        iD++ ){
-   
+        iD < fDataStore->GetOCAPMTsIterEnd();
+        iD += pointSkip ){
+    
     // Add the chi-square value for this data-point to the overall
     // chi-square.
     if ( !std::isnan( EvaluateChiSquare( *(iD) ) )
@@ -147,7 +164,7 @@ Float_t OCAChiSquare::EvaluateGlobalChiSquare()
       fChiSquare += EvaluateChiSquare( *(iD) );
     }
   }
-
+  
   return fChiSquare;
 
 }
@@ -230,8 +247,7 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
   vector< OCAPMT >::iterator iDPEnd = fDataStore->GetOCAPMTsIterEnd();
 
   OCAModelParameterStore* parPtr = new OCAModelParameterStore();
-  for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
-   
+  for ( iDP = iDPBegin; iDP < iDPEnd; iDP += fNDataPointsSkip ) {
     // Evaluate the model for this data point and calculate the 
     // parameters and the derivative of the this point with respect
     // to each of these parameters.
@@ -246,9 +262,7 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
     Float_t occRatioErr2 = occRatioErr * occRatioErr;
     TVector polPars = fModel->GetOCAModelParameterStore()->GetPMTVariabilityParameters();
 
-    Float_t variabilityErr2 = TMath::Power( occRatio * OCAMath::CalculatePMTVariabilityError( *iDP, polPars ), 2 );
-    //cout << "variabilityErr2: " << variabilityErr2 << endl;
-    //cout << "occRatioErr2: " << occRatioErr2 << endl;
+    Float_t variabilityErr2 = occRatio * occRatio * OCAMath::CalculatePMTVariabilityError( *iDP, polPars );
     dataError2 = 1.0 / ( occRatioErr2 + variabilityErr2 );
     
     // And compute the difference between the model 
@@ -264,7 +278,6 @@ void OCAChiSquare::FitEvaluation(  Float_t testParameters[], Int_t parametersVar
     parPtr = fModel->GetOCAModelParameterStore();
  
     // Identify which of those parameters vary.
-    //cout << "chi square call" << endl;
     parPtr->IdentifyVaryingParameters();
 
     // Return the number of variable parameters for the current
@@ -470,7 +483,6 @@ Int_t OCAChiSquare::Minimise( Float_t testParameters[], Int_t parametersVary[],
       if( covarianceMatrix[ jVar ][ jVar ] <= 0.0 ) {
 
         if( covarianceMatrix[ jVar ][ jVar ] == 0.0 ) {
-          cout << "Derivative is: " << derivativeMatrix[ jVar ][ jVar ] << endl;
           cout << "OCAChiSquare::Minimise: Error! Diagonal covariance matrix element [" << jVar  << ", " << jVar << "] is zero." << endl; 
           cout << "Tip: This is likely due to a parameter being forced to vary which shouldn't have. Check which parameters are varying." << endl;
         } 
@@ -700,8 +712,8 @@ void OCAChiSquare::PerformOpticsFit( const Int_t passNum )
   Float_t** covarianceMatrix = fModel->GetOCAModelParameterStore()->GetCovarianceMatrix();
   Float_t** derivativeMatrix = fModel->GetOCAModelParameterStore()->GetDerivativeMatrix();
 
-  for ( Int_t iPar = 1; iPar <= nParameters; iPar++ ){
-    cout << "Parameter: " << iPar << " is: " << parameters[ iPar ] << " with flag: " << parametersVary[ iPar ] << " and error: " << TMath::Sqrt( covarianceMatrix[ iPar ][ iPar ] ) << endl;
+  for ( Int_t iPar = 1; iPar <= 3; iPar++ ){
+    cout << "OCAChiSquare::PerformOpticsFit: Parameter: " << iPar << " is: " << parameters[ iPar ] << " with flag: " << parametersVary[ iPar ] << " and error: " << TMath::Sqrt( covarianceMatrix[ iPar ][ iPar ] ) << endl;
   }
   
   // Perform the minimisation for the optics fit.
@@ -717,7 +729,7 @@ void OCAChiSquare::PerformOpticsFit( const Int_t passNum )
 
   fModel->GetOCAModelParameterStore()->IdentifyGlobalVaryingParameters();
   Int_t nVaryingParameters = fModel->GetOCAModelParameterStore()->GetNGlobalVariableParameters();
-  Int_t nDataPoints = fDataStore->GetNDataPoints();
+  Int_t nDataPoints = fDataStore->GetNDataPoints() / fNDataPointsSkip;
   // Print the reduced chi-square.
   printf( "Reduced Chi-Square = %.5f / ( %i - %i ) = %.5f\n-----------------------\n",
           chiSquare, nDataPoints, nVaryingParameters,

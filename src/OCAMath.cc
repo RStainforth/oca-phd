@@ -93,6 +93,9 @@ Float_t OCAMath::CalculatePMTVariabilityError( const OCAPMT& dPoint,
     polValue += polPars( iPol ) * TMath::Power( theta, iPol );
   }
 
+  polValue *= polValue;
+  polValue -= dPoint.GetMPECorrOccupancyErr() * dPoint.GetMPECorrOccupancyErr();
+
   return polValue;
 
 }

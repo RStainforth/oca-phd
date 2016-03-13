@@ -18,20 +18,19 @@ ClassImp( OCAPMTStore )
 //////////////////////////////////////
 //////////////////////////////////////
 
-OCAPMTStore::OCAPMTStore( std::string storeName )
+OCAPMTStore::OCAPMTStore( std::string storeName, std::string storeType )
 {
 
   OCADB lDB;
   string outputDir = lDB.GetOutputDir();
-  string filePath = outputDir + "datastore/" + storeName + "_unfiltered.root";
+  string filePath = outputDir + "datastore/" + storeName + "_" + storeType + ".root";
   ifstream tmpFile( filePath.c_str() );
   if ( tmpFile ){
     
     // Create a new TFile object to open the OCAPMTStore.
     TFile* dataFile = TFile::Open( filePath.c_str(), "READ" );
     TTree* fileTree = new TTree();
-    const char* treeName = ( storeName + "_unfiltered.root;1" ).c_str();
-    fileTree = (TTree*)dataFile->Get( treeName );
+    fileTree = (TTree*)dataFile->Get( ( storeName + "_" + storeType + ".root;1" ).c_str() );
     OCAPMTStore* lStore = new OCAPMTStore();
     fileTree->SetBranchAddress( "OCAPMTStore", &lStore );
     fileTree->GetEntry( 0 );

@@ -37,7 +37,7 @@ namespace OCA{
   public: 
 
     // The consturctor and destructor for the OCAPMTStore objects
-    OCAPMTStore( const string storeName = "" );
+    OCAPMTStore( const string storeName = "", const string storeType = "unfiltered" );
     ~OCAPMTStore(){ };
 
     // The self-addition, addition and equality operators
