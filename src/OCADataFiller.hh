@@ -25,7 +25,7 @@
 ///         consequently returned with the address of the original
 ///         OCAPMTStore.
 /// 
-///         NOTE: a OCAChiSquare object is also required for this
+///         NOTE: an OCAChiSquare object is also required for this
 ///         to work as some filters make use of the initial chi-square
 ///         to make a cut.
 ///
@@ -54,8 +54,8 @@ namespace OCA{
     ////////     METHODS     ////////
     /////////////////////////////////
 
-    // Filter the current data. This requires a OCAChiSquare object if 
-    // one of the filters is a chi square elimination cut
+    // Filter the current data. This requires an OCAChiSquare object if 
+    // one of the filters is a chisquare elimination cut
     void FilterData( OCAFilterStore* lFilterStore, 
                      OCAPMTStore* lDataStore, 
                      OCAChiSquare* lChiSq = NULL );
