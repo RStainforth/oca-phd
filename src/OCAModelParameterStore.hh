@@ -7,14 +7,13 @@
 /// BRIEF: A simple class to hold a collection of
 ///        OCAModelParameter objects which are used
 ///        by the OCAOpticsModel class.
-///        
-///          
+///                  
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:
 ///     04/2015 : RPFS - First Revision, new file.
 ///
-/// DETAIL: This object holds lots of individual 
+/// DETAIL: This object holds several 
 ///         OCAModelParameter objects together which collectively
 ///         can be used by a OCAOpticsModel object to make
 ///         model predictions for the occuapncy ratio.
@@ -482,9 +481,9 @@ namespace OCA{
 
     TVector fPMTVariabilityParameters;                      // This is a vector of 3 parameters which define the PMT 
                                                             // variability polynomial of the form:
-                                                            //     pmt_variability(theta) = p0 
-                                                            //                              + p1 * theta
-                                                            //                              + p2 * theta * theta
+                                                            //     pmt_variability( theta ) = p0 
+                                                            //                                + p1 * theta
+                                                            //                                + p2 * theta * theta
 
     ClassDef( OCAModelParameterStore, 1 )
 

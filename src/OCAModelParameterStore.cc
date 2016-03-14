@@ -98,6 +98,10 @@ OCAModelParameterStore::OCAModelParameterStore( string& storeName )
 OCAModelParameterStore::~OCAModelParameterStore()
 {
 
+  // FIXME: Technically, these two 'new' pointers need to be deleted as part of the destructor,
+  //        however I ran into seg faults (on a MAC laptop), maybe it works better on linux. In which
+  //        case the below lines should really be un-commented.
+
   //if ( fCurrentAngularResponseBins != NULL && fStoreName != "" ){ delete [] fCurrentAngularResponseBins; }
   //if ( fCurrentLBDistributionBins != NULL && fStoreName != "" ){ delete [] fCurrentLBDistributionBins; }
 
@@ -133,7 +137,7 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
                                                string& fitFileName )
 {
 
-  // The idea of this is to seed the parameter values and errors from a previous
+  // The idea of this is to seed the parameter values and statistical errors from a previous
   // fit and use them as the initial values for a new fit. So, from the previous
   // fit we retrieve the parameter values and their errors, the actual model setup though
   // is as defined in the fit file. E.g. we can seed the fitted PMT Angular response from a
@@ -150,10 +154,12 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
   fSeedFile = fitFileName;
   fParameters.clear();
 
+  // Read the .root file to from which to see the parameters.
   std::string seedFilePath = lDB.GetOutputDir() + "fits/" + seedFileName + ".root";
   cout << "OCAModelParameterStore::SeedParameters: Seeding from:\n";
   cout << seedFilePath << endl;
   
+  // Setup the TFile and TTree from which to read the parameters.
   TFile* tmpFile = TFile::Open( ( seedFilePath ).c_str() );
   TTree* tmpTree = (TTree*)tmpFile->Get( ( seedFileName +  "-nominal;1" ).c_str() );
 
@@ -230,8 +236,6 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
     Int_t uLim = 1;
     Int_t nBins = fNPMTAngularResponseBins;
     Int_t nDistSeed = tmpStore->GetNPMTAngularResponseDistributions();
-    cout << "nDistSeed is: " << nDistSeed << endl;
-    cout << "fNPMTAngularResponseDistributions is: " << fNPMTAngularResponseDistributions << endl;
     if ( nDistSeed == 1 && fNPMTAngularResponseDistributions == 2 ){ uLim = 2; nBins = fNPMTAngularResponseBins; }
     if ( nDistSeed == 2 && fNPMTAngularResponseDistributions == 2 ){ uLim = 1; nBins = 2 * fNPMTAngularResponseBins; }
     for ( Int_t iDist = 0; iDist < uLim; iDist++ ){
@@ -248,7 +252,7 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
     }
   }
   else{
-    cout << "OCAModelParameterStore::SeedParameters: Error, number of PMT angular response bin on fitfile: " << fileNAngularResponseBins << ", differs from the seed file: " << seedNAngularResponseBins << ". Aborting..." << endl;
+    cout << "OCAModelParameterStore::SeedParameters: Error, number of PMT angular response bins on fitfile: " << fileNAngularResponseBins << ", differs from the seed file: " << seedNAngularResponseBins << ". Aborting..." << endl;
     return false;
   }
   
@@ -684,14 +688,6 @@ void OCAModelParameterStore::AddParameters( string& fileName )
 
   fNParameters = (Int_t)fParameters.size();
 
-  cout << "GetInnerAVExtinctionLengthParIndex = " << GetInnerAVExtinctionLengthParIndex() << endl;
-  cout << "GetAVExtinctionLengthParIndex = " << GetAVExtinctionLengthParIndex() << endl;
-  cout << "GetWaterExtinctionLengthParIndex = " << GetWaterExtinctionLengthParIndex() << endl;
-  cout << "GetLBDistributionMaskParIndex = " << GetLBDistributionMaskParIndex() << endl;
-  cout << "GetPMTAngularResponseParIndex = " << GetPMTAngularResponseParIndex() << endl;
-  cout << "GetLBDistributionParIndex = " << GetLBDistributionParIndex() << endl;
-  cout << "GetLBRunNormalisationParIndex = " << GetLBRunNormalisationParIndex() << endl;
-
   AllocateParameterArrays();
 }
 
@@ -950,7 +946,7 @@ void OCAModelParameterStore::WriteToRATDBFile( const char* fileName )
   roccVals << "\n}";
   roccVals.close();
 
-  cout << "OCA::OCAModelParameterStore: Fitted parameters saved to RATDB file:\n";
+  cout << "OCA::OCAModelParameterStore: Fitted parameters saved to OCADB file:\n";
   cout << fileName << "\n";
 
 }
