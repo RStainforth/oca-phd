@@ -8,16 +8,15 @@
 ///        values fall within a range of values
 ///        A collection of OCAFilter-s (OCAFilterStore) is used
 ///        to introduce the cut-flow to a set of
-///        OCARawDataPoint objects
-///        
-///         
+///        OCAPMT objects
+///                 
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:
 ///     04/2015 : RPFS - First Revision, new file.
 ///
 /// DETAIL: The OCAFilter object is used to define a check
-///         condition for which a OCAPMT object can be
+///         condition for which an OCAPMT object can be
 ///         tested against. For example, the fit may require
 ///         that only data points with an occupancy between
 ///         value X and Y should be included. Therefore this filter
@@ -47,10 +46,10 @@ namespace OCA{
     // The constructors and destructors for the OCAFilter object
     OCAFilter(){ }
     OCAFilter( const string filterName, 
-                 const Float_t valLow, 
-                 const Float_t valHigh );
+               const Float_t valLow, 
+               const Float_t valHigh );
     OCAFilter( const string filterName,
-                 const Bool_t boolVal );
+               const Bool_t boolVal );
     ~OCAFilter(){ }
 
     /////////////////////////////////

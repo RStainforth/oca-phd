@@ -7,8 +7,7 @@
 /// BRIEF: A simple class to hold the information about
 ///        a specific parameter included in the OCAOpticsModel
 ///        object.
-///        
-///          
+///                  
 /// AUTHOR: Rob Stainforth [RPFS] <rpfs@liv.ac.uk>
 ///
 /// REVISION HISTORY:
@@ -41,10 +40,10 @@ namespace OCA{
     // The constructors and destructors for the OCAModelParameter object.
     OCAModelParameter(){ }
     OCAModelParameter( string parameterName, 
-                         Int_t index, Float_t initVal, 
-                         Float_t valLow, Float_t valHigh, 
-                         Float_t valInc, Int_t nParsInGroup,
-                         Bool_t varyBool );
+                       Int_t index, Float_t initVal, 
+                       Float_t valLow, Float_t valHigh, 
+                       Float_t valInc, Int_t nParsInGroup,
+                       Bool_t varyBool );
     ~OCAModelParameter(){ };
 
     // The equality operator for OCAModelParameter types.
