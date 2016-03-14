@@ -99,15 +99,15 @@ namespace OCA{
   protected:
 
     TChain* fOCARunT;                   // TChain of the ROOT files added to the OCARun reader.
-    OCARun* fOCARun;                  // Pointer to the current OCARun object.
+    OCARun* fOCARun;                    // Pointer to the current OCARun object.
     
-    Long64_t fNext;                       // Index of the next OCARun TTree in the TChain.
+    Long64_t fNext;                     // Index of the next OCARun TTree in the TChain.
     Long64_t fNOCARuns;                 // Total number of OCARun TTrees in the TChain.
 
-    string fBranchName;                   // Branch name for the OCARun file to be used
+    string fBranchName;                 // Branch name for the OCARun file to be used
 
-    vector< Int_t > fListOfRunIDs;        // Vector of run IDs whose corresponding ROOT fies
-                                          // have been loaded onto the TChain.
+    vector< Int_t > fListOfRunIDs;      // Vector of run IDs whose corresponding ROOT fies
+                                        // have been loaded onto the TChain.
 
     OCAPMT* fCurrentPMT;                // Pointer to the current OCAPMT object.
 
