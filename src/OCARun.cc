@@ -253,41 +253,17 @@ void OCARun::FillRunInfo( RAT::DS::SOC* socPtr,
                           Bool_t copyPMTInfo )
 {
 
-  // Create a new RAT::DS::SOC object to be used
-  // in the loop below.
-  //RAT::DS::SOC* socPtr = new RAT::DS::SOC;
-  
-  // First check that a SOC file with the 
-  // specified runID exists in the SOCReader.
-  // for ( Int_t iSOC = 0; iSOC < (Int_t)socR.GetSOCCount(); iSOC++ ){
-
-  //   // Get the SOC entry.
-  //   *socPtr = socR.GetSOC( iSOC );
-
-  //   // Check for the run ID on the SOC file.
-  //   if ( socPtr->GetRunID() == runID ){ break; }
-  //   else{ continue; }
-    
-  //   // If the SOC object with the required run ID cannot be found
-  //   // then return an error.
-  //   if ( iSOC == ( (Int_t)socR.GetSOCCount() - 1 ) ){
-  //     cout << "OCARun::Fill: Error: No SOC file with specified run-ID found" << endl;
-  //     return;
-  //   }
-  // }
-
-  // Now that a SOC file which matches the run ID specified has been
-  // found. We can now begin to fill the OCARun object with all the
-  // neccessary information.
-
-  // The run information from the SOC file...
+  // Copy the run information from the SOC file...
   CopySOCRunInfo( *socPtr );
 
   if ( lbPosMode == 1 ){ 
     SetLBPos( socPtr->GetCalib().GetPos() ); 
   }
+
+  // FIXME: When available through the RAT database, someone will need to put in the camera coordinates of the
+  // laserball position.
   if ( lbPosMode == 2 ){ 
-    cout << "OCARun::FillRunInfo: Camera Coordinates not currently available, setting to manipulator position\n";
+    cout << "OCARun::FillRunInfo: Camera Coordinates not currently available, setting to manipulator position.\n";
     SetLBPos( socPtr->GetCalib().GetPos() );
   }
   if ( lbPosMode == 3 ){
@@ -306,8 +282,6 @@ void OCARun::FillRunInfo( RAT::DS::SOC* socPtr,
     CopySOCPMTInfo( *socPtr );
   }
 
-  //delete socPtr;
-
 }
 
 //////////////////////////////////////
@@ -320,27 +294,6 @@ void OCARun::FillPMTInfo( RAT::DU::LightPathCalculator& lLP,
                           UInt_t runID )
 {
 
-  // Create a new RAT::DS::SOC object to be used
-  // in the loop below.
-  //RAT::DS::SOC* socPtr = new RAT::DS::SOC;
-  
-  // // First check that a SOC file with the 
-  // // specified runID exists in the SOCReader.
-  // for ( Int_t iSOC = 0; iSOC < (Int_t)socR.GetSOCCount(); iSOC++ ){
-  //   // Get the SOC entry.
-  //   *socPtr = socR.GetSOC( iSOC );
-
-  //   // Check for the run ID on the SOC file.
-  //   if ( socPtr->GetRunID() == runID ){ break; }
-  //   else{ continue; }
-    
-  //   // If the SOC object with the required run ID cannot be found
-  //   // then return an error.
-  //   if ( iSOC == ( (Int_t)socR.GetSOCCount() - 1 ) ){
-  //     cout << "OCARun::Fill: Error: No SOC file with specified run-ID found" << endl;
-  //     return;
-  //   }
-  // }
   // Create an iterator to loop over the PMTs...
   map< Int_t, OCAPMT >::iterator iLP;
 
@@ -388,8 +341,6 @@ void OCARun::FillPMTInfo( RAT::DU::LightPathCalculator& lLP,
 
     ///////// Off-Axis Laserball Theta and Phi Angles //////////
     TVector3 lbAxis( 0.0, 0.0, 1.0 );
-    //lbAxis.SetPhi( GetLBPhi() );
-    //lbAxis.SetTheta( GetLBTheta() );
     
     // Set the relative theta and phi coordinates of the light
     // in the local frame of the laserball as it left the source.
@@ -429,11 +380,14 @@ void OCARun::CopySOCRunInfo( RAT::DS::SOC& socRun )
   // The number of pulses.
   SetNLBPulses( socRun.GetNPulsesTriggered() );
 
+  // The global time offset
   SetGlobalTimeOffset( socRun.GetGlobalTimeOffset() );
   
+  // The laserball theta and phi coordinates.
   SetLBTheta( 0.0 );
   SetLBPhi( socRun.GetCalib().GetDir().Phi() );
 
+  // Set the orientation.
   SetLBOrientation( GetLBPhi() / ( TMath::Pi() / 2.0 ) );
 
 }
@@ -691,8 +645,8 @@ void OCARun::CalculateLBIntensityNorm()
   // (very unlikely), divide through by the number of PMTs to 
   // calculate the average occupancy (Laserball normalisation).
 
-  lbIntensityNorm *= (Float_t)( 10000.0 / nPMTs );
-  centrallbIntensityNorm *= (Float_t)( 10000.0 / nCentralPMTs );
+  lbIntensityNorm *= (Float_t)( 9500.0 / nPMTs );
+  centrallbIntensityNorm *= (Float_t)( 9500.0 / nCentralPMTs );
 
   // Define the private member variables which
   // hold the intensity normalisation value for each

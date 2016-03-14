@@ -511,7 +511,7 @@ namespace OCA{
     Float_t fWavelengthLBTheta;            // Theta orientation value ( usually fLBTheta=0 ) in the wavelength run
     Float_t fWavelengthLBPhi;              // Phi orientation value ( 0:=South, pi/2:=West, pi:=North, 3pi/2:=East ) in the wavelength run
         
-    map<Int_t, OCAPMT> fOCAPMTs;       // Map of OCAPMTs (i.e. the PMTs in this (Main) Run)
+    map<Int_t, OCAPMT> fOCAPMTs;           // Map of OCAPMTs (i.e. the PMTs in this (Main) Run)
     
     ClassDef(OCARun,1)
     
