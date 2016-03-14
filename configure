@@ -7,7 +7,7 @@
 # If you are using a Snoing installation, this is
 # likely to be env_rat-dev.sh NOT rat-dev/env.sh
 
-printf "\nWelcome to the OCA software setup for SNO+.\n\nEnter the FULL system path to your RAT environment file\n(no use of '~' to shortcut to home directory!).\nIf you use a 'snoing' installation of RAT, this is likely\nto be located somewhere such as\n\${SOME-PATH}/snoing/install/env_rat-dev.sh. \n\n"
+printf "\nWelcome to the OCA software setup for SNO+.\n\nEnter the FULL system path to your RAT environment file\n(no use of '~' to shortcut to home directory!).\nIf you use a 'snoing' installation of RAT, this is likely\nto be located somewhere such as\n\${SOME-PATH}/snoing/install/env_rat-dev.sh \n\n"
 RATFILE=""
 printf "Enter Path: " 
 read -e ratenvpath
