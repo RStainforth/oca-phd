@@ -96,7 +96,7 @@ namespace OCA{
 
     std::string fStoreName;                                 // The store name.
 
-    std::vector< OCAFilter > fFilters;                    // The vector of OCAFilter objects which perform the top level cuts on the initial data.
+    std::vector< OCAFilter > fFilters;                      // The vector of OCAFilter objects which perform the top level cuts on the initial data.
     
     std::map< std::string, Int_t > fFilterLookUp;           // A look up map for the filters by filter name
 
