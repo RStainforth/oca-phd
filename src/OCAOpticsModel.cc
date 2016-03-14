@@ -565,7 +565,6 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
 
     // Identify all the current varying parameters associated
     // with this data point.
-    //cout << "derivative Call" << endl;
     parPtr->IdentifyVaryingParameters();
 
     // For each of the parameter which vary for this
@@ -714,8 +713,6 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCAPMT& dataPoint, std::strin
   if ( parPtr->GetLBDistributionType() == 0 ){ nTheta = parPtr->GetNLBDistributionCosThetaBins(); nPhi = parPtr->GetNLBDistributionPhiBins(); }
   if ( parPtr->GetLBDistributionType() == 1 ){ nTheta = parPtr->GetNLBSinWaveSlices(); nPhi = parPtr->GetNLBParametersPerSinWaveSlice(); }
   
-  //cout << "nTheta is: " << nTheta << endl;
-  //cout << "nPhi is: " << nPhi << endl;
   Int_t iTheta = (Int_t)( ( 1 + cosTheta ) / 2.0 * nTheta );
 
   // Some book keeping to ensure the cosTheta bin is within the allowed
@@ -758,8 +755,6 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCAPMT& dataPoint, std::strin
     iPhi = nPhi - 1;
   }
 
-  // Begin 2D interpolation
-
   // Using the individual phi and cosTheta bins calculate
   // the overall bin for which the associated parameter from the
   // parameter array can be obtained.
@@ -776,134 +771,7 @@ Float_t OCAOpticsModel::ModelLBDistribution( const OCAPMT& dataPoint, std::strin
   }
 
   binsToDiff[ 0 ] = iLBDist;
-  //parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDist );
   return parPtr->GetLBDistributionPar( iLBDist );
-
-  //vector< Int_t > bins;
-  //parPtr->GetCurrentLBDistributionBins()->insert( parPtr->GetCurrentLBDistributionBins()->begin(), bins.begin(), bins.end() );
-
-  Int_t iLBDistPhiInterpol = iTheta * parPtr->GetNLBDistributionPhiBins() + ( iPhi + 1 );
-  Int_t iLBDistThetaInterpol = ( iTheta + 1 ) * parPtr->GetNLBDistributionPhiBins() + iPhi;
-  Int_t iLBDistPhiThetaInterpol =  ( iTheta + 1 ) * parPtr->GetNLBDistributionPhiBins() + ( iPhi + 1 );
-
-  binsToDiff[ 0 ] = iLBDist;
-  binsToDiff[ 1 ] = iLBDistPhiInterpol;
-  binsToDiff[ 2 ] = iLBDistThetaInterpol;
-  binsToDiff[ 3 ] = iLBDistPhiThetaInterpol;
-
-  if ( iPhi + 1 >= parPtr->GetNLBDistributionPhiBins() 
-       &&
-       iTheta + 1 >= parPtr->GetNLBDistributionCosThetaBins() ){
-    phiInterpolFrac[ 0 ] = 1.0;
-    phiInterpolFrac[ 1 ] = 0.0;
-    cosThetaInterpolFrac[ 0 ] = 1.0; 
-    cosThetaInterpolFrac[ 1 ] = 0.0;
-    return parPtr->GetLBDistributionPar( iLBDist );
-    //iLBDistPhiThetaInterpol = ( iTheta ) * parPtr->GetNLBDistributionPhiBins() + iPhi;
-  }
-  if ( iPhi + 1 >= parPtr->GetNLBDistributionPhiBins()
-       &&
-       iTheta + 1 < parPtr->GetNLBDistributionCosThetaBins() ){
-    phiInterpolFrac[ 0 ] = 1.0;
-    phiInterpolFrac[ 1 ] = 0.0;
-    cosThetaInterpolFrac[ 0 ] = 1.0; 
-    cosThetaInterpolFrac[ 1 ] = 0.0;
-    return parPtr->GetLBDistributionPar( iLBDist );
-    //iLBDistPhiInterpol = iTheta * parPtr->GetNLBDistributionPhiBins() + iPhi;
-    //iLBDistPhiThetaInterpol =  ( iTheta + 1 ) * parPtr->GetNLBDistributionPhiBins() + iPhi;
-  }
-  if ( iPhi + 1 < parPtr->GetNLBDistributionPhiBins()
-       &&
-       iTheta + 1 >= parPtr->GetNLBDistributionCosThetaBins() ){ 
-    phiInterpolFrac[ 0 ] = 1.0;
-    phiInterpolFrac[ 1 ] = 0.0;
-    cosThetaInterpolFrac[ 0 ] = 1.0; 
-    cosThetaInterpolFrac[ 1 ] = 0.0;
-    return parPtr->GetLBDistributionPar( iLBDist );
-    //iLBDistPhiThetaInterpol = ( iTheta ) * parPtr->GetNLBDistributionPhiBins() + ( iPhi + 1 );
-    //iLBDistThetaInterpol = ( iTheta ) * parPtr->GetNLBDistributionPhiBins() + iPhi;
-  }
-
-  Float_t phiVal = ( ( phi + TMath::Pi() ) / ( 2 * TMath::Pi() ) * parPtr->GetNLBDistributionPhiBins() );
-  Float_t cosThetaVal = ( ( 1 + cosTheta ) / 2.0 * parPtr->GetNLBDistributionCosThetaBins() );
-
-  Float_t fracPhi = phiVal - floor( phiVal );
-  Float_t fracTheta = cosThetaVal - floor( cosThetaVal );
-  Float_t valXX = parPtr->GetLBDistributionPar( iLBDist );
-  Float_t valXY = parPtr->GetLBDistributionPar( iLBDistPhiInterpol );
-  Float_t valYX = parPtr->GetLBDistributionPar( iLBDistThetaInterpol );
-  Float_t valYY = parPtr->GetLBDistributionPar( iLBDistPhiThetaInterpol );
-
-  Float_t partOne = ( 1.0 - fracPhi ) * ( ( 1.0 - fracTheta )*valXX + fracTheta*valXY );
-  Float_t partTwo = fracPhi * ( ( 1.0 - fracTheta )*valYX + fracTheta*valYY );
-
-  phiInterpolFrac[ 0 ] = ( 1.0 - fracPhi ) * ( 1.0 - fracTheta );
-  phiInterpolFrac[ 1 ] = ( 1.0 - fracPhi ) * fracTheta;
-  cosThetaInterpolFrac[ 0 ] = fracPhi * ( 1.0 - fracTheta ); 
-  cosThetaInterpolFrac[ 1 ] = fracPhi * fracTheta;
-
-  return partOne + partTwo;
-  //return partOne + partTwo;
-
-  // phiInterpolFrac[ 0 ] = ( ceil( phiVal ) - phiVal ) / ( ceil( phiVal ) - floor( phiVal ) );
-  // phiInterpolFrac[ 1 ] = ( phiVal - floor( phiVal ) ) / ( ceil( phiVal ) - floor( phiVal ) );
-  // cosThetaInterpolFrac[ 0 ] = ( ceil( cosThetaVal ) - cosThetaVal ) / ( ceil( cosThetaVal ) - floor ( cosThetaVal ) );
-  // cosThetaInterpolFrac[ 1 ] = ( cosThetaVal - floor( cosThetaVal ) ) / ( ceil( cosThetaVal ) - floor ( cosThetaVal ) );
-  
-  if ( !parPtr->GetParametersVary()[ parPtr->GetLBDistributionParIndex() + iLBDist ]
-       || !parPtr->GetParametersVary()[ parPtr->GetLBDistributionParIndex() + iLBDistPhiInterpol ]
-       || !parPtr->GetParametersVary()[ parPtr->GetLBDistributionParIndex() + iLBDistThetaInterpol ]
-       || !parPtr->GetParametersVary()[ parPtr->GetLBDistributionParIndex() + iLBDistPhiThetaInterpol ]
-       || std::isnan( phiInterpolFrac[ 0 ] * phiInterpolFrac[ 1 ] * cosThetaInterpolFrac[ 0 ] * cosThetaInterpolFrac[ 1 ] )
-       || iLBDist == iLBDistPhiInterpol
-       || iLBDist == iLBDistThetaInterpol 
-       || iLBDist == iLBDistPhiThetaInterpol
-       || iLBDistPhiInterpol == iLBDistThetaInterpol
-       || iLBDistPhiInterpol == iLBDistPhiThetaInterpol
-       || iLBDistThetaInterpol == iLBDistPhiThetaInterpol ){
-    
-    phiInterpolFrac[ 0 ] = 1.0;
-    phiInterpolFrac[ 1 ] = 0.0;
-    cosThetaInterpolFrac[ 0 ] = 1.0;
-    cosThetaInterpolFrac[ 1 ] = 0.0;
-    parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDist );
-    return parPtr->GetLBDistributionPar( iLBDist );
-    
-  }
-
-  // We do interpolation
-  else{
-    
-    Float_t valXY1 = ( phiInterpolFrac[ 0 ] ) * ( parPtr->GetLBDistributionPar( iLBDist ) )
-      + ( phiInterpolFrac[ 1 ] ) * ( parPtr->GetLBDistributionPar( iLBDistPhiInterpol ) );
-    Float_t valXY2 = ( phiInterpolFrac[ 0 ] ) * ( parPtr->GetLBDistributionPar( iLBDistThetaInterpol ) )
-      + ( phiInterpolFrac[ 1 ] ) * ( parPtr->GetLBDistributionPar( iLBDistPhiThetaInterpol ) );
-    
-    // Final interpolation
-    Float_t interpolVal = cosThetaInterpolFrac[ 0 ] * valXY1 + cosThetaInterpolFrac[ 1 ] * valXY2;
-    
-    if ( phiInterpolFrac[ 0 ] * cosThetaInterpolFrac[ 0 ] != 0.0 ){
-      parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDist );
-    }
-    if ( phiInterpolFrac[ 1 ] * cosThetaInterpolFrac[ 0 ] >= 0.0 ){
-      parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDistPhiInterpol );
-    }
-    if ( phiInterpolFrac[ 0 ] * cosThetaInterpolFrac[ 1 ] >= 0.0 ){
-      parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDistThetaInterpol );
-    }
-    if ( phiInterpolFrac[ 1 ] * cosThetaInterpolFrac[ 1 ] >= 0.0 ){
-      parPtr->GetCurrentLBDistributionBins()->push_back( parPtr->GetLBDistributionParIndex() + iLBDistPhiThetaInterpol );
-    }
-    //cout << "interpolVal is: " << interpolVal << endl;
-    return interpolVal;
-    //return parPtr->GetLBDistributionPar( iLBDist );
-    
-  }
-  
-  // // Obtain the laserball isotropy distribution parameter associated
-  // // with this bin and return it.
-  // Float_t laserlight = parPtr->GetLBDistributionPar( iLBDist );
-  // return laserlight;
   
 }
 
@@ -976,16 +844,6 @@ Float_t OCAOpticsModel::ModelLBDistributionMask( const OCAPMT& dataPoint, std::s
   // Initialise the mask value to 1.0 to begin with.
   Float_t onePlus = 1.0 + cos( lbRelTheta );
   Float_t polynomialVal = 1.0;
-  //Loop through all the laserball mask parameters
-  //performing the summation of different degree terms
-  //The degree will run from 1 to NLBDistributionMaskParameters.
-  // for ( Int_t iPar = parPtr->GetNLBDistributionMaskParameters() - 1; 
-  //       iPar >= 0; 
-  //       iPar-- ){
-
-  //   polynomialVal = polynomialVal * onePlus + parPtr->GetLBDistributionMaskPar( iPar );
-  //   cout << "polynomialVal is: " << polynomialVal << endl;
-  // }
 
   for ( Int_t iPar = 1; iPar < parPtr->GetNLBDistributionMaskParameters(); iPar++ ){
     polynomialVal += parPtr->GetLBDistributionMaskPar( iPar ) * TMath::Power( onePlus, iPar );
