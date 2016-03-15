@@ -7,13 +7,13 @@ pass: 0,
 comment: "",
 timestamp: "",
 
-// This is the directory path in $OCA_ROOT/data/runs/ocarun/*data_set*
+// This is the directory path in $OCA_SNOPLUS_ROOT/data/runs/ocarun/*data_set*
 // where to find the OCA-run files.
-data_set: "labppote0p3perylene/oct15",
+data_set: "oct03",
 
 // This is the name of the fit file to be written to the
 // $OCA_ROOT/output/fits directory
-fit_name: "oct15_labppote0p3perylene_369",
+fit_name: "oct03_d2osin_337",
 
 // For reference, this is a list of the possible systematics
 // which can be calculated via the 'oca2fit' -b options
@@ -32,7 +32,8 @@ fit_name: "oct15_labppote0p3perylene_369",
 //        "laserball_distribution_flat"
 //        "chi_square_lim_16"
 //        "chi_square_lim_9"
-//        "pmt_to_pmt_variability" // require oca2fit '-v' option
+//        "pmt_to_pmt_variability" // Requires 'oca2fit -c...', 'oca2fit -v...'
+//        "distance_to_pmt"
 
 }
 
@@ -46,13 +47,12 @@ pass: 0,
 comment: "",
 timestamp: "",
 
-run_ids: [ 336901, 336902, 336903, 336904, 336905, 336906, 
-336907, 336908, 336909, 3369010, 3369011, 3369012, 
-3369013, 3369014, 3369015, 3369016, 3369017, 3369018, 
-3369019, 3369020, 3369021, 3369022, 3369023, 3369024, 
-3369025, 3369026, 3369027, 3369028, 3369029, 3369030, 
-3369031, 3369032, 3369033, 3369034, 3369035, 3369036, 
-3369037, 3369038, 3369039 ], 
+run_ids: [ 34772, 34786, 34788, 34812, 34907, 34930, 
+34934, 35003, 34814, 34905, 34984, 34982, 
+35019, 34883, 34881, 34867, 34830, 35142, 
+35140, 35077, 35098, 35232, 35163, 35161, 
+35100, 35118, 35230, 34721, 34713, 34737 ], 
+
 
 }
 
@@ -65,7 +65,7 @@ pass: 0,
 comment: "",
 timestamp: "",
 
-filter_list: [ "filter_prompt_counts", "filter_ctr_prompt_counts", "filter_chi_square", "filter_mpe_occupancy", "filter_mpe_ctr_occupancy" ],
+filter_list: [ "filter_prompt_counts", "filter_ctr_prompt_counts", "filter_chi_square", "filter_fractional_error" ],
 
 filter_mpe_occupancy_min: 0.01,
 filter_mpe_occupancy_max: 0.06,
@@ -73,10 +73,10 @@ filter_mpe_occupancy_max: 0.06,
 filter_mpe_ctr_occupancy_min: 0.02,
 filter_mpe_ctr_occupancy_max: 0.05,
 
-filter_prompt_counts_min: 1000.0,
+filter_prompt_counts_min: 500.0,
 filter_prompt_counts_max: 2.0e10,
 
-filter_ctr_prompt_counts_min: 4000.0,
+filter_ctr_prompt_counts_min: 2000.0,
 filter_ctr_prompt_counts_max: 2.0e10,                      
 
 filter_chi_square_min: 0.0,
@@ -85,8 +85,8 @@ filter_chi_square_max: 1000.0,
 filter_dynamic_residual_min: 0.0,
 filter_dynamic_residual_max: 10.0,
 
-filter_fractional_error_min: 0.000001,
-filter_fractional_error_max: 0.03,
+filter_fractional_error_min: 0.0,
+filter_fractional_error_max: 0.25,
 
 }
 
@@ -127,7 +127,7 @@ inner_av_extinction_length_initial_value: 3.0e-05,
 inner_av_extinction_length_vary: 1,
 
 // The extinction length of the av volume in mm-1
-acrylic_extinction_length_initial_value: 2.06389417871832848e-03,
+acrylic_extinction_length_initial_value: 5.66896749660372734e-03,
 
 // Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
 acrylic_extinction_length_vary: 0,
@@ -144,20 +144,32 @@ pmt_angular_response_number_of_bins: 90,
 // Whether or not to vary the pmt angular response in the fit ( 0: Keep Fixed, 1: Vary )
 pmt_angular_response_vary: 1,
 
-//
+// Number of PMT Angular response distributions; 1 or 2. There was an
+// observed z-asymmetry which was split in a horizontal z-plane. For MC
+// data this should 1
+pmt_angular_response_n_distributions: 1,
+
+// The position of the the z-plane to separate out the different
+// angular response distributions
+pmt_angular_response_z_split: -9000.0,
+
+// Laserball distribution type (0: binned, 1: sinusoidal)
 laserball_distribution_type: 1,
 
 // The minimum number of entries required in each PMT angular response
 // bin for the parameter associated with that parameter to vary in the fit
-pmt_angular_response_min_bin_entries: 10,
+pmt_angular_response_min_bin_entries: 25,
 
-// The number of bins distributed between 0 - 360 degrees for the laserball phi distribution
+// The number of bins distributed between 0 - 360 degrees for the laserball phi distribution (for binned laserball distribution type = 0)
 laserball_distribution_number_of_phi_bins: 36,
 
-// The number of bins distributed between -1 and +1 for the CosTheta of the laserball distribution
+// The number of bins distributed between -1 and +1 for the CosTheta of the laserball distribution (for binned laserball distribution type = 0)
 laserball_distribution_number_of_cos_theta_bins: 12,
 
+// The number of Cos(theta_LB) slices (for sinusoidal laserball ditribution type = 1 )
 laserball_distribution_number_of_theta_slices: 24,
+
+// The number of parameters per cos(theta_LB) slice, these two parameters are usually a relative amplitude and a phase (for sinusoidal laserball distribution type = 1 )
 laserball_distribution_number_of_parameters_per_theta_slice: 2,
 
 // Whether or not to vary the laserball distribution in the fit ( 0: Keep Fixed, 1: Vary )
@@ -174,7 +186,7 @@ laserball_intensity_mask_number_of_parameters: 4,
 laserball_intensity_mask_vary: 1,
 
 // The initial value for the laserball normalisation for the off-axis runs
-// are calculate by LOCASOpticsModel::InitialiseLBRunNormalisations
+// are calculated by LOCASOpticsModel::InitialiseLBRunNormalisations
 
 // Whether or not to vary the laserball run normalisation in the fit ( 0: Keep Fixed, 1: Vary )
 laserball_run_normalisation_vary: 1,
@@ -191,7 +203,6 @@ comment: "",
 timestamp: "",
 
 // The sequential chi-square upper limits to cut initial data-points on for each fit
-chisq_lims: [ 100.0, 50.0, 25.0, 16.0, 9.0 ],
+chisq_lims: [ 1000.0, 100.0, 50.0, 25.0, 16.0, 9.0, 9.0 ],
 
 }
-
