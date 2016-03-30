@@ -1,3 +1,16 @@
+# This file is used to convert SNO RDT files into SOC files.
+#
+# Commands are of the following form:
+# rdt2soc -r [run-id] -d [MMYY-material-directory]
+#
+# Option Descriptors:
+#      
+#     -r The run ID of the laserball run file of form "sno_<run-id>_p0.rdt"
+#     -d The name of the directory (usually ordered by date) in $OCA_SNOPLUS_DATA/runs/rdt from where to find the RDT files to be converted.
+
+# This script is for use with the example data set (SNO October 2003, RDT files) provided in
+# $OCA_SNOPLUS_DATA/runs/rdt/oct03
+
 source ${OCA_SNOPLUS_ROOT}/env_oca_snoplus.sh
 rdt2soc -r 034705 -d oct03
 rdt2soc -r 034707 -d oct03

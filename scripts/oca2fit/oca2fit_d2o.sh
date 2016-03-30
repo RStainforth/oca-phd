@@ -1,3 +1,29 @@
+# This file is used to perform the optics fit to OCARun files
+#
+# Commands are of the following form:
+# oca2fit -f [fit-file] -c/v -b [systematic branch]
+#
+# Option Descriptors:
+#      
+#     -f The name of the fit-file found in the $OCA_SNOPLUS_DATA/fitfiles directory. This defines the model parameters.
+#     -c Calculates the PMT variability function. To do this the fit is first performed without the 
+#        PMT variability error contribution to the chi-square statistic. 
+#        The parameters of the function can later be used as an estimator to the PMT variability in subsequent fits
+#        using the -v option. The function parameters are stored in the OCAModelParameterStore object saved
+#        in the $OCA_SNOPLUS_ROOT/output/fits directory.
+#     -v Include the PMT variability in the chi-square statistic for the fit to the optical model.
+#     -b The name of the systematic branch to fit the model to. 'nominal' is the main fit, all others
+#        are fits to difference systematic instances of the run.
+
+# This script is for use with the example data set (SNO October 2003, RDT files) provided in
+# $OCA_SNOPLUS_DATA/runs/rdt/oct03
+# i.e. Before running this script do the following:
+#      1) Download SNO files using the instructions in $OCA_SNOPLUS_DATA/runs/rdt/oct03
+#      2) Convert the RDT files to SOC files using $OCA_SNOPLUS_ROOT/scripts/rdt2soc/rdt2soc_oct03.sh
+#      3) Convert the SOC files to OCARun files using the scripts in $OCA_SNOPLUS_ROOT/scripts/soc2oca
+
+# After using this script the result of the fits will be found in $OCA_SNOPLUS_ROOT/output/fits
+
 source ${OCA_SNOPLUS_ROOT}/env_oca_snoplus.env
 
 # Oct03, D2O, 337 nm [SNO]
