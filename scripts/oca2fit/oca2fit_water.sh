@@ -19,8 +19,7 @@
 # $OCA_SNOPLUS_DATA/runs/soc/oct15/water
 # i.e. Before running this script do the following:
 #      1) Download SOC files using the instructions in $OCA_SNOPLUS_DATA/runs/soc/oct15/water
-#      2) Convert the RDT files to SOC files using $OCA_SNOPLUS_ROOT/scripts/rdt2soc/rdt2soc_oct03.sh
-#      3) Convert the SOC files to OCARun files using the scripts in $OCA_SNOPLUS_ROOT/scripts/soc2oca
+#      2) Convert the SOC files to OCARun files using the scripts in $OCA_SNOPLUS_ROOT/scripts/soc2oca
 
 # After using this script the result of the fits will be found in $OCA_SNOPLUS_ROOT/output/fits
 

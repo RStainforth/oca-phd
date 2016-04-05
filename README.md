@@ -3,15 +3,24 @@ OCA (SNO+ Edition)
 
 About
 ==========
-This is OCA for SNO+. OCA is designed to process SOC data files and perform a statistical fit that characterises the optical response of the SNO+ detector. It is intended for use with SOC files that contain laserball run data from either RAT or real laserball data.
+This is OCA for SNO+. OCA (Optical CAlibration) is designed to perform a statistical fit of laserball data to a model that characterises the optical response of the SNO+ detector. Primarily, this optical model quantifies the attenuation of the three main detector region materials; the inner AV region (water or scintillator), the acrylic of the AV and the outer water AV region. 
 
-SOC files are ROOT files with a specific data structure designed for use by the SNO+ optics group. Optical calibration is, in part, sought through laserball runs; periods of time for which pulses of laser light is emitted (near) isotropically throughout the detector. A single SOC file will represent a single laserball run and will contain information pertaining to the run itself; e.g. the run ID, the laser wavelength used, the position and orientation of the laserball in the detector as well as the relevant PMT information for that run. 
+OCA uses laserball data in the form of SOC (SNO+ Optical Calibration) files. SOC files summarise the run-level information at each PMT from a detector run (be it with the laserball or another source) e.g. the total number of hits at the PMT in the run. This is in contrast to the standard event-by-event information found in a standard SNO+ data file. The data on a SOC file can contain laserball data either produced in RAT by MC or collected from the actual deployment of the laserball in the detector. 
 
-OCA is intended to perform the following tasks:
+Note: OCA is also compatible with laserball data collected from the SNO experiment in the form of RDT files (ROOT Delta Time file format from SNO).
 
-    1) Process data from laserball runs i.e. the SOC files.
-    2) Output OCARun files (a repackaged SOC file with additional information used by the fit).
-    3) Using various OCARun files as input - perform the optical fit of the detector response.
+In addition to the run-level PMT information, the SOC file also contains information pertaining to the run itself; e.g. the run ID, the laser wavelength used, number of pulses, the intensity, the position and orientation of the laserball in the detector.
+
+The detector optical response is a function of wavelength (amongst other variables). Therefore, an optical fit is typically performed for laserball data at a given wavelength. A single laserball run features the laserball in a given position and orientation pulsing light throughout the detector. To sufficiently probe the angular response and attenuation coefficients many laserball runs in different locations and at different orientations are required for the fit to work correctly. The collection of laserball runs at a given wavelength (typically around ~40 runs) is called a laserball 'scan'. A collection of different wavelength 'scans' forms a complete data set. In OCA, the data is organised by data sets e.g. 40 runs at each of 337 nm, 369 nm, 385 nm, 420 nm and 505 nm (= 40 * 5 = 200 SOC files!)
+
+For SNO+ SOC files, OCA uses a two stage process to perform the optical fit:
+
+    1) SOC2OCA: OCA converts each SOC file into an OCARun file. The OCARun file is a special file format that contains further information required by the optical model in the fit e.g. path lengths through the detector regions, incident angles at the PMTs, initial direction vectors of light etc.
+    2) OCA2FIT: OCA uses the OCARun files (each OCARun file a representation of a SOC file i.e. a laserball run) to perform a statistical fit to the optical model.
+
+For SNO data there is an additional step which is first required:
+
+    0) RDT2SOC: Conversion of original SNO RDT files into the SNO+ SOC file format.
 
 
 OCARun Files
@@ -30,24 +39,24 @@ To install OCA, first, in the top directory of oca ('oca/') type:
 at the command line. The script will ask you for two pieces of information:
 
    1) The full system path to your RAT environment file.
-   2) The full system path to a directory you would like OCA utilities to temporarily store data
+   2) The full system path to a directory you would like OCA to temporarily store data.
 
 The configure script will create a new OCA environment file 'env_oca_snoplus.sh' in the top directory. When you source this new file, i.e.:
 
     source env_oca_snoplus.sh
 
-at the command line, it will also source your RAT environment file automatically from the location you specified as part of the configure script. Now move to the 'oca-plus/src' directory and type the following commands:
+at the command line, it will also source your RAT environment file automatically from the location you specified as part of the configure script. Now move ('cd') to the 'oca-plus/src' directory and type the following commands:
 
     make clean
     make
     make install 
-respectively to compile OCA and the library shared object file 'libOCA_SNO.so' and ‘libOCA_SNOPLUS.so’. OCA contains the original classes used for the SNO LOCAS code. This allows for backwards compatibility, and these classes are in the ‘libOCA_SNO.so’ shared object file. The OCA class files used for SNO+ are in the ‘libOCA_SNOPLUS.so’ shared object file.
+respectively to compile OCA and the library shared object file 'libOCA_SNO.so' and 'libOCA_SNOPLUS.so'. OCA contains the original classes used for the SNO LOCAS code. This allows for backwards compatibility, and these classes are in the 'libOCA_SNO.so' shared object file. The OCA class files used for SNO+ are in the 'libOCA_SNOPLUS.so' shared object file.
 
 Finally, replace the 'rootInit.C' file provided here with the one featured in your RAT installation top directory. This file merely ensures that RAT and OCA libraries are loaded into ROOT.
 
 Usage
 ==========
-OCA compiles three executables ‘rdt2soc', 'soc2oca', 'oca2fit’.
+OCA compiles three executables 'rdt2soc', 'soc2oca', 'oca2fit'.
 
 rdt2soc
 ==========
@@ -55,12 +64,18 @@ rdt2soc
 
 soc2oca
 ==========
-Once entries on the SOC file have been filled, 'soc2oca' will then process information from the SOC files to OCARun files. 
+
+The optical fit performs a chi-square test between an observed and model-predicted variable; the occupancy ratio. For a single PMT, the occupancy ratio is the ratio of the occupancy from an off-axis run divided by the occupancy observed at the same PMT from a central run. Therefore, to produce an OCARun file, soc2oca requires the run IDs of the off-axis (-r) and central (-c) runs. In general, the laserball position is best determined from laserball runs from the same off-axis positio, but at longer wavelengths. Hence, the 'wavelength' (-w) run ID is required also to retrieve the best estimate of the laserball position.
+
+NOTE: It is assumed the user knows that the position in the off-axis (-r) run file and the wavelength (-w) file are the same.
 
 Example usage at the command line: 
 
     soc2oca -r 123456 -c 654321 -w 987654
-Here, the '-r' argument is the main-run (SOC) file to be processed ("123456_Run.root"), '-c' is the associated central-run ("654321_Run.root") and '-w' an optional associated run at a different wavelength (in SNO, this was usually at 500 nm). The central- and wavelength-runs provide information which can be used to calculate the corrections to some of the optical parameters required for the main run file. 'soc2oca' writes a OCARun file, "123456_OCARun.root" to the 'oca-plus/data/runs/ocarun' directory. The -w option is optional.
+
+To summarise: The '-r' argument is the off-axis SOC file to be processed ("123456_Run.root"), '-c' is the associated central-run SOC file ("654321_Run.root") and '-w' an optional associated run at a different wavelength (in SNO, this was usually at 500 nm).
+
+'soc2oca' writes a OCARun file, "123456_OCARun.root" to the 'oca-plus/data/runs/ocarun' directory.
 
 oca2fit
 ==========
