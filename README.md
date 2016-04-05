@@ -148,16 +148,29 @@ soc2oca will then output a file "236901_OCARun.root" to ```${OCA_SNOPLUS_DATA}/d
 
 Currently BOTH a main-run and central-run file is required. The wavelength run files (off-axis and central) are optional.
 
-For an example of sco2oca in action see the example script in the $OCA_SNOPLUS_ROOT/scripts/soc2oca directory. 
+For an example of soc2oca in action see the example script in the $OCA_SNOPLUS_ROOT/scripts/soc2oca directory. 
 
 oca2fit
 ==========
-The 'oca2marquardt' and 'oca2minuit' executables are responsible for processing the OCARun files and implementing them into a fit of the optical response of the detector. either by using the Levenberg-Marquardt algorithm (a-la SNO) or by using ROOT's implementation of Minuit. To perform the fit, all the parameters and cut crieria are specified by a 'fitfile' which are found in 'oca-plus/data/fitfiles'. The format of the fitfiles is currently different depending on whether 'oca2mardquardt' or 'oca2minuit' is being used. For information on the format of these fitfiles, see the README.md file in the 'oca-plus/data/fitfiles' directory.
 
-Example usage of these fitting executables at the command line is as follows:
+The 'oca2fit' executable is responsible for processing the necessary OCARun files for a given wavelength scan and implementing them into a fit of the optical response of the detector by using the Levenberg-Marquardt algorithm. To perform the fit, all the parameters and cut crieria are specified by a 'fitfile' which are found in the $OCA_SNOPLUS_DATA/fitfiles directory.
 
-    oca2marquardt /path/to/marquardt_fit_file.ratdb
-    oca2minuit /path/to/minuit_fit_file.ratdb
+Commands are of the following form:
 
-Note: This executable is currently in development, if you are reading this note then it is not quite yet complete and it is likely you don't have appropriate data to fit to.
+         oca2fit -f [fit-file] -c/v -b [systematic branch]
+
+Option Descriptors:
+      
+     -f The name of the fit-file found in the $OCA_SNOPLUS_DATA/fitfiles directory. This defines the model parameters.
+     -c Calculates the PMT variability function. To do this the fit is first performed without the 
+        PMT variability error contribution to the chi-square statistic. 
+        The parameters of the function can later be used as an estimator to the PMT variability in subsequent fits
+        using the -v option. The function parameters are stored in the OCAModelParameterStore object saved
+        in the $OCA_SNOPLUS_ROOT/output/fits directory.
+     -v Include the PMT variability in the chi-square statistic for the fit to the optical model.
+     -b The name of the systematic branch to fit the model to. 'nominal' is the main fit, all others
+        are fits to difference systematic instances of the run.
+
+After oca2fit has finished the fits will be found in $OCA_SNOPLUS_ROOT/output/fits. The fit must be repeated for different systematic instances of the OCARun files. For an example of oca2fit in action see the example script in the $OCA_SNOPLUS_ROOT/scripts/oca2fit directory.
+
 
