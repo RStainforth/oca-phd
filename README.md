@@ -69,13 +69,13 @@ rdt2soc
 
 Laserball data from SNO remains accessible in the form of RDT files: one RDT file per run. These RDT files can be converted to the SOC file format by use of the 'rdt2soc' executable. This is a simple executable that takes two arguments:
 
-    ```-r: The run ID of the RDT file. 
-    -d: The directory name in $OCA_SNOPLUS_DATA/runs/rdt in which to find the RDT files.```
+    -r: The run ID of the RDT file. 
+    -d: The directory name in $OCA_SNOPLUS_DATA/runs/rdt in which to find the RDT files.
 
 NOTE: RDT files should use the following naming convention:
 
-      ```sno_<Run-ID>_p0.rdt
-      sno_<Run-ID>_p1.rdt```
+      sno_<Run-ID>_p0.rdt
+      sno_<Run-ID>_p1.rdt
 
 where ```<Run-ID>``` is the run ID of the laserball run. Some files will have both a ```_p0.rdt``` and ```_p1.rdt``` version. This denotes different passes on the data of the same run. In such cases the ```_p1.rdt``` version is used by rdt2soc to convert the data. For an example of rdt2soc in action see the example script in the $OCA_SNOPLUS_ROOT/scripts/rdt2soc directory.
 
@@ -88,26 +88,26 @@ NOTE: It is assumed the user knows that the position in the off-axis (-r) run fi
 
 The approach is as follows:
 
-    ```main-run file +             ----> soc2oca ----> OCARun File
+    main-run file +             ----> soc2oca ----> OCARun File
     central-run file +          ----> ^
     wavelength-run file +       ----> ^
-    central wavelength-run file ----> ^```
+    central wavelength-run file ----> ^
 
 The OCARun file contains all the required PMT information and corrections required for the fit for the main-run file ONLY.
 
 Commands are of the following form:
 
-    ```soc2oca -r [run-id] -c [c-run-id]
+    soc2oca -r [run-id] -c [c-run-id]
             -R [wavelength-run-id] -C [wavelength-central-run-id]
             -l [laserball-position-code]
             -d [MMYY-material-directory]
             -s [systematic-file-path]
-            -g [geometry-option]```
+            -g [geometry-option]
 
 Option Descriptors:
 Note: When specfying runs, 'soc2oca' searches in $OCA_SNOPLUS_DATA/runs/soc/[MMYY-material-directory]
 
-     ```-r The run ID of the off-axis laserball run SOC file of form "<run-id>_Run.root"
+     -r The run ID of the off-axis laserball run SOC file of form "<run-id>_Run.root"
      -c The run ID of the central laserball run SOC file of form "<c-run-id>_Run.root"
      -R The run ID of the off-axis laserball run SOC file from the wavelength run of form "<wavelength-run-id>_Run.root"
      -C The run ID of the central laserball run SOC file from the wavelength run of form "<wavelength-central-run-id>_Run.root"
@@ -134,11 +134,11 @@ Note: When specfying runs, 'soc2oca' searches in $OCA_SNOPLUS_DATA/runs/soc/[MMY
             water - SNO+ detector with inner AV filled with water
             labppo - SNO+ detector with inner AV filled with LABPPO
             labppote0p3perylene - SNO+ detector with inner AV filled with LABPPO+0.3%Te+Perylene
-            labppote0p3bismsb - SNO+ detector with inner AV filled with LABPPO+0.3%Te+Bis-MSB```
+            labppote0p3bismsb - SNO+ detector with inner AV filled with LABPPO+0.3%Te+Bis-MSB
 
 Example Usage (at command line):
 
-     ```soc2oca -r 236901 -c 2369039 -R 250501 -C 2505039 -l 44 -d oct15/water -s water_369.ocadb -g water```
+     soc2oca -r 236901 -c 2369039 -R 250501 -C 2505039 -l 44 -d oct15/water -s water_369.ocadb -g water
 
 The above takes the SOC run (236901)[-r] from ${OCA_SNOPLUS_DATA}/data/runs/(oct15/water)[-d] and normalises it against the central run (2369039)[-c].
 
