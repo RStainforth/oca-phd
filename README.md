@@ -35,8 +35,7 @@ Installation
 ==========
 To begin you will want to clone this repository. Assuming 'git' is installed on your computer, this is done by typing the following:
    
-   git clone -b oca-snoplus git@github.com:snoplus/oca.git
-
+   $ git clone -b oca-snoplus git@github.com:snoplus/oca.git
 To install OCA, in the top directory of ('oca/') type: 
 
     ./configure 
