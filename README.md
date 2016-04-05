@@ -51,7 +51,7 @@ The configure script will create a new OCA environment file 'env_oca_snoplus.sh'
 
     source env_oca_snoplus.sh
 
-at the command line, it will also source your RAT environment file automatically from the location you specified as part of the configure script. Now move ('cd') to the 'oca-plus/src' directory and type the following commands:
+at the command line, it will also source your RAT environment file automatically from the location you specified as part of the configure script. Now move ('cd') to the 'oca/src' directory and type the following commands:
 
     make clean
     make
@@ -66,7 +66,18 @@ OCA compiles three executables 'rdt2soc', 'soc2oca', 'oca2fit'. These are now de
 
 rdt2soc
 ==========
-*To be written*
+
+Laserball data from SNO remains accessible in the form of RDT files: one RDT file per run. These RDT files can be converted to the SOC file format by use of the 'rdt2soc' executable. This is a simple executable that takes two arguments:
+
+    ```-r: The run ID of the RDT file. 
+    -d: The directory name in $OCA_SNOPLUS_DATA/runs/rdt in which to find the RDT files.```
+
+NOTE: RDT files should use the following naming convention:
+
+      ```sno_<Run-ID>_p0.rdt
+      sno_<Run-ID>_p1.rdt```
+
+where ```<Run-ID>``` is the run ID of the laserball run. Some files will have both a ```_p0.rdt``` and ```_p1.rdt``` version. This denotes different passes on the data of the same run. In such cases the ```_p1.rdt``` version is used by rdt2soc to convert the data. For an example of rdt2soc in action see the example script in the $OCA_SNOPLUS_ROOT/scripts/rdt2soc directory.
 
 soc2oca
 ==========
@@ -75,13 +86,69 @@ The optical fit performs a chi-square test between an observed and model-predict
 
 NOTE: It is assumed the user knows that the position in the off-axis (-r) run file and the wavelength (-w) file are the same.
 
-Example usage at the command line: 
+The approach is as follows:
 
-    soc2oca -r 123456 -c 654321 -w 987654
+    ```main-run file +             ----> soc2oca ----> OCARun File
+    central-run file +          ----> ^
+    wavelength-run file +       ----> ^
+    central wavelength-run file ----> ^```
 
-To summarise: The '-r' argument is the off-axis SOC file to be processed ("123456_Run.root"), '-c' is the associated central-run SOC file ("654321_Run.root") and '-w' an optional associated run at a different wavelength (in SNO, this was usually at 500 nm).
+The OCARun file contains all the required PMT information and corrections required for the fit for the main-run file ONLY.
 
-'soc2oca' writes a OCARun file, "123456_OCARun.root" to the 'oca-plus/data/runs/ocarun' directory.
+Commands are of the following form:
+
+    ```soc2oca -r [run-id] -c [c-run-id]
+            -R [wavelength-run-id] -C [wavelength-central-run-id]
+            -l [laserball-position-code]
+            -d [MMYY-material-directory]
+            -s [systematic-file-path]
+            -g [geometry-option]```
+
+Option Descriptors:
+Note: When specfying runs, 'soc2oca' searches in $OCA_SNOPLUS_DATA/runs/soc/[MMYY-material-directory]
+
+     ```-r The run ID of the off-axis laserball run SOC file of form "<run-id>_Run.root"
+     -c The run ID of the central laserball run SOC file of form "<c-run-id>_Run.root"
+     -R The run ID of the off-axis laserball run SOC file from the wavelength run of form "<wavelength-run-id>_Run.root"
+     -C The run ID of the central laserball run SOC file from the wavelength run of form "<wavelength-central-run-id>_Run.root"
+     -l The laserball position to be used. Option is of form 'XY' X: off-axis run, Y: central run. Several options are available:
+                   X : Off-Axis run laserball position.
+                     X = 1 : Off-Axis manipulator laserball position 
+                     X = 2 : Off-Axis camera laserball position [placeholder, not currently in]
+                     X = 3 : Off-Axis fitted laserball position
+                     X = 4 : Off-Axis fitted laserball position from wavelength run (-R option)
+
+                   Y : Central run laserball position.
+                     Y = 1 : Central manipulator laserball position
+                     Y = 2 : Central camera laserball position [placeholder, not currently in]
+                     Y = 3 : Central fitted laserball position
+                     Y = 4 : Central fitted laserball position from wavelength run (-C option)
+
+     -d The name of the directory (usually ordered by date) in $OCA_SNOPLUS_ROOT/data/runs/soc from where to find the SOC files to be converted.
+     -s The name of the systematic file (from which the systematic variations are applied) found in $OCA_SNOPLUS_DATA/systematics
+     -g The geometry option. Throughout SNO and SNO+ the PMT positions or orientations may have changed. Therefore, this needs to be specfied 
+        such that the correct detector state is used. In addition, calculation of shadowing requires knowledge of the detector geometry. 
+        For example, in SNO, there were no AV hold-down ropes but in SNO+ there are. The geometry option also determines the inner AV 
+        material such that the correct group velocties are used. The current options are as follows:
+            sno - The SNO detector geometry (no AV hold-down ropes)
+            water - SNO+ detector with inner AV filled with water
+            labppo - SNO+ detector with inner AV filled with LABPPO
+            labppote0p3perylene - SNO+ detector with inner AV filled with LABPPO+0.3%Te+Perylene
+            labppote0p3bismsb - SNO+ detector with inner AV filled with LABPPO+0.3%Te+Bis-MSB```
+
+Example Usage (at command line):
+
+     ```soc2oca -r 236901 -c 2369039 -R 250501 -C 2505039 -l 44 -d oct15/water -s water_369.ocadb -g water```
+
+The above takes the SOC run (236901)[-r] from ${OCA_SNOPLUS_DATA}/data/runs/(oct15/water)[-d] and normalises it against the central run (2369039)[-c].
+
+The positions used for laserball in both cases is the fitted one from their respective wavelength run counterparts (44)[-l]; (250501)[-R] and (2505039)[-C] runs respectively. Systematics are added in separate branches on the OCARun ROOT tree as declared in water_369.ocadb[-s]. Light path information will use the group velocities of a water filled SNO+ detector[-g].
+
+soc2oca will then output a file "236901_OCARun.root" to ```${OCA_SNOPLUS_DATA}/data/runs/ocarun/oct15/water``` 
+
+Currently BOTH a main-run and central-run file is required. The wavelength run files (off-axis and central) are optional.
+
+For an example of sco2oca in action see the example script in the $OCA_SNOPLUS_ROOT/scripts/soc2oca directory. 
 
 oca2fit
 ==========
@@ -93,14 +160,4 @@ Example usage of these fitting executables at the command line is as follows:
     oca2minuit /path/to/minuit_fit_file.ratdb
 
 Note: This executable is currently in development, if you are reading this note then it is not quite yet complete and it is likely you don't have appropriate data to fit to.
-
-OCA Utilities
-==========
-The 'oca-plus/util/' directory stores various scripts which could be useful for OCA. See the individual README.md files in each of the aforementioned subdirectories for more information.
-
-
-NOTES
-==========
-
-1) Currently, by default OCA will search for SOC files in the 'oca-plus/data/runs/soc' directory. The SOC files should be named by run ID, i.e. for the laserball run with run id '123456', the associated SOC file should be named '123456_Run.root' and located in the 'oca-plus/data/runs/soc' directory. Once processed, OCA will output the OCARun files to 'oca-plus/data/runs/ocarun' and will write filenames of the form '123456_OCARun.root'.
 
