@@ -43,9 +43,9 @@ To install OCA, in the top directory of ('oca/') type:
 at the command line. The script will ask you for two pieces of information:
 
    1. The full system path to your RAT environment file.
-   2. The full system path to a directory you would like OCA to temporarily store data.
+   2. Your SNOLAB username (if you have one)
 
-Note: By 'full system path' I mean no use of '~' to denote your home directory. 
+Note: By 'full system path' I mean no use of '~' to denote your home directory. The username is simply required to download the example data sets. These are currently stored at science1.snolab.ca. 
 
 The configure script will create a new OCA environment file 'env_oca_snoplus.sh' in the top directory. When you source this new file, i.e.:
 
