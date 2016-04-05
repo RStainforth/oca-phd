@@ -1,12 +1,12 @@
-data/runs/rdt/oct03
+data/runs/ocarun/oct03
 ==========
 
 About
 ==========
-This directory contains the 'rdt' files for the October 2003 salt laserball scans from SNO. The 'rdt' files are required to be converted to the SOC file format using the 'rdt2soc' executable, see the $OCA_SNOPLUS_ROOT/scripts/rdt2soc directory.
+This directory contains the OCARun files for the October 2003 laserball scans from SNO. OCARun files can be found here once the original SNO RDT files in ${OCA_SNOPLUS_DATA/runs/rdt/oct03 have been converted to SOC files, and then once those SOC files have been converted to OCARun files.
 
-The rdt files can be downloaded from here:
-science1.snolab.ca:/users/rstainforth/rdt/oct03
+See the scripts in the following directories for further information:
 
-To download these files, run the download_oct03_rdt.sh script in this directory
+    1) ${OCA_SNOPLUS_ROOT}/scripts/rdt2soc - RDT to SOC conversion
+    2) ${OCA_SNOPLUS_ROOT}/scripts/soc2oca - SOC to OCARun conversion
 
