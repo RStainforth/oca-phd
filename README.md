@@ -15,12 +15,12 @@ The detector optical response is a function of wavelength (amongst other variabl
 
 For SNO+ SOC files, OCA uses a two stage process to perform the optical fit:
 
-    1) SOC2OCA: OCA converts each SOC file into an OCARun file. The OCARun file is a special file format that contains further information required by the optical model in the fit e.g. path lengths through the detector regions, incident angles at the PMTs, initial direction vectors of light etc.
-    2) OCA2FIT: OCA uses the OCARun files (each OCARun file a representation of a SOC file i.e. a laserball run) to perform a statistical fit to the optical model.
+    1. SOC2OCA: OCA converts each SOC file into an OCARun file. The OCARun file is a special file format that contains further information required by the optical model in the fit e.g. path lengths through the detector regions, incident angles at the PMTs, initial direction vectors of light etc.
+    2. OCA2FIT: OCA uses the OCARun files (each OCARun file a representation of a SOC file i.e. a laserball run) to perform a statistical fit to the optical model.
 
 For SNO data there is an additional step which is first required:
 
-    0) RDT2SOC: Conversion of original SNO RDT files into the SNO+ SOC file format.
+    0. RDT2SOC: Conversion of original SNO RDT files into the SNO+ SOC file format.
 
 
 OCARun Files
@@ -42,8 +42,8 @@ To install OCA, in the top directory of ('oca/') type:
     ./configure 
 at the command line. The script will ask you for two pieces of information:
 
-   1) The full system path to your RAT environment file.
-   2) The full system path to a directory you would like OCA to temporarily store data.
+   1. The full system path to your RAT environment file.
+   2. The full system path to a directory you would like OCA to temporarily store data.
 
 Note: By 'full system path' I mean no use of '~' to denote your home directory. 
 
