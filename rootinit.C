@@ -12,16 +12,13 @@
   cout << "RAT: Libraries loaded." << endl;
   gSystem->AddIncludePath(" -I$RATROOT/include");
 	
-  char *OCASNOPLUSROOT = getenv("OCA_SNOPLUS_ROOT");
-  if (OCASNOPLUSROOT != NULL) {
+  string OCASNOPLUSROOT = getenv("OCA_SNOPLUS_ROOT");
+  if ( OCASNOPLUSROOT != "" ){
 	gSystem->Load("libOCA_SNOPLUS.so");
 	cout << "OCA-SNOPLUS: Libraries loaded." << endl;
-  }
-
-  char *OCASNOROOT = getenv("OCA_SNO_ROOT");
-  if (OCASNOROOT != NULL) {
 	gSystem->Load("libOCA_SNO.so");
 	cout << "OCA-SNO: Libraries loaded." << endl;
+    gSystem->AddIncludePath(" -I$OCA_SNOPLUS_ROOT/include");
   }
 
 }
