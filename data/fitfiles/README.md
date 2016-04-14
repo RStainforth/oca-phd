@@ -6,64 +6,256 @@ These files are used by the 'oca2fit' executable to perform the optics fit.
 oca2fit fitfile
 ==========
 
-When fitting data, the options for the fit are provided in the fit files contained here. The entries on the fit file are as follows:
+When fitting data, the options for the fit are provided in the fit files contained here. An annoted example of a fit file follows:
 
-     fit_name - Name of the Fit
-     fit_title - Title of the FIt
-     
-     runs_ids - A list of the run IDs to include in the fit
+{
+type : "FITFILE",
+index: "fit_setup",
+version: 1,
+run_range: [0, 0],
+pass: 0,
+comment: "",
+timestamp: "",
 
-     lb_dist_n_theta_bins - Number of Theta bins for the Laserball distribution
-     lb_dist_n_phi_bins - Number of Phi bins for the laserball distribution
+// This is the directory path in $OCA_ROOT/data/runs/ocarun/<data_set>
+// where to find the OCA-run files.
+data_set: "oct15/water",
+// This is the name of the fit file (<fit_name>.root) to 
+// be written to the $OCA_ROOT/output/fits directory
+fit_name: "oct15_watersin_337",
 
-     ang_resp_n_bins - Number of angular response bins (0 - 90 degrees)
+// For reference, this is a list of the possible systematics
+// which can be calculated via the 'oca2fit' -b options
+// for systematic fits:
+//        "nominal"
+//        "laserball_r_scale"
+//        "laserball_r_shift"
+//        "laserball_plus_x_shift"
+//        "laserball_minus_x_shift"
+//        "laserball_plus_y_shift"
+//        "laserball_minus_y_shift"
+//        "laserball_plus_z_shift"
+//        "laserball_minus_z_shift"
+//        "lambda_plus_shift"
+//        "lambda_minus_shift"
+//        "laserball_distribution2"
+//        "laserball_distribution_flat"
+//        "chi_square_lim_16"
+//        "chi_square_lim_9"
+//        "pmt_to_pmt_variability"
+//        "distance_to_pmt"
 
-     lb_dist_min_n_pmts - Minimum number of entries per laserball distribution bin
-     ang_resp_min_n_pmts - Minimum number of entires per angular response distribution bin
+}
 
-     cut_chisq_max - Initial maximum value of single PMT chisquare to cut on
-     cut_chisq_min - Initial minimum value of single PMT chisquare to cut on
 
-     cut_n_sigma - Number of sigma PMT must be within mean occupancy for it's respective run
-     cut_n_chisquare - Initial number of total reduced chisquare PMT must be within
+{
+type: "FITFILE",
+index: "run_setup",
+version: 1,
+run_range: [0, 0],
+pass: 0,
+comment: "",
+timestamp: "",
 
-     cut_n_occupancy - Minimum occupancy PMT must have in both off-axis and central runs
+// List of the run-IDs of the OCARun files to include in the fit.
+run_ids: [ 233701, 233702, 233703, 233704, 233705, 233706, 
+233707, 233708, 233709, 2337010, 2337011, 2337012, 
+2337013, 2337014, 2337015, 2337016, 2337017, 2337018, 
+2337019, 2337020, 2337021, 2337022, 2337023, 2337024, 
+2337025, 2337026, 2337027, 2337028, 2337029, 2337030, 
+2337031, 2337032, 2337033, 2337034, 2337035, 2337036, 
+2337037, 2337038, 2337039 ], 
 
-     cut_avhd_sh_min - Minimum relative shadowing value for PMT from AVHD ropes
-     cut_avhd_sh_max - Maximum relative shadowing value for PMT from AVHD ropes
+}
 
-     cut_geo_sh_min - Minimum relative shadowing value for PMT from enveloping detector geometry around AV
-     cut_geo_sh_max - Maximum relative shadowing value for PMT from enveloping detector geometry around AV
+{
+type: "FITFILE",
+index: "filter_setup",
+version: 1,
+run_range: [0, 0],
+pass: 0,
+comment: "",
+timestamp: "",
 
-     cut_chs_flag - Value of CHS flag to cut on (0 or 1)
-     cut_css_flag - Value of CSS flag to cut on (0 or 1)
+// The list of filters to include in the fit. Only those
+// specified in the array are included.
+filter_list: [ "filter_prompt_counts", "filter_ctr_prompt_counts",
+"filter_chi_square", "filter_fractional_error" ],
 
-     n_pmts_skip - Number of PMTs to skip over in final data set to speed up minimisation
+// Min and max values are the lower and upper
+// limits of values for data to be cut on.
 
-     scint_vary - Whether the scintillator region material attenuation length should vary in the fit (0 or 1)
-     scint_init - Initial value for (1/attenuation) length [1/mm]
+filter_mpe_occupancy_min: 0.01,
+filter_mpe_occupancy_max: 0.06,
 
-     av_vary - Whether the AV region material attenuation length should vary in the fit (0 or 1)
-     av_init - Initial value for (1/attenuation) length [1/mm]
+filter_mpe_ctr_occupancy_min: 0.02,
+filter_mpe_ctr_occupancy_max: 0.05,
 
-     water_vary - Whether the water region material attenuation length should vary in the fit (0 or 1)
-     water_init - Initial value for (1/attenuation) length [1/mm]
+filter_prompt_counts_min: 900.0,
+filter_prompt_counts_max: 2.0e10,
 
-     scint_rs_vary - Whether the scintillator region material Rayleigh scattering length should vary in the fit (0 or 1)
-     scint_rs_init - Initial value for (1/Rayleigh scattering) length [1/mm]
+filter_ctr_prompt_counts_min: 4000.0,
+filter_ctr_prompt_counts_max: 2.0e10,                      
 
-     av_rs_vary - Whether the AV region material Rayleigh scattering length should vary in the fit (0 or 1)
-     av_rs_init - Initial value for (1/Rayleigh scattering) length [1/mm]
+filter_chi_square_min: 0.0,
+filter_chi_square_max: 1000.0,
 
-     water_rs_vary - Whether the water region material Rayleigh scattering length should vary in the fit (0 or 1)
-     water_rs_init - Initial value for (1/Rayleigh scattering) length [1/mm]
+filter_dynamic_residual_min: 0.0,
+filter_dynamic_residual_max: 10.0,
 
-     lb_dist_vary - Whether the laserball distribution should vary in the fit
-     lb_dist_init - The inital values for the laserball distribution bins
+filter_fractional_error_min: 0.0,
+filter_fractional_error_max: 0.25,
 
-     ang_resp_vary - Whether the angular response distribution should vary in the fit
-     ang_resp_init - The initial values for the angular response distribution bins
+}
 
-     run_norm_vary - Whether the individual run normalisations should in the fit
-     run_norm_init - The initial values for all normalisations
+{
+type: "FITFILE",
+index: "bool_filter_setup",
+version: 1,
+run_range: [0, 0],
+pass: 0,
+comment: "",
+timestamp: "",
 
+filter_list: [ "filter_ctr_bad_path", "filter_bad_path" ],
+
+// Only include PMTs whose bad path flag is false (=0).
+
+filter_bad_path: 0,
+
+filter_ctr_bad_path: 0,
+
+}
+
+{
+type: "FITFILE",
+index: "parameter_setup",
+version: 1,
+run_range: [0, 0],
+pass: 0,
+comment: "",
+timestamp: "",
+
+// Is this a waterfill fit? (0: No, 1: Yes).
+// If waterfill, the inner and outer AV material regions
+// will be considered a single material.
+water_fill: 0,
+
+// This should never be changed
+parameters_list: [ "inner_av_extinction_length",
+"acrylic_extinction_length", 
+"water_extinction_length", 
+"laserball_intensity_mask", 
+"pmt_angular_response", 
+"laserball_distribution", 
+"laserball_run_normalisation" ],
+
+// The extinction length of the inner_av volume in mm-1
+inner_av_extinction_length_initial_value: 3.0e-05,
+
+// Whether or not to vary this extinction length 
+// in the fit ( 0: Keep Fixed, 1: Vary )
+inner_av_extinction_length_vary: 1,
+
+// The extinction length of the av volume in mm-1
+acrylic_extinction_length_initial_value: 5.66896749660372734e-03,
+
+// Whether or not to vary this extinction length 
+// in the fit ( 0: Keep Fixed, 1: Vary )
+acrylic_extinction_length_vary: 0,
+
+// The extinction length of the water volume in mm-1
+water_extinction_length_initial_value: 3.0e-05,
+
+// Whether or not to vary this extinction length 
+// in the fit ( 0: Keep Fixed, 1: Vary )
+water_extinction_length_vary: 1,
+
+// The number of bins distributed between 
+// 0 - 90 degrees for the PMT angular response
+pmt_angular_response_number_of_bins: 90,
+
+// Whether or not to vary the pmt angular response 
+// in the fit ( 0: Keep Fixed, 1: Vary )
+pmt_angular_response_vary: 1,
+
+// Number of PMT Angular response distributions; 1 or 2. 
+// There was an observed z-asymmetry which was 
+// split in a horizontal z-plane. For MC
+// data this should 1
+pmt_angular_response_n_distributions: 1,
+
+// The position of the the z-plane to separate out the different
+// angular response distributions
+pmt_angular_response_z_split: -9999.9,
+
+// Laserball distribution type (0: binned, 1: sinusoidal)
+laserball_distribution_type: 1,
+
+// The minimum number of entries required
+// in each PMT angular response bin for the
+// parameter associated with that parameter
+// to vary in the fit
+pmt_angular_response_min_bin_entries: 25,
+
+// The number of bins distributed between 0 - 360
+// degrees for the laserball phi distribution
+// (for binned laserball distribution type = 0)
+laserball_distribution_number_of_phi_bins: 36,
+
+// The number of bins distributed between -1 and +1 for the
+// CosTheta of the laserball distribution
+// (for binned laserball distribution type = 0)
+laserball_distribution_number_of_cos_theta_bins: 12,
+
+// The number of Cos(theta_LB) slices
+// (for sinusoidal laserball distribution type = 1)
+laserball_distribution_number_of_theta_slices: 24,
+
+// The number of parameters per cos(theta_LB) slice, 
+// these two parameters are usually a relative
+// amplitude and a phase (for sinusoidal laserball
+// distribution type = 1 )
+laserball_distribution_number_of_parameters_per_theta_slice: 2,
+
+// Whether or not to vary the laserball distribution
+// in the fit ( 0: Keep Fixed, 1: Vary )
+laserball_distribution_vary: 1,
+
+// The minimum number of laserball distribution
+// entries in each bin required for the parameter
+// associated with that bin to vary
+laserball_distribution_min_bin_entries: 10,
+
+// The degree of the polynomial mask function
+// used to model the laserball intensity
+laserball_intensity_mask_number_of_parameters: 4,
+
+// Whether or not to vary the laserball mask function
+// in the fit ( 0: Keep Fixed, 1: Vary )
+laserball_intensity_mask_vary: 1,
+
+// The initial value for the laserball normalisation for
+// the off-axis runs
+// are calculated by OCAOpticsModel::InitialiseLBRunNormalisations
+
+// Whether or not to vary the laserball run normalisation
+// in the fit ( 0: Keep Fixed, 1: Vary )
+laserball_run_normalisation_vary: 1,
+
+}
+
+{
+type: "FITFILE",
+index: "fit_procedure",
+version: 1,
+run_range: [0, 0],
+pass: 0,
+comment: "",
+timestamp: "",
+
+// The sequential chi-square upper limits to
+// cut initial data-points on for each fit
+chisq_lims: [ 1000.0, 100.0, 50.0, 25.0, 16.0, 9.0, 7.0, 7.0 ],
+
+}
