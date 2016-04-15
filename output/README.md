@@ -1,3 +1,5 @@
-Bash Scripts
+OCA Output Directory
 ==========
-These are simple bash scripts to perform 'db2soc' and 'soc2oca' en-masse. See the README.md file in the oca-plus top directory for more information about 'db2soc' and 'soc2oca'.
+Once 'oca2fit' has been called the results of the fit stored here. The fitted parameters are saved in the 'fits' directory. 
+
+For convenience, all the PMTs from all runs included in a fit are saved onto a single file known as a datastore. For each fit, two datastores are written an 'unfiltered' and 'filtered' datastore. The 'unfiltered' datastore contains all of the PMTs from all runs included in the fit prior to data selection cuts. The 'filtered' contains only those PMTs which remained at the end of the fit after all selection criteria had been applied. 
