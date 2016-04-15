@@ -12,6 +12,11 @@
   cout << "RAT: Libraries loaded." << endl;
   gSystem->AddIncludePath(" -I$RATROOT/include");
 	
+
+  // Search for the OCA envrionment variable
+  // and load the OCA libraries accordingly.
+  // Append also the include path for any future
+  // anaylsis scripts.
   string OCASNOPLUSROOT = getenv("OCA_SNOPLUS_ROOT");
   if ( OCASNOPLUSROOT != "" ){
 	gSystem->Load("libOCA_SNOPLUS.so");
@@ -20,6 +25,5 @@
 	cout << "OCA-SNO: Libraries loaded." << endl;
     gSystem->AddIncludePath(" -I$OCA_SNOPLUS_ROOT/include");
   }
-
+  
 }
-
