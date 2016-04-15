@@ -45,7 +45,7 @@ lambda_at_pmt: 620.0,
 // only when the nominal fit is available to seed the values. The systematics
 // listed here are done such that they are registered. Their values (0) are
 // dummy values such that OCADB parses them.
-lb_distribution_flat: 0.0,
-lb_distribution_squared: 0.0,
+laserball_distribution_flat: 0.0,
+laserball_distribution2: 0.0,
 
 }
