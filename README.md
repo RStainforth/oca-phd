@@ -1,6 +1,8 @@
 OCA (SNO+ Edition)
 ==========
 
+Note: Full OCA documentation detailed on DocDB in SNO+ Document 3706
+
 About
 ==========
 This is OCA for SNO+. OCA (Optical CAlibration) is designed to perform a statistical fit of laserball data to a model that characterises the optical response of the SNO+ detector. Primarily, this optical model quantifies the attenuation of the three main detector region materials; the inner AV region (water or scintillator), the acrylic of the AV and the outer AV water region. 
