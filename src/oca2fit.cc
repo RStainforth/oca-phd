@@ -464,7 +464,7 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   rawEffAvgTot /= (Float_t)nGoodPMTs;
 
 
-  TH1F* pmtEffHistoScan = new TH1F("pmt-Eff-Histo-Scan", "PMT Efficiency Histogram (Scan)", 1000.0, 0.0, 1.0 );
+  TH1F* pmtEffHistoScan = new TH1F("pmt-Eff-Histo-Scan", "PMT Efficiency Histogram (Scan)", 1000.0, 0.0, 2.0 );
   TH1F* pmtEffHistoRun = new TH1F("pmt-Eff-Histo-Run", "PMT Efficiency Histogram (Run)", 1000.0, 0.0, 1.0 );
   // This is an array used to check that no repeated PMT instances are added
   // to the final relative PMT efficiency histogram. The raw PMT efficiciencies across all runs are
@@ -507,7 +507,7 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   pmtEffHistoRun->SetTitle( "PMT Efficieny Estimators (Run)" );
 
   pmtEffHistoScan->GetXaxis()->SetTitle( "PMT Efficiency Estimator" );
-  pmtEffHistoScan->GetYaxis()->SetTitle( "Counts / 1000" );
+  pmtEffHistoScan->GetYaxis()->SetTitle( "Counts / 500" );
   pmtEffHistoScan->GetYaxis()->SetTitleOffset( 1.2 );
   pmtEffHistoScan->SetTitle( "PMT Efficieny Estimators (Scan)" );
   
