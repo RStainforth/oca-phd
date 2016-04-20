@@ -502,12 +502,12 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   }
 
   pmtEffHistoRun->GetXaxis()->SetTitle( "PMT Efficiency Estimator" );
-  pmtEffHistoRun->GetYaxis()->SetTitle( "Counts / 1000" );
+  pmtEffHistoRun->GetYaxis()->SetTitle( "Counts / 0.001" );
   pmtEffHistoRun->GetYaxis()->SetTitleOffset( 1.2 );
   pmtEffHistoRun->SetTitle( "PMT Efficieny Estimators (Run)" );
 
   pmtEffHistoScan->GetXaxis()->SetTitle( "PMT Efficiency Estimator" );
-  pmtEffHistoScan->GetYaxis()->SetTitle( "Counts / 500" );
+  pmtEffHistoScan->GetYaxis()->SetTitle( "Counts / 0.002" );
   pmtEffHistoScan->GetYaxis()->SetTitleOffset( 1.2 );
   pmtEffHistoScan->SetTitle( "PMT Efficieny Estimators (Scan)" );
   
