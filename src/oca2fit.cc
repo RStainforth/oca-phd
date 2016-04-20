@@ -102,9 +102,9 @@ int main( int argc, char** argv ){
   OCACmdOptions Opts = ParseArguments( argc, argv );
 
   cout << "\n";
-  cout << "###############################" << endl;
+  cout << "###########################" << endl;
   cout << "###### OCA2FIT START ######" << endl;
-  cout << "###############################" << endl;
+  cout << "###########################" << endl;
   cout << "\n";
 
   /////////////////////////////////////////////////////////////
@@ -224,7 +224,7 @@ int main( int argc, char** argv ){
   }
 
   // Create a root file to store the residual plots
-  string resPlotFileName = ( lDB.GetOutputDir() + "fits/" + fitName + "-res-plots.root" );
+  string resPlotFileName = ( lDB.GetOutputDir() + "fits/" + fitName + "-pull-plots.root" );
   TFile* resPlots = NULL;
   if ( systematicName == "nominal" ){ resPlots = new TFile( resPlotFileName.c_str(), "RECREATE" ); }
   stringstream myStream;
@@ -270,21 +270,22 @@ int main( int argc, char** argv ){
       gausFit->SetLineWidth( 2 );
       resPlot->Fit( "gausFit", "r" );
       
-      cout << "Gaussian Normalisation: " << gausFit->GetParameter( 0 ) << endl;
-      cout << "Gaussian Mean: " << gausFit->GetParameter( 1 ) << endl;
-      cout << "Gaussian Sigma: " << gausFit->GetParameter( 2 ) << endl;
       cout << "---------------" << endl;
       resPlot->SetTitle( "Chi-Square Residual" );
       resPlot->GetXaxis()->SetTitle( "Occ^{model} - Occ^{dat} / #sigma" );
       resPlot->GetYaxis()->SetTitle( "Counts" );
       resPlot->GetYaxis()->SetTitleOffset( 1.2 );
-      resPlots->WriteTObject( resPlot, ( chiLimString + "-resPlot" ).c_str(), "Overwrite" );
+      resPlots->WriteTObject( resPlot, ( chiLimString + "-pullPlot" ).c_str(), "Overwrite" );
       resPlots->WriteTObject( gausFit, ( chiLimString + "-gausFit" ).c_str(), "Overwrite" );
       chiLimString.clear();
     }
   } 
 
-  if ( systematicName == "nominal" && resPlots != NULL ){ resPlots->Close(); }
+  if ( systematicName == "nominal" && resPlots != NULL ){ 
+    cout << "Chi-square pull plots have been written to:" << endl;
+    cout << resPlotFileName << endl;
+    resPlots->Close(); 
+  }
 
   lChiSq->SetPointerToData( finalStore );
   lChiSq->EvaluateGlobalChiSquare();
@@ -311,8 +312,8 @@ int main( int argc, char** argv ){
   lParStore->WriteToROOTFile( fitROOTPath, systematicName );
 
   if ( systematicName == "nominal" ){
-    string fitRATDBPath = lDB.GetOutputDir() + "fits/" + fitName + ".ratdb";
-    lParStore->WriteToRATDBFile( fitRATDBPath.c_str() );
+    string fitRATDBPath = lDB.GetOutputDir() + "fits/" + fitName + ".ocadb";
+    lParStore->WriteToOCADBFile( fitRATDBPath.c_str() );
   }
 
   if ( systematicName == "nominal" ){
@@ -321,9 +322,9 @@ int main( int argc, char** argv ){
   }
     
   cout << "\n";
-  cout << "#############################" << endl;
+  cout << "#########################" << endl;
   cout << "###### OCA2FIT END ######" << endl;
-  cout << "#############################" << endl;
+  cout << "#########################" << endl;
   cout << "\n";
   
 }
@@ -463,7 +464,13 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   rawEffAvgTot /= (Float_t)nGoodPMTs;
 
 
-  TH1F* pmtEffHisto = new TH1F("pmt-Eff-Histo", "PMT Efficiency Histogram", 1000.0, 0.0, 10.0 );
+  TH1F* pmtEffHistoScan = new TH1F("pmt-Eff-Histo-Scan", "PMT Efficiency Histogram (Scan)", 1000.0, 0.0, 1.0 );
+  TH1F* pmtEffHistoRun = new TH1F("pmt-Eff-Histo-Run", "PMT Efficiency Histogram (Run)", 1000.0, 0.0, 1.0 );
+  // This is an array used to check that no repeated PMT instances are added
+  // to the final relative PMT efficiency histogram. The raw PMT efficiciencies across all runs are
+  // included in a different histogram.
+  Int_t* uniquePMTs = new Int_t[ 10000 ];
+  for ( Int_t iVal = 0; iVal < 10000; iVal++ ){ uniquePMTs[ iVal ] = 0; }
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ){
     
       // Calculate the model prediction and the data value
@@ -471,37 +478,47 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
       modelPrediction = ocaModel->ModelPrediction( *iDP );
       dataValue = iDP->GetMPECorrOccupancy();
       pmtEff = dataValue / modelPrediction;
-      
+      pmtEffHistoRun->Fill( pmtEff ); // Add to the raw PMT efficicieny hisogram
+
+      // If we haven't filled the relative PMT efficieny across all runs
+      // for this PMT yet, add it to the scan level PMT efficieny histogram.
+      if ( uniquePMTs[ iDP->GetID() ] == 0 ){ 
+        pmtEffHistoScan->Fill( rawEffAvg[ iDP->GetID() ] / rawEffAvgTot ); 
+        uniquePMTs[ iDP->GetID() ] += 1; // Add 1 to the array to make sure we don't add this PMT a second time.
+      }
       
       // The incident angle.
       Int_t incAngle = (Int_t)( TMath::ACos( iDP->GetCosTheta() ) * TMath::RadToDeg() );
       Float_t varVal = ( ( pmtEff / rawEffAvg[ iDP->GetID() ] ) / rawEffAvgTot );
-      pmtEffHisto->Fill( varVal );
       Float_t statVal = TMath::Sqrt( 1.0 / iDP->GetPromptPeakCounts() );
-      //Float_t histoVal = TMath::Sqrt( ( varVal * varVal ) - ( statVal * statVal ) );
       Float_t histoVal = varVal;
-      cout << " varVal2 - statVal2 = histoVal2 :: " << varVal * varVal << " - " << statVal * statVal << " = " << histoVal * histoVal << endl;
-      cout << "histoVal: " << histoVal << endl;
-      cout << "--------" << endl;
       
       if ( histoVal > 0.0 && !std::isnan( pmtEff ) && !std::isinf( pmtEff ) ){
         effHistos[ incAngle ].Fill( histoVal );
-        iDP->SetRawEfficiency( pmtEff );
+        iDP->SetRunEfficiency( pmtEff );
+        iDP->SetScanEfficiency( rawEffAvg[ iDP->GetID() ] );
         effOccErr[ incAngle ].Fill( statVal );
       }
   }
 
-  pmtEffHisto->GetXaxis()->SetTitle( "PMT Efficiency Estimator" );
-  pmtEffHisto->GetYaxis()->SetTitle( "Counts / 100" );
-  pmtEffHisto->GetYaxis()->SetTitleOffset( 1.2 );
-  pmtEffHisto->SetTitle( "PMT Efficieny Estimators" );
+  pmtEffHistoRun->GetXaxis()->SetTitle( "PMT Efficiency Estimator" );
+  pmtEffHistoRun->GetYaxis()->SetTitle( "Counts / 1000" );
+  pmtEffHistoRun->GetYaxis()->SetTitleOffset( 1.2 );
+  pmtEffHistoRun->SetTitle( "PMT Efficieny Estimators (Run)" );
+
+  pmtEffHistoScan->GetXaxis()->SetTitle( "PMT Efficiency Estimator" );
+  pmtEffHistoScan->GetYaxis()->SetTitle( "Counts / 1000" );
+  pmtEffHistoScan->GetYaxis()->SetTitleOffset( 1.2 );
+  pmtEffHistoScan->SetTitle( "PMT Efficieny Estimators (Scan)" );
   
   OCADB lDB;
   string outputDir = lDB.GetOutputDir();
   string filePath = outputDir + "fits/";
   string pmtVarPlotFileName = ( filePath + fitNameStr + "-pmt-variability.root" );
+
   TFile* pmtVarPlots = new TFile( pmtVarPlotFileName.c_str(), "RECREATE" );
-  pmtVarPlots->WriteTObject( pmtEffHisto, ( fitNameStr + "-pmt-efficiencies" ).c_str(), "Overwrite" );
+  pmtVarPlots->WriteTObject( pmtEffHistoScan, ( fitNameStr + "-pmt-efficiencies-scan" ).c_str(), "Overwrite" );
+  pmtVarPlots->WriteTObject( pmtEffHistoRun, ( fitNameStr + "-pmt-efficiencies-run" ).c_str(), "Overwrite" );
 
   TGraph* myPlot = new TGraph();
   TGraph* statPlot = new TGraph();
@@ -540,6 +557,8 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   pmtVarPlots->WriteTObject( fitFunc, ( fitNameStr + "-variability-function" ).c_str(), "Overwrite" );
   pmtVarPlots->WriteTObject( statPlot, ( fitNameStr + "-stat-uncertainty" ).c_str(), "Overwrite" );
   pmtVarPlots->Close();
+  cout << "The relative PMT efficiencies and variability have been written to:" << endl;
+  cout << pmtVarPlotFileName << endl;
 
   vector< OCAPMT >::iterator iDPL;
   vector< OCAPMT >::iterator iDPBeginL = fullDataStore->GetOCAPMTsIterBegin();

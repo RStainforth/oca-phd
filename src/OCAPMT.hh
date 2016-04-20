@@ -362,8 +362,12 @@ namespace OCA{
     // Get the index of the run as this PMT appeared in the fit.
     Int_t GetRunIndex() const { return fRunIndex; }
 
-    // Get the raw efficiency estimator of the PMT as it appeared in the fit.
-    Float_t GetRawEfficiency() const { return fRawEfficiency; }
+    // Get the relative efficiency estimator of the PMT as it appeared in the run in the fit.
+    Float_t GetRunEfficiency() const { return fRunEfficiency; }
+
+    // Get the relative efficiency estimator of the PMT normalised to all run instances
+    // of this PMT in an entire scan.
+    Float_t GetScanEfficiency() const { return fScanEfficiency; }
     
     /////////////////////////////////
     ////////     SETTERS     ////////
@@ -646,8 +650,12 @@ namespace OCA{
     // Set the index of the run as this PMT appeared in the fit.
     void SetRunIndex( const Int_t runIndex ) { fRunIndex = runIndex; }
 
-    // Set the raw efficiency estimator of the PMT as it appeared in the fit.
-    void SetRawEfficiency( const Float_t rawEff ) { fRawEfficiency = rawEff; }
+    // Set the relative efficiency estimator of the PMT as it appeared in the run in the fit.
+    void SetRunEfficiency( const Float_t rawEff ) { fRunEfficiency = rawEff; }
+
+    // Set the relative efficiency estimator of the PMT normalised to all run instances
+    // of this PMT in an entire scan.
+    void SetScanEfficiency( const Float_t scanEff ){ fScanEfficiency = scanEff; }
     
   private:
     
@@ -772,7 +780,10 @@ namespace OCA{
 
     Int_t fRunIndex;                               // The index of the run as it appeared in the fit.
 
-    Float_t fRawEfficiency;                        // The raw efficiency estimator of the PMT as it appeared in the fit.
+    Float_t fRunEfficiency;                        // The relative efficiency estimator of the PMT as it appeared in the run in the fit.
+
+    Float_t fScanEfficiency;                       // The relative efficiency estimator of the PMT normalised to all run instances
+                                                   // of this PMT in an entire scan.
     
     ClassDef( OCAPMT, 1 );
     

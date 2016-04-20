@@ -24,7 +24,7 @@
 
 # After using this script the result of the fits will be found in $OCA_SNOPLUS_ROOT/output/fits
 
-source ${OCA_SNOPLUS_ROOT}/env_oca_snoplus.env
+source ${OCA_SNOPLUS_ROOT}/env_oca_snoplus.sh
 
 # Oct03, D2O, 337 nm [SNO]
 oca2fit -f oct03_d2o_337.ocadb -c -b nominal

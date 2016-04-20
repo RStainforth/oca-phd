@@ -13,7 +13,7 @@ data_set: "oct03",
 
 // This is the name of the fit file to be written to the
 // $OCA_ROOT/output/fits directory
-fit_name: "oct03_d2osin_420",
+fit_name: "oct03_d2osin_385",
 
 // For reference, this is a list of the possible systematics
 // which can be calculated via the 'oca2fit' -b options
@@ -47,11 +47,11 @@ pass: 0,
 comment: "",
 timestamp: "",
 
-run_ids: [ 34766, 34780, 34794, 34806, 34916, 34924, 
-34950, 34956, 34820, 34899, 34990, 34972, 
-35013, 34889, 34875, 34835, 35148, 35081, 
-35086, 35169, 35155, 35106, 35112, 35224, 
-34725, 34707, 34741 ], 
+run_ids: [ 34768, 34782, 34792, 34808, 34914, 34926, 
+34948, 34958, 34818, 34901, 34988, 34976, 
+35015, 34887, 34877, 34833, 35146, 35079, 
+35088, 35167, 35157, 35104, 35114, 35226, 
+35247, 34727, 34709, 34739 ], 
 
 }
 
@@ -72,10 +72,10 @@ filter_mpe_occupancy_max: 0.06,
 filter_mpe_ctr_occupancy_min: 0.02,
 filter_mpe_ctr_occupancy_max: 0.05,
 
-filter_prompt_counts_min: 1000.0,
+filter_prompt_counts_min: 600.0,
 filter_prompt_counts_max: 2.0e10,
 
-filter_ctr_prompt_counts_min: 4000.0,
+filter_ctr_prompt_counts_min: 3000.0,
 filter_ctr_prompt_counts_max: 2.0e10,                      
 
 filter_chi_square_min: 0.0,
@@ -126,7 +126,7 @@ inner_av_extinction_length_initial_value: 3.0e-05,
 inner_av_extinction_length_vary: 1,
 
 // The extinction length of the av volume in mm-1
-acrylic_extinction_length_initial_value: 8.25774099212139845e-04,
+acrylic_extinction_length_initial_value: 1.23465585056692362e-03,
 
 // Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
 acrylic_extinction_length_vary: 0,
@@ -150,7 +150,7 @@ pmt_angular_response_n_distributions: 1,
 
 // The position of the the z-plane to separate out the different
 // angular response distributions
-pmt_angular_response_z_split: -1000.0,
+pmt_angular_response_z_split: -9999.0,
 
 // Laserball distribution type (0: binned, 1: sinusoidal)
 laserball_distribution_type: 1,

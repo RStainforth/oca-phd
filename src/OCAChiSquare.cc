@@ -711,10 +711,6 @@ void OCAChiSquare::PerformOpticsFit( const Int_t passNum )
   // Get the pointer to the covariance and derivative matrices.
   Float_t** covarianceMatrix = fModel->GetOCAModelParameterStore()->GetCovarianceMatrix();
   Float_t** derivativeMatrix = fModel->GetOCAModelParameterStore()->GetDerivativeMatrix();
-
-  for ( Int_t iPar = 1; iPar <= 3; iPar++ ){
-    cout << "OCAChiSquare::PerformOpticsFit: Parameter: " << iPar << " is: " << parameters[ iPar ] << " with flag: " << parametersVary[ iPar ] << " and error: " << TMath::Sqrt( covarianceMatrix[ iPar ][ iPar ] ) << endl;
-  }
   
   // Perform the minimisation for the optics fit.
   PerformMinimisation( parameters, parametersVary, 

@@ -179,7 +179,7 @@ Int_t QPMTxyz::ReadConstants( const char * filename, const int idate, const int 
       
       if (!pmt_data.IsOpen() )
 	{
-	  printf("Error in QPMTxyz: cannont open file %s\n",pmtfile);
+	  printf("Error in QPMTxyz: cannot open file %s\n",pmtfile);
 	  exit(-1);
 	}
       fccct = (QBank *)pmt_data.Get("CCCT");

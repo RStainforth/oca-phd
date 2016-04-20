@@ -770,9 +770,9 @@ void OCAModelParameterStore::WriteToROOTFile( string& fileName,
 
   file->Close();
   delete file;
-  cout << "The OCA::OCAModelParameterStore has been written to the TTree:\n";
+  cout << "OCA::OCAModelParameterStore: The fitted parameters have been written to the TTree:\n";
   cout << ( fStoreName + "-" + branchName ) << "\n";
-  cout << "And saved to the ROOT file:\n";
+  cout << "and saved to the ROOT file:\n";
   cout << fileName << "\n";
 
 }
@@ -780,7 +780,7 @@ void OCAModelParameterStore::WriteToROOTFile( string& fileName,
 //////////////////////////////////////
 //////////////////////////////////////
 
-void OCAModelParameterStore::WriteToRATDBFile( const char* fileName )
+void OCAModelParameterStore::WriteToOCADBFile( const char* fileName )
 {
 
   ofstream roccVals;

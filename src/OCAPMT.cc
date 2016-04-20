@@ -121,7 +121,8 @@ OCAPMT::OCAPMT( const OCAPMT& rhs )
 
   fRunIndex = rhs.fRunIndex;
 
-  fRawEfficiency = rhs.fRawEfficiency;
+  fRunEfficiency = rhs.fRunEfficiency;
+  fScanEfficiency = rhs.fScanEfficiency;
 
 }
 
@@ -237,7 +238,8 @@ OCAPMT& OCAPMT::operator=( const OCAPMT& rhs )
 
   fRunIndex = rhs.fRunIndex;
 
-  fRawEfficiency = rhs.fRawEfficiency;
+  fRunEfficiency = rhs.fRunEfficiency;
+  fScanEfficiency = rhs.fScanEfficiency;
 
   return *this;
 
@@ -352,7 +354,8 @@ void OCAPMT::ClearPMT()
 
   SetRunIndex( -1 );
 
-  SetRawEfficiency( -1.0 );
+  SetRunEfficiency( -1.0 );
+  SetScanEfficiency( -1.0 );
 
 }
 
