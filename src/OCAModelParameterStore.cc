@@ -881,35 +881,35 @@ void OCAModelParameterStore::WriteToOCADBFile( const char* fileName )
     roccVals << "laserball_distribution_number_of_cos_theta_slices : " << nThetaSlices << ",\n";
     roccVals << "laserball_distribution_number_of_parameters_per_cos_theta_slice : " << nParsPerSlice << ",\n";
     roccVals << "laserball_distribution_sin_wave : [ ";
-    for ( Int_t iPar = 1; iPar <= ( nThetaSlices * nParsPerSlice ); iPar++ ){
+    for ( Int_t iPar = 0; iPar < ( nThetaSlices * nParsPerSlice ); iPar++ ){
 
-      if ( iPar % 2 == 0 && iPar == ( nThetaSlices * nParsPerSlice ) ){
+      if ( iPar % 2 == 0 && iPar == ( nThetaSlices * nParsPerSlice - 1 ) ){
         roccVals << lbDistPtr[ iPar ] << " ],\n";
       }
-      if ( iPar % 2 == 0 && iPar % 8 == 0 ){
+      if ( iPar % 2 == 0 && iPar % 8 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 ) ){
         roccVals << lbDistPtr[ iPar ] << ",\n";
       }
-      else if ( iPar % 2 == 1 ){
+      else if ( iPar % 2 == 1 && iPar < ( nThetaSlices * nParsPerSlice - 1 ) ){
         roccVals << lbDistPtr[ iPar ] << ", ";
       }
-      else if ( iPar % 2 == 0 ){
+      else if ( iPar % 2 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 ) ){
         roccVals << lbDistPtr[ iPar ] << ",     ";
       }     
       roccVals << "\n";
     }
     roccVals << "laserball_distribution_errors : [ ";
-    for ( Int_t iPar = 1; iPar <= ( nThetaSlices * nParsPerSlice ); iPar++ ){
+    for ( Int_t iPar = 0; iPar < ( nThetaSlices * nParsPerSlice ); iPar++ ){
 
-      if ( iPar % 2 == 0 && iPar == ( nThetaSlices * nParsPerSlice ) ){
+      if ( iPar % 2 == 0 && iPar == ( nThetaSlices * nParsPerSlice - 1 ) ){
         roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << " ],\n";
       }
-      if ( iPar % 2 == 0 && iPar % 8 == 0 ){
+      if ( iPar % 2 == 0 && iPar % 8 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 ) ){
         roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ",\n";
       }
-      else if ( iPar % 2 == 1 ){
+      else if ( iPar % 2 == 1 && iPar < ( nThetaSlices * nParsPerSlice - 1 ) ){
         roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ", ";
       }
-      else if ( iPar % 2 == 0 ){
+      else if ( iPar % 2 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 ) ){
         roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ",     ";
       }
     roccVals << "\n";
