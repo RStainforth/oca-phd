@@ -164,16 +164,16 @@ laserball_distribution_type: 1,
 // bin for the parameter associated with that parameter to vary in the fit
 pmt_angular_response_min_bin_entries: 25,
 
-// The number of bins distributed between 0 - 360 degrees for the laserball phi distribution (for binned laserball distribution type = 0)
+// The number of bins distributed between 0 - 360 degrees for the laserball phi distribution 
 laserball_distribution_number_of_phi_bins: 36,
 
-// The number of bins distributed between -1 and +1 for the CosTheta of the laserball distribution (for binned laserball distribution type = 0)
+// The number of bins distributed between -1 and +1 for the CosTheta of the laserball distribution 
 laserball_distribution_number_of_cos_theta_bins: 12,
 
-// The number of Cos(theta_LB) slices (for sinusoidal laserball distribution type = 1 )
+// The number of Cos(theta_LB) slices (for binned laserball distribution type = 0)
 laserball_distribution_number_of_theta_slices: 24,
 
-// The number of parameters per cos(theta_LB) slice, these two parameters are usually a relative amplitude and a phase (for sinusoidal laserball distribution type = 1 )
+// The number of parameters per cos(theta_LB) slice, these two parameters are usually a relative amplitude and a phase (for binned laserball distribution type = 0)
 laserball_distribution_number_of_parameters_per_theta_slice: 2,
 
 // Whether or not to vary the laserball distribution in the fit ( 0: Keep Fixed, 1: Vary )
