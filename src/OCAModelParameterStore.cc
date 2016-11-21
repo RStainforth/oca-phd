@@ -852,10 +852,10 @@ void OCAModelParameterStore::WriteToOCADBFile( const char* fileName )
       for ( Int_t iPhi = 0; iPhi < nPhiBins; iPhi++ ){
         if ( iTheta == nCThetaBins - 1
              && iPhi == nPhiBins - 1 ){
-          roccVals << lbDistPtr[ iTheta*nCThetaBins + iPhi ] << " ],\n";
+          roccVals << lbDistPtr[ iTheta*nPhiBins + iPhi ] << " ],\n";
         }
         else{
-          roccVals << lbDistPtr[ iTheta*nCThetaBins + iPhi ] << ", ";
+          roccVals << lbDistPtr[ iTheta*nPhiBins + iPhi ] << ", ";
         }
       }
       roccVals << "\n";
@@ -865,10 +865,10 @@ void OCAModelParameterStore::WriteToOCADBFile( const char* fileName )
       for ( Int_t iPhi = 0; iPhi < nPhiBins; iPhi++ ){
         if ( iTheta == nCThetaBins - 1
              && iPhi == nPhiBins - 1 ){
-          roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ][ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ] ) << " ],\n";
+          roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iTheta*nPhiBins + iPhi ][ GetLBDistributionParIndex() + iTheta*nPhiBins + iPhi ] ) << " ],\n";
         }
         else{
-          roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ][ GetLBDistributionParIndex() + iTheta*nCThetaBins + iPhi ] ) << ", ";
+          roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iTheta*nPhiBins + iPhi ][ GetLBDistributionParIndex() + iTheta*nPhiBins + iPhi ] ) << ", ";
         }
       }
       roccVals << "\n";
