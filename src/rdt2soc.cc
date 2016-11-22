@@ -137,9 +137,13 @@ int main( int argc, char** argv ){
   // Initialise the DQXX objects
   // Set the path prefix for the location of the DQXX files
   // This assumes that the envrionment variable $DQXXDIR is set
-  string DQXXDirPrefix = lDB.GetDQXXDir( Opts.fMMYY );
-  DQXXDirPrefix += "/DQXX_00000";
-  string rDQXXFile = DQXXDirPrefix + rIDStr + ".dat";
+  string DQXXDirFile1 = lDB.GetDQXXDir( Opts.fMMYY ) + "dqxx_00000" + rIDStr + ".dat";
+  string DQXXDirFile2 = lDB.GetDQXXDir( Opts.fMMYY ) + "DQXX_00000" + rIDStr + ".dat";
+  string rDQXXFile;
+	ifstream file1( DQXXDirFile1.c_str() );
+  ifstream file2( DQXXDirFile2.c_str() );
+  if ( file1.good() && !file2.good() ){ rDQXXFile = DQXXDirFile1; }
+  if ( !file1.good() && file2.good() ){ rDQXXFile = DQXXDirFile2; }
 
   QDQXX rDQXX( rDQXXFile.c_str() );
   Int_t iPMTStatus = KCCC_TUBE_ON_LINE;
