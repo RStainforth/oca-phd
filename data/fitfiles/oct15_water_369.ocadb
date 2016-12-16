@@ -207,6 +207,6 @@ comment: "",
 timestamp: "",
 
 // The sequential chi-square upper limits to cut initial data-points on for each fit
-chisq_lims: [ 1000.0, 100.0, 50.0, 25.0, 16.0, 9.0, 7.0 ],
+chisq_lims: [ 1000.0, 100.0, 50.0, 25.0, 16.0, 9.0, 7.0, 7.0 ],
 
 }
