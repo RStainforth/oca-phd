@@ -50,7 +50,7 @@ using namespace OCA;
 // Functions in this macro
 void GetLBLightDistribution( TFile* dataFile,
                              std::string dataSet,
-														 Int_t& type,
+                             Int_t& type,
                              vector< Float_t >& lbPars );
 void GetLBMaskParameters( TFile* dataFile,
                           std::string dataSet,
@@ -190,7 +190,7 @@ void OutputLBTable( std::string fitName ){
 
 void GetLBLightDistribution( TFile* dataFile,
                              std::string dataSet,
-														 Int_t& type,
+			     Int_t& type,
                              vector< Float_t >& lbPars )
 {
 
