@@ -17,7 +17,7 @@
 ###
 ### DETAIL: To use this macro, type:
 ###         
-###         python PMTResponseRATDB.py <file_name1> "<file_name2>" ...
+###         python PMTResponseRATDB.py <file_name1> <file_name2> ...
 ###
 ####################################################################
 
