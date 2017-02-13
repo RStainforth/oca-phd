@@ -1,4 +1,27 @@
-# abslength.py
+####################################################################
+### FILENAME: AbsorptionLengthsRATDB.py
+###
+### CLASS:  N/A
+###
+### BRIEF:  The main purpose of this macro is to create tables in the
+###         RATDB format of the water absorption lengths for the
+###         wavelength range 200-800 nm (in steps of 20 nm). It uses 
+###         the attenuations from OCA, calculates absorption lengths
+###         using SMELLIE results, and the ratio of the measured values
+###         by the ones in RAT. From the fit of the ratio, a scaling
+###         function that varies with wavelength is defined and used to
+###         scale the absorption length parameters in RAT.
+###
+### AUTHOR: Ana Sofia Inacio <ainacio@lip.pt>
+###
+### REVISION HISTORY:
+###     12/2016 : Ana Inacio - First Revision, new file.
+###
+### DETAIL: To use this macro, type:
+###         
+###         python AbsorptionLengthsRATDB.py <file_name1>.ocadb <file_name2>.ocadb ...
+###
+####################################################################
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -125,7 +148,7 @@ for i, item in enumerate(att_coeff):
 #######################################################################################################
 #######################################################################################################
 
-# Calculation of the absorption lengths
+# Calculation of the RAT absorption lengths
 abs_length = []
 abs_length_error = []
 
