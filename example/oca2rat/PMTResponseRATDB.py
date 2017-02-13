@@ -25,11 +25,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 import numpy.polynomial.polynomial as poly
-from scipy import interpolate
-from numpy import pi, r_
-from scipy import arange, array, exp
-from matplotlib import cm
-
+from scipy import arange
 import sys
 
 print "***************************************"
