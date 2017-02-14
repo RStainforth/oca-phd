@@ -42,12 +42,12 @@ print "***************************************"
 #for p, item in enumerate(pope_abs):
 #  pope_abs[p] = 1/pope_abs[p]
 
-diag_scan = [0.0000305327,0.0000227798,0.0000190338,0.0000230343,0.0000431756]
-diag_scan_err = [0.00000058027,0.000000568783,0.000000522112,0.000000571383,0.000000573561]
+#diag_scan = [0.0000305327,0.0000227798,0.0000190338,0.0000230343,0.0000431756]
+#diag_scan_err = [0.00000058027,0.000000568783,0.000000522112,0.000000571383,0.000000573561]
 
-for p, item in enumerate(diag_scan):
-  diag_scan_err[p] = diag_scan_err[p]/(diag_scan[p]*diag_scan[p])
-  diag_scan[p] = 1/diag_scan[p]
+#for p, item in enumerate(diag_scan):
+#  diag_scan_err[p] = diag_scan_err[p]/(diag_scan[p]*diag_scan[p])
+#  diag_scan[p] = 1/diag_scan[p]
 
 
 # Gets the Rayleigh Scattering values from OPTICS.ratdb
@@ -117,7 +117,7 @@ coeff_err = []
 att_length = []
 att_length_error = []
 
-# argv is your commandline arguments, argv[0] is your program name, so skip it
+# argv is your commandline arguments
 for n in sys.argv[1:]:
   print("Opening file "+n) 
   par = "inner_av_extinction_length : "
@@ -175,27 +175,28 @@ for k, item in enumerate(rs_wavelength):
 #######################################################################################################
 #######################################################################################################
 
-ext_w = []
-ext_w_err = []
+# Gets the external water attenuation coefficients from the .ocadb files
 
-param1 = 0
-param2 = 0
+# ext_w = []
+# ext_w_err = []
 
-# argv is your commandline arguments, argv[0] is your program name, so skip it
-for n in sys.argv[1:]:
-  print(n) #print out the filename we are currently processing
-  par = "water_extinction_length : "
-  par_err = "water_extinction_length_error : "
-  f = open("/lstore/sno/ainacio/oca-oca-snoplus/output/fits/"+n,"r")
-  for line in f:
-    if par in line:
-      param1 = line[line.find(par)+len(par):]
-      param1 = param1.replace(',\n', '')
-      ext_w.append(1./float(param1))
-    if par_err in line:
-      param2 = line[line.find(par_err)+len(par_err):]
-      param2 = param2.replace(',\n', '')
-      ext_w_err.append(float(param2)/(float(param1)*float(param1)))
+# param1 = 0
+# param2 = 0
+
+# for n in sys.argv[1:]:
+#  print(n) #print out the filename we are currently processing
+#  par = "water_extinction_length : "
+#  par_err = "water_extinction_length_error : "
+#  f = open("/lstore/sno/ainacio/oca-oca-snoplus/output/fits/"+n,"r")
+#  for line in f:
+#    if par in line:
+#      param1 = line[line.find(par)+len(par):]
+#      param1 = param1.replace(',\n', '')
+#      ext_w.append(1./float(param1))
+#    if par_err in line:
+#      param2 = line[line.find(par_err)+len(par_err):]
+#      param2 = param2.replace(',\n', '')
+#      ext_w_err.append(float(param2)/(float(param1)*float(param1)))
 
 
 #################################################################################################!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!calcular erro 
@@ -317,6 +318,8 @@ plt.show()
 #######################################################################################################
 #######################################################################################################
 
+# Fitting (linear) the ration measured absorption/RAT absorption
+
 f1 = []
 f1 = np.polyfit(lb_wl, ratio, 1)
  
@@ -338,6 +341,7 @@ plt.show()
 #######################################################################################################
 #######################################################################################################
 
+# Fitting (quadratic) the ration measured absorption/RAT absorption
 
 f2 = []
 f2 = np.polyfit(lb_wl, ratio, 2)
@@ -360,6 +364,7 @@ plt.show()
 #######################################################################################################
 #######################################################################################################
 
+# Fitting (cubic) the ration measured absorption/RAT absorption
 
 f3 = []
 f3 = np.polyfit(lb_wl, ratio, 3)
@@ -382,6 +387,8 @@ plt.show()
 #######################################################################################################
 #######################################################################################################
 #######################################################################################################
+
+# Scaling the RAT parameters according to the measurements (multiplying by the fit functions)
 
 x_axis = np.arange(337.,506.,1)
 x_axis2 = np.arange(200.,801.,20)
@@ -433,6 +440,8 @@ plt.show()
 #######################################################################################################
 #######################################################################################################
 #######################################################################################################
+
+# Creating the output file and writing the parameters
 
 output_file = open('lightwater_snoplus.ratdb', 'w')
 print ("Creating Output File: lightwater_snoplus.ratdb\n")
