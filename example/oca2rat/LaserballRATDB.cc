@@ -50,7 +50,7 @@ using namespace OCA;
 // Functions in this macro
 void GetLBLightDistribution( TFile* dataFile,
                              std::string dataSet,
-														 Int_t& type,
+			     Int_t& type,
                              vector< Float_t >& lbPars );
 void GetLBMaskParameters( TFile* dataFile,
                           std::string dataSet,
@@ -74,44 +74,45 @@ void OutputLBTable( std::string fitName ){
   // Get Laserball parameters (angular distribution and mask)
   vector< Float_t > maskVal;
   vector< Float_t > distVal;
-	Int_t lbType;
+  Int_t lbType;
 	
-	GetLBLightDistribution( tmpFile, fitName, lbType, distVal );
-	GetLBMaskParameters( tmpFile, fitName, maskVal );
-	
+  GetLBLightDistribution( tmpFile, fitName, lbType, distVal );
+  GetLBMaskParameters( tmpFile, fitName, maskVal );
+
+  // Creating the output file
   ofstream roccVals;
   roccVals.precision( 6 );
   roccVals.open ( "laserballRAT.txt", std::ios_base::app );
 	
-	string dataSet = fitName;
-	dataSet.erase (5,13);
-	std::transform(dataSet.begin(), dataSet.end(),dataSet.begin(), ::toupper);
-	string wl = fitName;
-	wl.erase (0,15);
+  string dataSet = fitName;
+  dataSet.erase (5,13);
+  std::transform(dataSet.begin(), dataSet.end(),dataSet.begin(), ::toupper);
+  string wl = fitName;
+  wl.erase (0,15);
 	
-	string index;
+  string index;
 	
-	if(wl == "337"){ index = "N2"; }
-	if(wl == "369"){ index = "PBD"; }
-	if(wl == "385"){ index = "BBQ"; }
-	if(wl == "420"){ index = "BIS-MSB"; }
-	if(wl == "505"){ index = "COUMARIN-500"; }
+  if(wl == "337"){ index = "N2"; }
+  if(wl == "369"){ index = "PBD"; }
+  if(wl == "385"){ index = "BBQ"; }
+  if(wl == "420"){ index = "BIS-MSB"; }
+  if(wl == "505"){ index = "COUMARIN-500"; }
 	
-	// Writing the Laserball values in the LASERBALL.ratdb format
+  // Writing the Laserball values in the RATDB format
 	
-	roccVals << "{\n";
-	roccVals << "type: \"LBDYEANGLE\",\n";
-	roccVals << "version: 1,\n";
-	roccVals << "index: \"" << index << ":" << dataSet << "\",\n";
-	roccVals << "run_range: [,],\n";
-	roccVals << "pass: 0,\n";
-	roccVals << "timestamp: \"\",\n";
-	roccVals << "comment: \"\",\n";
+  roccVals << "{\n";
+  roccVals << "type: \"LBDYEANGLE\",\n";
+  roccVals << "version: 1,\n";
+  roccVals << "index: \"" << index << ":" << dataSet << "\",\n";
+  roccVals << "run_range: [,],\n";
+  roccVals << "pass: 0,\n";
+  roccVals << "timestamp: \"\",\n";
+  roccVals << "comment: \"\",\n";
 	
-	roccVals << "\n";
+  roccVals << "\n";
 	
-	roccVals << "// Coefficients for laserball mask (theta) order 0 is first, 4 is last\n";
-	Int_t nMaskPars = maskVal.size();
+  roccVals << "// Coefficients for laserball mask (theta) order 0 is first, 4 is last\n";
+  Int_t nMaskPars = maskVal.size();
   roccVals << "lb_mask_coef: [";
   for ( Int_t iPar = 0; iPar < nMaskPars; iPar++ ){
     if ( iPar == nMaskPars - 1 ){
@@ -119,20 +120,20 @@ void OutputLBTable( std::string fitName ){
     }
     else{
       roccVals << maskVal[ iPar ] << ", ";
-		}
+    }
   }
 
-	roccVals << "\n";
+  roccVals << "\n";
 	
   if ( lbType == 0 ){
     Int_t nCThetaBins = 12;
     Int_t nPhiBins = 36;
 		
-		roccVals << "lb_ang_intensity: [\n";
+    roccVals << "lb_ang_intensity: [\n";
 //		roccVals << "//         ********************************************\n";
 //		roccVals << "//         ******** Values at Wavelength (...) ********\n";
 //		roccVals << "//         ********************************************\n";
-		roccVals << "// Laserball distribution grid 10 deg bins in phi\n";
+    roccVals << "// Laserball distribution grid 10 deg bins in phi\n";
     for ( Int_t iTheta = 0; iTheta < nCThetaBins; iTheta++ ){
       for ( Int_t iPhi = 0; iPhi < nPhiBins; iPhi++ ){
         if ( iTheta == nCThetaBins - 1
@@ -147,16 +148,14 @@ void OutputLBTable( std::string fitName ){
     }
   }
   
-  if ( lbType == 1 ){
-	 
-	  roccVals << "// Coefficients for the sinusoidal laserball mask distribution.\n";
-	  roccVals << "// 24 theta bins in total with two parameters (amplitude & phase) per theta bin.\n";
+  if ( lbType == 1 ){ 
+    roccVals << "// Coefficients for the sinusoidal laserball angular distribution.\n";
+    roccVals << "// 24 theta bins in total with two parameters (amplitude & phase) per theta bin.\n";
 	 
     Int_t nThetaSlices = 24;
     Int_t nParsPerSlice = 2;
     roccVals << "lb_ang_sincoef: [";
     for ( Int_t iPar = 1; iPar <= ( nThetaSlices * nParsPerSlice ); iPar++ ){
-
       if ( iPar % 2 == 0 && iPar == ( nThetaSlices * nParsPerSlice ) ){
         roccVals << distVal[ iPar-1 ] << " ],\n";
       }
@@ -191,22 +190,23 @@ void GetLBLightDistribution( TFile* dataFile,
 														 Int_t& type,
                              vector< Float_t >& lbPars )
 {
-
+  // Gets the light distribution parameters from the ROOT files created by OCA
+	
   string branch = "nominal";
 	
-	OCA::OCAModelParameterStore* tmpStore = NULL;
+  OCA::OCAModelParameterStore* tmpStore = NULL;
   TTree* tmpTree = NULL;
-	string treeName = ( dataSet + "-" + branch + ";1" );
+  string treeName = ( dataSet + "-" + branch + ";1" );
   tmpTree = (TTree*)dataFile->Get( treeName.c_str() );
   string valStr = "tmp";
   tmpStore = new OCA::OCAModelParameterStore( valStr );
 	
-	tmpTree->SetBranchAddress( branch.c_str(), &(tmpStore) );
+  tmpTree->SetBranchAddress( branch.c_str(), &(tmpStore) );
   tmpTree->GetEntry( 0 );
 	
-	TVector parVals = tmpStore->GetParameterValues();
-	Int_t lbDistIndex = tmpStore->GetLBDistributionParIndex();
-	type = tmpStore->GetLBDistributionType();
+  TVector parVals = tmpStore->GetParameterValues();
+  Int_t lbDistIndex = tmpStore->GetLBDistributionParIndex();
+  type = tmpStore->GetLBDistributionType();
   for ( Int_t iAng = 0; iAng < tmpStore->GetNLBDistributionPars(); iAng++ ){
 
     // The current index of the iAng-th angular response parameter.
@@ -227,21 +227,22 @@ void GetLBMaskParameters( TFile* dataFile,
                           std::string dataSet,
                           vector< Float_t >& lbPars )
 {
-
+  // Gets the mask function parameters from the ROOT files created by OCA
+	
   string branch = "nominal";
 	
-	OCA::OCAModelParameterStore* tmpStore = NULL;
+  OCA::OCAModelParameterStore* tmpStore = NULL;
   TTree* tmpTree = NULL;
-	string treeName = ( dataSet + "-" + branch + ";1" );
+  string treeName = ( dataSet + "-" + branch + ";1" );
   tmpTree = (TTree*)dataFile->Get( treeName.c_str() );
   string valStr = "tmp";
   tmpStore = new OCA::OCAModelParameterStore( valStr );
 	
-	tmpTree->SetBranchAddress( branch.c_str(), &(tmpStore) );
+  tmpTree->SetBranchAddress( branch.c_str(), &(tmpStore) );
   tmpTree->GetEntry( 0 );
 	
-	TVector parVals = tmpStore->GetParameterValues();
-	Int_t lbMaskIndex = tmpStore->GetLBDistributionMaskParIndex();
+  TVector parVals = tmpStore->GetParameterValues();
+  Int_t lbMaskIndex = tmpStore->GetLBDistributionMaskParIndex();
   for ( Int_t iAng = 0; iAng < tmpStore->GetNLBDistributionMaskParameters(); iAng++ ){
 
     // The current index of the iAng-th angular response parameter.
