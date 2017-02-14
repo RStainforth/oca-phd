@@ -83,6 +83,7 @@ for n in sys.argv[1:]:
 
   X = list(range(90))
 
+  # Plots the PMT Angular response in function of the incidence angle for each laserball wavelength
   plt.errorbar(X, pmt_coeffs,yerr=coeff_err, marker='.',linestyle="None",label=data_set)
 
 plt.xlabel("Incident Angle [degrees]")
@@ -93,12 +94,12 @@ plt.ylim(1, 1.15)
 plt.xlim([0.99,46])
 plt.show()
 
-print matrix
+#print matrix
 
+# Plots the PMT Angular response in function of the incidence angle for each laserball wavelength in a color matrix
 fig = plt.figure()
 ax = fig.add_subplot(111)
 cax = ax.imshow(matrix, interpolation='nearest', cmap="jet")
-# Add colorbar, make sure to specify tick locations to match desired ticklabels
 cbar = fig.colorbar(cax)
 ax.matshow(matrix,extent=[0,90,0,5])
 ax.xaxis.set_ticks_position('bottom')
@@ -112,6 +113,7 @@ plt.show()
 #relative_response = np.zeros(shape=(50,45))
 relative_response = np.zeros(shape=(50,90))
 
+# Gets the values of PMTR for all wavelengths, for each incidence angle bin, and linearly interpolates the data
 for j in range(90):
   thetaBin = []
   thetaBin_err = []
@@ -155,6 +157,8 @@ for j in range(90):
 #  plt.title(name)
 #  plt.show()
 
+  # For the extrapolation outside the laserball wavelength range, it uses the last angular response obtained for each side
+  # i.e., for wavelengths smaller/larger that 337/505 nm it uses the angular response measured for 337/505 nm.
   num = 0
   for i in range(50):
     if (220 + i*10) < 337:
@@ -164,7 +168,9 @@ for j in range(90):
     elif ((220 + i*10) > 337) and ((220 + i*10) < 505):
       relative_response[i,j] = function(340+num*10) 
       num = num + 1
-      
+
+# Plots the interpolated/extrapolated PMT Angular responses in function of the incidence angle for 
+# each laserball wavelength in a color matrix      
 fig = plt.figure()
 ax = fig.add_subplot(111)
 cax = ax.imshow(relative_response, interpolation='nearest', cmap="jet")
@@ -187,7 +193,7 @@ for i in range(50):
 plt.plot(range(4500), ff1)
 plt.show()
 
-# Output Table
+# Creates the output file and saves the parameters
 output_file = open('pmtresponses_snoplus.ratdb', 'w')
 print ("Creating Output File: pmtresponses_snoplus.ratdb\n")
 
