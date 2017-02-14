@@ -79,10 +79,10 @@ void OutputLBTable( std::string fitName ){
   GetLBLightDistribution( tmpFile, fitName, lbType, distVal );
   GetLBMaskParameters( tmpFile, fitName, maskVal );
 
-  // Creating the output file
+  // Creating the output file and writing the parameters
   ofstream roccVals;
   roccVals.precision( 6 );
-  roccVals.open ( "laserballRAT.txt", std::ios_base::app );
+  roccVals.open ( "laserball_snoplus.ratdb", std::ios_base::app );
 	
   string dataSet = fitName;
   dataSet.erase (5,13);
@@ -178,7 +178,7 @@ void OutputLBTable( std::string fitName ){
   roccVals.close();
 
   cout << "OutputLBTable: Laserball parameters saved to file:\n";
-  cout << "laserballRAT.txt" << "\n";
+  cout << "laserball_snoplus.ratdb" << "\n";
 	
 }
 
