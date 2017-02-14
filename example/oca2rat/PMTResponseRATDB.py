@@ -32,6 +32,9 @@ print "***************************************"
 print "****      PMT Angular Response     ****"
 print "***************************************"
 
+matrix = np.zeros(shape=(5,90))
+matrix_err = np.zeros(shape=(5,90))
+
 i = 0
 
 # Opening the .ocadb files and extracting the relevant informations
