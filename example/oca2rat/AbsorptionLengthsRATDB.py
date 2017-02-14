@@ -19,7 +19,7 @@
 ###
 ### DETAIL: To use this macro, type:
 ###         
-###         python AbsorptionLengthsRATDB.py <file_name1>.ocadb <file_name2>.ocadb ...
+###         python AbsorptionLengthsRATDB.py <file_name1> <file_name2> ...
 ###
 ####################################################################
 
@@ -122,7 +122,7 @@ for n in sys.argv[1:]:
   print("Opening file "+n) 
   par = "inner_av_extinction_length : "
   par_err = "inner_av_extinction_length_error : "
-  file_name = open("/lstore/sno/ainacio/oca-oca-snoplus/output/fits/"+n,"r")
+  file_name = open("/lstore/sno/ainacio/oca-oca-snoplus/output/fits/"+n+".ocadb","r")
   for line in file_name:
     if par in line:
       param = line[line.find(par)+len(par):]
