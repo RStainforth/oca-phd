@@ -391,7 +391,6 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
                                    OCAModelParameterStore* ocaPars,
                                    string& fitNameStr )
 {
-
   // First calculate the raw efficiencies which is:
   // MPE-Corrected-Occupancy / Model Prediction = raw efficiency.
   vector< OCAPMT >::iterator iDP;
@@ -423,13 +422,52 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   Float_t rawEffAvgTot = 0.0;
   Int_t* nPMTsPerIndex = new Int_t[ 10000 ];
   Int_t* nUniquePMTs = new Int_t[ 10000 ];
+  
+  Float_t* pmtsCosTheta = new Float_t[ 10000 ];
+  Float_t* pmtsPhi = new Float_t[ 10000 ];
+ 
+  Float_t** rawEffRun;
+  rawEffRun = new Float_t*[ 40 ];
+  for ( Int_t i = 0; i < 40; i++ ){
+    rawEffRun[ i ] = new Float_t[ 10000 ];
+  } 
+
   for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
     rawEffSum[ iPMT ] = 0.0;
     rawEffAvg[ iPMT ] = 0.0;
     nPMTsPerIndex[ iPMT ] = 0;
     nUniquePMTs[ iPMT ] = 0;
+    
+    pmtsCosTheta[ iPMT ] = 0.0;
+    pmtsPhi[ iPMT ] = 0.0;
+
+    for ( Int_t iRUN = 0; iRUN < 40; iRUN++ ){
+      rawEffRun[ iRUN ][ iPMT ] = 0.0;
+    }
+  }
+  
+  OCADB lDB;
+  string outputDir = lDB.GetOutputDir();
+  string filePath = outputDir + "fits/";
+
+  string pmtVarPlotFileName = ( filePath + fitNameStr + "-pmt-variability.root" );
+
+  TFile* pmtVarPlots = new TFile( pmtVarPlotFileName.c_str(), "RECREATE" );
+
+  TTree *t = new TTree( "pmt-efficiencies", "Tree of the PMT efficiencies" );
+  t->Branch( "rawEffAvg", &rawEffAvg[0], "rawEffAvg[10000]" );
+  for ( Int_t j = 1; j < 40; j++ ){
+    Char_t name1[15];
+    sprintf(name1,"rawEffRun%d",j);
+    Char_t name2[20];
+    sprintf(name2,"rawEffRun%d[10000]",j);
+
+    t->Branch( name1, &rawEffRun[j][0], name2 );
   }
 
+  t->Branch( "pmtsCosTheta", &pmtsCosTheta[0], "pmtsCosTheta[10000]" );
+  t->Branch( "pmtsPhi", &pmtsPhi[0], "pmtsPhi[10000]" );
+ 
   Float_t rawEff = 0.0;
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
     
@@ -442,12 +480,19 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
     if ( rawEff > 0.0 ){
       nPMTsPerIndex[ iDP->GetID() ]++;
       rawEffAvg[ iDP->GetID() ] += rawEff;
+          
+      Int_t runIndex = iDP->GetRunID() % 100;
+      rawEffRun[ runIndex ][ iDP->GetID() ] = rawEff;
+     
+      pmtsCosTheta[ iDP->GetID() ] = iDP->GetPos().CosTheta();
+      pmtsPhi[ iDP->GetID() ] = iDP->GetPos().Phi();
+      
       if ( nUniquePMTs[ iDP->GetID() ] == 0 ){
         nUniquePMTs[ iDP->GetID() ]++;
       }
     }
-  }
-
+   }
+  
   for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
     if ( nPMTsPerIndex[ iPMT ] > 0 ){
       rawEffAvg[ iPMT ] /= nPMTsPerIndex[ iPMT ];
@@ -457,12 +502,14 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
     }
   }
 
+  t->Fill();
+  t->Write();
+
   Int_t nGoodPMTs = 0;
   for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
     nGoodPMTs += nUniquePMTs[ iPMT ];
   }
   rawEffAvgTot /= (Float_t)nGoodPMTs;
-
 
   TH1F* pmtEffHistoScan = new TH1F("pmt-Eff-Histo-Scan", "PMT Efficiency Histogram (Scan)", 1000.0, 0.0, 2.0 );
   TH1F* pmtEffHistoRun = new TH1F("pmt-Eff-Histo-Run", "PMT Efficiency Histogram (Run)", 1000.0, 0.0, 1.0 );
@@ -473,32 +520,32 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   for ( Int_t iVal = 0; iVal < 10000; iVal++ ){ uniquePMTs[ iVal ] = 0; }
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ){
     
-      // Calculate the model prediction and the data value
-      // of the occupancy.
-      modelPrediction = ocaModel->ModelPrediction( *iDP );
-      dataValue = iDP->GetMPECorrOccupancy();
-      pmtEff = dataValue / modelPrediction;
-      pmtEffHistoRun->Fill( pmtEff ); // Add to the raw PMT efficicieny hisogram
+    // Calculate the model prediction and the data value
+    // of the occupancy.
+    modelPrediction = ocaModel->ModelPrediction( *iDP );
+    dataValue = iDP->GetMPECorrOccupancy();
+    pmtEff = dataValue / modelPrediction;
+    pmtEffHistoRun->Fill( pmtEff ); // Add to the raw PMT efficicieny hisogram
 
-      // If we haven't filled the relative PMT efficieny across all runs
-      // for this PMT yet, add it to the scan level PMT efficieny histogram.
-      if ( uniquePMTs[ iDP->GetID() ] == 0 ){ 
-        pmtEffHistoScan->Fill( rawEffAvg[ iDP->GetID() ] / rawEffAvgTot ); 
-        uniquePMTs[ iDP->GetID() ] += 1; // Add 1 to the array to make sure we don't add this PMT a second time.
-      }
+    // If we haven't filled the relative PMT efficieny across all runs
+    // for this PMT yet, add it to the scan level PMT efficieny histogram.
+    if ( uniquePMTs[ iDP->GetID() ] == 0 ){ 
+      pmtEffHistoScan->Fill( rawEffAvg[ iDP->GetID() ] / rawEffAvgTot ); 
+      uniquePMTs[ iDP->GetID() ] += 1; // Add 1 to the array to make sure we don't add this PMT a second time.
+    }
       
-      // The incident angle.
-      Int_t incAngle = (Int_t)( TMath::ACos( iDP->GetCosTheta() ) * TMath::RadToDeg() );
-      Float_t varVal = ( ( pmtEff / rawEffAvg[ iDP->GetID() ] ) / rawEffAvgTot );
-      Float_t statVal = TMath::Sqrt( 1.0 / iDP->GetPromptPeakCounts() );
-      Float_t histoVal = varVal;
+    // The incident angle.
+    Int_t incAngle = (Int_t)( TMath::ACos( iDP->GetCosTheta() ) * TMath::RadToDeg() );
+    Float_t varVal = ( ( pmtEff / rawEffAvg[ iDP->GetID() ] ) / rawEffAvgTot );
+    Float_t statVal = TMath::Sqrt( 1.0 / iDP->GetPromptPeakCounts() );
+    Float_t histoVal = varVal;
       
-      if ( histoVal > 0.0 && !std::isnan( pmtEff ) && !std::isinf( pmtEff ) ){
-        effHistos[ incAngle ].Fill( histoVal );
-        iDP->SetRunEfficiency( pmtEff );
-        iDP->SetScanEfficiency( rawEffAvg[ iDP->GetID() ] );
-        effOccErr[ incAngle ].Fill( statVal );
-      }
+    if ( histoVal > 0.0 && !std::isnan( pmtEff ) && !std::isinf( pmtEff ) ){
+      effHistos[ incAngle ].Fill( histoVal );
+      iDP->SetRunEfficiency( pmtEff );
+      iDP->SetScanEfficiency( rawEffAvg[ iDP->GetID() ] );
+      effOccErr[ incAngle ].Fill( statVal );
+    }
   }
 
   pmtEffHistoRun->GetXaxis()->SetTitle( "PMT Efficiency Estimator" );
@@ -511,12 +558,6 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   pmtEffHistoScan->GetYaxis()->SetTitleOffset( 1.2 );
   pmtEffHistoScan->SetTitle( "PMT Efficieny Estimators (Scan)" );
   
-  OCADB lDB;
-  string outputDir = lDB.GetOutputDir();
-  string filePath = outputDir + "fits/";
-  string pmtVarPlotFileName = ( filePath + fitNameStr + "-pmt-variability.root" );
-
-  TFile* pmtVarPlots = new TFile( pmtVarPlotFileName.c_str(), "RECREATE" );
   pmtVarPlots->WriteTObject( pmtEffHistoScan, ( fitNameStr + "-pmt-efficiencies-scan" ).c_str(), "Overwrite" );
   pmtVarPlots->WriteTObject( pmtEffHistoRun, ( fitNameStr + "-pmt-efficiencies-run" ).c_str(), "Overwrite" );
 
@@ -582,8 +623,9 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
       iDPL->SetPMTVariability( -1.0 );
     }
 
-  }
+  }   
 }
+
 
 
 void RetrievePMTVariabilityParameters( OCAModelParameterStore* ocaPars,
