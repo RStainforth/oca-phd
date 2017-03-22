@@ -36,20 +36,6 @@ print "***************************************"
 print "**** Calculating Absorption Length ****"
 print "***************************************"
 
-#pope_wl = [380, 382.5, 385, 387.5 ,390, 392.5, 395, 397.5, 400, 402.5, 405, 407.5, 410, 412.5, 415, 417.5, 420, 422.5, 425, 427.5, 430, 432.5, 435, 437.5, 440, 442.5, 445, 447.5, 450, 452.5, 455, 457.5, 460, 462.5, 465, 467.5, 470, 472.5, 475, 477.5, 480, 482.5, 485, 487.5, 490, 492.5, 495, 497.5, 500, 502.5, 505, 507.5, 510, 512.5, 515, 517.5, 520]
-#pope_abs = [0.00001137,0.00001044,	0.00000941,	0.00000917,	0.00000851,	0.00000829,	0.00000813,	0.00000775,	0.00000663,	0.00000579,	0.0000053,	0.00000503,	0.00000473,	0.00000452,	0.00000444,	0.00000442,	0.00000454,	0.00000474,	0.00000478,	0.00000482,	0.00000495,	0.00000504,	0.0000053,	0.0000058,	0.00000635,	0.00000696,	0.00000751,	0.0000083,	0.00000922,	0.00000969,	0.00000962,	0.00000957,	0.00000979,	0.00001005,	0.00001011,	0.0000102,	0.0000106,	0.0000109,	0.0000114,	0.0000121,	0.0000127,	0.0000131,	0.0000136,	0.0000144,	0.000015,	0.0000162,	0.0000173,	0.0000191,	0.0000204,	0.0000228,	0.0000256,	0.000028,	0.0000325,	0.0000372,	0.0000396,	0.0000399,	0.0000409]
-
-#for p, item in enumerate(pope_abs):
-#  pope_abs[p] = 1/pope_abs[p]
-
-#diag_scan = [0.0000305327,0.0000227798,0.0000190338,0.0000230343,0.0000431756]
-#diag_scan_err = [0.00000058027,0.000000568783,0.000000522112,0.000000571383,0.000000573561]
-
-#for p, item in enumerate(diag_scan):
-#  diag_scan_err[p] = diag_scan_err[p]/(diag_scan[p]*diag_scan[p])
-#  diag_scan[p] = 1/diag_scan[p]
-
-
 # Gets the Rayleigh Scattering values from OPTICS.ratdb
 rat_file = "/exper-sw/sno/snoplus/snoing/install/rat-5.2.2/data/OPTICS.ratdb"
 rat = open(rat_file,"r")
@@ -101,10 +87,6 @@ for item in rat_abs:
 
 # Rayleigh Scattering Lengths are linearly interpolated in function of wavelength
 f_rs = interp1d(rs_wavelength, rsLength)
-
-#print xnew
-#plt.plot( xnew, f_rs(xnew), 'o')
-#plt.show()
 
 #######################################################################################################
 #######################################################################################################
@@ -175,50 +157,18 @@ for k, item in enumerate(rs_wavelength):
 #######################################################################################################
 #######################################################################################################
 
-# Gets the external water attenuation coefficients from the .ocadb files
-
-# ext_w = []
-# ext_w_err = []
-
-# param1 = 0
-# param2 = 0
-
-# for n in sys.argv[1:]:
-#  print(n) #print out the filename we are currently processing
-#  par = "water_extinction_length : "
-#  par_err = "water_extinction_length_error : "
-#  f = open("/lstore/sno/ainacio/oca-oca-snoplus/output/fits/"+n,"r")
-#  for line in f:
-#    if par in line:
-#      param1 = line[line.find(par)+len(par):]
-#      param1 = param1.replace(',\n', '')
-#      ext_w.append(1./float(param1))
-#    if par_err in line:
-#      param2 = line[line.find(par_err)+len(par_err):]
-#      param2 = param2.replace(',\n', '')
-#      ext_w_err.append(float(param2)/(float(param1)*float(param1)))
-
-
-#################################################################################################!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!calcular erro 
-
 x = [337.0, 369.0, 385.0, 420.0, 505.0]
-
-#plt.errorbar(x, ext_w,yerr=ext_w_err, marker='o',linestyle="None", label = 'External Water AttLength OCA')
 
 # Plotting the results
 plt.errorbar(lb_wl, att_length,yerr=att_length_error, marker='o',color='c',markersize=5,linestyle="-", label = 'Attenuation Length OCA')
-#plt.plot(lb_wl, f_att(lb_wl), label = 'AttLength Interpolation')
 
 plt.plot(rs_wavelength, rsLength, marker='.', linestyle="-", label = 'RScattering Length RAT',markeredgecolor='none')
-#plt.plot(xnew, f_rs(xnew), label = 'RScattering RAT Interpolation')
 
 plt.errorbar(lb_wl, abs_length,yerr=abs_length_error, marker='o',color='r',markersize=5,linestyle="-", label = 'Calculated Absorption Length')
-#plt.plot(lb_wl, f_abs(xnew), label = 'Absorption Length')
 
 plt.plot(rs_wavelength,rat_absLength,"r+", label = "RAT Absorption Length")
 
 plt.plot(rs_wavelength,rat_att,"ko", label = "RAT Attenuation Length")
-#plt.plot(pope_wl,pope_abs,"ko", label = "Pope et al.")
 
 plt.xlabel('Wavelength [nm]')
 plt.xlim(200, 565)
@@ -241,23 +191,14 @@ plt.show()
 
 # Plotting the results
 plt.errorbar(lb_wl, att_length,yerr=att_length_error, marker='o',color='c',markersize=5,linestyle="-", label = 'Attenuation Length OCA')
-#plt.plot(lb_wl, f_att(lb_wl), label = 'AttLength Interpolation')
 
 plt.plot(rs_wavelength, rsLength, marker='.', linestyle="-", label = 'RScattering Length RAT',markeredgecolor='none')
-#plt.plot(xnew, f_rs(xnew), label = 'RScattering RAT Interpolation')
 
 plt.errorbar(lb_wl, abs_length,yerr=abs_length_error, marker='o',color='r',markersize=5,linestyle="-", label = 'Calculated Absorption Length')
-#plt.plot(lb_wl, f_abs(xnew), label = 'Absorption Length')
 
 plt.plot(rs_wavelength,rat_absLength,"r+", label = "RAT Absorption Length")
 
 plt.plot(rs_wavelength,rat_att,"ko", label = "RAT Attenuation Length")
-
-#plt.errorbar(x, ext_w,yerr=ext_w_err, marker='o',linestyle="None", label = 'External Water AttLength OCA')
-
-#plt.errorbar(lb_wl, diag_scan,yerr=diag_scan_err, marker='p',color='g',linestyle="None", label = 'DiagScan Attenuation')
-
-#plt.plot(pope_wl,pope_abs,"ko", label = "Pope et al.")
 
 plt.xlabel('Wavelength [nm]')
 plt.xlim(200, 565)
@@ -273,20 +214,19 @@ ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y')
 
 plt.show()
 
-
 #######################################################################################################
 #######################################################################################################
 #######################################################################################################
 
 plt.errorbar(lb_wl, abs_length,yerr=abs_length_error, marker='o',color='r',markersize=5,linestyle="-", label = 'Calculated Absorption Length')
+
 f_rat = interp1d(rs_wavelength, rat_absLength)
 xnew = np.arange(335,510,1)
 plt.plot(xnew,f_rat(xnew),"r+", label = "RAT Absorption Length")
+
 plt.errorbar(lb_wl, att_length,yerr=att_length_error, marker='o',color='c',markersize=5,linestyle="-", label = 'Attenuation Length OCA')
 plt.plot(rs_wavelength,rat_att,"ko", label = "RAT Attenuation Length")
-#plt.plot(pope_wl,pope_abs,"ko", label = "Pope et al.")
-#plt.errorbar(x, ext_w,yerr=ext_w_err, marker='o',linestyle="None", label = 'External Water AttLength OCA')
-#plt.errorbar(lb_wl, diag_scan,yerr=diag_scan_err, marker='p',color='g',linestyle="None", label = 'DiagScan Attenuation')
+
 plt.xlabel('Wavelength [nm]')
 plt.ylabel('Length [mm]')
 plt.legend(loc='upper left', fancybox=True, numpoints=1)
@@ -295,6 +235,10 @@ ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y')
 plt.title("Calculated Absorption Length and RAT Absorption Length")
 
 plt.show()
+
+#######################################################################################################
+#######################################################################################################
+#######################################################################################################
 
 ratio = []
 ratio_err = []
@@ -427,7 +371,7 @@ plt.plot(x_axis2,ff2, label = "Poly2")
 plt.plot(x_axis2,ff3, label = "Poly3")
 
 plt.plot(x_axis2,f_rat(x_axis2),"k+",markersize=10, label = "RAT Absorption Length")
-#plt.plot(pope_wl,pope_abs,"ko", label = "Pope et al.")
+
 plt.xlabel('Wavelength [nm]')
 plt.ylabel('Length [mm]')
 plt.legend(loc='upper left', fancybox=True, numpoints=1)
