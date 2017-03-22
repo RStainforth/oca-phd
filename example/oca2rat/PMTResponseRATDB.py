@@ -97,7 +97,6 @@ plt.ylim(1, 1.15)
 plt.xlim([0.99,46])
 plt.show()
 
-#print matrix
 
 # Plots the PMT Angular response in function of the incidence angle for each laserball wavelength in a color matrix
 fig = plt.figure()
@@ -131,34 +130,6 @@ for j in range(90):
   xx = np.arange(337,506,1)
 
   function = interp1d(xAxis, thetaBin)
-
-# Plots the relative angular response in function of wavelength for each incidence angle
-#  
-#  plt.errorbar(xAxis, thetaBin,yerr=thetaBin_err, marker='o',linestyle="None",label=string)
-#  plt.plot( xx ,function(xx))
-#
-#  plt.legend(loc='upper left', fancybox=True, numpoints=1, prop={'size':12})
-#  plt.xlabel("Wavelength [nm]")
-#  plt.ylabel("Relative PMT Angular Response (arb. units)")
-#  name = ("Incidence Angle Bin "+str(j))
-#  plt.title(name)
-#  plt.show()
-
-# Method that interpolates/extrapolates the results with a polynomial
-#
-#  z = np.polyfit(xAxis, thetaBin, 3)
-#  f = np.poly1d(z)
-#  calculate new x's and y's
-#  x_new = np.linspace(220, 711, 10)
-#  y_new = f(x_new)
-#  plt.errorbar(xAxis, thetaBin,yerr=thetaBin_err, marker='o',linestyle="None",label=string)
-#  plt.plot(x_new, y_new)
-#  plt.legend(loc='upper left', fancybox=True, numpoints=1, prop={'size':12})
-#  plt.xlabel("Wavelength [nm]")
-#  plt.ylabel("Relative PMT Angular Response (arb. units)")
-#  name = ("Incidence Angle Bin "+str(j))
-#  plt.title(name)
-#  plt.show()
 
   # For the extrapolation outside the laserball wavelength range, it uses the last angular response obtained for each side
   # i.e., for wavelengths smaller/larger that 337/505 nm it uses the angular response measured for 337/505 nm.
