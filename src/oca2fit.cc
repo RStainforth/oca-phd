@@ -391,6 +391,7 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
                                    OCAModelParameterStore* ocaPars,
                                    string& fitNameStr )
 {
+
   // First calculate the raw efficiencies which is:
   // MPE-Corrected-Occupancy / Model Prediction = raw efficiency.
   vector< OCAPMT >::iterator iDP;
@@ -425,7 +426,7 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   
   Float_t* pmtsCosTheta = new Float_t[ 10000 ];
   Float_t* pmtsPhi = new Float_t[ 10000 ];
- 
+
   Float_t** rawEffRun;
   rawEffRun = new Float_t*[ 40 ];
   for ( Int_t i = 0; i < 40; i++ ){
@@ -445,7 +446,7 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
       rawEffRun[ iRUN ][ iPMT ] = 0.0;
     }
   }
-  
+
   OCADB lDB;
   string outputDir = lDB.GetOutputDir();
   string filePath = outputDir + "fits/";
@@ -469,8 +470,11 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   t->Branch( "pmtsPhi", &pmtsPhi[0], "pmtsPhi[10000]" );
  
   Float_t rawEff = 0.0;
+  Int_t runNumber = 1;
+  Int_t firstRun = iDPBegin->GetRunID();
+
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
-    
+
     // Calculate the model prediction and the data value
     // of the occupancy.
     modelPrediction = ocaModel->ModelPrediction( *iDP );
@@ -480,19 +484,21 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
     if ( rawEff > 0.0 ){
       nPMTsPerIndex[ iDP->GetID() ]++;
       rawEffAvg[ iDP->GetID() ] += rawEff;
-          
-      Int_t runIndex = iDP->GetRunID() % 100;
-      rawEffRun[ runIndex ][ iDP->GetID() ] = rawEff;
-     
+
+      if( firstRun != iDP->GetRunID() ){ 
+        runNumber++;
+        firstRun = iDP->GetRunID();
+      }
+
+      rawEffRun[ runNumber ][ iDP->GetID() ] = rawEff;
       pmtsCosTheta[ iDP->GetID() ] = iDP->GetPos().CosTheta();
       pmtsPhi[ iDP->GetID() ] = iDP->GetPos().Phi();
-      
       if ( nUniquePMTs[ iDP->GetID() ] == 0 ){
         nUniquePMTs[ iDP->GetID() ]++;
       }
     }
-   }
-  
+  }
+
   for ( Int_t iPMT = 0; iPMT < 10000; iPMT++ ){
     if ( nPMTsPerIndex[ iPMT ] > 0 ){
       rawEffAvg[ iPMT ] /= nPMTsPerIndex[ iPMT ];
@@ -567,12 +573,9 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   for ( Int_t iIndex = 0; iIndex < 90; iIndex++ ){
     if ( effHistos[ iIndex ].GetMean() != 0.0
          && (Float_t)( effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean() ) < 1.0 ){
-      myPlot->SetPoint( iIndex, 
-                        (Float_t)( iIndex + 0.5 ),
+      myPlot->SetPoint( iIndex,  (Float_t)( iIndex + 0.5 ),
                         TMath::Sqrt((Float_t)( TMath::Power( effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean(), 2 ) ) ) );
-      statPlot->SetPoint( iIndex,
-                          (Float_t)( iIndex + 0.5 ),
-                          effOccErr[ iIndex ].GetMean() );
+      statPlot->SetPoint( iIndex, (Float_t)( iIndex + 0.5 ), effOccErr[ iIndex ].GetMean() );
     }
   }
   
@@ -625,7 +628,6 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
 
   }   
 }
-
 
 
 void RetrievePMTVariabilityParameters( OCAModelParameterStore* ocaPars,
