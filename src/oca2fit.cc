@@ -423,9 +423,6 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   Float_t rawEffAvgTot = 0.0;
   Int_t* nPMTsPerIndex = new Int_t[ 10000 ];
   Int_t* nUniquePMTs = new Int_t[ 10000 ];
-  
-  Float_t* pmtsCosTheta = new Float_t[ 10000 ];
-  Float_t* pmtsPhi = new Float_t[ 10000 ];
 
   Float_t** rawEffRun;
   rawEffRun = new Float_t*[ 40 ];
@@ -438,9 +435,6 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
     rawEffAvg[ iPMT ] = 0.0;
     nPMTsPerIndex[ iPMT ] = 0;
     nUniquePMTs[ iPMT ] = 0;
-    
-    pmtsCosTheta[ iPMT ] = 0.0;
-    pmtsPhi[ iPMT ] = 0.0;
 
     for ( Int_t iRUN = 0; iRUN < 40; iRUN++ ){
       rawEffRun[ iRUN ][ iPMT ] = 0.0;
@@ -465,9 +459,6 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
 
     t->Branch( name1, &rawEffRun[j][0], name2 );
   }
-
-  t->Branch( "pmtsCosTheta", &pmtsCosTheta[0], "pmtsCosTheta[10000]" );
-  t->Branch( "pmtsPhi", &pmtsPhi[0], "pmtsPhi[10000]" );
  
   Float_t rawEff = 0.0;
   Int_t runNumber = 1;
@@ -486,13 +477,11 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
       rawEffAvg[ iDP->GetID() ] += rawEff;
 
       if( firstRun != iDP->GetRunID() ){ 
-        runNumber++;
-        firstRun = iDP->GetRunID();
+	runNumber++;
+	firstRun = iDP->GetRunID();
       }
 
       rawEffRun[ runNumber ][ iDP->GetID() ] = rawEff;
-      pmtsCosTheta[ iDP->GetID() ] = iDP->GetPos().CosTheta();
-      pmtsPhi[ iDP->GetID() ] = iDP->GetPos().Phi();
       if ( nUniquePMTs[ iDP->GetID() ] == 0 ){
         nUniquePMTs[ iDP->GetID() ]++;
       }
@@ -573,9 +562,12 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   for ( Int_t iIndex = 0; iIndex < 90; iIndex++ ){
     if ( effHistos[ iIndex ].GetMean() != 0.0
          && (Float_t)( effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean() ) < 1.0 ){
-      myPlot->SetPoint( iIndex,  (Float_t)( iIndex + 0.5 ),
+      myPlot->SetPoint( iIndex, 
+                        (Float_t)( iIndex + 0.5 ),
                         TMath::Sqrt((Float_t)( TMath::Power( effHistos[ iIndex ].GetRMS() / effHistos[ iIndex ].GetMean(), 2 ) ) ) );
-      statPlot->SetPoint( iIndex, (Float_t)( iIndex + 0.5 ), effOccErr[ iIndex ].GetMean() );
+      statPlot->SetPoint( iIndex,
+                          (Float_t)( iIndex + 0.5 ),
+                          effOccErr[ iIndex ].GetMean() );
     }
   }
   
