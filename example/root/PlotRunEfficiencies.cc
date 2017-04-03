@@ -4,8 +4,8 @@
 ///
 /// CLASS: N/A
 ///
-/// BRIEF: This macro extracts and plots the scan averaged PMT 
-///        efficiencies and run PMT efficiencies from the OCA 
+/// BRIEF: This macro extracts and plots the scan averaged raw PMT 
+///        efficiencies and run raw PMT efficiencies from the OCA 
 ///        pmt-variability files stored in:
 ///        $OCA_SNOPLUS_ROOT/fits/pmt-variability
 ///          
@@ -33,6 +33,9 @@
 #include "TTree.h"
 #include "TFile.h"
 
+#include "RAT/DU/Utility.hh"
+#include "RAT/DU/PMTInfo.hh"
+
 #include "OCAPMTStore.hh"
 #include "OCAPMT.hh"
 #include "OCADB.hh"
@@ -42,12 +45,14 @@
 
 using namespace std;
 using namespace OCA;
+using namespace RAT;
+using namespace RAT::DU;
 
 // Declare the functions in this macro
 vector< Float_t > GetRawEffAvg( std::string fileName );
 vector< Float_t > GetRunEff( std::string fileName );
-vector< Float_t > GetPMTCosTheta( std::string fileName );
-vector< Float_t > GetPMTPhi( std::string fileName );
+vector< Float_t > GetPMTCosTheta();
+vector< Float_t > GetPMTPhi();
 
 TCanvas* PlotPMTAvgEfficiencies( std::string fileName );
 TCanvas* PlotPMTRunEfficiencies( std::string fileName );
@@ -61,8 +66,8 @@ TCanvas* PlotPMTAvgEfficiencies( std::string fileName )
   // Start by plotting the average raw efficiencies of the PMTs,
   // both the distribution and a PMT map.
   vector< Float_t > rawEffAvg   = GetRawEffAvg( fileName );
-  vector< Float_t > pmtCosTheta = GetPMTCosTheta( fileName );
-  vector< Float_t > pmtPhi      = GetPMTPhi( fileName );
+  vector< Float_t > pmtCosTheta = GetPMTCosTheta();
+  vector< Float_t > pmtPhi      = GetPMTPhi();
  
   TH1F* HAEFF = new TH1F("Average Efficiency Distribution", "Average Efficiency Distribution", 250, 0.0, 0.5);
 
@@ -122,8 +127,8 @@ TCanvas* PlotPMTRunEfficiencies( std::string fileName )
   // Start by plotting the raw efficiencies of the PMTs,
   // both the distribution and a PMT map.
   vector< Float_t > runEff      = GetRunEff( fileName );
-  vector< Float_t > pmtCosTheta = GetPMTCosTheta( fileName );
-  vector< Float_t > pmtPhi      = GetPMTPhi( fileName );
+  vector< Float_t > pmtCosTheta = GetPMTCosTheta();
+  vector< Float_t > pmtPhi      = GetPMTPhi();
  
   TCanvas* c1 = new TCanvas( "c1", "Run Efficiency Distribution", 600, 400 );
   c1->Print(Form("%s[",outplots));
@@ -247,76 +252,48 @@ vector< Float_t > GetRunEff( std::string fileName )
 ////////////////////////////////////////////////////
 
 // Get the PMT cosTheta coordinate for mapping the efficiencies
-vector< Float_t > GetPMTCosTheta( std::string fileName )
+vector< Float_t > GetPMTCosTheta()
 {
 
   vector< Float_t > cosTheta;
 
-  OCADB lDB;
-  string outputDir = lDB.GetOutputDir();
-  string filePath = outputDir + "fits/" + fileName;
-  cout << "Opening File: " << filePath << endl;
-  TFile *dataFile = TFile::Open( filePath.c_str(), "READ" );
+  RAT::DU::Utility::Get()->LoadDBAndBeginRun();
+  PMTInfo pmtInfo = Utility::Get()->GetPMTInfo();
 
-  TTree *fileTree = new TTree();
-  Float_t pmtsCosTheta[ 10000 ];
-  for( Int_t i = 0; i < 10000; i++ ){ pmtsCosTheta[ i ] = 0; }
+  for ( Int_t iPMT = 0; iPMT < (Int_t)pmtInfo.GetCount(); iPMT++ ){
 
-  fileTree = (TTree*)dataFile->Get( "pmt-efficiencies;1" );
-  fileTree->SetBranchAddress( "pmtsCosTheta", &pmtsCosTheta );
+    if ( pmtInfo.GetType( iPMT ) != 1 ){ continue; }
 
-  for ( Int_t i = 0; i < 10000; i++ ){
-
-    fileTree->GetEntry( i );
-
-    cosTheta.push_back( pmtsCosTheta[ i ] );
-
+    else{
+      cosTheta.push_back( pmtInfo.GetPosition( iPMT ).CosTheta() );
+    }
   }
-
-  fileTree->ResetBranchAddresses();
 
   return cosTheta;
 
-  dataFile->Close();
-  delete dataFile;
 }
 
 ////////////////////////////////////////////////////
 ////////////////////////////////////////////////////
 
 // Get the PMT phi coordinate for mapping the efficiencies
-vector< Float_t > GetPMTPhi( std::string fileName )
+vector< Float_t > GetPMTPhi()
 {
 
   vector< Float_t > phi;
 
-  OCADB lDB;
-  string outputDir = lDB.GetOutputDir();
-  string filePath = outputDir + "fits/" + fileName;
-  cout << "Opening File: " << filePath << endl;
-  TFile *dataFile = TFile::Open( filePath.c_str(), "READ" );
+  RAT::DU::Utility::Get()->LoadDBAndBeginRun();
+  PMTInfo pmtInfo = Utility::Get()->GetPMTInfo();
 
-  TTree *fileTree = new TTree();
+  for ( Int_t iPMT = 0; iPMT < (Int_t)pmtInfo.GetCount(); iPMT++ ){
 
-  Float_t pmtsPhi[ 10000 ];
-  for( Int_t i = 0; i < 10000; i++ ){ pmtsPhi[ i ] = 0; }
+    if ( pmtInfo.GetType( iPMT ) != 1 ){ continue; }
 
-  fileTree = (TTree*)dataFile->Get( "pmt-efficiencies;1" );
-  fileTree->SetBranchAddress( "pmtsPhi", &pmtsPhi );
-
-  for ( Int_t i = 0; i < 10000; i++ ){
-
-    fileTree->GetEntry( i );
-
-    phi.push_back( pmtsPhi[ i ] );
-
+    else{
+      phi.push_back( pmtInfo.GetPosition( iPMT ).Phi() );
+    }
   }
 
-  fileTree->ResetBranchAddresses();
-
   return phi;
-
-  dataFile->Close();
-  delete dataFile;
 
 }
