@@ -7,6 +7,7 @@
 #include "RAT/DU/LightPathCalculator.hh"
 #include "RAT/DU/ShadowingCalculator.hh"
 #include "RAT/DU/ChanHWStatus.hh"
+#include <RAT/PhysicsUtil.hh>
 
 #include "OCARun.hh"
 #include "OCADB.hh"
@@ -301,7 +302,7 @@ void OCARun::FillPMTInfo( RAT::DU::LightPathCalculator& lLP,
   Int_t pmtID = 0;
 
   // Get the wavelength of the laser light in units of MeV.
-  Double_t wavelengthMeV = lLP.WavelengthToEnergy( GetLambda() * 1.0e-6 );
+  Double_t wavelengthMeV = RAT::util::WavelengthToEnergy( GetLambda() * 1.0e-6 );
   
   // Set the PMT positions and normals and then 'feed' the PMT a calculated light path.
   // The PMT 'eats' this light path and calculates it's member variables
