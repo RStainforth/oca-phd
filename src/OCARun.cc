@@ -269,13 +269,17 @@ void OCARun::FillRunInfo( RAT::DS::SOC* socPtr,
   }
   if ( lbPosMode == 3 ){
     // The fitted laserball position.
-    RAT::DS::FitResult lbFit = socPtr->GetFitResult( "lbfit" );
-    RAT::DS::FitVertex lbVertex = lbFit.GetVertex( 0 );
-    
-    SetLBPos( lbVertex.GetPosition() );
-    SetLBXPosErr( lbVertex.GetPositivePositionError().X() );
-    SetLBXPosErr( lbVertex.GetPositivePositionError().Y() );
-    SetLBXPosErr( lbVertex.GetPositivePositionError().Z() );
+    vector<string> fitNames = socPtr->GetFitNames();
+    for( vector<string>::iterator iFitName = fitNames.begin(); iFitName != fitNames.end(); iFitName++ ){
+      cout << *iFitName << endl;
+      RAT::DS::FitResult lbFit = socPtr->GetFitResult( *iFitName );
+      RAT::DS::FitVertex lbVertex = lbFit.GetVertex( 0 );
+ 
+      SetLBPos( lbVertex.GetPosition() );
+      SetLBXPosErr( lbVertex.GetPositivePositionError().X() );
+      SetLBXPosErr( lbVertex.GetPositivePositionError().Y() );
+      SetLBXPosErr( lbVertex.GetPositivePositionError().Z() );
+    }
   }
 
   if ( copyPMTInfo ){
