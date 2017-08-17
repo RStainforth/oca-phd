@@ -454,13 +454,13 @@ int main( int argc, char** argv ){
     cout << "Adding wavelength off-axis run SOC file: " << endl;
     cout << wrIDStr + (string)"_Run.root" << endl;
     AddSOCTree( ( socRunDir + wrIDStr + (string)"_Run.root" ).c_str(), socPtrs[ 2 ] );
-
     cout << "Now filling run information from wavelength off-axis run SOC file...";
     lWRRunPtr->FillRunInfo( socPtrs[ 2 ], wrID, 3, false );
     lRunPtr->SetLBPos( lWRRunPtr->GetLBPos() ); 
     lRunPtr->SetLBXPosErr( lWRRunPtr->GetLBXPosErr() );
     lRunPtr->SetLBYPosErr( lWRRunPtr->GetLBYPosErr() );
     lRunPtr->SetLBZPosErr( lWRRunPtr->GetLBZPosErr() );
+    cout << "done." << endl;
     delete lWRRunPtr;
     delete socPtrs[ 2 ];
     cout << "--------------------------" << endl;
@@ -734,4 +734,5 @@ void AddSOCTree( const char* fileName, RAT::DS::SOC* socPtr )
   *socPtr = *tmpSoc;
   delete tmpSoc;
   socFile->Close();
+
 }
