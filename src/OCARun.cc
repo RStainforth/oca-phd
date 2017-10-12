@@ -276,27 +276,26 @@ void OCARun::FillRunInfo( RAT::DS::SOC* socPtr,
     if ( !fitNames.empty() ){
       for ( vector<string>::iterator iFitName = fitNames.begin(); iFitName != fitNames.end(); iFitName++ ){
 
-	       // Check if the laserball position fit with default name "lbfit" exists.
-	       if ( *iFitName == "lbfit" ){
-	         foundFit = 1;
+        // Check if the laserball position fit with default name "lbfit" exists.
+        if ( *iFitName == "lbfit" ){
+          foundFit = 1;
+          // Check if the fit result is valid.
+          if ( socPtr->GetFitResult("lbfit").GetValid() ){
 
-	         // Check if the fit result is valid.
-	         if ( socPtr->GetFitResult("lbfit").GetValid() ){
+            RAT::DS::FitResult lbFit = socPtr->GetFitResult( "lbfit" );
+            RAT::DS::FitVertex lbVertex = lbFit.GetVertex( 0 );
 
-	           RAT::DS::FitResult lbFit = socPtr->GetFitResult( "lbfit" );
-	           RAT::DS::FitVertex lbVertex = lbFit.GetVertex( 0 );
-
- 	           SetLBPos( lbVertex.GetPosition() );
- 	           SetLBXPosErr( lbVertex.GetPositivePositionError().X() );
-	           SetLBXPosErr( lbVertex.GetPositivePositionError().Y() );
-	           SetLBXPosErr( lbVertex.GetPositivePositionError().Z() );
-	         }
-	         // If the fit result is not valid, use the manipulator position.
-	         else {
-	           cout << "OCARun::FillRunInfo: The Laserball Position Fit result is not valid! Will use the manipulator position.\n";
-	           SetLBPos( socPtr->GetCalib().GetPos() );
-           }
-         }
+            SetLBPos( lbVertex.GetPosition() );
+            SetLBXPosErr( lbVertex.GetPositivePositionError().X() );
+            SetLBXPosErr( lbVertex.GetPositivePositionError().Y() );
+            SetLBXPosErr( lbVertex.GetPositivePositionError().Z() );
+          }
+          // If the fit result is not valid, use the manipulator position.
+          else {
+            cout << "OCARun::FillRunInfo: The Laserball Position Fit result is not valid! Will use the manipulator position.\n";
+            SetLBPos( socPtr->GetCalib().GetPos() );
+          }
+        }
       }
       // If "lbfit" does not exist, check the other fits in the SOC file.
       if ( foundFit == 0 ){
