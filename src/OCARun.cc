@@ -300,7 +300,11 @@ void OCARun::FillRunInfo( RAT::DS::SOC* socPtr,
       // If "lbfit" does not exist, check the other fits in the SOC file.
       if ( foundFit == 0 ){
 
-        cout << "OCARun::FillRunInfo: There are " << fitNames.size() << " fit names in the SOC file! Will use by default the last one, called " << fitNames.back() << ".\n";
+        cout << "OCARun::FillRunInfo: There are " << fitNames.size() << " fit names in the SOC file! Their names are: \n"; 
+        for ( vector<string>::iterator iFitName = fitNames.begin(); iFitName != fitNames.end(); iFitName++ ){
+          cout << " - " << *iFitName << ".\n";
+        }
+        cout << "Will use by default the last one from the list.\n";
 
         RAT::DS::FitResult lbFit = socPtr->GetFitResult( fitNames.back() );
         RAT::DS::FitVertex lbVertex = lbFit.GetVertex( 0 );
