@@ -734,5 +734,5 @@ void AddSOCTree( const char* fileName, RAT::DS::SOC* socPtr )
   *socPtr = *tmpSoc;
   delete tmpSoc;
   socFile->Close();
-  
+
 }

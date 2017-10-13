@@ -9,4 +9,3 @@ The RDT files can be downloaded from here:
 science1.snolab.ca:/users/rstainforth/rdt/oct03
 
 To download these files, run the download_oct03_rdt.sh script in this directory
-

@@ -35,7 +35,7 @@ OCA interfaces with the RAT libraries in order to read SOC files. In converting 
 
 Prerequisites
 ==========
-OCA requires a local installation of RAT. The most recent version of RAT for which OCA has found to be compatible is RAT 5.3.1
+OCA requires a local installation of RAT. OCA is only compatible with RAT versions after 6.2.11.
 
 Installation
 ==========

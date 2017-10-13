@@ -7,6 +7,7 @@
 #include "RAT/DU/LightPathCalculator.hh"
 #include "RAT/DU/ShadowingCalculator.hh"
 #include "RAT/DU/ChanHWStatus.hh"
+#include <RAT/PhysicsUtil.hh>
 
 #include "OCARun.hh"
 #include "OCADB.hh"
@@ -268,13 +269,57 @@ void OCARun::FillRunInfo( RAT::DS::SOC* socPtr,
   }
   if ( lbPosMode == 3 ){
     // The fitted laserball position.
-    RAT::DS::FitResult lbFit = socPtr->GetFitResult( "lbfit" );
-    RAT::DS::FitVertex lbVertex = lbFit.GetVertex( 0 );
-    
-    SetLBPos( lbVertex.GetPosition() );
-    SetLBXPosErr( lbVertex.GetPositivePositionError().X() );
-    SetLBXPosErr( lbVertex.GetPositivePositionError().Y() );
-    SetLBXPosErr( lbVertex.GetPositivePositionError().Z() );
+    vector<string> fitNames = socPtr->GetFitNames();  
+    Int_t foundFit = 0;
+
+    // Check if there are fit results stored in the SOC file.
+    if ( !fitNames.empty() ){
+      for ( vector<string>::iterator iFitName = fitNames.begin(); iFitName != fitNames.end(); iFitName++ ){
+
+        // Check if the laserball position fit with default name "lbfit" exists.
+        if ( *iFitName == "lbfit" ){
+          foundFit = 1;
+          // Check if the fit result is valid.
+          if ( socPtr->GetFitResult("lbfit").GetValid() ){
+
+            RAT::DS::FitResult lbFit = socPtr->GetFitResult( "lbfit" );
+            RAT::DS::FitVertex lbVertex = lbFit.GetVertex( 0 );
+
+            SetLBPos( lbVertex.GetPosition() );
+            SetLBXPosErr( lbVertex.GetPositivePositionError().X() );
+            SetLBXPosErr( lbVertex.GetPositivePositionError().Y() );
+            SetLBXPosErr( lbVertex.GetPositivePositionError().Z() );
+          }
+          // If the fit result is not valid, use the manipulator position.
+          else {
+            cout << "OCARun::FillRunInfo: The Laserball Position Fit result is not valid! Will use the manipulator position.\n";
+            SetLBPos( socPtr->GetCalib().GetPos() );
+          }
+        }
+      }
+      // If "lbfit" does not exist, check the other fits in the SOC file.
+      if ( foundFit == 0 ){
+
+        cout << "OCARun::FillRunInfo: There are " << fitNames.size() << " fit names in the SOC file! Their names are: \n"; 
+        for ( vector<string>::iterator iFitName = fitNames.begin(); iFitName != fitNames.end(); iFitName++ ){
+          cout << " - " << *iFitName << ".\n";
+        }
+        cout << "Will use by default the last one from the list.\n";
+
+        RAT::DS::FitResult lbFit = socPtr->GetFitResult( fitNames.back() );
+        RAT::DS::FitVertex lbVertex = lbFit.GetVertex( 0 );
+	
+        SetLBPos( lbVertex.GetPosition() );
+        SetLBXPosErr( lbVertex.GetPositivePositionError().X() );
+        SetLBXPosErr( lbVertex.GetPositivePositionError().Y() );
+        SetLBXPosErr( lbVertex.GetPositivePositionError().Z() );
+      }
+    }
+    // If there are no fit results in the SOC file, use the manipulator position.
+    else {
+      cout << "OCARun::FillRunInfo: There are no Laserball Position Fit results in this SOC file! Will use the manipulator position.\n";
+      SetLBPos( socPtr->GetCalib().GetPos() );
+    }
   }
 
   if ( copyPMTInfo ){
@@ -301,7 +346,7 @@ void OCARun::FillPMTInfo( RAT::DU::LightPathCalculator& lLP,
   Int_t pmtID = 0;
 
   // Get the wavelength of the laser light in units of MeV.
-  Double_t wavelengthMeV = lLP.WavelengthToEnergy( GetLambda() * 1.0e-6 );
+  Double_t wavelengthMeV = RAT::util::WavelengthToEnergy( GetLambda() * 1.0e-6 );
   
   // Set the PMT positions and normals and then 'feed' the PMT a calculated light path.
   // The PMT 'eats' this light path and calculates it's member variables
