@@ -694,7 +694,7 @@ void LBOrientation::WriteToFile(){
   /// Saves the parameters to an ".ocadb" file.
 
   Char_t fileName[60];
-  sprintf(fileName,"lb_oct15_water_%d.ocadb",(Int_t)fLambda);
+  sprintf(fileName,"../../data/lbdistparameters/lb_oct15_water_%d.ocadb",(Int_t)fLambda);
 
   ofstream output;
   output.precision( 6 );
