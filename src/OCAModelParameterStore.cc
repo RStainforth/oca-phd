@@ -936,60 +936,47 @@ void OCAModelParameterStore::WriteToOCADBFile( const char* fileName )
     roccVals << "laserball_distribution_number_of_parameters_per_cos_theta_slice : " << nParsPerSlice << ",\n";
     roccVals << "laserball_distribution_sin_wave : [ ";
     for ( Int_t iPar = 0; iPar < ( nThetaSlices * nParsPerSlice ); iPar++ ){
-
-      if ( iPar % 2 == 1 && iPar == ( nThetaSlices * nParsPerSlice - 1 ) ){
+      if ( iPar == ( nThetaSlices * nParsPerSlice - 1 ) ){
         roccVals << lbDistPtr[ iPar ] << " ],\n";
       }
-      if ( iPar != 0 && iPar % 8 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
-        roccVals << lbDistPtr[ iPar ] << ",\n";
-      }
-      else if ( iPar % 2 == 1 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
+      else if ( iPar % 2 == 0 ){
         roccVals << lbDistPtr[ iPar ] << ", ";
       }
-      else if ( iPar % 2 == 0  && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
-        roccVals << lbDistPtr[ iPar ] << ",     ";
-      }     
-      roccVals << "\n";
+      else if ( iPar % 2 == 1 ){
+        roccVals << lbDistPtr[ iPar ] << ",    ";
+      }    
     }
+    roccVals << "\n";
     roccVals << "laserball_distribution_errors : [ ";
     for ( Int_t iPar = 0; iPar < ( nThetaSlices * nParsPerSlice ); iPar++ ){
-				
-			if ( fParametersVary[ GetLBDistributionParIndex() + iPar ] ){
-					
-				if ( iPar % 2 == 1 && iPar == ( nThetaSlices * nParsPerSlice - 1 ) ){
-					roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << " ],\n";
-				}
-				if ( iPar != 0 && iPar % 8 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
-					roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ",\n";
-				}
-				else if ( iPar % 2 == 1 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
-					roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ", ";
-				}
-				else if ( iPar % 2 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
-					roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ",     ";
-				}
-				roccVals << "\n";
-			}
-			else{
-					
-			  /*			if ( iPar % 2 == 1 && iPar == ( nThetaSlices * nParsPerSlice - 1 ) ){
-					roccVals << fSinWaveErr[ iPar ] << " ],\n";
-				}
-				if ( iPar != 0 && iPar % 8 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
-					roccVals << fSinWaveErr[ iPar ] << ",\n";
-				}
-				else if ( iPar % 2 == 1 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
-					roccVals << fSinWaveErr[ iPar ] << ", ";
-				}
-				else if ( iPar % 2 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
-					roccVals << fSinWaveErr[ iPar ] << ",     ";
-				}
-				roccVals << "\n";*/
-			}
+      // If parameters varied in the fit, get errors from Covariance Matrix
+      if ( fParametersVary[ GetLBDistributionParIndex() + iPar ] ){
+        if ( iPar == ( nThetaSlices * nParsPerSlice - 1 ) ){
+          roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << " ],\n";
+        }
+        else if ( iPar % 2 == 0 ){
+          roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ", ";
+        }
+        else if ( iPar % 2 == 1 ){
+          roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ",    ";
+        }
+      }
+      // If not, grab errors that were seeded  		  	
+      else{
+        if ( iPar == ( nThetaSlices * nParsPerSlice - 1 ) ){
+          roccVals << fSinWaveErr[ iPar ] << " ],\n";
+        }
+        else if ( iPar % 2 == 0 ){
+          roccVals << fSinWaveErr[ iPar ] << ", ";
+        }
+        else if ( iPar % 2 == 1 ){
+          roccVals << fSinWaveErr[ iPar ] << ",    ";
+        }					
+      }
     } 
     roccVals << "\n";
   }
-
+	
   roccVals << "// The PMT angular response parameters.\n";
   Int_t nPMTAngPars = GetNPMTAngularResponseBins();
   Float_t* pmtAngPtr = &fParametersPtr[ GetPMTAngularResponseParIndex() ];
