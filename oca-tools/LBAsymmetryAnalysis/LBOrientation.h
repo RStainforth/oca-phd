@@ -77,18 +77,18 @@ class LBOrientation : public TObject {
 
  protected: 
 
-  Int_t	      fLambda;                                    // Wavelength
-  std::string      fPath;
+  Int_t       fLambda;                                    // Wavelength
+  std::string fPath;                                      // Path to SOC files
 
-  Int_t	      fOrientation[NRUNS];                        // Source orientation
+  Int_t       fOrientation[NRUNS];                        // Source orientation
 
-  Int_t	      fNPMTs0[NTHETA];                            // # of PMTs in run with orientation 0 (E)
-  Int_t	      fNPMTs1[NTHETA];                            // # of PMTs in run with orientation 1 (N)    
-  Int_t	      fNPMTs2[NTHETA];                            // # of PMTs in run with orientation 2 (W)
-  Int_t	      fNPMTs3[NTHETA];                            // # of PMTs in run with orientation 3 (S)
+  Int_t       fNPMTs0[NTHETA];                            // # of PMTs in run with orientation 0 (E)
+  Int_t       fNPMTs1[NTHETA];                            // # of PMTs in run with orientation 1 (N)    
+  Int_t       fNPMTs2[NTHETA];                            // # of PMTs in run with orientation 2 (W)
+  Int_t       fNPMTs3[NTHETA];                            // # of PMTs in run with orientation 3 (S)
 
-  Int_t	      fNPMTs[NRUNS];                              // # of PMTs
-  Int_t	      fRun[NRUNS];                                // Run ID
+  Int_t       fNPMTs[NRUNS];                              // # of PMTs
+  Int_t       fRun[NRUNS];                                // Run ID
   Double_t    fSourceWL[NRUNS];                           // Source wavelength
   TVector3    fSourcePos[NRUNS];                          // Source position
   TVector3    fSourceDir[NRUNS];                          // Source direction
