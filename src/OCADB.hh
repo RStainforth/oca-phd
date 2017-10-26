@@ -98,6 +98,9 @@ namespace OCA{
 
     // Get the full path directory to the fit files directory
     string GetFitFilesDir(){ return fFitFilesDir; }
+    
+    // Get the full path directory to the fit files directory
+    string GetLBFilesDir(){ return fLBFilesDir; }
 
     // Get a field of type 'string' from the current 'fit-file'
     // based on the table name, 'tableName', field name 'fieldName
@@ -192,6 +195,8 @@ namespace OCA{
                                      // the systematics files are held.
     string fFitFilesDir;             // The full system path of the directory where 
                                      // the fit files are held.
+    string fLBFilesDir;              // The full system path of the directory where 
+                                     // the LB Distribution files are held.
     
     ClassDef( OCADB, 1 );
     
