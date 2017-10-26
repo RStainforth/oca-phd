@@ -12,6 +12,7 @@
 ///
 /// REVISION HISTORY:
 ///     04/2015 : RPFS - First Revision, new file.
+///     10/2017 : A.S.Inacio - Adapted code to receive LAA parameters as input.
 ///
 /// DETAIL: This object holds several 
 ///         OCAModelParameter objects together which collectively
@@ -58,6 +59,9 @@ namespace OCA{
     // Seed Parameters from a pre-existing file
     Bool_t SeedParameters( string& seedFilename, 
                            string& fitFileName );
+			   
+    // Seed LB Sinusoidal Wave Parameters from a pre-existing file
+    void SeedLBSinWaveParameters( string& fileName );
 
     // Add a complete set of parameters from a 'fit-file'.
     void AddParameters( string& fileName );
@@ -71,7 +75,7 @@ namespace OCA{
 
     // Write the parameters to a .ocadb file
     void WriteToOCADBFile( const char* fileName = "OCAModelParameterStore.ocadb" );
-
+		
     // Allocate the memory for the parameter arrays.
     void AllocateParameterArrays();
 
@@ -484,8 +488,11 @@ namespace OCA{
                                                             //     pmt_variability( theta ) = p0 
                                                             //                                + p1 * theta
                                                             //                                + p2 * theta * theta
+				
+    vector< Double_t > fSinWavePars;			    // Stores the LB sin wave parameters if they are seeded 
+    vector< Double_t > fSinWaveErr;			    // Stores the LB sin wave parameter errors if they are seeded 
 
-    ClassDef( OCAModelParameterStore, 1 )
+    ClassDef( OCAModelParameterStore, 7 )
 
   };
 
