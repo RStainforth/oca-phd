@@ -89,7 +89,10 @@ OCAModelParameterStore::OCAModelParameterStore( string& storeName )
   fPMTVariabilityParameters( 0 ) = -999;
   fPMTVariabilityParameters( 1 ) = -999;
   fPMTVariabilityParameters( 2 ) = -999;
-  
+
+  fSinWavePars.clear();
+  fSinWaveErr.clear();
+
 }
 
 //////////////////////////////////////
@@ -102,8 +105,8 @@ OCAModelParameterStore::~OCAModelParameterStore()
   //        however I ran into seg faults (on a MAC laptop), maybe it works better on linux. In which
   //        case the below lines should really be un-commented.
 
-  //if ( fCurrentAngularResponseBins != NULL && fStoreName != "" ){ delete [] fCurrentAngularResponseBins; }
-  //if ( fCurrentLBDistributionBins != NULL && fStoreName != "" ){ delete [] fCurrentLBDistributionBins; }
+  if ( fCurrentAngularResponseBins != NULL && fStoreName != "" ){ delete [] fCurrentAngularResponseBins; }
+  if ( fCurrentLBDistributionBins != NULL && fStoreName != "" ){ delete [] fCurrentLBDistributionBins; }
 
 }
 
@@ -388,6 +391,53 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
 //////////////////////////////////////
 //////////////////////////////////////
 
+void OCAModelParameterStore::SeedLBSinWaveParameters( string& fileName )
+{
+
+  // The idea of this is to seed the Laserball Sin Wave parameter values and statistical errors from
+  // a file created by the Laserball Asymmetry Analysis, and use them in the fit as fixed parameters.
+
+  cout << "Seeding LB SinWave Parameters from " << fileName << endl;
+
+  // Create a OCADB object so that the fitfile can be read.
+  OCADB lDB;
+
+  // Tell the OCADB object where to read the information from.
+  lDB.SetFile( fileName.c_str() );
+
+  // String stream and temport string object for string concatenation.
+  stringstream lStream;
+  string parStr = "";
+
+  // Get the list of the parameters to be included in the parameter store.
+  vector< string > paramList = lDB.GetStringVectorField( "LBFITRESULTS", "parameters_list", "LBparameter_setup" );
+  
+  // Gets the number of cosTheta slices and the number of parameters per slice.
+  for ( Int_t iStr = 0; iStr < (Int_t)paramList.size(); iStr++ ){
+    if ( paramList[ iStr ] == "laserball_distribution" ){
+      fNLBSinWaveSlices = lDB.GetIntField( "LBFITRESULTS", (string)( paramList[ iStr ] + "_number_of_cos_theta_slices" ), "LBparameter_setup" );
+      fNLBParametersPerSinWaveSlice = lDB.GetIntField( "LBFITRESULTS", (string)( paramList[ iStr ] + "_number_of_parameters_per_cos_theta_slice" ), "LBparameter_setup" );
+		
+      fNLBDistributionPars = fNLBSinWaveSlices * fNLBParametersPerSinWaveSlice;
+		
+      cout << "Seeding Sin Wave Slices: " << fNLBSinWaveSlices << endl;   
+      cout << "Seeding Laserball Parameters Per Slice: " << fNLBParametersPerSinWaveSlice << endl;
+      cout << "Seeding Laserball Distribution Pars: " << fNLBDistributionPars << endl;
+		
+      // Get the list of the sin wave parameter values.
+      fSinWavePars = lDB.GetDoubleVectorField( "LBFITRESULTS", (string)( paramList[ iStr ] + "_sin_wave"), "LBparameter_setup" );
+      fSinWaveErr  = lDB.GetDoubleVectorField( "LBFITRESULTS", (string)( paramList[ iStr ] + "_errors"), "LBparameter_setup" );
+    }
+    else{
+      cout << "The file does not contain laserball_distribution parameters! " << endl;
+      break;
+    }
+  }
+}
+
+//////////////////////////////////////
+//////////////////////////////////////
+
 void OCAModelParameterStore::AddParameters( string& fileName )
 {
 
@@ -439,7 +489,7 @@ void OCAModelParameterStore::AddParameters( string& fileName )
       fNPMTAngularResponseBins = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_number_of_bins" ), "parameter_setup" );
     }
 
-    // Laserball distribution hisotgram.
+    // Laserball distribution histogram.
     else if ( paramList[ iStr ] == "laserball_distribution" ){
       fLBDistributionType = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_type" ), "parameter_setup" );
       if ( fLBDistributionType == 0 ){
@@ -584,10 +634,7 @@ void OCAModelParameterStore::AddParameters( string& fileName )
           lStream << iPar;
           lStream >> parStr;
           
-          Int_t parIndex = 3 + 
-            fNLBDistributionMaskParameters +
-            ( fNPMTAngularResponseBins * iDist ) +
-            iPar;
+          Int_t parIndex = 3 + fNLBDistributionMaskParameters + ( fNPMTAngularResponseBins * iDist ) + iPar;
           OCAModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, 
                                         minVal, maxVal, incVal, nParsInGroup, parVary );
           AddParameter( lParameter );
@@ -609,37 +656,43 @@ void OCAModelParameterStore::AddParameters( string& fileName )
       }
 
       varyBool = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
+      Bool_t seedBool = lDB.GetIntField( "FITFILE", (string)( paramList[ iStr ] + "_seed" ), "parameter_setup" );
 
-      // Now loop over each angular response parameter and initialise its initial values;
+      if ( seedBool == true && fLBDistributionType == 1 ){ 
+        // Seed the sinusoidal angular distribution parameters from the ocadb files
+        string lbParsPath = lDB.GetLBFilesDir();
+        string lbFileName = lDB.GetStringField( "FITFILE", (string)( paramList[ iStr ] + "_seed_parameters" ), "parameter_setup" );
+        string seedFileName = (lbParsPath + lbFileName);
+        SeedLBSinWaveParameters( seedFileName );
+      }
+
       for ( Int_t iPar = 1; iPar <= fNLBDistributionPars; iPar++ ){
-        //Bool_t parVary = varyBool;
-        if ( fLBDistributionType == 0 ){ initVal = 1.0; }
-        if ( fLBDistributionType == 1 && iPar % 2 == 1 ){ initVal = 0.01; }
-        if ( fLBDistributionType == 1 && iPar % 2 == 0 ){ initVal = 1.0; }
-        //if ( fLBDistributionType == 1 && iPar == 1 ){ parVary = false; }
-        // The laserball distribution parameters in the histogram will not vary beyond 0.0 and 2.0, so set
-        // these accordingly
+	  
+        if ( seedBool == true && fLBDistributionType == 1 ){ 
+          initVal = fSinWavePars[ iPar - 1];
+	}
+        else{
+          if ( fLBDistributionType == 0 ){ initVal = 1.0; }
+          if ( fLBDistributionType == 1 && iPar % 2 == 1 ){ initVal = 0.01; }
+          if ( fLBDistributionType == 1 && iPar % 2 == 0 ){ initVal = 1.0; }
+	}
+			
+        // The laserball distribution parameters in the histogram will not vary beyond 0.0 and 2.0, so set these accordingly
         minVal = 0.0;
         maxVal = 2.0;
-
         // The increment value is currently not used, so set to something unphysical (might have use for this in a future fitting routine)
         incVal = -10.0;
 
         lStream << "_";
         lStream << iPar;
         lStream >> parStr;
-
-        Int_t parIndex = 3 + 
-          fNLBDistributionMaskParameters + 
-          ( fNPMTAngularResponseBins * fNPMTAngularResponseDistributions ) + 
-          iPar;
-        OCAModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, 
-                                        minVal, maxVal, incVal, fNLBDistributionPars, varyBool );
+	    
+        Int_t parIndex = 3 + fNLBDistributionMaskParameters + ( fNPMTAngularResponseBins * fNPMTAngularResponseDistributions ) + iPar;
+        OCAModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, fNLBDistributionPars, varyBool );
         AddParameter( lParameter );
         
         lStream.clear();
       }
-
     }
 
     if ( paramList[ iStr ] == "laserball_run_normalisation" ){
@@ -687,7 +740,7 @@ void OCAModelParameterStore::AddParameters( string& fileName )
   if ( fWaterFill ){ fParameters[ GetWaterExtinctionLengthParIndex() - 1 ].SetVary( false ); }
 
   fNParameters = (Int_t)fParameters.size();
-
+  
   AllocateParameterArrays();
 }
 
@@ -696,7 +749,8 @@ void OCAModelParameterStore::AddParameters( string& fileName )
 
 void OCAModelParameterStore::WriteToROOTFile( string& fileName, 
                                               string& branchName )
-{
+{ 
+
   TFile* file = NULL;
 
   // Check that the main-run file exists
@@ -883,39 +937,59 @@ void OCAModelParameterStore::WriteToOCADBFile( const char* fileName )
     roccVals << "laserball_distribution_sin_wave : [ ";
     for ( Int_t iPar = 0; iPar < ( nThetaSlices * nParsPerSlice ); iPar++ ){
 
-      if ( iPar % 2 == 0 && iPar == ( nThetaSlices * nParsPerSlice - 1 ) ){
+      if ( iPar % 2 == 1 && iPar == ( nThetaSlices * nParsPerSlice - 1 ) ){
         roccVals << lbDistPtr[ iPar ] << " ],\n";
       }
-      if ( iPar % 2 == 0 && iPar % 8 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 ) ){
+      if ( iPar != 0 && iPar % 8 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
         roccVals << lbDistPtr[ iPar ] << ",\n";
       }
-      else if ( iPar % 2 == 1 && iPar < ( nThetaSlices * nParsPerSlice - 1 ) ){
+      else if ( iPar % 2 == 1 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
         roccVals << lbDistPtr[ iPar ] << ", ";
       }
-      else if ( iPar % 2 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 ) ){
+      else if ( iPar % 2 == 0  && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
         roccVals << lbDistPtr[ iPar ] << ",     ";
       }     
       roccVals << "\n";
     }
     roccVals << "laserball_distribution_errors : [ ";
     for ( Int_t iPar = 0; iPar < ( nThetaSlices * nParsPerSlice ); iPar++ ){
-
-      if ( iPar % 2 == 0 && iPar == ( nThetaSlices * nParsPerSlice - 1 ) ){
-        roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << " ],\n";
-      }
-      if ( iPar % 2 == 0 && iPar % 8 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 ) ){
-        roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ",\n";
-      }
-      else if ( iPar % 2 == 1 && iPar < ( nThetaSlices * nParsPerSlice - 1 ) ){
-        roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ", ";
-      }
-      else if ( iPar % 2 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 ) ){
-        roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ",     ";
-      }
-    roccVals << "\n";
+				
+			if ( fParametersVary[ GetLBDistributionParIndex() + iPar ] ){
+					
+				if ( iPar % 2 == 1 && iPar == ( nThetaSlices * nParsPerSlice - 1 ) ){
+					roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << " ],\n";
+				}
+				if ( iPar != 0 && iPar % 8 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
+					roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ",\n";
+				}
+				else if ( iPar % 2 == 1 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
+					roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ", ";
+				}
+				else if ( iPar % 2 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
+					roccVals << TMath::Sqrt( fCovarianceMatrix[ GetLBDistributionParIndex() + iPar ][ GetLBDistributionParIndex() + iPar ] ) << ",     ";
+				}
+				roccVals << "\n";
+			}
+			else{
+					
+			  /*			if ( iPar % 2 == 1 && iPar == ( nThetaSlices * nParsPerSlice - 1 ) ){
+					roccVals << fSinWaveErr[ iPar ] << " ],\n";
+				}
+				if ( iPar != 0 && iPar % 8 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
+					roccVals << fSinWaveErr[ iPar ] << ",\n";
+				}
+				else if ( iPar % 2 == 1 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
+					roccVals << fSinWaveErr[ iPar ] << ", ";
+				}
+				else if ( iPar % 2 == 0 && iPar < ( nThetaSlices * nParsPerSlice - 1 )){
+					roccVals << fSinWaveErr[ iPar ] << ",     ";
+				}
+				roccVals << "\n";*/
+			}
     } 
     roccVals << "\n";
   }
+
   roccVals << "// The PMT angular response parameters.\n";
   Int_t nPMTAngPars = GetNPMTAngularResponseBins();
   Float_t* pmtAngPtr = &fParametersPtr[ GetPMTAngularResponseParIndex() ];
@@ -1349,7 +1423,7 @@ TH1F* OCAModelParameterStore::GetPMTAngularResponseHistogram( Int_t dist )
 
 Float_t OCAModelParameterStore::GetPMTAngularResponseError( const Int_t angPar, const Int_t dist )
 {
-  
+
   // Return the square root of the diagonal element in the
   // covariance matrix of the parameters corresponding to the PMT
   // response bin parameter 'angPar'.
