@@ -24,7 +24,7 @@
 ///
 ///         Or:
 ///		
-///           LBOrientation(<wavelength>)
+///           LBOrientation(<wavelength>,"<path_to_files_directory>")
 ///
 ////////////////////////////////////////////////////////////////////
 
