@@ -804,7 +804,7 @@ void LBOrientation::SetRATAmplitudesAndPhases(){
   // Fill the arrays amplitude and phase from sincoefs
   Int_t a = 0;
   Int_t p = 0;
-  for( Int_t i = 0; i < sincoefs.size(); i++ ){
+  for( size_t i = 0; i < sincoefs.size(); i++ ){
     if( i % 2 == 0 ){
       amplitude[a] = sincoefs[i];
       a++;
