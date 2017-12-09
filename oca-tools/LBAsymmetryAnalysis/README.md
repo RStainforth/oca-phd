@@ -8,7 +8,7 @@ Files
 
 * LBOrientation.C
 * LBOrientation.h
-* runlist.txt - contains the list of flipped runs for each wavelenght and laserball scan. It has the format `DataSet Wl #Runs RunID1 RunID2 RunID3 RunID4`
+* runlist.txt - contains the list of flipped runs for each wavelenght and laserball scan. It has the format `DataSet WL #Runs RunID1 RunID2 RunID3 RunID4`
 
 How To Run
 --------------------
@@ -16,7 +16,9 @@ How To Run
 1) Source env_oca_snoplus.sh
 2) Open root
 3) Compile LBOrientation.C
+
   `.L LBOrientation.C+`
+
 4) Run either:
-  - LBOrientation(), that performs the analysis for the default wavelength of 505 nm and uses the default path to the oct15 MC soc files in OCA_SNOPLUS_DATA/runs/soc/oct15/water
-  - LBOrientation( <wavelength>, "<path_to_files>" ), that performs the analysis for a user inputted wavelength and path to the soc files.
+  - `LBOrientation()`, that performs the analysis for the default wavelength of 505 nm and uses the default path to the oct15 MC soc files in `OCA_SNOPLUS_DATA/runs/soc/oct15/water`
+  - `LBOrientation( <wavelength>, "<path_to_files>" )`, that performs the analysis for a user inputted wavelength and path to the soc files.
