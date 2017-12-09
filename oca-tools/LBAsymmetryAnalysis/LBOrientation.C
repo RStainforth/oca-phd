@@ -38,12 +38,6 @@ ClassImp(LBOrientation);
 
 LBOrientation::LBOrientation(){
 
-  //  std::string default_path = "../../data/runs/soc/oct15/water/";
-  std::string default_path = "/lstore/sno/ainacio/oca-oca-snoplus/data/runs/soc/oct15/water/";
-  Int_t default_wl = 505;
-
-  SetLambda( default_wl );
-  SetPath( default_path );
   Initialize();
   ReadData();
   Ratios();
@@ -57,9 +51,9 @@ LBOrientation::LBOrientation(){
 
 LBOrientation::LBOrientation( Int_t lambda, const std::string& path ){
 
+  Initialize();
   SetLambda( lambda );
   SetPath( path );
-  Initialize();
   ReadData();
   Ratios();
   PlotResults();
@@ -78,6 +72,10 @@ LBOrientation::~LBOrientation(){
 //
 
 void LBOrientation::Initialize(){
+  
+  // Default parameters: wavelength of 505 nm, and path to the oct15 SOC files directory 
+  fLambda = 505;
+  fPath = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/runs/soc/oct15/water/";
 
   for( Int_t i = 0; i < NRUNS; i++ ){
     fNPMTs[i]        = 0;
