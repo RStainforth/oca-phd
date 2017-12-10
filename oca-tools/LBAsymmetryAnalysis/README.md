@@ -8,7 +8,7 @@ Files
 
 * LBOrientation.C
 * LBOrientation.h
-* runlist.txt - contains the list of flipped runs for each wavelenght and laserball scan. It has the format `DataSet WL #Runs RunID1 RunID2 RunID3 RunID4`
+* runlist.txt - contains the list of flipped runs for each wavelenght and laserball scan. It has the format `DataSet Phase  WL #Runs RunID1 RunID2 RunID3 RunID4`
 
 How To Run
 --------------------

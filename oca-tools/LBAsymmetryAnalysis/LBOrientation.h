@@ -74,13 +74,14 @@ class LBOrientation : public TObject {
     void PlotResults();
     void WriteToFile();
     void SetLambda( Int_t aNumber );
-    void SetPath( const std::string& path );	
-    void SetRATAmplitudesAndPhases();
+    void SetPath( const std::string& path );
 
   protected: 
 
     Int_t       fLambda;                                    // Wavelength
     std::string fPath;                                      // Path to SOC files
+    std::string fScan;                                      // Laserball scan, MMMYY
+    std::string fPhase;                                     // Data-taking phase: water, scintillator, te-loading
 
     Bool_t      lambdaValidity;                             // Validity of an user inputted wavelength
     Bool_t      pathValidity;                               // Validity of an user inputted path to the SOC files
@@ -126,16 +127,9 @@ class LBOrientation : public TObject {
     Double_t    fEratio13[NPHI],fEratio20[NPHI];            // Errors of the Ratios N/S and W/E (respectively)
 
     Double_t    fRatio20_90[NPHI],fEratio20_90[NPHI];       // Ratio W/E and errors shifted in phi by 90 degrees
-
-    Double_t    fRatNS[NPHI],fRatWE[NPHI];                  // Ratios N/S and W/E of the RAT parameters
-
-    Float_t     amplitude[NTHETA],phase[NTHETA];            // Arrays with LASERBALL.RATDB amplitudes and phases
-
-    std::vector<double> sincoefs;
 		
     TGraphErrors *GR13[NTHETA],*GR20[NTHETA];
     TGraphErrors *GR20_90[NTHETA];
-    TGraphErrors *GRATNS[NTHETA], *GRATWE[NTHETA];
 
     ClassDef(LBOrientation,2)
 };

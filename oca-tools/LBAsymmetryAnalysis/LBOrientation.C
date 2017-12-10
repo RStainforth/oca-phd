@@ -41,8 +41,8 @@ LBOrientation::LBOrientation(){
   Initialize();
   ReadData();
   Ratios();
-  //  PlotResults();
-  //  WriteToFile();
+  PlotResults();
+  WriteToFile();
 
 }
 
@@ -56,8 +56,8 @@ LBOrientation::LBOrientation( Int_t lambda ){
   if( !lambdaValidity ){ return; }
   ReadData();
   Ratios();
-  //  PlotResults();
-  //  WriteToFile();
+  PlotResults();
+  WriteToFile();
 
 }
 
@@ -71,8 +71,8 @@ LBOrientation::LBOrientation( Int_t lambda, const std::string& path ){
   if( !lambdaValidity && !pathValidity ){ return; }
   ReadData();
   Ratios();
-  //  PlotResults();
-  //  WriteToFile();
+  PlotResults();
+  WriteToFile();
 
 }
 
@@ -90,7 +90,9 @@ void LBOrientation::Initialize(){
   
   // Default parameters: wavelength of 505 nm, and path to the oct15 SOC files directory 
   fLambda = 505;
-  fPath = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/runs/soc/oct15/water/";
+  fPath = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/oct15/water/";
+  fScan = (string) "oct15";
+  fPhase = (string) "water";
 
   lambdaValidity = true;
   pathValidity = true;
@@ -174,20 +176,22 @@ void LBOrientation::ReadData(){
   /// source wavelength, source position vector, source orientations, PMT position, occupancy.
 
   Int_t wl,nr,rs[4];
-  Char_t ds[5],name[20];
+  Char_t ds[5],phase[20],name[20];
   sprintf(name,"runlist.txt");
   ifstream file(name);
 
   while( file.peek() != EOF ){
-    file >> ds >> wl >> nr >> rs[0] >> rs[1] >> rs[2] >> rs[3];
+    file >> ds >> phase >> wl >> nr >> rs[0] >> rs[1] >> rs[2] >> rs[3];
     if(fLambda == wl) break;
-  } 
+  }
+  fScan = ds;
+  fPhase = phase;
   for( Int_t i = 0; i < NRUNS; i++ ) fRun[i] = rs[i];
   file.close();
 
   /********** Opening and reading the SocFiles **********/
   RAT::DU::SOCReader *socreader;
-  RAT::DU::Utility::Get()->LoadDBAndBeginRun();
+  //  RAT::DU::Utility::Get()->LoadDBAndBeginRun();
 
   for( Int_t i = 0; i < NRUNS; i++ ){
     fNPMTs[i] = 0;
@@ -294,83 +298,64 @@ void LBOrientation::Ratios(){
       phi      = fPMTPos[i][j].Phi();
 
       if(fOrientation[i] == 0){
-	for(Int_t itheta = 0; itheta < NTHETA; itheta++){
-	  for(Int_t iphi = 0; iphi < NPHI; iphi++){
-	    if(costheta >= fCosthetamin[itheta] && costheta < fCosthetamax[itheta]){
-	      if(phi >= fPhimin[iphi] && phi < fPhimax[iphi]){
-		fNPMTs0[itheta]++;
+        for(Int_t itheta = 0; itheta < NTHETA; itheta++){
+          for(Int_t iphi = 0; iphi < NPHI; iphi++){
+            if(costheta >= fCosthetamin[itheta] && costheta < fCosthetamax[itheta]){
+              if(phi >= fPhimin[iphi] && phi < fPhimax[iphi]){
+                fNPMTs0[itheta]++;
 
-		f0[itheta][iphi] = f0[itheta][iphi] + fPMTOcc[i][j]; 		// running sum S1
-		n0[itheta][iphi] = n0[itheta][iphi] + 1; 			// running sum S0
-		s0[itheta][iphi] = s0[itheta][iphi] + pow(fPMTOcc[i][j],2);	// running sum S2
-	      }
-	    }
-	  }
-	}
-      }	
+                f0[itheta][iphi] = f0[itheta][iphi] + fPMTOcc[i][j]; 		// running sum S1
+                n0[itheta][iphi] = n0[itheta][iphi] + 1; 			// running sum S0
+                s0[itheta][iphi] = s0[itheta][iphi] + pow(fPMTOcc[i][j],2);	// running sum S2
+              }
+            }
+          }
+        }
+      }
       if(fOrientation[i] == 1){
-	for(Int_t itheta = 0; itheta < NTHETA; itheta++){
-	  for(Int_t iphi = 0; iphi < NPHI; iphi++){
-	    if(costheta >= fCosthetamin[itheta] && costheta < fCosthetamax[itheta]){
-	      if(phi >= fPhimin[iphi] && phi < fPhimax[iphi]){
-		fNPMTs1[itheta]++;
+        for(Int_t itheta = 0; itheta < NTHETA; itheta++){
+          for(Int_t iphi = 0; iphi < NPHI; iphi++){
+            if(costheta >= fCosthetamin[itheta] && costheta < fCosthetamax[itheta]){
+              if(phi >= fPhimin[iphi] && phi < fPhimax[iphi]){
+                fNPMTs1[itheta]++;
 
-		f1[itheta][iphi] = f1[itheta][iphi] + fPMTOcc[i][j]; 		// running sum S1
-		n1[itheta][iphi] = n1[itheta][iphi] + 1; 			// running sum S0
-		s1[itheta][iphi] = s1[itheta][iphi] + pow(fPMTOcc[i][j],2); 	// running sum S2
-	      }
-	    }
-	  }
-	}
+                f1[itheta][iphi] = f1[itheta][iphi] + fPMTOcc[i][j]; 		// running sum S1
+                n1[itheta][iphi] = n1[itheta][iphi] + 1; 			// running sum S0
+                s1[itheta][iphi] = s1[itheta][iphi] + pow(fPMTOcc[i][j],2); 	// running sum S2
+              }
+            }
+          }
+        }
       }
       if(fOrientation[i] == 2){
-	for(Int_t itheta = 0; itheta < NTHETA; itheta++){
-	  for(Int_t iphi = 0; iphi < NPHI; iphi++){
-	    if(costheta >= fCosthetamin[itheta] && costheta < fCosthetamax[itheta]){
-	      if(phi >= fPhimin[iphi] && phi < fPhimax[iphi]){
-		fNPMTs2[itheta]++;
+        for(Int_t itheta = 0; itheta < NTHETA; itheta++){
+          for(Int_t iphi = 0; iphi < NPHI; iphi++){
+            if(costheta >= fCosthetamin[itheta] && costheta < fCosthetamax[itheta]){
+              if(phi >= fPhimin[iphi] && phi < fPhimax[iphi]){
+                fNPMTs2[itheta]++;
 
-		f2[itheta][iphi] = f2[itheta][iphi] + fPMTOcc[i][j]; 		// running sum S1
-		n2[itheta][iphi] = n2[itheta][iphi] + 1; 			// running sum S0
-		s2[itheta][iphi] = s2[itheta][iphi] + pow(fPMTOcc[i][j],2); 	// running sum S2
-	      }
-	    }
-	  }
-	}
+                f2[itheta][iphi] = f2[itheta][iphi] + fPMTOcc[i][j]; 		// running sum S1
+                n2[itheta][iphi] = n2[itheta][iphi] + 1; 			// running sum S0
+                s2[itheta][iphi] = s2[itheta][iphi] + pow(fPMTOcc[i][j],2); 	// running sum S2
+              }
+            }
+          }
+        }
       }
       if(fOrientation[i] == 3){
-	for(Int_t itheta = 0; itheta < NTHETA; itheta++){
-	  for(Int_t iphi = 0; iphi < NPHI; iphi++){
-	    if(costheta >= fCosthetamin[itheta] && costheta < fCosthetamax[itheta]){
-	      if(phi >= fPhimin[iphi] && phi < fPhimax[iphi]){
-		fNPMTs3[itheta]++;
+        for(Int_t itheta = 0; itheta < NTHETA; itheta++){
+          for(Int_t iphi = 0; iphi < NPHI; iphi++){
+            if(costheta >= fCosthetamin[itheta] && costheta < fCosthetamax[itheta]){
+              if(phi >= fPhimin[iphi] && phi < fPhimax[iphi]){
+                fNPMTs3[itheta]++;
 
-		f3[itheta][iphi] = f3[itheta][iphi] + fPMTOcc[i][j]; 		// running sum S1
-		n3[itheta][iphi] = n3[itheta][iphi] + 1; 			// running sum S0
-		s3[itheta][iphi] = s3[itheta][iphi] + pow(fPMTOcc[i][j],2); 	// running sum S2
-	      }
-	    }
-	  }
-	}
-      }
-    }
-  }
-	
-  SetRATAmplitudesAndPhases();
-  for( Int_t l = 0; l < NTHETA; l++ ){
-    amplitude[l] = TMath::Abs(amplitude[l]);
-    if(phase[l] > TMath::Pi()/2. || phase[l] < -TMath::Pi()/2.){
-      Float_t shift = phase[l]/TMath::Pi();
-      if(shift/((int)shift+0.5) > 1.0 || shift/((int)shift+0.5) < -1.0){
-	if(shift < 0){
-	  phase[l] = phase[l] - ((int)shift-(int)1)*TMath::Pi();
-	}
-	if(shift > 0){
-	  phase[l] = phase[l] - ((int)shift+(int)1)*TMath::Pi();
-	}
-      }
-      else{
-	phase[l] = phase[l] - ((int)shift)*TMath::Pi();
+                f3[itheta][iphi] = f3[itheta][iphi] + fPMTOcc[i][j]; 		// running sum S1
+                n3[itheta][iphi] = n3[itheta][iphi] + 1; 			// running sum S0
+                s3[itheta][iphi] = s3[itheta][iphi] + pow(fPMTOcc[i][j],2); 	// running sum S2
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -380,58 +365,36 @@ void LBOrientation::Ratios(){
   for(Int_t ptheta = 0; ptheta < NTHETA; ptheta++){
     for(Int_t pphi = 0; pphi < NPHI; pphi++){
       if(f3[ptheta][pphi] != 0.){
-	fRatio13[pphi] = f1[ptheta][pphi]/f3[ptheta][pphi];
-	ef1[ptheta][pphi] = (s1[ptheta][pphi]/n1[ptheta][pphi] - pow(f1[ptheta][pphi]/n1[ptheta][pphi],2));
-	ef3[ptheta][pphi] = (s3[ptheta][pphi]/n3[ptheta][pphi] - pow(f3[ptheta][pphi]/n3[ptheta][pphi],2));
-	fEratio13[pphi] = TMath::Sqrt(ef1[ptheta][pphi] + pow(f1[ptheta][pphi]/f3[ptheta][pphi],2)*ef3[ptheta][pphi])/f3[ptheta][pphi];
+        fRatio13[pphi] = f1[ptheta][pphi]/f3[ptheta][pphi];
+        ef1[ptheta][pphi] = (s1[ptheta][pphi]/n1[ptheta][pphi] - pow(f1[ptheta][pphi]/n1[ptheta][pphi],2));
+        ef3[ptheta][pphi] = (s3[ptheta][pphi]/n3[ptheta][pphi] - pow(f3[ptheta][pphi]/n3[ptheta][pphi],2));
+        fEratio13[pphi] = TMath::Sqrt(ef1[ptheta][pphi] + pow(f1[ptheta][pphi]/f3[ptheta][pphi],2)*ef3[ptheta][pphi])/f3[ptheta][pphi];
       }
       else{
-	fRatio13[pphi] = 0.;
-	fEratio13[pphi] = 0.;
+        fRatio13[pphi] = 0.;
+        fEratio13[pphi] = 0.;
       }
 
       if(f0[ptheta][pphi] != 0.){
-	fRatio20[pphi] = f2[ptheta][pphi]/f0[ptheta][pphi];
-	ef2[ptheta][pphi] = (s2[ptheta][pphi]/n2[ptheta][pphi] - pow(f2[ptheta][pphi]/n2[ptheta][pphi],2));
-	ef0[ptheta][pphi] = (s0[ptheta][pphi]/n0[ptheta][pphi] - pow(f0[ptheta][pphi]/n0[ptheta][pphi],2));
-	fEratio20[pphi] = TMath::Sqrt(ef2[ptheta][pphi] + pow(f2[ptheta][pphi]/f0[ptheta][pphi],2)*ef0[ptheta][pphi])/f0[ptheta][pphi];
+        fRatio20[pphi] = f2[ptheta][pphi]/f0[ptheta][pphi];
+        ef2[ptheta][pphi] = (s2[ptheta][pphi]/n2[ptheta][pphi] - pow(f2[ptheta][pphi]/n2[ptheta][pphi],2));
+        ef0[ptheta][pphi] = (s0[ptheta][pphi]/n0[ptheta][pphi] - pow(f0[ptheta][pphi]/n0[ptheta][pphi],2));
+        fEratio20[pphi] = TMath::Sqrt(ef2[ptheta][pphi] + pow(f2[ptheta][pphi]/f0[ptheta][pphi],2)*ef0[ptheta][pphi])/f0[ptheta][pphi];
       }
       else{
-	fRatio20[pphi] = 0.;
-	fEratio20[pphi] = 0.;
+        fRatio20[pphi] = 0.;
+        fEratio20[pphi] = 0.;
       }
-			
-      h[pphi] = 1 + amplitude[ptheta]*TMath::Sin((fPhimin[pphi]+fPhimax[pphi])/2.+phase[ptheta]);
     }
 
     for(Int_t pphi = 0; pphi < NPHI; pphi++){
-      if(pphi < 18){
-	fRatWE[pphi]=h[pphi+17]/h[pphi];
-      }
-      if(pphi == 18){
-	fRatWE[pphi]=h[pphi-18]/h[pphi];
-      }
-      if(pphi > 18){
-	fRatWE[pphi]=h[pphi-17]/h[pphi];
-      }
-
-      if(pphi < 9){
-	fRatNS[pphi]=h[pphi+27]/h[pphi+9];
-      }
-      if(pphi >= 9 && pphi <=26){
-	fRatNS[pphi]=h[pphi-9]/h[pphi+9];
-      }
-      if(pphi > 26){
-	fRatNS[pphi]=h[pphi-9]/h[pphi-27];
-      }
-
       if(pphi <= 27){
-	fRatio20_90[pphi] = fRatio20[pphi+9];
-	fEratio20_90[pphi] = fEratio20[pphi+9];
+        fRatio20_90[pphi] = fRatio20[pphi+9];
+        fEratio20_90[pphi] = fEratio20[pphi+9];
       }
       if(pphi > 27){
-	fRatio20_90[pphi] = fRatio20[pphi-27];
-	fEratio20_90[pphi] = fEratio20[pphi-27];
+        fRatio20_90[pphi] = fRatio20[pphi-27];
+        fEratio20_90[pphi] = fEratio20[pphi-27];
       }
     }
 
@@ -439,8 +402,6 @@ void LBOrientation::Ratios(){
     GR20[ptheta] = new TGraphErrors(NPHI,fRPhi,fRatio20,0,fEratio20);
     GR20_90[ptheta] = new TGraphErrors(NPHI,fRPhi,fRatio20_90,0,fEratio20_90);
 
-    GRATWE[ptheta] = new TGraphErrors(NPHI,fRPhi,fRatWE,0,0);
-    GRATNS[ptheta] = new TGraphErrors(NPHI,fRPhi,fRatNS,0,0);
   }
 }
 
@@ -465,22 +426,23 @@ void LBOrientation::PlotResults(){
   Char_t hname[180];
 
   TMultiGraph *R;
+  TMultiGraph *F;
   TMultiGraph *C[2];
 
-  TMultiGraph *F;
+  for(Int_t q = 0; q < 2; q++){
+    Char_t hgraph[4];
+    Char_t htgr[50];
+    sprintf(hgraph,"C[%d]",q);
+    sprintf(htgr,"Fit Results, %d nm",(int)fLambda);
 
-  TGraphErrors *Amp13,*Amp20,*AmpRAT,*AmpFit;
-  TGraphErrors *Phase13,*Phase20,*PhaseRAT,*PhaseFit;
+    C[q] = new TMultiGraph(hgraph,htgr);
+  }
+
+  TGraphErrors *Amp13,*Amp20,*AmpFit;
+  TGraphErrors *Phase13,*Phase20,*PhaseFit;
 
   Char_t hgraph[4];
   Char_t htgr[50];
-
-  for(Int_t q = 0; q < 2; q++){
-    sprintf(hgraph,"C[%d]",q);
-    sprintf(htgr,"RAT vs. Fit Results, %d nm",(int)fLambda);
-
-    C[q] = new TMultiGraph(hgraph,htgr);
-  }  
 
   for(Int_t s = 0; s < NTHETA; s++){
 
@@ -501,20 +463,6 @@ void LBOrientation::PlotResults(){
     R->Add(GR20[s],"p");
     R->Draw("A");
 
-    GRATWE[s]	->SetMarkerColor(4);
-    GRATWE[s]	->SetLineColor(4);
-    GRATWE[s]	->SetLineStyle(1);
-    GRATWE[s]	->SetMarkerStyle(20);
-    GRATWE[s]	->SetMarkerSize(0.5);
-    R		->Add(GRATWE[s],"pl");
-    GRATNS[s]	->SetMarkerColor(2);
-    GRATNS[s]	->SetLineColor(2);
-    GRATNS[s]	->SetLineStyle(1);
-    GRATNS[s]	->SetMarkerStyle(20);
-    GRATNS[s]	->SetMarkerSize(0.5);
-    R		->Add(GRATNS[s],"pl");
-
-    R	->Draw("A");
     R	->GetXaxis()->SetTitle("#phi (rad)");
     R	->GetYaxis()->SetTitleOffset(1.3);
     R	->GetYaxis()->SetTitle("Occ. ratio");
@@ -524,9 +472,6 @@ void LBOrientation::PlotResults(){
     leg[s] = new TLegend(0.6,0.65,0.75,0.9);
     leg[s] ->AddEntry(GR13[s],"N/S","p");
     leg[s] ->AddEntry(GR20[s],"W/E","p");
-
-    leg[s] ->AddEntry(GRATNS[s],"RAT N/S","p");
-    leg[s] ->AddEntry(GRATWE[s],"RAT W/E","p");
 
     leg[s] ->Draw();
     c0     ->Update();
@@ -618,11 +563,9 @@ void LBOrientation::PlotResults(){
 
   Amp13 = new TGraphErrors(NTHETA,fRTheta,fAmplitudeFIT13,0,fAmplitudeFIT13error);
   Amp20 = new TGraphErrors(NTHETA,fRTheta,fAmplitudeFIT20,0,fAmplitudeFIT20error);
-  AmpRAT = new TGraphErrors(NTHETA,fRTheta,amplitude,0,0);
 
   Phase13 = new TGraphErrors(NTHETA,fRTheta,fPhaseFIT13,0,fPhaseFIT13error);
   Phase20 = new TGraphErrors(NTHETA,fRTheta,fPhaseFIT20,0,fPhaseFIT20error);
-  PhaseRAT = new TGraphErrors(NTHETA,fRTheta,phase,0,0);
 
   c0->Clear();
 
@@ -640,13 +583,6 @@ void LBOrientation::PlotResults(){
 
   C[0] ->Add(Amp20,"p");
 
-  AmpRAT->SetMarkerColor(1);
-  AmpRAT->SetLineColor(1);
-  AmpRAT->SetLineStyle(1);
-  AmpRAT->SetMarkerStyle(20);
-
-  C[0] ->Add(AmpRAT,"p");
-
   C[0] ->Draw("A");
   C[0] ->GetXaxis()->SetTitle("# slice of cos(#theta)");
   C[0] ->GetYaxis()->SetTitleOffset(1.3);
@@ -658,7 +594,6 @@ void LBOrientation::PlotResults(){
   TLegend *legend = new TLegend(0.12,0.7,0.37,0.9);
   legend ->AddEntry(Amp13,"Amplitude N/S","p");
   legend ->AddEntry(Amp20,"Amplitude W/E","p");
-  legend ->AddEntry(AmpRAT,"Amplitude RAT","p");
   legend ->Draw();
   c0     ->Update();
   sprintf(savename,"Amplitudes%d.png",(Int_t)fLambda);
@@ -678,12 +613,6 @@ void LBOrientation::PlotResults(){
   Phase20->SetMarkerStyle(21);
   C[1] ->Add(Phase20,"p");
 
-  PhaseRAT->SetMarkerColor(1);
-  PhaseRAT->SetLineColor(1);
-  PhaseRAT->SetLineStyle(1);
-  PhaseRAT->SetMarkerStyle(20);
-  C[1] ->Add(PhaseRAT,"p");
-
   C[1] ->Draw("A");
   C[1] ->GetXaxis()->SetTitle("# slice of cos(#theta)");
   C[1] ->GetYaxis()->SetTitleOffset(1.3);
@@ -693,7 +622,6 @@ void LBOrientation::PlotResults(){
   legend = new TLegend(0.15,0.7,0.39,0.89);
   legend ->AddEntry(Phase13,"Phase N/S","p");
   legend ->AddEntry(Phase20,"Phase W/E","p");
-  legend ->AddEntry(PhaseRAT,"Phase RAT","p");
   legend ->Draw();
   c0     ->Update();
   sprintf(savename,"Phases%d.png",(Int_t)fLambda);
@@ -708,12 +636,11 @@ void LBOrientation::WriteToFile(){
  
   /// Saves the parameters to an ".ocadb" file.
 
-  Char_t fileName[60];
-  sprintf(fileName,"../../data/lbdistparameters/lb_oct15_water_%d.ocadb",(Int_t)fLambda);
+  string outputFile = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/lbdistparameters/lb_" + ::to_string(fScan) + "_" + ::to_string(fPhase) + "_" + ::to_string(fLambda) + (string)".ocadb";
 
   ofstream output;
   output.precision( 6 );
-  output.open ( fileName );
+  output.open ( outputFile.c_str() );
 
   output << "{\n";
   output << "type : \"LBFITRESULTS\",\n";
@@ -766,7 +693,7 @@ void LBOrientation::WriteToFile(){
   output.close();
 
   cout << "LBOrientation: Fit parameters saved to OCADB file:\n";
-  cout << fileName << "\n"; 
+  cout << outputFile << "\n"; 
 }
 
 //______________________________________________________________________________________
@@ -794,47 +721,4 @@ void LBOrientation::SetPath( const std::string& path ){
     return;
   }
   fPath = path;
-}
-
-//______________________________________________________________________________________
-//
-
-void LBOrientation::SetRATAmplitudesAndPhases(){
-
-  DB* db = DB::Get();
- 
-  if( fLambda == 337 ){				
-    DBLinkPtr lbDB = db->GetLink( "LBDYEANGLE", "N2:AUG06" );
-    sincoefs = lbDB->GetDArray( "lb_ang_sincoef" );
-  }
-  if( fLambda == 369 ){
-    DBLinkPtr lbDB = db->GetLink( "LBDYEANGLE", "PBD:AUG06" );
-    sincoefs = lbDB->GetDArray( "lb_ang_sincoef" );
-  }
-  if( fLambda == 385 ){
-    DBLinkPtr lbDB = db->GetLink( "LBDYEANGLE", "BBQ:AUG06" );
-    sincoefs = lbDB->GetDArray( "lb_ang_sincoef" );
-  }
-  if( fLambda == 420 ){
-    DBLinkPtr lbDB = db->GetLink( "LBDYEANGLE", "BIS-MSB:AUG06" );
-    sincoefs = lbDB->GetDArray( "lb_ang_sincoef" );
-  }
-  if( fLambda == 505 ){
-    DBLinkPtr lbDB = db->GetLink( "LBDYEANGLE", "COUMARIN-500:AUG06" );
-    sincoefs = lbDB->GetDArray( "lb_ang_sincoef" );
-  }
-
-  // Fill the arrays amplitude and phase from sincoefs
-  Int_t a = 0;
-  Int_t p = 0;
-  for( size_t i = 0; i < sincoefs.size(); i++ ){
-    if( i % 2 == 0 ){
-      amplitude[a] = sincoefs[i];
-      a++;
-    }
-    else{
-      phase[p] = sincoefs[i];
-      p++; 
-    }
-  }
 }
