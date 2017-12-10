@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <sys/stat.h>
 
 #include <RAT/DS/SOC.hh>
 #include <RAT/DS/Entry.hh>
@@ -57,82 +58,86 @@
 
 class LBOrientation : public TObject {
 
- public:
-  LBOrientation();
+  public:
+    LBOrientation();
+    LBOrientation( Int_t lambda );
+    LBOrientation( Int_t lambda, const std::string& path );
 
-  LBOrientation( Int_t lambda, const std::string& path );
-  // lambda: is the wavelenght os the runs that are going to be analysed
-  // path: is the path to the directory containing the files
+    // lambda: is the wavelenght os the runs that are going to be analysed
+    // path: is the path to the directory containing the files
 
-  virtual ~LBOrientation();
+    virtual ~LBOrientation();
 
-  void Initialize();
-  void ReadData();
-  void Ratios();
-  void PlotResults();
-  void WriteToFile();
-  void SetLambda( Int_t aNumber );
-  void SetPath( const std::string& path );	
-  void SetRATAmplitudesAndPhases();
+    void Initialize();
+    void ReadData();
+    void Ratios();
+    void PlotResults();
+    void WriteToFile();
+    void SetLambda( Int_t aNumber );
+    void SetPath( const std::string& path );	
+    void SetRATAmplitudesAndPhases();
 
- protected: 
+  protected: 
 
-  Int_t       fLambda;                                    // Wavelength
-  std::string fPath;                                      // Path to SOC files
+    Int_t       fLambda;                                    // Wavelength
+    std::string fPath;                                      // Path to SOC files
 
-  Int_t       fOrientation[NRUNS];                        // Source orientation
+    Bool_t      lambdaValidity;                             // Validity of an user inputted wavelength
+    Bool_t      pathValidity;                               // Validity of an user inputted path to the SOC files
 
-  Int_t       fNPMTs0[NTHETA];                            // # of PMTs in run with orientation 0 (E)
-  Int_t       fNPMTs1[NTHETA];                            // # of PMTs in run with orientation 1 (N)    
-  Int_t       fNPMTs2[NTHETA];                            // # of PMTs in run with orientation 2 (W)
-  Int_t       fNPMTs3[NTHETA];                            // # of PMTs in run with orientation 3 (S)
+    Int_t       fOrientation[NRUNS];                        // Source orientation
 
-  Int_t       fNPMTs[NRUNS];                              // # of PMTs
-  Int_t       fRun[NRUNS];                                // Run ID
-  Double_t    fSourceWL[NRUNS];                           // Source wavelength
-  TVector3    fSourcePos[NRUNS];                          // Source position
-  TVector3    fSourceDir[NRUNS];                          // Source direction
+    Int_t       fNPMTs0[NTHETA];                            // # of PMTs in run with orientation 0 (E)
+    Int_t       fNPMTs1[NTHETA];                            // # of PMTs in run with orientation 1 (N)    
+    Int_t       fNPMTs2[NTHETA];                            // # of PMTs in run with orientation 2 (W)
+    Int_t       fNPMTs3[NTHETA];                            // # of PMTs in run with orientation 3 (S)
 
-  TVector3    fPMTPos[NRUNS][9500];                       // PMT position
-  Float_t     fPMTOcc[NRUNS][9500];                       // PMT occupancy
+    Int_t       fNPMTs[NRUNS];                              // # of PMTs
+    Int_t       fRun[NRUNS];                                // Run ID
+    Double_t    fSourceWL[NRUNS];                           // Source wavelength
+    TVector3    fSourcePos[NRUNS];                          // Source position
+    TVector3    fSourceDir[NRUNS];                          // Source direction
 
-  Float_t     fAmplitudeFIT13[NTHETA];                    // Amplitudes, for all slices, from the ratio N/S
-  Float_t     fPhaseFIT13[NTHETA];                        // Phases, for all slices, from the ratio N/S
-  Float_t     fAmplitudeFIT13error[NTHETA];               // Amplitude errors, for all slices, from the ratio N/S
-  Float_t     fPhaseFIT13error[NTHETA];                   // Phase errors, for all slices, from the ratio N/S
+    TVector3    fPMTPos[NRUNS][9500];                       // PMT position
+    Float_t     fPMTOcc[NRUNS][9500];                       // PMT occupancy
 
-  Float_t     fAmplitudeFIT20[NTHETA];                    // Amplitudes, for all slices, from the ratio W/E
-  Float_t     fPhaseFIT20[NTHETA];                        // Phases, for all slices, from the ratio W/E
-  Float_t     fAmplitudeFIT20error[NTHETA];               // Amplitude errors, for all slices, from the ratio W/E
-  Float_t     fPhaseFIT20error[NTHETA];                   // Phase errors, for all slices, from the ratio W/E
+    Float_t     fAmplitudeFIT13[NTHETA];                    // Amplitudes, for all slices, from the ratio N/S
+    Float_t     fPhaseFIT13[NTHETA];                        // Phases, for all slices, from the ratio N/S
+    Float_t     fAmplitudeFIT13error[NTHETA];               // Amplitude errors, for all slices, from the ratio N/S
+    Float_t     fPhaseFIT13error[NTHETA];                   // Phase errors, for all slices, from the ratio N/S
 
-  Float_t     fAmplitudeFIT[NTHETA];                      // Amplitudes, for all slices, from the combined ratios
-  Float_t     fPhaseFIT[NTHETA];                          // Phases, for all slices, from the combined ratios
-  Float_t     fAmplitudeFITerror[NTHETA];                 // Amplitude errors, for all slices, from the combined ratios
-  Float_t     fPhaseFITerror[NTHETA];                     // Phase errors, for all slices, from the combined ratios
+    Float_t     fAmplitudeFIT20[NTHETA];                    // Amplitudes, for all slices, from the ratio W/E
+    Float_t     fPhaseFIT20[NTHETA];                        // Phases, for all slices, from the ratio W/E
+    Float_t     fAmplitudeFIT20error[NTHETA];               // Amplitude errors, for all slices, from the ratio W/E
+    Float_t     fPhaseFIT20error[NTHETA];                   // Phase errors, for all slices, from the ratio W/E
 
-  Float_t     fRTheta[NTHETA];
-  Double_t    fRPhi[NPHI];
+    Float_t     fAmplitudeFIT[NTHETA];                      // Amplitudes, for all slices, from the combined ratios
+    Float_t     fPhaseFIT[NTHETA];                          // Phases, for all slices, from the combined ratios
+    Float_t     fAmplitudeFITerror[NTHETA];                 // Amplitude errors, for all slices, from the combined ratios
+    Float_t     fPhaseFITerror[NTHETA];                     // Phase errors, for all slices, from the combined ratios
+
+    Float_t     fRTheta[NTHETA];
+    Double_t    fRPhi[NPHI];
 		
-  Double_t    fCosthetamin[NTHETA],fCosthetamax[NTHETA];  // cosTheta minimum and maximum for each slice
-  Double_t    fPhimin[NPHI],fPhimax[NPHI];                // phi minimum and maximum for each slice
+    Double_t    fCosthetamin[NTHETA],fCosthetamax[NTHETA];  // cosTheta minimum and maximum for each slice
+    Double_t    fPhimin[NPHI],fPhimax[NPHI];                // phi minimum and maximum for each slice
 
-  Double_t    fRatio13[NPHI],fRatio20[NPHI];              // Ratios N/S and W/E (respectively)
-  Double_t    fEratio13[NPHI],fEratio20[NPHI];            // Errors of the Ratios N/S and W/E (respectively)
+    Double_t    fRatio13[NPHI],fRatio20[NPHI];              // Ratios N/S and W/E (respectively)
+    Double_t    fEratio13[NPHI],fEratio20[NPHI];            // Errors of the Ratios N/S and W/E (respectively)
 
-  Double_t    fRatio20_90[NPHI],fEratio20_90[NPHI];       // Ratio W/E and errors shifted in phi by 90 degrees
+    Double_t    fRatio20_90[NPHI],fEratio20_90[NPHI];       // Ratio W/E and errors shifted in phi by 90 degrees
 
-  Double_t    fRatNS[NPHI],fRatWE[NPHI];                  // Ratios N/S and W/E of the RAT parameters
+    Double_t    fRatNS[NPHI],fRatWE[NPHI];                  // Ratios N/S and W/E of the RAT parameters
 
-  Float_t     amplitude[NTHETA],phase[NTHETA];            // Arrays with LASERBALL.RATDB amplitudes and phases
+    Float_t     amplitude[NTHETA],phase[NTHETA];            // Arrays with LASERBALL.RATDB amplitudes and phases
 
-  std::vector<double> sincoefs;
+    std::vector<double> sincoefs;
 		
-  TGraphErrors *GR13[NTHETA],*GR20[NTHETA];
-  TGraphErrors *GR20_90[NTHETA];
-  TGraphErrors *GRATNS[NTHETA], *GRATWE[NTHETA];
+    TGraphErrors *GR13[NTHETA],*GR20[NTHETA];
+    TGraphErrors *GR20_90[NTHETA];
+    TGraphErrors *GRATNS[NTHETA], *GRATWE[NTHETA];
 
-  ClassDef(LBOrientation,2)
+    ClassDef(LBOrientation,2)
 };
 
 #endif

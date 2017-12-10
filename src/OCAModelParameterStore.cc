@@ -680,6 +680,7 @@ void OCAModelParameterStore::AddParameters( string& fileName )
         // The laserball distribution parameters in the histogram will not vary beyond 0.0 and 2.0, so set these accordingly
         minVal = 0.0;
         maxVal = 2.0;
+
         // The increment value is currently not used, so set to something unphysical (might have use for this in a future fitting routine)
         incVal = -10.0;
 
@@ -690,9 +691,10 @@ void OCAModelParameterStore::AddParameters( string& fileName )
         Int_t parIndex = 3 + fNLBDistributionMaskParameters + ( fNPMTAngularResponseBins * fNPMTAngularResponseDistributions ) + iPar;
         OCAModelParameter lParameter( (string)( paramList[ iStr ] + parStr ), parIndex, initVal, minVal, maxVal, incVal, fNLBDistributionPars, varyBool );
         AddParameter( lParameter );
-        
+
         lStream.clear();
       }
+
     }
 
     if ( paramList[ iStr ] == "laserball_run_normalisation" ){
@@ -740,7 +742,7 @@ void OCAModelParameterStore::AddParameters( string& fileName )
   if ( fWaterFill ){ fParameters[ GetWaterExtinctionLengthParIndex() - 1 ].SetVary( false ); }
 
   fNParameters = (Int_t)fParameters.size();
-  
+
   AllocateParameterArrays();
 }
 
@@ -749,8 +751,7 @@ void OCAModelParameterStore::AddParameters( string& fileName )
 
 void OCAModelParameterStore::WriteToROOTFile( string& fileName, 
                                               string& branchName )
-{ 
-
+{
   TFile* file = NULL;
 
   // Check that the main-run file exists

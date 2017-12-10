@@ -41,23 +41,38 @@ LBOrientation::LBOrientation(){
   Initialize();
   ReadData();
   Ratios();
-  PlotResults();
-  WriteToFile();
+  //  PlotResults();
+  //  WriteToFile();
 
 }
 
 //______________________________________________________________________________________
 //
 
+LBOrientation::LBOrientation( Int_t lambda ){
+
+  Initialize();
+  SetLambda( lambda );
+  if( !lambdaValidity ){ return; }
+  ReadData();
+  Ratios();
+  //  PlotResults();
+  //  WriteToFile();
+
+}
+
+//______________________________________________________________________________________
+//
 LBOrientation::LBOrientation( Int_t lambda, const std::string& path ){
 
   Initialize();
   SetLambda( lambda );
   SetPath( path );
+  if( !lambdaValidity && !pathValidity ){ return; }
   ReadData();
   Ratios();
-  PlotResults();
-  WriteToFile();
+  //  PlotResults();
+  //  WriteToFile();
 
 }
 
@@ -76,6 +91,9 @@ void LBOrientation::Initialize(){
   // Default parameters: wavelength of 505 nm, and path to the oct15 SOC files directory 
   fLambda = 505;
   fPath = getenv( "OCA_SNOPLUS_DATA" ) + (string)"/runs/soc/oct15/water/";
+
+  lambdaValidity = true;
+  pathValidity = true;
 
   for( Int_t i = 0; i < NRUNS; i++ ){
     fNPMTs[i]        = 0;
@@ -156,7 +174,7 @@ void LBOrientation::ReadData(){
   /// source wavelength, source position vector, source orientations, PMT position, occupancy.
 
   Int_t wl,nr,rs[4];
-  Char_t ds[5],name[128];
+  Char_t ds[5],name[20];
   sprintf(name,"runlist.txt");
   ifstream file(name);
 
@@ -167,7 +185,7 @@ void LBOrientation::ReadData(){
   for( Int_t i = 0; i < NRUNS; i++ ) fRun[i] = rs[i];
   file.close();
 
-  /********** Opening and reading of the SocFiles **********/
+  /********** Opening and reading the SocFiles **********/
   RAT::DU::SOCReader *socreader;
   RAT::DU::Utility::Get()->LoadDBAndBeginRun();
 
@@ -176,7 +194,6 @@ void LBOrientation::ReadData(){
 
     std::string fSocFilename;
     fSocFilename = fPath + ::to_string(fRun[i]) + "_Run.root";
-    //    sprintf(fSocFilename,"%s%d_Run.root",fPath,fRun[i]);
     cout << "Opening file " << fSocFilename << endl;
     socreader = new RAT::DU::SOCReader(fSocFilename);
 
@@ -757,10 +774,10 @@ void LBOrientation::WriteToFile(){
 
 void LBOrientation::SetLambda( Int_t aNumber ){
 
-  if(aNumber != 337 && aNumber != 369 && aNumber != 385 &&  aNumber != 420 && aNumber != 505){
-    printf("Wavelength %d not available. Choose 337, 365, 385, 420 or 505\n", aNumber);
-    printf("Setting Wavelength to 505 nm by default.\n");
-    aNumber = 505;
+  if(aNumber != 337 && aNumber != 369 && aNumber != 385 &&  aNumber != 420 && aNumber != 460 && aNumber != 505){
+    printf("The wavelength %d nm does not belong to the list of wavelengths emitted by the laserball!\n", aNumber);
+    lambdaValidity = false;
+    return;
   }
   fLambda = aNumber;
 }
@@ -770,6 +787,12 @@ void LBOrientation::SetLambda( Int_t aNumber ){
 
 void LBOrientation::SetPath( const std::string& path ){
 
+  struct stat s;
+  if ( stat( fPath.c_str(), &s ) != 0 ){
+    cout << "The path inserted does not exist!" << endl;
+    pathValidity = false;
+    return;
+  }
   fPath = path;
 }
 

@@ -75,7 +75,7 @@ namespace OCA{
 
     // Write the parameters to a .ocadb file
     void WriteToOCADBFile( const char* fileName = "OCAModelParameterStore.ocadb" );
-		
+
     // Allocate the memory for the parameter arrays.
     void AllocateParameterArrays();
 
