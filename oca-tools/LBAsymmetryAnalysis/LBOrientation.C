@@ -68,7 +68,7 @@ LBOrientation::LBOrientation( Int_t lambda, const std::string& path ){
   Initialize();
   SetLambda( lambda );
   SetPath( path );
-  if( !lambdaValidity && !pathValidity ){ return; }
+  if( !lambdaValidity || !pathValidity ){ return; }
   ReadData();
   Ratios();
   PlotResults();
