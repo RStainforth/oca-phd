@@ -1,0 +1,27 @@
+# All backup files
+*~
+
+# Compiled files
+*.o
+*.so
+*.d
+
+env_oca_snoplus.sh
+
+src/rdt2soc
+src/soc2oca
+src/oca2fit
+
+src/OCA_Dict.C
+src/OCA_Dict.h
+src/sno/OCA_SNO_Dict.C
+src/sno/OCA_SNO_Dict.h
+
+include/
+bin/
+
+# Output files from oca-tools
+*.png
+
+# OCA Input and Output ROOT files
+*.root
