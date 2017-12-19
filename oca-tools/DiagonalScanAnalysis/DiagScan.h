@@ -26,7 +26,6 @@
 #ifndef __DiagScan_h__
 #define __DiagScan_h__
 
-#include "TString.h"
 #include "TFile.h"
 #include "TROOT.h"
 #include "TDatime.h"
@@ -53,6 +52,7 @@
 #include <string.h>
 #include <math.h>
 #include <new>
+#include <sys/stat.h>
 
 #include <RAT/DS/SOC.hh>
 #include <RAT/DS/Run.hh>
@@ -76,7 +76,13 @@ class DiagScan : public TObject {
 
   public:
     DiagScan();
-    DiagScan( Int_t lambda,/* Float_t tolerance, Float_t shadowing, */Char_t *scan );
+    DiagScan( Int_t lambda, std::string &diagonal );
+    DiagScan( Int_t lambda, std::string &diagonal, std::string &path );
+    DiagScan( Int_t lambda,/* Float_t tolerance, Float_t shadowing, */std::string &diagonal );
+
+    // juntar funcao para tolerancias e bool para correcçoes?
+
+
     virtual ~DiagScan(); //destructor 
 
     void Initialize();
@@ -84,32 +90,36 @@ class DiagScan : public TObject {
     void Process();
     void FitRatio();
     void Product();
+
     void SetAngResponseCoefficient( Int_t aNumber );
     void SetLambda( Int_t aNumber );
-    void SetTolerance( Float_t aNumber );
-    void SetShadowing( Float_t aNumber );
-    void SetScan( const Char_t *aString );
-
-    // To implement in the future
-    //void SetDataSet(char *aString) 
+    void SetPath( const std::string& path );
+    void SetDiagonal( const std::string& diagonal );
+    void SetDistanceCut( Float_t aNumber );
+    void SetShadowingTolerance( Float_t aNumber );
+  
 
     Float_t GetLBMaskCorrection( Int_t aLambda , Double_t aTheta );
 
     Float_t         GetAngResponseCoefficient()   {return fAngRespCoefficient;}
     Int_t           GetLambda()                   {return fLambda;}		 
-    Float_t         GetTolerance()                {return fTolerance;}
-    Float_t         GetShadowing()                {return fShadowing;}
-    const Char_t*   GetScan()                     {return (const Char_t*) fScan->Data();}
+    Float_t         GetDistanceCut()                {return fTolerance;}
+    Float_t         GetShadowingTolerance()                {return fShadowing;}
+    std::string     GetScan()                     {return fScan;}
 
     Float_t         GetAttCoef()                  {return fAttCoef;}
     Float_t         GetAttCoefEr()                {return fAttCoefEr;}
-	    
-    //char*           GetDataSet()                {return (char*) fDataSet->Data();}
 
   protected: 
   
-    TString   *fScan;                   // Direction of a scan (X=Z or X=-Z)
+    std::string  fPath;          // Path to the directory containing the SOC files
+    std::string   fScan;                   // 
+    std::string  fDiagonal;
     Int_t     fLambda;                  // Wavelength (nm)
+
+    Bool_t      lambdaValidity;                             // Validity of an user inputted wavelength
+    Bool_t      pathValidity;                               // Validity of an user inputted path to the SOC files
+    Bool_t      diagValidity;                               // Validity of an user inputted diagonal to be analysed
     Float_t   fTolerance;               // Maximum distance (mm) allowed for PMTs relative to the diagonal axis  
     Float_t   fShadowing;               // Shadowing tolerances by the detector geometry
 
