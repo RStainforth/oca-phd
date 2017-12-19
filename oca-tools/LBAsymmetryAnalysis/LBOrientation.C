@@ -18,7 +18,7 @@
 ///
 ///           .L LBOrientation.C+
 ///
-///         Then use one of the function declared to run the analysis.
+///         Then use one of the functions declared to run the analysis.
 ///
 ////////////////////////////////////////////////////////////////////
 
