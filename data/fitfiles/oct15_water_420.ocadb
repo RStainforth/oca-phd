@@ -176,6 +176,13 @@ laserball_distribution_number_of_parameters_per_theta_slice: 2,
 // Whether or not to vary the laserball distribution in the fit ( 0: Keep Fixed, 1: Vary )
 laserball_distribution_vary: 1,
 
+// Whether or not to seed the laserball sinusoidal distribution parameters ( 0: Don't Seed, 1: Seed )
+// CAUTION: Only valid for laserball distribution type 1 = sinusoidal
+laserball_distribution_seed: 0,
+
+// Name of the file that has the laserball light distribution parameters from Laserball Asymmetry Analysis
+laserball_distribution_seed_parameters: "lb_oct15_water_420.ocadb",
+
 // The minimum number of laserball distribution entries in each bin
 // required for the parameter associated with that bin to vary
 laserball_distribution_min_bin_entries: 10,
