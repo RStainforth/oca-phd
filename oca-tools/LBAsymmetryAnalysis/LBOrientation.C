@@ -18,13 +18,7 @@
 ///
 ///           .L LBOrientation.C+
 ///
-///         Then:
-///
-///           LBOrientation()
-///
-///         Or:
-///		
-///           LBOrientation(<wavelength>,"<path_to_files_directory>")
+///         Then use one of the function declared to run the analysis.
 ///
 ////////////////////////////////////////////////////////////////////
 
