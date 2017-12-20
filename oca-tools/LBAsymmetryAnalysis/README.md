@@ -21,4 +21,5 @@ How To Run
 
 4) Run either:
   - `LBOrientation()`, that performs the analysis for the default wavelength of 505 nm and uses the default path to the oct15 MC soc files in `OCA_SNOPLUS_DATA/runs/soc/oct15/water`
+  - `LBOrientation( <wavelength> )`, that performs the analysis for a user inputted wavelength and uses the default path to the oct15 MC soc files in `OCA_SNOPLUS_DATA/runs/soc/oct15/water`
   - `LBOrientation( <wavelength>, "<path_to_files>" )`, that performs the analysis for a user inputted wavelength and path to the soc files.
