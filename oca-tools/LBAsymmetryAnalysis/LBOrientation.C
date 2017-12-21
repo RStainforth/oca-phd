@@ -18,13 +18,7 @@
 ///
 ///           .L LBOrientation.C+
 ///
-///         Then:
-///
-///           LBOrientation()
-///
-///         Or:
-///		
-///           LBOrientation(<wavelength>,"<path_to_files_directory>")
+///         Then use one of the functions declared to run the analysis.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -68,7 +62,7 @@ LBOrientation::LBOrientation( Int_t lambda, const std::string& path ){
   Initialize();
   SetLambda( lambda );
   SetPath( path );
-  if( !lambdaValidity && !pathValidity ){ return; }
+  if( !lambdaValidity || !pathValidity ){ return; }
   ReadData();
   Ratios();
   PlotResults();
