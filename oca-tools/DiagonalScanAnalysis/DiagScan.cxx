@@ -89,7 +89,7 @@ void DiagScan::Initialize(){
   pathValidity   = true;
   diagValidity   = true;
 
-  fDistanceCut        = 1500.0;
+  fDistanceCut        = 2000.0;
   fShadowing          = 150.0;
 
   fNRuns              = 0;
@@ -150,6 +150,7 @@ void DiagScan::ReadData(){
   if ( fDiagonal == "xnz" )  fDiagonalVector = TVector3( 1.0, 0.0, -1.0 );
 
   // Opening the SOC files
+  RAT::DU::Utility::Get()->LoadDBAndBeginRun();
   for ( Int_t iRun = 0; iRun < fNRuns; iRun++ ){
 
     std::string fSocFilename = fPath + ::to_string( fRunID[ iRun ] ) + "_Run.root";
