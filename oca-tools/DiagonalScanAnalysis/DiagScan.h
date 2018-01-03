@@ -80,6 +80,7 @@ class DiagScan : public TObject {
     void SetShadowingTolerance( Float_t aNumber );
 
     void SelectPMTs( Int_t nRun, const RAT::DS::SOC& soc );
+    void CheckLowOccupancy( Int_t iRun );
 
     Float_t  GetAttCoef()     {return fAttCoef;}
     Float_t  GetAttCoefErr()  {return fAttCoefErr;}
