@@ -14,6 +14,9 @@
 ///     07/2016 : A.S.Inacio - First Version.
 ///
 /// DETAIL: To execute this file, first it is necessary to compile.
+///
+///         source env_oca_snoplus.sh
+///
 ///         At ROOT command line:
 ///
 ///           .L DiagScan.cxx+
@@ -80,7 +83,7 @@ void DiagScan::Initialize(){
   cout << "Initializing all variables!" << endl;
 
   // Change path before pull request
-  fPath       = /* getenv( "OCA_SNOPLUS_DATA" ) + */(string) "../../data/runs/soc/oct15/water/";
+  fPath       = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/oct15/water/";
   fScan       = (string) "oct15";
   fDiagonal   = "xpz";
   fLambda     = 505;
