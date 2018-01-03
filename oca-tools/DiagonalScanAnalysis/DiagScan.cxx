@@ -89,7 +89,7 @@ void DiagScan::Initialize(){
   pathValidity   = true;
   diagValidity   = true;
 
-  fDistanceCut        = 2000.0;
+  fDistanceCut        = 1500.0;
   fShadowing          = 150.0;
 
   fNRuns              = 0;
@@ -187,6 +187,11 @@ void DiagScan::Process(){
 
   for ( Int_t i = 0; i < fNRuns; i++ ){
 
+    // Exclude PMTs with abnormally low occupancy. Identify them by comparing their occupancy with the average of the group where they are included.
+    // This check can be disabled by commenting the following line.
+    CheckLowOccupancy( i );
+    
+
     // Selects the pairs of PMTs   
     TVector3 sum;
     Float_t min;
@@ -205,7 +210,7 @@ void DiagScan::Process(){
           }
         }
         sum = fPMTPos[i][k] + fPMTPos[i][l];
-        if ( count == 0 && sum.Mag() < min ){ 
+        if ( count == 0 && sum.Mag() <  min ){ 
           min = sum.Mag(); 
           j = l;
         }
@@ -408,6 +413,7 @@ void DiagScan::SelectPMTs( Int_t nRun, const RAT::DS::SOC& soc ){
   const RAT::DU::PMTInfo& pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
   RAT::DU::LightPathCalculator lightPath = Utility::Get()->GetLightPathCalculator();
   RAT::DU::ShadowingCalculator shadowCalc = Utility::Get()->GetShadowingCalculator();
+
   // Set all of the tolerances for shadowing by the detector geometry to 150 mm equivalent.
   shadowCalc.SetAllGeometryTolerances( fShadowing );
 
@@ -436,7 +442,7 @@ void DiagScan::SelectPMTs( Int_t nRun, const RAT::DS::SOC& soc ){
 
         // Check for shadowing
         if ( shadowCalc.CheckForShadowing( lightPath ) == false ){
-          Int_t nVal = 3; // nVal-sided polygon superimposed onto the PMT bucket for the calculation
+          Int_t nVal = 0; // nVal-sided polygon superimposed onto the PMT bucket for the calculation
 
           // Solid Angle calculation
           TVector3 pmtNormal = -1.0 * pmtInfo.GetDirection( lcn );
@@ -459,4 +465,70 @@ void DiagScan::SelectPMTs( Int_t nRun, const RAT::DS::SOC& soc ){
       }
     }
   }
+}
+
+void DiagScan::CheckLowOccupancy( Int_t iRun){
+
+  Float_t SumOccG1 = 0; // Sum of the corrected occupancies in group 1 (z > 0)
+  Float_t SumOccG2 = 0; // Sum of the corrected occupancies in group 2 (z < 0)
+
+  Float_t SumOcc2G1 = 0; // Sum of the squared corrected occupancies in group 1 (z > 0)
+  Float_t SumOcc2G2 = 0; // Sum of the squared corrected occupancies in group 2 (z < 0)
+
+  Int_t nPMTg1 = 0; // Number of PMTs in group 1 (z > 0)
+  Int_t nPMTg2 = 0; // Number of PMTs in group 2 (z < 0)
+
+  for ( Int_t pm = 0; pm < fNPMTs[iRun]; pm++ ){
+
+    if ( fPMTPos[iRun][pm].Z() > 0 ){
+      SumOccG1 = SumOccG1 + fPMTCorrOcc[iRun][pm]/*/fNPulses[i]*/;
+      SumOcc2G1 = SumOcc2G1 + TMath::Power(fPMTCorrOcc[iRun][pm],2)/*/TMath::Power(fNPulses[i],2)*/;
+      nPMTg1++;
+    }
+    if ( fPMTPos[iRun][pm].Z() < 0 ){
+      SumOccG2 = SumOccG2 + fPMTCorrOcc[iRun][pm]/*/fNPulses[i]*/;
+      SumOcc2G2 = SumOcc2G2 + TMath::Power(fPMTCorrOcc[iRun][pm],2)/*/TMath::Power(fNPulses[i],2)*/;
+      nPMTg2++;
+    }
+  }
+
+  Float_t AvOccG1 = SumOccG1 / nPMTg1; 
+  Float_t AvOccG2 = SumOccG2 / nPMTg2;
+
+  Float_t AvOcc2G1 = SumOcc2G1 / nPMTg1; 
+  Float_t AvOcc2G2 = SumOcc2G2 / nPMTg2;
+
+  // Standard deviation for each group, as defined in  http://mathworld.wolfram.com/StandardDeviation.html
+  Float_t sigma1 = TMath::Sqrt(AvOcc2G1 - AvOccG1*AvOccG1);
+  Float_t sigma2 = TMath::Sqrt(AvOcc2G2 - AvOccG2*AvOccG2);
+
+  // Follows a loop over all PMTs. If their occupancy are bellow AvOcc-3*sigma of their corresponding group, they are not used in the analysis. Updates the arrays with PMT info.
+  Int_t counter = 0;
+  for ( Int_t pm = 0; pm < fNPMTs[iRun]; pm++ ){
+    if ( fPMTPos[iRun][pm].Z() > 0 ){
+      if ( fPMTCorrOcc[iRun][pm] > (AvOccG1 - 3*sigma1) ){
+
+        fPMTPos[iRun][counter] = fPMTPos[iRun][pm];
+        fPMTOcc[iRun][counter] = fPMTOcc[iRun][pm];
+        fPMTCorrections[iRun][counter] = fPMTCorrections[iRun][pm];
+        fPMTCorrOcc[iRun][counter] = fPMTCorrOcc[iRun][pm];
+        fPMTDistInAV[iRun][counter] = fPMTDistInAV[iRun][pm];
+
+        counter++;
+      }
+    }
+    if ( fPMTPos[iRun][pm].Z() < 0 ){
+      if ( fPMTCorrOcc[iRun][pm] > (AvOccG2 - 3*sigma2) ){
+
+        fPMTPos[iRun][counter] = fPMTPos[iRun][pm];
+        fPMTOcc[iRun][counter] = fPMTOcc[iRun][pm];
+        fPMTCorrections[iRun][counter] = fPMTCorrections[iRun][pm];
+        fPMTCorrOcc[iRun][counter] = fPMTCorrOcc[iRun][pm];
+        fPMTDistInAV[iRun][counter] = fPMTDistInAV[iRun][pm];
+
+        counter++;
+      }
+    }
+  }
+  fNPMTs[iRun] = counter;
 }
