@@ -695,7 +695,7 @@ void LBOrientation::WriteToFile(){
 
 void LBOrientation::SetLambda( Int_t aNumber ){
 
-  if(aNumber != 337 && aNumber != 369 && aNumber != 385 &&  aNumber != 420 && aNumber != 460 && aNumber != 505){
+  if(aNumber != 337 && aNumber != 369 && aNumber != 385 &&  aNumber != 420 && aNumber != 440 && aNumber != 505){
     printf("The wavelength %d nm does not belong to the list of wavelengths emitted by the laserball!\n", aNumber);
     lambdaValidity = false;
     return;
