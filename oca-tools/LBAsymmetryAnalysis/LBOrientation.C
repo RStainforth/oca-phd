@@ -38,6 +38,7 @@ LBOrientation::LBOrientation( const Int_t lambda, const std::string& scan, const
   SetPath( path );
   if( !lambdaValidity || !scanValidity || !pathValidity ){ return; }
   ReadData();
+  if( !orientationValidity ){ return; }
   Ratios();
   PlotResults();
   WriteToFile();
@@ -65,13 +66,14 @@ void LBOrientation::Initialize(){
   lambdaValidity = true;
   scanValidity = true;
   pathValidity = true;
+  orientationValidity = true;
 
   for( Int_t i = 0; i < NRUNS; i++ ){
     fNPMTs[i]        = 0;
     fRun[i]          = 0;
     fSourceWL[i]     = 0;
     fSourcePos[i]    = TVector3(0,0,0);
-    fSourceDir[i]    = TVector3(0,0,0);
+    fSourceDirVec[i]    = TVector3(0,0,0);
     fOrientation[i]   = 0;
     for( Int_t j = 0; j < 9500; j++ ){
       fPMTPos[i][j]  = TVector3(0,0,0);
@@ -187,12 +189,45 @@ void LBOrientation::ReadData(){
       fSourcePos[i] = rsoc.GetCalib().GetPos();
 
       // Laserball Orientation
-      fSourceDir[i] = rsoc.GetCalib().GetDir();
+      fOrientation[i] = rsoc.GetCalib().GetID();
+      fSourceDirVec[i] = rsoc.GetCalib().GetDir();
 
-      if(fSourceDir[i] == TVector3(1.0,0.0,0.0)){fOrientation[i] = 0;}  // East
-      if(fSourceDir[i] == TVector3(0.0,1.0,0.0)){fOrientation[i] = 1;}  // North
-      if(fSourceDir[i] == TVector3(-1.0,0.0,0.0)){fOrientation[i] = 2;} // West	
-      if(fSourceDir[i] == TVector3(0.0,-1.0,0.0)){fOrientation[i] = 3;} // South
+      if( fOrientation[i] < 0 || fOrientation[i] > 3 ){
+        cout << "Run " << fRun[i] << " has orientation ID " << fOrientation[i] << ", which is not valid!" << endl;
+        orientationValidity = false;
+        return;
+      }
+      else{
+        // Verify that the direction vector agrees with the orientation ID
+        if( fOrientation[i] == 0 ){ // East
+          if( (int)fSourceDirVec[i].X() != 1 && (int)fSourceDirVec[i].Y() != 0 && (int)fSourceDirVec[i].Z() != 0 ){
+            cout << "The direction vector for the East facing run " << fRun[i] << " is (" << fSourceDirVec[i].X() << ", " << fSourceDirVec[i].Y() << ", " << fSourceDirVec[i].Z() << "), which is not valid!" << endl;
+            orientationValidity = false;
+            return;
+          }
+        }
+        if( fOrientation[i] == 1 ){ // North
+          if( (int)fSourceDirVec[i].X() != 0 && (int)fSourceDirVec[i].Y() != 1 && (int)fSourceDirVec[i].Z() != 0 ){
+            cout << "The direction vector for the North facing run " << fRun[i] << " is (" << fSourceDirVec[i].X() << ", " << fSourceDirVec[i].Y() << ", " << fSourceDirVec[i].Z() << "), which is not valid!" << endl;
+            orientationValidity = false;
+            return;
+          }
+        }
+        if( fOrientation[i] == 2 ){ // West
+          if( (int)fSourceDirVec[i].X() != -1 && (int)fSourceDirVec[i].Y() != 0 && (int)fSourceDirVec[i].Z() != 0 ){
+            cout << "The direction vector for the West facing run " << fRun[i] << " is (" << fSourceDirVec[i].X() << ", " << fSourceDirVec[i].Y() << ", " << fSourceDirVec[i].Z() << "), which is not valid!" << endl;
+            orientationValidity = false;
+            return;
+          }
+        }
+        if( fOrientation[i] == 3 ){ // South
+          if( (int)fSourceDirVec[i].X() != 0 && (int)fSourceDirVec[i].Y() != -1 && (int)fSourceDirVec[i].Z() != 0 ){
+            cout << "The direction vector for the South facing run " << fRun[i] << " is (" << fSourceDirVec[i].X() << ", " << fSourceDirVec[i].Y() << ", " << fSourceDirVec[i].Z() << "), which is not valid!" << endl;
+            orientationValidity = false;
+            return;
+          }
+        }
+      }
 
       // Loop over SOCPMTs
       vector<UInt_t> pmtids = rsoc.GetSOCPMTIDs();

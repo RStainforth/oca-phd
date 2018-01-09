@@ -86,6 +86,7 @@ class LBOrientation : public TObject {
     Bool_t      lambdaValidity;                             // Validity of an user inputted wavelength
     Bool_t      scanValidity;                               // Validity of an user inputted scan
     Bool_t      pathValidity;                               // Validity of an user inputted path to the SOC files
+    Bool_t      orientationValidity;                        // Validity of the orientation
 
     Int_t       fOrientation[NRUNS];                        // Source orientation
 
@@ -98,7 +99,7 @@ class LBOrientation : public TObject {
     Int_t       fRun[NRUNS];                                // Run ID
     Double_t    fSourceWL[NRUNS];                           // Source wavelength
     TVector3    fSourcePos[NRUNS];                          // Source position
-    TVector3    fSourceDir[NRUNS];                          // Source direction
+    TVector3    fSourceDirVec[NRUNS];                       // Source direction vector
 
     TVector3    fPMTPos[NRUNS][9500];                       // PMT position
     Float_t     fPMTOcc[NRUNS][9500];                       // PMT occupancy
