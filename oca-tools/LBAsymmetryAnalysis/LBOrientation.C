@@ -430,7 +430,7 @@ void LBOrientation::PlotResults(){
 
   TLegend *leg[NTHETA];
 
-  Char_t savename[180];
+  std::string savename;
   Char_t hname[180];
 
   TMultiGraph *R;
@@ -483,8 +483,8 @@ void LBOrientation::PlotResults(){
 
     leg[s] ->Draw();
     c0     ->Update();
-    sprintf(savename,"RatioPhiWL%d_%d.png",(Int_t)fLambda,(Int_t)s);
-    c0->SaveAs(savename,"png");
+    savename = "Ratios_" + fScan + "_" + ::to_string(fLambda) + "_" + ::to_string(s) + ".png";
+    c0->SaveAs(savename.c_str(),"png");
 
     TF1 *fit1 = new TF1("fit1","(2/(1+[0]*cos(x+[1])))-1",-TMath::Pi(),TMath::Pi());
     fit1->SetParLimits(0, 0.0, 10.);
@@ -500,8 +500,8 @@ void LBOrientation::PlotResults(){
     GR13[s]->Draw("");
     GR13[s]->Fit(fit1);
     c0     ->Update();
-    sprintf(savename,"Ratio13PhiWL%d_%d.png",(Int_t)fLambda,(Int_t)s);
-    c0->SaveAs(savename,"png");
+    savename = "RatioNS_" + fScan + "_" + ::to_string(fLambda) + "_" + ::to_string(s) + ".png";
+    c0->SaveAs(savename.c_str(),"png");
 
     fAmplitudeFIT13[s] = fit1->GetParameter(0);
     fPhaseFIT13[s] = fit1->GetParameter(1);
@@ -520,8 +520,8 @@ void LBOrientation::PlotResults(){
     GR20[s]->Draw("");
     GR20[s]->Fit(fit2);
     c0     ->Update();
-    sprintf(savename,"Ratio20PhiWL%d_%d.png",(Int_t)fLambda,(Int_t)s);
-    c0->SaveAs(savename,"png");
+    savename = "RatioWE_" + fScan + "_" + ::to_string(fLambda) + "_" + ::to_string(s) + ".png";
+    c0->SaveAs(savename.c_str(),"png");
 
     fAmplitudeFIT20[s] = fit2->GetParameter(0);
     fPhaseFIT20[s] = fit2->GetParameter(1);
@@ -557,8 +557,8 @@ void LBOrientation::PlotResults(){
     leg[s] ->AddEntry(GR20_90[s],"W/E - 90","p");
     leg[s] ->Draw();
     c0->Update();
-    sprintf(savename,"FITWL%d_%d.png",(Int_t)fLambda,(Int_t)s);
-    c0->SaveAs(savename,"png");
+    savename = "Fits_" + fScan + "_" + ::to_string(fLambda) + "_" + ::to_string(s) + ".png";
+    c0->SaveAs(savename.c_str(),"png");
 
     fAmplitudeFIT[s] = fit1->GetParameter(0);
     fPhaseFIT[s] = fit1->GetParameter(1);
@@ -604,8 +604,8 @@ void LBOrientation::PlotResults(){
   legend ->AddEntry(Amp20,"Amplitude W/E","p");
   legend ->Draw();
   c0     ->Update();
-  sprintf(savename,"Amplitudes%d.png",(Int_t)fLambda);
-  c0->SaveAs(savename,"png");
+  savename = "Amplitudes_" + fScan + "_" + ::to_string(fLambda) + ".png";
+  c0->SaveAs(savename.c_str(),"png");
 
   c0->Clear();
 
@@ -632,8 +632,8 @@ void LBOrientation::PlotResults(){
   legend ->AddEntry(Phase20,"Phase W/E","p");
   legend ->Draw();
   c0     ->Update();
-  sprintf(savename,"Phases%d.png",(Int_t)fLambda);
-  c0->SaveAs(savename,"png");
+  savename = "Phases_" + fScan + "_" + ::to_string(fLambda) + ".png";
+  c0->SaveAs(savename.c_str(),"png");
 
 }
 
