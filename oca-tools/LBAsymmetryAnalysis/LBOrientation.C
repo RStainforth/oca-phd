@@ -30,39 +30,13 @@ using namespace RAT::DU;
 
 ClassImp(LBOrientation);
 
-LBOrientation::LBOrientation(){
-
-  Initialize();
-  ReadData();
-  Ratios();
-  PlotResults();
-  WriteToFile();
-
-}
-
-//______________________________________________________________________________________
-//
-
-LBOrientation::LBOrientation( Int_t lambda ){
+LBOrientation::LBOrientation( const Int_t lambda, const std::string& scan, const std::string& path ){
 
   Initialize();
   SetLambda( lambda );
-  if( !lambdaValidity ){ return; }
-  ReadData();
-  Ratios();
-  PlotResults();
-  WriteToFile();
-
-}
-
-//______________________________________________________________________________________
-//
-LBOrientation::LBOrientation( Int_t lambda, const std::string& path ){
-
-  Initialize();
-  SetLambda( lambda );
+  SetScan( scan );
   SetPath( path );
-  if( !lambdaValidity || !pathValidity ){ return; }
+  if( !lambdaValidity || !scanValidity || !pathValidity ){ return; }
   ReadData();
   Ratios();
   PlotResults();
@@ -83,12 +57,13 @@ LBOrientation::~LBOrientation(){
 void LBOrientation::Initialize(){
   
   // Default parameters: wavelength of 505 nm, and path to the oct15 SOC files directory 
-  fLambda = 505;
-  fPath = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/oct15/water/";
-  fScan = (string) "oct15";
-  fPhase = (string) "water";
+  fLambda = 0;
+  fPath = "";
+  fScan = "";
+  fPhase = "";
 
   lambdaValidity = true;
+  scanValidity = true;
   pathValidity = true;
 
   for( Int_t i = 0; i < NRUNS; i++ ){
@@ -176,24 +151,28 @@ void LBOrientation::ReadData(){
 
   while( file.peek() != EOF ){
     file >> ds >> phase >> wl >> nr >> rs[0] >> rs[1] >> rs[2] >> rs[3];
-    if(fLambda == wl) break;
+    if( fLambda == wl && fScan == ds) break;
   }
-  fScan = ds;
+
   fPhase = phase;
   for( Int_t i = 0; i < NRUNS; i++ ) fRun[i] = rs[i];
   file.close();
 
-  /********** Opening and reading the SocFiles **********/
-  RAT::DU::SOCReader *socreader;
-  //  RAT::DU::Utility::Get()->LoadDBAndBeginRun();
-
+  // Opening the SOC files
+  RAT::DU::Utility::Get()->LoadDBAndBeginRun();
   for( Int_t i = 0; i < NRUNS; i++ ){
+
     fNPMTs[i] = 0;
 
     std::string fSocFilename;
-    fSocFilename = fPath + ::to_string(fRun[i]) + "_Run.root";
+    if( fScan == "oct15" ){
+      fSocFilename = fPath + fScan + "/" + fPhase + "/" + ::to_string(fRun[i]) + "_Run.root";
+    }
+    else{
+      fSocFilename = fPath + fScan + "/" + fPhase + "/SOC_0000" + ::to_string(fRun[i]) + ".root";
+    }
     cout << "Opening file " << fSocFilename << endl;
-    socreader = new RAT::DU::SOCReader(fSocFilename);
+    RAT::DU::SOCReader *socreader = new RAT::DU::SOCReader(fSocFilename);
 
     const RAT::DU::PMTInfo& pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
 
@@ -693,7 +672,7 @@ void LBOrientation::WriteToFile(){
 //______________________________________________________________________________________
 //
 
-void LBOrientation::SetLambda( Int_t aNumber ){
+void LBOrientation::SetLambda( const Int_t aNumber ){
 
   if(aNumber != 337 && aNumber != 369 && aNumber != 385 &&  aNumber != 420 && aNumber != 450 && aNumber != 505){
     printf("The wavelength %d nm does not belong to the list of wavelengths emitted by the laserball!\n", aNumber);
@@ -706,13 +685,26 @@ void LBOrientation::SetLambda( Int_t aNumber ){
 //______________________________________________________________________________________
 //
 
-void LBOrientation::SetPath( const std::string& path ){
+void LBOrientation::SetScan( const std::string& aString ){
+
+  if ( aString != "oct15" && aString != "dec17" ){
+    cout << aString << " is not a valid laserball scan!" << endl;
+    scanValidity = false;
+    return;
+  }
+  fScan = aString;
+}
+
+//______________________________________________________________________________________
+//
+
+void LBOrientation::SetPath( const std::string& aString ){
 
   struct stat s;
-  if ( stat( path.c_str(), &s ) != 0 ){
+  if ( stat( aString.c_str(), &s ) != 0 ){
     cout << "The path inserted does not exist!" << endl;
     pathValidity = false;
     return;
   }
-  fPath = path;
+  fPath = aString;
 }

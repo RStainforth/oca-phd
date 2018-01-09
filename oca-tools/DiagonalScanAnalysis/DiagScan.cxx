@@ -33,62 +33,43 @@ using namespace RAT::DU;
 
 ClassImp(DiagScan);
 
-DiagScan::DiagScan(){
-
-  Initialize();
-  ReadData();
-  Process();
-  FitRatio();
-  Product();
-
-}
-//______________________________________________________________________________________
-//
-DiagScan::DiagScan( Int_t lambda, std::string& diagonal ){
+DiagScan::DiagScan( const Int_t lambda, const std::string& diagonal, const std::string& scan, const std::string& path ){
 
   Initialize();
   SetLambda( lambda );
   SetDiagonal( diagonal );
-  if ( !lambdaValidity || !diagValidity ){ return; }
-  ReadData();
-  Process();
-  FitRatio();
-  Product();
-
-}
-//______________________________________________________________________________________
-//
-DiagScan::DiagScan( Int_t lambda, std::string& diagonal, std::string& path ){
-
-  Initialize();
-  SetLambda( lambda );
-  SetDiagonal( diagonal );
+  SetScan( scan );
   SetPath( path );
-  if ( !lambdaValidity || !diagValidity || !pathValidity ){ return; }
+  if ( !lambdaValidity || !diagValidity || !scanValidity || !pathValidity ){ return; }
   ReadData();
   Process();
   FitRatio();
   Product();
 
 }
+
 //______________________________________________________________________________________
 //
+
 DiagScan::~DiagScan(){
 
 }
+
 //______________________________________________________________________________________
 //
+
 void DiagScan::Initialize(){
  
   cout << "Initializing all variables!" << endl;
 
-  // Change path before pull request
-  fPath       = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/oct15/water/";
-  fScan       = (string) "oct15";
-  fDiagonal   = "xpz";
-  fLambda     = 505;
+  fLambda     = 0;
+  fPath       = "";
+  fScan       = "";
+  fPhase      = "";
+  fDiagonal   = "";
 
   lambdaValidity = true;
+  scanValidity   = true;
   pathValidity   = true;
   diagValidity   = true;
 
@@ -129,25 +110,27 @@ void DiagScan::Initialize(){
     }
   }
 }
+
 //______________________________________________________________________________________
 //
+
 void DiagScan::ReadData(){
 
   /// Opens the SOC files and all the relevant information for each run is saved. 
 
   Int_t wl;
-  Char_t ds[5];
-  Char_t name[30];
-  Char_t diag[3];
+  Char_t ds[5], name[30], diag[3], phase[20];
   sprintf(name,"runlist.txt");
 
   ifstream file( name );
 
   while ( file.peek() != EOF ){
-    file >> ds >> wl >> diag >> fNRuns >> fRunID[0] >> fRunID[1] >> fRunID[2] >> fRunID[3] >> fRunID[4] >> fRunID[5];
+    file >> ds >> phase >> wl >> diag >> fNRuns >> fRunID[0] >> fRunID[1] >> fRunID[2] >> fRunID[3] >> fRunID[4] >> fRunID[5];
     if ( fLambda == wl && fDiagonal == diag && fScan == ds ) break;
   } 
   file.close();
+
+  fPhase = phase;
 
   if ( fDiagonal == "xpz" )  fDiagonalVector = TVector3( 1.0, 0.0, 1.0 );
   if ( fDiagonal == "xnz" )  fDiagonalVector = TVector3( 1.0, 0.0, -1.0 );
@@ -156,7 +139,14 @@ void DiagScan::ReadData(){
   RAT::DU::Utility::Get()->LoadDBAndBeginRun();
   for ( Int_t iRun = 0; iRun < fNRuns; iRun++ ){
 
-    std::string fSocFilename = fPath + ::to_string( fRunID[ iRun ] ) + "_Run.root";
+    std::string fSocFilename;
+    if( fScan == "oct15" ){
+      fSocFilename = fPath + fScan + "/" + fPhase + "/" + ::to_string(fRunID[iRun]) + "_Run.root";
+    }
+    else{
+      fSocFilename = fPath + fScan + "/" + fPhase + "/SOC_0000" + ::to_string(fRunID[iRun]) + ".root";
+    }
+    cout << "Opening file " << fSocFilename << endl;
     RAT::DU::SOCReader *socreader = new RAT::DU::SOCReader( fSocFilename );
 
     for ( size_t isoc = 0; isoc < socreader->GetSOCCount(); isoc++ ){
@@ -179,8 +169,10 @@ void DiagScan::ReadData(){
     delete socreader;
   }
 }
+
 //______________________________________________________________________________________
 //
+
 void DiagScan::Process(){
 
   /// Pairs of PMTs (one from each group) are formed and their occupancy ratio and product are calculated (including
@@ -268,8 +260,10 @@ void DiagScan::Process(){
     fDistance[i] = fDistance[i]/fNPairs[i];
   }
 }
+
 //______________________________________________________________________________________
 //
+
 void DiagScan::FitRatio(){
 
   /// The weighted occupancy ratio of all runs is fitted and plotted with their respective uncertainities.
@@ -321,8 +315,10 @@ void DiagScan::FitRatio(){
   delete c0;
 
 }
+
 //______________________________________________________________________________________
 //
+
 void DiagScan::Product(){
 
   /// The weighted occupancy product of all runs is plotted with their respective uncertainities.
@@ -363,55 +359,8 @@ void DiagScan::Product(){
 
 //______________________________________________________________________________________
 //
-void DiagScan::SetLambda(Int_t aNumber){
 
-  if (aNumber != 337 && aNumber != 369 && aNumber != 385 &&  aNumber != 420 && aNumber != 450 && aNumber != 505){
-    printf("The wavelength %d nm does not belong to the list of wavelengths emitted by the laserball!\n", aNumber);
-    lambdaValidity = false;
-    return;
-  }
-  fLambda = aNumber;
-}
-//______________________________________________________________________________________
-//
-void DiagScan::SetPath( const std::string& path ){
-
-  struct stat s;
-  if ( stat( path.c_str(), &s ) != 0 ){
-    cout << "The path inserted does not exist!" << endl;
-    pathValidity = false;
-    return;
-  }
-  fPath = path;
-}
-//______________________________________________________________________________________
-//
-void DiagScan::SetDiagonal( const std::string& diagonal ){
-
-  if ( diagonal == "xpz" || diagonal == "xnz" || diagonal == "ynz" || diagonal == "ypz" ){
-    fDiagonal = diagonal;
-  }
-  else {
-    cout << diagonal << " is not a valid diagonal! Options are xpz, xnz, ypz or ynz." << endl;
-    diagValidity = false;
-    return;
-  }
-}
-//______________________________________________________________________________________
-//
-void DiagScan::SetDistanceCut(Float_t aNumber){
-
-  fDistanceCut = aNumber;
-}
-//______________________________________________________________________________________
-//
-void DiagScan::SetShadowingTolerance(Float_t aNumber){
-
-  fShadowing = aNumber;
-}
-//______________________________________________________________________________________
-//
-void DiagScan::SelectPMTs( Int_t nRun, const RAT::DS::SOC& soc ){
+void DiagScan::SelectPMTs( const Int_t nRun, const RAT::DS::SOC& soc ){
 
   const RAT::DU::PMTInfo& pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
   RAT::DU::LightPathCalculator lightPath = Utility::Get()->GetLightPathCalculator();
@@ -470,7 +419,10 @@ void DiagScan::SelectPMTs( Int_t nRun, const RAT::DS::SOC& soc ){
   }
 }
 
-void DiagScan::CheckLowOccupancy( Int_t iRun){
+//______________________________________________________________________________________
+//
+
+void DiagScan::CheckLowOccupancy( const Int_t iRun ){
 
   Float_t SumOccG1 = 0; // Sum of the corrected occupancies in group 1 (z > 0)
   Float_t SumOccG2 = 0; // Sum of the corrected occupancies in group 2 (z < 0)
@@ -534,4 +486,75 @@ void DiagScan::CheckLowOccupancy( Int_t iRun){
     }
   }
   fNPMTs[iRun] = counter;
+}
+
+//______________________________________________________________________________________
+//
+
+void DiagScan::SetLambda( const Int_t aNumber ){
+
+  if (aNumber != 337 && aNumber != 369 && aNumber != 385 &&  aNumber != 420 && aNumber != 450 && aNumber != 505){
+    printf("The wavelength %d nm does not belong to the list of wavelengths emitted by the laserball!\n", aNumber);
+    lambdaValidity = false;
+    return;
+  }
+  fLambda = aNumber;
+}
+
+//______________________________________________________________________________________
+//
+
+void DiagScan::SetScan( const std::string& aString ){
+
+  if ( aString != "oct15" && aString != "dec17" ){
+    cout << aString << " is not a valid laserball scan!" << endl;
+    scanValidity = false;
+    return;
+  }
+  fScan = aString;
+}
+
+//______________________________________________________________________________________
+//
+
+void DiagScan::SetPath( const std::string& aString ){
+
+  struct stat s;
+  if ( stat( aString.c_str(), &s ) != 0 ){
+    cout << "The path inserted does not exist!" << endl;
+    pathValidity = false;
+    return;
+  }
+  fPath = aString;
+}
+
+//______________________________________________________________________________________
+//
+
+void DiagScan::SetDiagonal( const std::string& aString ){
+
+  if ( aString == "xpz" || aString == "xnz" || aString == "ynz" || aString == "ypz" ){
+    fDiagonal = aString;
+  }
+  else {
+    cout << aString << " is not a valid diagonal! Options are xpz, xnz, ypz or ynz." << endl;
+    diagValidity = false;
+    return;
+  }
+}
+
+//______________________________________________________________________________________
+//
+
+void DiagScan::SetDistanceCut( const Float_t aNumber ){
+
+  fDistanceCut = aNumber;
+}
+
+//______________________________________________________________________________________
+//
+
+void DiagScan::SetShadowingTolerance( const Float_t aNumber ){
+
+  fShadowing = aNumber;
 }
