@@ -300,7 +300,7 @@ void DiagScan::FitRatio(){
   fAttCoefErr = fit->GetParError(1);
 
   c0->Update();
-  std::string saveName = "FittedRatio" + fDiagonal + ::to_string(fLambda) + ".pdf";
+  std::string saveName = "FittedRatio_" + fScan + "_" + fDiagonal + "_" + ::to_string(fLambda) + ".pdf";
   c0->SaveAs(saveName.c_str(),"pdf");
 	
   cout << "#######################" << endl;
@@ -350,7 +350,7 @@ void DiagScan::Product(){
   prod->GetYaxis()->SetTitle("Occupancy Product");
   prod->GetYaxis()->SetTitleOffset(1.15);
 
-  std::string saveName2 = "Product" + fDiagonal + ::to_string(fLambda) + ".pdf";
+  std::string saveName2 = "Product_" + fScan + "_" + fDiagonal + "_" + ::to_string(fLambda) + ".pdf";
   c1->SaveAs(saveName2.c_str(),"pdf");
 
   delete c1;
