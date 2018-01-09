@@ -377,7 +377,7 @@ void DiagScan::SetLambda(Int_t aNumber){
 void DiagScan::SetPath( const std::string& path ){
 
   struct stat s;
-  if ( stat( fPath.c_str(), &s ) != 0 ){
+  if ( stat( path.c_str(), &s ) != 0 ){
     cout << "The path inserted does not exist!" << endl;
     pathValidity = false;
     return;
