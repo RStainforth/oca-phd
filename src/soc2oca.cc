@@ -297,14 +297,21 @@ int main( int argc, char** argv ){
   // from the environment and create the full filename paths.
   // SOC run filenames currently of the form "[Run-ID]_Run.root"
   string socRunDir = lDB.GetSOCRunDir( dirMMYY );
-  string fExt = "_Run.root";
-
+  string fExt, fPrefix;
   string rFilename, cFilename, wrFilename, wcFilename;
-  
-  rFilename = ( socRunDir + rIDStr + fExt ).c_str();
-  cFilename = ( socRunDir + cIDStr + fExt ).c_str();
-  if( wrID > 0 ){ wrFilename = ( socRunDir + wrIDStr + fExt ).c_str(); }
-  if( wcID > 0 ){ wcFilename = ( socRunDir + wcIDStr + fExt ).c_str(); }
+  if ( dirMMYY == "dec17/water" ){
+    fExt = ".root";
+    fPrefix = "SOC_0000";
+  }
+  else{
+    fExt = "_Run.root";
+    fPrefix = "";
+  }
+
+  rFilename = ( socRunDir + fPrefix + rIDStr + fExt ).c_str();
+  cFilename = ( socRunDir + fPrefix + cIDStr + fExt ).c_str();
+  if( wrID > 0 ){ wrFilename = ( socRunDir + fPrefix + wrIDStr + fExt ).c_str(); }
+  if( wcID > 0 ){ wcFilename = ( socRunDir + fPrefix + wcIDStr + fExt ).c_str(); }
   
   // Check that the main-run file exists
   ifstream rfile( rFilename.c_str() );
