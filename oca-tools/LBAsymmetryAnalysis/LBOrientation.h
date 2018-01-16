@@ -59,11 +59,9 @@
 class LBOrientation : public TObject {
 
   public:
-    LBOrientation();
-    LBOrientation( Int_t lambda );
-    LBOrientation( Int_t lambda, const std::string& path );
+    LBOrientation( const Int_t lambda = 505, const std::string& scan = "oct15", const std::string& path = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/" );
 
-    // lambda: is the wavelenght os the runs that are going to be analysed
+    // lambda: is the wavelenght of the runs that are going to be analysed
     // path: is the path to the directory containing the files
 
     virtual ~LBOrientation();
@@ -73,8 +71,10 @@ class LBOrientation : public TObject {
     void Ratios();
     void PlotResults();
     void WriteToFile();
-    void SetLambda( Int_t aNumber );
-    void SetPath( const std::string& path );
+
+    void SetLambda( const Int_t aNumber );
+    void SetScan( const std::string& aString );
+    void SetPath( const std::string& aString );
 
   protected: 
 
@@ -84,7 +84,9 @@ class LBOrientation : public TObject {
     std::string fPhase;                                     // Data-taking phase: water, scintillator, te-loading
 
     Bool_t      lambdaValidity;                             // Validity of an user inputted wavelength
+    Bool_t      scanValidity;                               // Validity of an user inputted scan
     Bool_t      pathValidity;                               // Validity of an user inputted path to the SOC files
+    Bool_t      orientationValidity;                        // Validity of the orientation
 
     Int_t       fOrientation[NRUNS];                        // Source orientation
 
@@ -97,7 +99,7 @@ class LBOrientation : public TObject {
     Int_t       fRun[NRUNS];                                // Run ID
     Double_t    fSourceWL[NRUNS];                           // Source wavelength
     TVector3    fSourcePos[NRUNS];                          // Source position
-    TVector3    fSourceDir[NRUNS];                          // Source direction
+    TVector3    fSourceDirVec[NRUNS];                       // Source direction vector
 
     TVector3    fPMTPos[NRUNS][9500];                       // PMT position
     Float_t     fPMTOcc[NRUNS][9500];                       // PMT occupancy
