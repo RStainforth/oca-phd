@@ -493,7 +493,7 @@ void DiagScan::CheckLowOccupancy( const Int_t iRun ){
 
 void DiagScan::SetLambda( const Int_t aNumber ){
 
-  if (aNumber != 337 && aNumber != 369 && aNumber != 385 &&  aNumber != 420 && aNumber != 450 && aNumber != 505){
+  if (aNumber != 337 && aNumber != 365 && aNumber != 369 && aNumber != 385 &&  aNumber != 420 && aNumber != 450 && aNumber != 500 && aNumber != 505){
     printf("The wavelength %d nm does not belong to the list of wavelengths emitted by the laserball!\n", aNumber);
     lambdaValidity = false;
     return;
