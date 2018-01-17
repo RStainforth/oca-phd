@@ -169,8 +169,10 @@ void DiagScan::ReadData(){
       // Source wavelength
       fSourceWL[ iRun ] = rsoc.GetCalib().GetMode();
 
-      // Source coordinates
-      fSourcePos[ iRun ] = rsoc.GetCalib().GetPos();
+      // Source fitted position
+      RAT::DS::FitResult fit = rsoc.GetFitResult("lbfit");
+      RAT::DS::FitVertex vert = fit.GetVertex(0);
+      fSourcePos[ iRun ] = vert.GetPosition();
 
       // Select PMTs
       SelectPMTs( iRun, rsoc );
