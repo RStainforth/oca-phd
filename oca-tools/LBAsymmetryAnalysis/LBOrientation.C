@@ -205,7 +205,9 @@ void LBOrientation::ReadData(){
       fSourceWL[i] = rsoc.GetCalib().GetMode();
 
       // Laserball coordinates
-      fSourcePos[i] = rsoc.GetCalib().GetPos();
+      RAT::DS::FitResult fit = rsoc.GetFitResult("lbfit");
+      RAT::DS::FitVertex vert = fit.GetVertex(0);
+      fSourcePos[i] = vert.GetPosition();
 
       // Laserball Orientation
       fSourceDir[i] = rsoc.GetCalib().GetDir();
