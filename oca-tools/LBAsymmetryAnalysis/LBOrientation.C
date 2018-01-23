@@ -30,40 +30,15 @@ using namespace RAT::DU;
 
 ClassImp(LBOrientation);
 
-LBOrientation::LBOrientation(){
-
-  Initialize();
-  ReadData();
-  Ratios();
-  PlotResults();
-  WriteToFile();
-
-}
-
-//______________________________________________________________________________________
-//
-
-LBOrientation::LBOrientation( Int_t lambda ){
+LBOrientation::LBOrientation( const Int_t lambda, const std::string& scan, const std::string& path ){
 
   Initialize();
   SetLambda( lambda );
-  if( !lambdaValidity ){ return; }
-  ReadData();
-  Ratios();
-  PlotResults();
-  WriteToFile();
-
-}
-
-//______________________________________________________________________________________
-//
-LBOrientation::LBOrientation( Int_t lambda, const std::string& path ){
-
-  Initialize();
-  SetLambda( lambda );
+  SetScan( scan );
   SetPath( path );
-  if( !lambdaValidity || !pathValidity ){ return; }
+  if( !lambdaValidity || !scanValidity || !pathValidity ){ return; }
   ReadData();
+  if( !orientationValidity ){ return; }
   Ratios();
   PlotResults();
   WriteToFile();
@@ -83,20 +58,22 @@ LBOrientation::~LBOrientation(){
 void LBOrientation::Initialize(){
   
   // Default parameters: wavelength of 505 nm, and path to the oct15 SOC files directory 
-  fLambda = 505;
-  fPath = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/oct15/water/";
-  fScan = (string) "oct15";
-  fPhase = (string) "water";
+  fLambda = 0;
+  fPath = "";
+  fScan = "";
+  fPhase = "";
 
   lambdaValidity = true;
+  scanValidity = true;
   pathValidity = true;
+  orientationValidity = true;
 
   for( Int_t i = 0; i < NRUNS; i++ ){
     fNPMTs[i]        = 0;
     fRun[i]          = 0;
     fSourceWL[i]     = 0;
     fSourcePos[i]    = TVector3(0,0,0);
-    fSourceDir[i]    = TVector3(0,0,0);
+    fSourceDirVec[i]    = TVector3(0,0,0);
     fOrientation[i]   = 0;
     for( Int_t j = 0; j < 9500; j++ ){
       fPMTPos[i][j]  = TVector3(0,0,0);
@@ -176,24 +153,28 @@ void LBOrientation::ReadData(){
 
   while( file.peek() != EOF ){
     file >> ds >> phase >> wl >> nr >> rs[0] >> rs[1] >> rs[2] >> rs[3];
-    if(fLambda == wl) break;
+    if( fLambda == wl && fScan == ds) break;
   }
-  fScan = ds;
+
   fPhase = phase;
   for( Int_t i = 0; i < NRUNS; i++ ) fRun[i] = rs[i];
   file.close();
 
-  /********** Opening and reading the SocFiles **********/
-  RAT::DU::SOCReader *socreader;
-  //  RAT::DU::Utility::Get()->LoadDBAndBeginRun();
-
+  // Opening the SOC files
+  RAT::DU::Utility::Get()->LoadDBAndBeginRun();
   for( Int_t i = 0; i < NRUNS; i++ ){
+
     fNPMTs[i] = 0;
 
     std::string fSocFilename;
-    fSocFilename = fPath + ::to_string(fRun[i]) + "_Run.root";
+    if( fScan == "oct15" ){
+      fSocFilename = fPath + fScan + "/" + fPhase + "/" + ::to_string(fRun[i]) + "_Run.root";
+    }
+    else{
+      fSocFilename = fPath + fScan + "/" + fPhase + "/SOC_0000" + ::to_string(fRun[i]) + ".root";
+    }
     cout << "Opening file " << fSocFilename << endl;
-    socreader = new RAT::DU::SOCReader(fSocFilename);
+    RAT::DU::SOCReader *socreader = new RAT::DU::SOCReader(fSocFilename);
 
     const RAT::DU::PMTInfo& pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
 
@@ -210,12 +191,45 @@ void LBOrientation::ReadData(){
       fSourcePos[i] = vert.GetPosition();
 
       // Laserball Orientation
-      fSourceDir[i] = rsoc.GetCalib().GetDir();
+      fOrientation[i] = rsoc.GetCalib().GetID();
+      fSourceDirVec[i] = rsoc.GetCalib().GetDir();
 
-      if(fSourceDir[i] == TVector3(1.0,0.0,0.0)){fOrientation[i] = 0;}  // East
-      if(fSourceDir[i] == TVector3(0.0,1.0,0.0)){fOrientation[i] = 1;}  // North
-      if(fSourceDir[i] == TVector3(-1.0,0.0,0.0)){fOrientation[i] = 2;} // West	
-      if(fSourceDir[i] == TVector3(0.0,-1.0,0.0)){fOrientation[i] = 3;} // South
+      if( fOrientation[i] < 0 || fOrientation[i] > 3 ){
+        cout << "Run " << fRun[i] << " has orientation ID " << fOrientation[i] << ", which is not valid!" << endl;
+        orientationValidity = false;
+        return;
+      }
+      else{
+        // Verify that the direction vector agrees with the orientation ID
+        if( fOrientation[i] == 0 ){ // East
+          if( (int)fSourceDirVec[i].X() != 1 && (int)fSourceDirVec[i].Y() != 0 && (int)fSourceDirVec[i].Z() != 0 ){
+            cout << "The direction vector for the East facing run " << fRun[i] << " is (" << fSourceDirVec[i].X() << ", " << fSourceDirVec[i].Y() << ", " << fSourceDirVec[i].Z() << "), which is not valid!" << endl;
+            orientationValidity = false;
+            return;
+          }
+        }
+        if( fOrientation[i] == 1 ){ // North
+          if( (int)fSourceDirVec[i].X() != 0 && (int)fSourceDirVec[i].Y() != 1 && (int)fSourceDirVec[i].Z() != 0 ){
+            cout << "The direction vector for the North facing run " << fRun[i] << " is (" << fSourceDirVec[i].X() << ", " << fSourceDirVec[i].Y() << ", " << fSourceDirVec[i].Z() << "), which is not valid!" << endl;
+            orientationValidity = false;
+            return;
+          }
+        }
+        if( fOrientation[i] == 2 ){ // West
+          if( (int)fSourceDirVec[i].X() != -1 && (int)fSourceDirVec[i].Y() != 0 && (int)fSourceDirVec[i].Z() != 0 ){
+            cout << "The direction vector for the West facing run " << fRun[i] << " is (" << fSourceDirVec[i].X() << ", " << fSourceDirVec[i].Y() << ", " << fSourceDirVec[i].Z() << "), which is not valid!" << endl;
+            orientationValidity = false;
+            return;
+          }
+        }
+        if( fOrientation[i] == 3 ){ // South
+          if( (int)fSourceDirVec[i].X() != 0 && (int)fSourceDirVec[i].Y() != -1 && (int)fSourceDirVec[i].Z() != 0 ){
+            cout << "The direction vector for the South facing run " << fRun[i] << " is (" << fSourceDirVec[i].X() << ", " << fSourceDirVec[i].Y() << ", " << fSourceDirVec[i].Z() << "), which is not valid!" << endl;
+            orientationValidity = false;
+            return;
+          }
+        }
+      }
 
       // Loop over SOCPMTs
       vector<UInt_t> pmtids = rsoc.GetSOCPMTIDs();
@@ -418,7 +432,7 @@ void LBOrientation::PlotResults(){
 
   TLegend *leg[NTHETA];
 
-  Char_t savename[180];
+  std::string savename;
   Char_t hname[180];
 
   TMultiGraph *R;
@@ -471,8 +485,8 @@ void LBOrientation::PlotResults(){
 
     leg[s] ->Draw();
     c0     ->Update();
-    sprintf(savename,"RatioPhiWL%d_%d.png",(Int_t)fLambda,(Int_t)s);
-    c0->SaveAs(savename,"png");
+    savename = "Ratios_" + fScan + "_" + ::to_string(fLambda) + "_" + ::to_string(s) + ".png";
+    c0->SaveAs(savename.c_str(),"png");
 
     TF1 *fit1 = new TF1("fit1","(2/(1+[0]*cos(x+[1])))-1",-TMath::Pi(),TMath::Pi());
     fit1->SetParLimits(0, 0.0, 10.);
@@ -488,8 +502,8 @@ void LBOrientation::PlotResults(){
     GR13[s]->Draw("");
     GR13[s]->Fit(fit1);
     c0     ->Update();
-    sprintf(savename,"Ratio13PhiWL%d_%d.png",(Int_t)fLambda,(Int_t)s);
-    c0->SaveAs(savename,"png");
+    savename = "RatioNS_" + fScan + "_" + ::to_string(fLambda) + "_" + ::to_string(s) + ".png";
+    c0->SaveAs(savename.c_str(),"png");
 
     fAmplitudeFIT13[s] = fit1->GetParameter(0);
     fPhaseFIT13[s] = fit1->GetParameter(1);
@@ -508,8 +522,8 @@ void LBOrientation::PlotResults(){
     GR20[s]->Draw("");
     GR20[s]->Fit(fit2);
     c0     ->Update();
-    sprintf(savename,"Ratio20PhiWL%d_%d.png",(Int_t)fLambda,(Int_t)s);
-    c0->SaveAs(savename,"png");
+    savename = "RatioWE_" + fScan + "_" + ::to_string(fLambda) + "_" + ::to_string(s) + ".png";
+    c0->SaveAs(savename.c_str(),"png");
 
     fAmplitudeFIT20[s] = fit2->GetParameter(0);
     fPhaseFIT20[s] = fit2->GetParameter(1);
@@ -545,8 +559,8 @@ void LBOrientation::PlotResults(){
     leg[s] ->AddEntry(GR20_90[s],"W/E - 90","p");
     leg[s] ->Draw();
     c0->Update();
-    sprintf(savename,"FITWL%d_%d.png",(Int_t)fLambda,(Int_t)s);
-    c0->SaveAs(savename,"png");
+    savename = "Fits_" + fScan + "_" + ::to_string(fLambda) + "_" + ::to_string(s) + ".png";
+    c0->SaveAs(savename.c_str(),"png");
 
     fAmplitudeFIT[s] = fit1->GetParameter(0);
     fPhaseFIT[s] = fit1->GetParameter(1);
@@ -592,8 +606,8 @@ void LBOrientation::PlotResults(){
   legend ->AddEntry(Amp20,"Amplitude W/E","p");
   legend ->Draw();
   c0     ->Update();
-  sprintf(savename,"Amplitudes%d.png",(Int_t)fLambda);
-  c0->SaveAs(savename,"png");
+  savename = "Amplitudes_" + fScan + "_" + ::to_string(fLambda) + ".png";
+  c0->SaveAs(savename.c_str(),"png");
 
   c0->Clear();
 
@@ -620,8 +634,8 @@ void LBOrientation::PlotResults(){
   legend ->AddEntry(Phase20,"Phase W/E","p");
   legend ->Draw();
   c0     ->Update();
-  sprintf(savename,"Phases%d.png",(Int_t)fLambda);
-  c0->SaveAs(savename,"png");
+  savename = "Phases_" + fScan + "_" + ::to_string(fLambda) + ".png";
+  c0->SaveAs(savename.c_str(),"png");
 
 }
 
@@ -695,9 +709,9 @@ void LBOrientation::WriteToFile(){
 //______________________________________________________________________________________
 //
 
-void LBOrientation::SetLambda( Int_t aNumber ){
+void LBOrientation::SetLambda( const Int_t aNumber ){
 
-  if(aNumber != 337 && aNumber != 369 && aNumber != 385 &&  aNumber != 420 && aNumber != 440 && aNumber != 505){
+  if(aNumber != 337 && aNumber != 365 && aNumber != 369 && aNumber != 385 &&  aNumber != 420 && aNumber != 450 && aNumber != 500 && aNumber != 505){
     printf("The wavelength %d nm does not belong to the list of wavelengths emitted by the laserball!\n", aNumber);
     lambdaValidity = false;
     return;
@@ -708,13 +722,26 @@ void LBOrientation::SetLambda( Int_t aNumber ){
 //______________________________________________________________________________________
 //
 
-void LBOrientation::SetPath( const std::string& path ){
+void LBOrientation::SetScan( const std::string& aString ){
+
+  if ( aString != "oct15" && aString != "dec17" ){
+    cout << aString << " is not a valid laserball scan!" << endl;
+    scanValidity = false;
+    return;
+  }
+  fScan = aString;
+}
+
+//______________________________________________________________________________________
+//
+
+void LBOrientation::SetPath( const std::string& aString ){
 
   struct stat s;
-  if ( stat( fPath.c_str(), &s ) != 0 ){
+  if ( stat( aString.c_str(), &s ) != 0 ){
     cout << "The path inserted does not exist!" << endl;
     pathValidity = false;
     return;
   }
-  fPath = path;
+  fPath = aString;
 }

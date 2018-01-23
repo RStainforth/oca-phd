@@ -19,4 +19,4 @@ How To Run
 
   `.L DiagScan.cxx+`
 
-4) Run one of the defined functions.
+4) Run `DiagScan( const Int_t lambda = 505, const std::string& diagonal = "xpz", const std::string& scan = "oct15", const std::string& path = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/" )`, either inputting each of the arguments or using the defaults

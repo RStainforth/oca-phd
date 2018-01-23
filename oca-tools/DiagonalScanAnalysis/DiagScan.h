@@ -62,9 +62,7 @@ using namespace std;
 class DiagScan : public TObject {
 
   public:
-    DiagScan();
-    DiagScan( Int_t lambda, std::string& diagonal );
-    DiagScan( Int_t lambda, std::string& diagonal, std::string& path );
+    DiagScan( const Int_t lambda = 505, const std::string& diagonal = "xpz", const std::string& scan = "oct15", const std::string& path = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/" );
 
     virtual ~DiagScan();
 
@@ -74,72 +72,75 @@ class DiagScan : public TObject {
     void FitRatio();
     void Product();
 
-    void SetLambda( Int_t aNumber );
-    void SetPath( const std::string& path );
-    void SetDiagonal( const std::string& diagonal );
-    void SetDistanceCut( Float_t aNumber );
-    void SetShadowingTolerance( Float_t aNumber );
+    void SetLambda( const Int_t aNumber );
+    void SetScan( const std::string& aString );
+    void SetPath( const std::string& aString );
+    void SetDiagonal( const std::string& aString );
+    void SetDistanceCut( const Float_t aNumber );
+    void SetShadowingTolerance( const Float_t aNumber );
 
-    void SelectPMTs( Int_t nRun, const RAT::DS::SOC& soc );
-    void CheckLowOccupancy( Int_t iRun );
+    void SelectPMTs( const Int_t nRun, const RAT::DS::SOC& soc );
+    void CheckLowOccupancy( const Int_t iRun );
 
     Float_t  GetAttCoef()     {return fAttCoef;}
     Float_t  GetAttCoefErr()  {return fAttCoefErr;}
 
   protected: 
-  
-    std::string  fPath;                 // Path to the directory containing the SOC files
-    std::string  fScan;                 // Laserball scan, MMMYY
-    std::string  fDiagonal;             // Diagonal used in the analysis
-    Int_t        fLambda;               // Wavelength (nm)
 
-    Bool_t       lambdaValidity;        // Validity of an user inputted wavelength
-    Bool_t       pathValidity;          // Validity of an user inputted path to the SOC files
-    Bool_t       diagValidity;          // Validity of an user inputted diagonal to be analysed
+    Int_t       fLambda;                      // Wavelength (nm)
+    std::string fPath;                        // Path to the directory containing the SOC files
+    std::string fScan;                        // Laserball scan, MMMYY
+    std::string fPhase;                       // Data-taking phase: water, scintillator, te-loading
+    std::string fDiagonal;                    // Diagonal used in the analysis
 
-    TVector3     fDiagonalVector;       // Vector that describes the diagonal
+    Bool_t      lambdaValidity;               // Validity of an user inputted wavelength
+    Bool_t      scanValidity;                 // Validity of an user inputted scan
+    Bool_t      pathValidity;                 // Validity of an user inputted path to the SOC files
+    Bool_t      diagValidity;                 // Validity of an user inputted diagonal to be analysed
 
-    Float_t      fDistanceCut;          // Maximum distance (mm) allowed for PMTs relative to the diagonal
-    Double_t     fShadowing;            // Shadowing tolerances by the detector geometry
+    TVector3    fDiagonalVector;              // Vector that describes the diagonal
 
-    Int_t     fNRuns;                   // Number of runs
-    Int_t     fNPulses[NRUNS];          // Number of pulses triggered
-    Int_t     fRunID[NRUNS];            // Run IDs
+    Float_t     fDistanceCut;                 // Maximum distance (mm) allowed for PMTs relative to the diagonal
+    Double_t    fShadowing;                   // Shadowing tolerances by the detector geometry
+
+    Int_t       fNRuns;                       // Number of runs
+    Int_t       fNPulses[NRUNS];              // Number of pulses triggered
+    Int_t       fRunID[NRUNS];                // Run IDs
     
-    Float_t   fSourceWL[NRUNS];         // Wavelength of each run
+    Float_t     fSourceWL[NRUNS];             // Wavelength of each run
     
-    TVector3  fSourcePos[NRUNS];        // Source position (mm)
+    TVector3    fSourcePos[NRUNS];            // Source position (mm)
     
-    TVector3  fPMTPos[NRUNS][NPMS];     // PMT position (mm)
+    TVector3    fPMTPos[NRUNS][NPMS];         // PMT position (mm)
 	
-    Float_t   fPMTOcc[NRUNS][NPMS];     // PMT raw occupancy
+    Float_t     fPMTOcc[NRUNS][NPMS];         // PMT raw occupancy
 
-    Float_t   fPMTCorrections[NRUNS][NPMS]; // Product of the Solid Angle and Fresnel trasmission coefficient for each PMT in each run
+    Float_t     fPMTCorrections[NRUNS][NPMS]; // Product of the Solid Angle and Fresnel trasmission coefficient for each PMT in each run
 
-    Float_t   fPMTCorrOcc[NRUNS][NPMS];  // PMT corrected occupancy by the solid angle and Fresnel coefficients
+    Float_t     fPMTCorrOcc[NRUNS][NPMS];     // PMT corrected occupancy by the solid angle and Fresnel coefficients
 
-    Float_t   fPMTDistInAV[NRUNS][NPMS]; // Light path distance inside the AV from source to each PMT in each run 
+    Float_t     fPMTDistInAV[NRUNS][NPMS];    // Light path distance inside the AV from source to each PMT in each run 
 
-    Int_t     fNPMTs[NRUNS];             // Number of NORMAL PMTs, non-shadowed, close to the diagonal in each run
+    Int_t       fNPMTs[NRUNS];                // Number of NORMAL PMTs, non-shadowed, close to the diagonal in each run
 
-    Int_t     fNPairs[NRUNS];            // Number of PMT pairs
-    Int_t     fPair1[NRUNS][NPMS];       // List of PMTs in group 1 (Z>0) that have a pair 
-    Int_t     fPair2[NRUNS][NPMS];       // List of PMTs in group 2 (Z<0) that have a pair 
+    Int_t       fNPairs[NRUNS];               // Number of PMT pairs
+    Int_t       fPair1[NRUNS][NPMS];          // List of PMTs in group 1 (Z>0) that have a pair 
+    Int_t       fPair2[NRUNS][NPMS];          // List of PMTs in group 2 (Z<0) that have a pair 
 
-    Float_t   fRatio[NRUNS][NPMS];       // Ratio of the corrected occupancies for a PMT pair j in a run i
-    Float_t   fProduct[NRUNS][NPMS];     // Product of the corrected occupancies for a PMT pair j in a run i
-    Float_t   fRerrors[NRUNS][NPMS];     // Errors for fRatio
-    Float_t   fPerrors[NRUNS][NPMS];     // Errors for fProduct
+    Float_t     fRatio[NRUNS][NPMS];          // Ratio of the corrected occupancies for a PMT pair j in a run i
+    Float_t     fProduct[NRUNS][NPMS];        // Product of the corrected occupancies for a PMT pair j in a run i
+    Float_t     fRerrors[NRUNS][NPMS];        // Errors for fRatio
+    Float_t     fPerrors[NRUNS][NPMS];        // Errors for fProduct
 
-    Float_t   fSumRatio[NRUNS];          // Weighted average of fRatio for all PMT pairs
-    Float_t   fSumProduct[NRUNS];        // Weighted average of fProduct for PMT pairs
-    Float_t   fSumRerrors[NRUNS];        // Errors for fSumRatio
-    Float_t   fSumPerrors[NRUNS];        // Errors for fSumProduct
+    Float_t     fSumRatio[NRUNS];             // Weighted average of fRatio for all PMT pairs
+    Float_t     fSumProduct[NRUNS];           // Weighted average of fProduct for PMT pairs
+    Float_t     fSumRerrors[NRUNS];           // Errors for fSumRatio
+    Float_t     fSumPerrors[NRUNS];           // Errors for fSumProduct
 
-    Float_t   fDistance[NRUNS];          // Mean value of the light path length difference for one run (mm)
+    Float_t     fDistance[NRUNS];             // Mean value of the light path length difference for one run (mm)
 
-    Float_t   fAttCoef;                  // Attenuation coefficient
-    Float_t   fAttCoefErr;               // Attenuation coefficient error
+    Float_t     fAttCoef;                     // Attenuation coefficient
+    Float_t     fAttCoefErr;                  // Attenuation coefficient error
 
     ClassDef( DiagScan, 0 )
 };
