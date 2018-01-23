@@ -14,12 +14,9 @@ How To Run
 --------------------
 
 1) Source env_oca_snoplus.sh
-2) Open root
+2) Open ROOT
 3) Compile LBOrientation.C
 
   `.L LBOrientation.C+`
 
-4) Run either:
-  - `LBOrientation()`, that performs the analysis for the default wavelength of 505 nm and uses the default path to the oct15 MC soc files in `OCA_SNOPLUS_DATA/runs/soc/oct15/water`
-  - `LBOrientation( <wavelength> )`, that performs the analysis for a user inputted wavelength and uses the default path to the oct15 MC soc files in `OCA_SNOPLUS_DATA/runs/soc/oct15/water`
-  - `LBOrientation( <wavelength>, "<path_to_files>" )`, that performs the analysis for a user inputted wavelength and path to the soc files.
+4) Run `LBOrientation( const Int_t lambda = 505, const std::string& scan = "oct15", const std::string& path = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/" )`, either inputting each of the arguments or using the defaults
