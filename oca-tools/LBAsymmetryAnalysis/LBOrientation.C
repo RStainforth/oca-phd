@@ -201,6 +201,9 @@ void LBOrientation::ReadData(){
 
       const RAT::DS::SOC& rsoc = socreader->GetSOC(isoc);
 
+      // Number of pulses triggered
+      fNPulses[i] = rsoc.GetNPulsesTriggered();
+
       // Laserball wavelength
       fSourceWL[i] = rsoc.GetCalib().GetMode();
 
@@ -229,7 +232,7 @@ void LBOrientation::ReadData(){
 
 	     fPMTPos[i][fNPMTs[i]] = pmtInfo.GetPosition(lcn);
 
-	     fPMTOcc[i][fNPMTs[i]] = pmt.GetPromptOccupancy();
+	     fPMTOcc[i][fNPMTs[i]] = pmt.GetPromptOccupancy()/fNPulses[i];
 
 	     fNPMTs[i]++;
 	   }
