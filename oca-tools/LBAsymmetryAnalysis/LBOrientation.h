@@ -95,6 +95,7 @@ class LBOrientation : public TObject {
 
     Int_t       fNPMTs[NRUNS];                              // # of PMTs
     Int_t       fRun[NRUNS];                                // Run ID
+    Int_t       fNPulses[NRUNS];                            // Number of pulses triggered
     Double_t    fSourceWL[NRUNS];                           // Source wavelength
     TVector3    fSourcePos[NRUNS];                          // Source position
     TVector3    fSourceDir[NRUNS];                          // Source direction
