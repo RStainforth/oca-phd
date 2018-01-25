@@ -118,19 +118,28 @@ void DiagScan::ReadData(){
 
   /// Opens the SOC files and all the relevant information for each run is saved. 
 
-  Int_t wl;
-  Char_t ds[5], name[30], diag[3], phase[20];
-  sprintf(name,"runlist.txt");
+  string field;
+  string line;
 
-  ifstream file( name );
+  ifstream file( "runlist.txt" );
 
-  while ( file.peek() != EOF ){
-    file >> ds >> phase >> wl >> diag >> fNRuns >> fRunID[0] >> fRunID[1] >> fRunID[2] >> fRunID[3] >> fRunID[4] >> fRunID[5];
-    if ( fLambda == wl && fDiagonal == diag && fScan == ds ) break;
-  } 
-  file.close();
+  if ( file.is_open() ){
+    while ( getline(file,line) ){
 
-  fPhase = phase;
+      istringstream IS(line);
+      std::vector<std::string> list_of_fields;
+
+      while( IS >> field){ list_of_fields.push_back( field ); }
+
+      if ( fScan == list_of_fields[0] && fLambda == atoi(list_of_fields[2].c_str()) && fDiagonal == list_of_fields[3] ){
+        fPhase = list_of_fields[1];
+        fNRuns = atoi( list_of_fields[4].c_str() );
+        for( Int_t j = 5; j < 5+fNRuns; j++ ){ fRunID[j-5] = atoi( list_of_fields[j].c_str() ); }
+        break;
+      }
+    }
+    file.close();
+  }
 
   if ( fDiagonal == "xpz" )  fDiagonalVector = TVector3( 1.0, 0.0, 1.0 );
   if ( fDiagonal == "xnz" )  fDiagonalVector = TVector3( 1.0, 0.0, -1.0 );
