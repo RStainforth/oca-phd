@@ -159,8 +159,10 @@ void DiagScan::ReadData(){
       // Source wavelength
       fSourceWL[ iRun ] = rsoc.GetCalib().GetMode();
 
-      // Source coordinates
-      fSourcePos[ iRun ] = rsoc.GetCalib().GetPos();
+      // Source fitted position
+      RAT::DS::FitResult fit = rsoc.GetFitResult("lbfit");
+      RAT::DS::FitVertex vert = fit.GetVertex(0);
+      fSourcePos[ iRun ] = vert.GetPosition();
 
       // Select PMTs
       SelectPMTs( iRun, rsoc );
@@ -238,7 +240,7 @@ void DiagScan::Process(){
       fRerrors[i][k]   = TMath::Sqrt(fPMTCorrOcc[i][l] / (TMath::Power(fPMTCorrOcc[i][m],2)*fPMTCorrections[i][l]) + TMath::Power(fPMTCorrOcc[i][l],2) / (TMath::Power(fPMTCorrOcc[i][m],3)*fPMTCorrections[i][m]));
 
       // Product normalized by the square of the number of pulses emitted
-      fProduct[i][k]   = (fPMTPos[i][l] * fPMTPos[i][m]) / TMath::Power(fNPulses[i],2);
+      fProduct[i][k]   = (fPMTCorrOcc[i][l] * fPMTCorrOcc[i][m]) / TMath::Power(fNPulses[i],2);
       fPerrors[i][k]   = TMath::Sqrt((TMath::Power(fPMTCorrOcc[i][l],2) * fPMTCorrOcc[i][m]/(fPMTCorrections[i][m])) + (fPMTCorrOcc[i][l] * TMath::Power(fPMTCorrOcc[i][m],2) / (fPMTCorrections[i][l]))) / fNPulses[i];
 
       distance         = fPMTDistInAV[i][l] - fPMTDistInAV[i][m];

@@ -46,6 +46,7 @@
 #include <RAT/DS/Run.hh>
 #include <RAT/DS/SOCPMT.hh>
 #include <RAT/DU/SOCReader.hh>
+#include <RAT/DS/FitResult.hh>
 #include <RAT/DU/Utility.hh>
 #include <RAT/DU/PMTInfo.hh>
 #include <RAT/PhysicsUtil.hh>
