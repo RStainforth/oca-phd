@@ -299,7 +299,7 @@ void DiagScan::FitRatio(){
 
   std::string title = "Ratio, Diagonal " + fDiagonal + ", Wavelength " + ::to_string(fLambda) + " nm";
   gr->SetTitle(title.c_str());
-  gr->GetXaxis()->SetTitle("Distance (mm)");
+  gr->GetXaxis()->SetTitle("2*Distance LB-CenterAV (mm)");
   gr->GetYaxis()->SetTitle("Occupancy Ratio");
   gr->Draw("AP");
 
@@ -357,7 +357,7 @@ void DiagScan::Product(){
   prod->SetTitle(title2.c_str());
   prod->SetMinimum(-1500000); 
   prod->SetMaximum(1500000);
-  prod->GetXaxis()->SetTitle("Distance (mm)");
+  prod->GetXaxis()->SetTitle("2*Distance LB-CenterAV (mm)");
   prod->GetYaxis()->SetTitle("Occupancy Product");
   prod->GetYaxis()->SetTitleOffset(1.15);
 
