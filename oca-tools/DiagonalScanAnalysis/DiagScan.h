@@ -62,7 +62,6 @@ using namespace std;
 class DiagScan : public TObject {
 
   public:
-    DiagScan();
     DiagScan( const Int_t lambda = 505, const std::string& diagonal = "xpz", const std::string& scan = "oct15", const std::string& path = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/" );
 
     virtual ~DiagScan();
