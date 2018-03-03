@@ -62,6 +62,7 @@ using namespace std;
 class DiagScan : public TObject {
 
   public:
+    DiagScan();
     DiagScan( const Int_t lambda = 505, const std::string& diagonal = "xpz", const std::string& scan = "oct15", const std::string& path = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/" );
 
     virtual ~DiagScan();
@@ -78,6 +79,7 @@ class DiagScan : public TObject {
     void SetDiagonal( const std::string& aString );
     void SetDistanceCut( const Float_t aNumber );
     void SetShadowingTolerance( const Float_t aNumber );
+    void SetNSigmas( const Int_t aNumber );
 
     void SelectPMTs( const Int_t nRun, const RAT::DS::SOC& soc );
     void CheckLowOccupancy( const Int_t iRun );
@@ -122,6 +124,8 @@ class DiagScan : public TObject {
     Float_t     fPMTDistInAV[NRUNS][NPMS];    // Light path distance inside the AV from source to each PMT in each run 
 
     Int_t       fNPMTs[NRUNS];                // Number of NORMAL PMTs, non-shadowed, close to the diagonal in each run
+
+    Int_t       fNSigma;                      // Number of sigmas to exclude PMTs based on their occupancy
 
     Int_t       fNPairs[NRUNS];               // Number of PMT pairs
     Int_t       fPair1[NRUNS][NPMS];          // List of PMTs in group 1 (Z>0) that have a pair 
