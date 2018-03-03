@@ -55,7 +55,7 @@
 #include "RAT/DU/ShadowingCalculator.hh"
 
 #define NRUNS 6
-#define NPMS  500
+#define NPMS 500
 
 using namespace std;
 
