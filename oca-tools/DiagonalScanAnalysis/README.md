@@ -9,6 +9,7 @@ Files
 * DiagScan.cxx
 * DiagScan.h
 * runlist.txt - contains the list of runs to be used for each wavelenght, laserball scan and diagonal. It has the format `Scan WL Diagonal #Runs RunID1 RunID2 RunID3 RunID4 RunID5 RunID6 ...`
+* runDiagScan.cxx - example code on how to run the Diagonal Scan Analysis for all wavelengths and how to costumize variable parameters such as the distance cuts.
 
 How To Run
 --------------------
@@ -20,3 +21,11 @@ How To Run
   `.L DiagScan.cxx+`
 
 4) Run `DiagScan( const Int_t lambda = 505, const std::string& diagonal = "xpz", const std::string& scan = "oct15", const std::string& path = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/" )`, either inputting each of the arguments or using the defaults
+
+or
+
+Compile runDiagScan.cxx
+
+`.L runDiagScan.cxx+`
+
+and run `runDiagonalScanAnalysis()`
