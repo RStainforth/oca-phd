@@ -21,7 +21,8 @@
 ///
 ///           .L DiagScan.cxx+
 ///
-///         Then use one of the functions declared to run the analysis.
+///         Then use the DiagScan function declared in this code or
+///         the example code runDiagScan.cxx.
 ///
 ////////////////////////////////////////////////////////////////////
 
@@ -78,6 +79,8 @@ void DiagScan::Initialize(){
 
   fNRuns              = 0;
 
+  fNSigma             = 2;
+
   fAttCoef            = 0.0;
   fAttCoefErr         = 0.0;
 
@@ -131,10 +134,18 @@ void DiagScan::ReadData(){
 
       while( IS >> field){ list_of_fields.push_back( field ); }
 
+      cout << list_of_fields[0] << " " << fScan << endl;
+
       if ( fScan == list_of_fields[0] && fLambda == atoi(list_of_fields[2].c_str()) && fDiagonal == list_of_fields[3] ){
+        cout << fScan << " " << fLambda << " " << fDiagonal << endl;
         fPhase = list_of_fields[1];
+        cout << fPhase << endl;
         fNRuns = atoi( list_of_fields[4].c_str() );
-        for( Int_t j = 5; j < 5+fNRuns; j++ ){ fRunID[j-5] = atoi( list_of_fields[j].c_str() ); }
+        cout << fNRuns << endl;
+        for( Int_t j = 5; j < 5+fNRuns; j++ ){ 
+          fRunID[j-5] = atoi( list_of_fields[j].c_str() );
+          cout << fRunID[j-5] << endl;
+        }
         break;
       }
     }
@@ -193,11 +204,10 @@ void DiagScan::Process(){
 
   for ( Int_t i = 0; i < fNRuns; i++ ){
 
-    // Exclude PMTs with abnormally low occupancy. Identify them by comparing their occupancy with the average of the group where they are included.
+    // Exclude PMTs with abnormally low or high occupancy. Identify them by comparing their occupancy with the average of the group where they are included.
     // This check can be disabled by commenting the following line.
     CheckLowOccupancy( i );
     
-
     // Selects the pairs of PMTs   
     TVector3 sum;
     Float_t min;
@@ -211,7 +221,7 @@ void DiagScan::Process(){
         Int_t count = 0;
         if ( fNPairs > 0 ) {
           for ( m = 0; m < fNPairs[i]; m++ ) {
-            //check for double counting
+            // Check for double counting
             if ( l == fPair2[i][m] || k == fPair2[i][m] || l == fPair1[i][m] || k == fPair1[i][m] ) count = 1;
           }
         }
@@ -293,6 +303,7 @@ void DiagScan::FitRatio(){
   c0->SetGrid();
 
   gr = new TGraphErrors(fNRuns,fDistance,fSumRatio,0,fSumRerrors);
+
   gr->SetMarkerColor(1);
   gr->SetMarkerSize(1.5);
   gr->SetMarkerStyle(21);
@@ -305,9 +316,9 @@ void DiagScan::FitRatio(){
 
   TF1 *fit = new TF1("fit","exp([0]+[1]*x)");
   gr->Fit("fit");
-  // value of the slope
+  // Value of the slope
   fAttCoef = fit->GetParameter(1);
-  // error of the slope
+  // Error of the slope
   fAttCoefErr = fit->GetParError(1);
 
   c0->Update();
@@ -348,6 +359,7 @@ void DiagScan::Product(){
   c1->SetGrid();
 
   prod = new TGraphErrors(fNRuns,fDistance,fSumProduct,0,fSumPerrors);
+
   prod->SetMarkerColor(1);
   prod->SetMarkerSize(0.5);
   prod->SetMarkerStyle(21);
@@ -447,13 +459,13 @@ void DiagScan::CheckLowOccupancy( const Int_t iRun ){
   for ( Int_t pm = 0; pm < fNPMTs[iRun]; pm++ ){
 
     if ( fPMTPos[iRun][pm].Z() > 0 ){
-      SumOccG1 = SumOccG1 + fPMTCorrOcc[iRun][pm]/*/fNPulses[i]*/;
-      SumOcc2G1 = SumOcc2G1 + TMath::Power(fPMTCorrOcc[iRun][pm],2)/*/TMath::Power(fNPulses[i],2)*/;
+      SumOccG1 = SumOccG1 + fPMTCorrOcc[iRun][pm];
+      SumOcc2G1 = SumOcc2G1 + TMath::Power(fPMTCorrOcc[iRun][pm],2);
       nPMTg1++;
     }
     if ( fPMTPos[iRun][pm].Z() < 0 ){
-      SumOccG2 = SumOccG2 + fPMTCorrOcc[iRun][pm]/*/fNPulses[i]*/;
-      SumOcc2G2 = SumOcc2G2 + TMath::Power(fPMTCorrOcc[iRun][pm],2)/*/TMath::Power(fNPulses[i],2)*/;
+      SumOccG2 = SumOccG2 + fPMTCorrOcc[iRun][pm];
+      SumOcc2G2 = SumOcc2G2 + TMath::Power(fPMTCorrOcc[iRun][pm],2);
       nPMTg2++;
     }
   }
@@ -468,11 +480,12 @@ void DiagScan::CheckLowOccupancy( const Int_t iRun ){
   Float_t sigma1 = TMath::Sqrt(AvOcc2G1 - AvOccG1*AvOccG1);
   Float_t sigma2 = TMath::Sqrt(AvOcc2G2 - AvOccG2*AvOccG2);
 
-  // Follows a loop over all PMTs. If their occupancy are bellow AvOcc-3*sigma of their corresponding group, they are not used in the analysis. Updates the arrays with PMT info.
+  // Follows a loop over all PMTs. If their occupancy is bellow AvOcc-fNSigma*sigma or above AvOcc+fNSigma*sigma of their corresponding group, they are not used in the analysis.
+  // Updates the arrays with PMT info.
   Int_t counter = 0;
   for ( Int_t pm = 0; pm < fNPMTs[iRun]; pm++ ){
     if ( fPMTPos[iRun][pm].Z() > 0 ){
-      if ( fPMTCorrOcc[iRun][pm] > (AvOccG1 - 3*sigma1) ){
+      if ( fPMTCorrOcc[iRun][pm] > (AvOccG1 - fNSigma*sigma1) && fPMTCorrOcc[iRun][pm] < (AvOccG1 + fNSigma*sigma1) ){
 
         fPMTPos[iRun][counter] = fPMTPos[iRun][pm];
         fPMTOcc[iRun][counter] = fPMTOcc[iRun][pm];
@@ -484,7 +497,7 @@ void DiagScan::CheckLowOccupancy( const Int_t iRun ){
       }
     }
     if ( fPMTPos[iRun][pm].Z() < 0 ){
-      if ( fPMTCorrOcc[iRun][pm] > (AvOccG2 - 3*sigma2) ){
+      if ( fPMTCorrOcc[iRun][pm] > (AvOccG2 - fNSigma*sigma2) && fPMTCorrOcc[iRun][pm] < (AvOccG2 + fNSigma*sigma2) ){
 
         fPMTPos[iRun][counter] = fPMTPos[iRun][pm];
         fPMTOcc[iRun][counter] = fPMTOcc[iRun][pm];
@@ -568,4 +581,12 @@ void DiagScan::SetDistanceCut( const Float_t aNumber ){
 void DiagScan::SetShadowingTolerance( const Float_t aNumber ){
 
   fShadowing = aNumber;
+}
+
+//______________________________________________________________________________________
+//
+
+void DiagScan::SetNSigmas( const Int_t aNumber ){
+
+  fNSigma = aNumber;
 }
