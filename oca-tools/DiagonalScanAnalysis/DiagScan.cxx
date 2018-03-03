@@ -134,17 +134,11 @@ void DiagScan::ReadData(){
 
       while( IS >> field){ list_of_fields.push_back( field ); }
 
-      cout << list_of_fields[0] << " " << fScan << endl;
-
       if ( fScan == list_of_fields[0] && fLambda == atoi(list_of_fields[2].c_str()) && fDiagonal == list_of_fields[3] ){
-        cout << fScan << " " << fLambda << " " << fDiagonal << endl;
         fPhase = list_of_fields[1];
-        cout << fPhase << endl;
         fNRuns = atoi( list_of_fields[4].c_str() );
-        cout << fNRuns << endl;
         for( Int_t j = 5; j < 5+fNRuns; j++ ){ 
           fRunID[j-5] = atoi( list_of_fields[j].c_str() );
-          cout << fRunID[j-5] << endl;
         }
         break;
       }
