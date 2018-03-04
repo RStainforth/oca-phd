@@ -181,9 +181,6 @@ void LBOrientation::ReadData(){
       // Laserball wavelength
       fSourceWL[i] = rsoc.GetCalib().GetMode();
 
-      // Equivalent energy (MeV) of the wavelength (nm) emmited by the source
-      Double_t energy = RAT::util::WavelengthToEnergy( fSourceWL[i] * 1.0e-6 );
-
       // Laserball coordinates
       fSourcePos[i] = rsoc.GetCalib().GetPos();
 
@@ -228,8 +225,8 @@ void LBOrientation::ReadData(){
         }
       }
 
-      Double_t sumRunOcc = 0;
-      Double_t sumOccErr = 0;
+      Double_t sumRunOcc = 0.0;
+      Double_t sumOccErr = 0.0;
 
       // Loop over SOCPMTs
       vector<UInt_t> pmtids = rsoc.GetSOCPMTIDs();
@@ -355,7 +352,6 @@ void LBOrientation::Ratios(){
         fRatio20[pphi] = 0.;
         fEratio20[pphi] = 0.;
       }
-
     }
 
     for(Int_t pphi = 0; pphi < NPHI; pphi++){
