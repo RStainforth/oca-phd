@@ -69,6 +69,7 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
 
     if ( previousRunID != currentRunID
          && previousRunID > 0 && currentRunID > 0 ){
+      iD--; // Make sure that it is getting the position of the previous run
       cout << "Filtered Information for Run: " << previousRunID << endl;
       cout << "Laserball Position: ( " 
       << iD->GetLBPos().X() / 10.0
@@ -80,6 +81,7 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
       cout << "----------------------------------------------------\n";
       cout << "####################################################\n";
       cout << "----------------------------------------------------\n";
+      iD++; // Go back to the current iteration
     }
 
     validPoint = true;
@@ -254,6 +256,7 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
 
     previousRunID = iD->GetRunID();
 
+    // If the code is evaluating the last data point, make sure it prints the results and resets the counters
     iD++;
     if ( iD == lDataStore->GetOCAPMTsIterEnd() ){
       iD--;
