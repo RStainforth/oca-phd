@@ -59,7 +59,7 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
 
   Int_t currentRunID = 0;
   Int_t previousRunID = 0;
-    
+
   // Loop through all the datapoints in the OCAPMTStore object
   for ( iD = lDataStore->GetOCAPMTsIterBegin();
         iD != lDataStore->GetOCAPMTsIterEnd();
@@ -253,7 +253,25 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
     }
 
     previousRunID = iD->GetRunID();
-    
+
+    iD++;
+    if ( iD == lDataStore->GetOCAPMTsIterEnd() ){
+      iD--;
+      cout << "Filtered Information for Run: " << currentRunID << endl;
+      cout << "Laserball Position: ( " 
+      << iD->GetLBPos().X() / 10.0
+      << ", " << iD->GetLBPos().Y() / 10.0
+      << ", " << iD->GetLBPos().Z() / 10.0 
+      << " ) cm, Radius = " << iD->GetLBPos().Mag() / 10.0 << " cm" << endl;
+      lFilterStore->PrintFilterCutInformation();
+      lFilterStore->ResetFilterConditionCounters();
+      cout << "----------------------------------------------------\n";
+      cout << "####################################################\n";
+      cout << "----------------------------------------------------\n";
+    }
+    else{
+      iD--;
+    }
   }
 
   // Set and copy the value pointed to by the passed dataset to be this new
