@@ -252,10 +252,16 @@ void LBOrientation::ReadData(){
           }
 	}
       }
+
+      // Normalize the Occupancy of each PMT in a run by the run Occupancy averaged by the number of normal and online PMTs for that run
+      Double_t meanRunOcc = sumRunOcc / fNPMTs[i];
+      Double_t meanOccErr = sumOccErr / fNPMTs[i];
+
       for( Int_t o = 0; o < fNPMTs[i]; o++ ){
-        fPMTOcc[i][o] = fPMTOcc[i][o]/sumRunOcc;
-        fPMTOccErr[i][o] = TMath::Sqrt( (fPMTOcc[i][o]/pow(sumRunOcc,2)) + (pow(fPMTOcc[i][o],2)*pow(sumOccErr,2)/pow(sumRunOcc,4)) );
+        fPMTOcc[i][o] = fPMTOcc[i][o]/meanRunOcc;
+        fPMTOccErr[i][o] = TMath::Sqrt( (fPMTOcc[i][o]/pow(meanRunOcc,2)) + (pow(fPMTOcc[i][o],2)*pow(meanOccErr,2)/pow(meanRunOcc,4)) );
       }
+
     }        
     delete socreader;
   }
@@ -325,7 +331,9 @@ void LBOrientation::Ratios(){
 
         fRatio13[pphi] = (sumOcc[1][ptheta][pphi]/nPMTs[1][ptheta][pphi]) / (sumOcc[3][ptheta][pphi]/nPMTs[3][ptheta][pphi]);
 
-        // The uncertainty for each phi bin comes from the variance of the distribution of point in that bin
+        // The uncertainty for each phi bin comes from the variance of the distribution of data points in that bin.
+        // The statistical uncertainty is ignored here because it is less than 10% of the variance, thus not having
+        // a big contribution to the ratio uncertainty.
         Float_t ef1 = (sumOcc2[1][ptheta][pphi]/nPMTs[1][ptheta][pphi] - pow(sumOcc[1][ptheta][pphi]/nPMTs[1][ptheta][pphi],2));
         Float_t ef3 = (sumOcc2[3][ptheta][pphi]/nPMTs[3][ptheta][pphi] - pow(sumOcc[3][ptheta][pphi]/nPMTs[3][ptheta][pphi],2));
 
@@ -341,7 +349,9 @@ void LBOrientation::Ratios(){
 
         fRatio20[pphi] = (sumOcc[2][ptheta][pphi]/nPMTs[2][ptheta][pphi]) / (sumOcc[0][ptheta][pphi]/nPMTs[0][ptheta][pphi]);
 
-        // The uncertainty for each phi bin comes from the variance of the distribution of point in that bin
+        // The uncertainty for each phi bin comes from the variance of the distribution of data points in that bin.
+        // The statistical uncertainty is ignored here because it is less than 10% of the variance, thus not having
+        // a big contribution to the ratio uncertainty. 
         Float_t ef2 = (sumOcc2[2][ptheta][pphi]/nPMTs[2][ptheta][pphi] - pow(sumOcc[2][ptheta][pphi]/nPMTs[2][ptheta][pphi],2));
         Float_t ef0 = (sumOcc2[0][ptheta][pphi]/nPMTs[0][ptheta][pphi] - pow(sumOcc[0][ptheta][pphi]/nPMTs[0][ptheta][pphi],2));
 
