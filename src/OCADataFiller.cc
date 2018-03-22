@@ -59,7 +59,7 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
 
   Int_t currentRunID = 0;
   Int_t previousRunID = 0;
-    
+
   // Loop through all the datapoints in the OCAPMTStore object
   for ( iD = lDataStore->GetOCAPMTsIterBegin();
         iD != lDataStore->GetOCAPMTsIterEnd();
@@ -68,13 +68,15 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
     currentRunID = iD->GetRunID();
 
     if ( previousRunID != currentRunID
-         && previousRunID > 0 && currentRunID > 0 ){
+	 && previousRunID > 0 && currentRunID > 0 ){
+      std::vector< OCAPMT >::iterator previousiD = iD;
+      previousiD--;
       cout << "Filtered Information for Run: " << previousRunID << endl;
       cout << "Laserball Position: ( " 
-      << iD->GetLBPos().X() / 10.0
-      << ", " << iD->GetLBPos().Y() / 10.0
-      << ", " << iD->GetLBPos().Z() / 10.0 
-      << " ) cm, Radius = " << iD->GetLBPos().Mag() / 10.0 << " cm" << endl;
+      << previousiD->GetLBPos().X() / 10.0
+      << ", " << previousiD->GetLBPos().Y() / 10.0
+      << ", " << previousiD->GetLBPos().Z() / 10.0 
+      << " ) cm, Radius = " << previousiD->GetLBPos().Mag() / 10.0 << " cm" << endl;
       lFilterStore->PrintFilterCutInformation();
       lFilterStore->ResetFilterConditionCounters();
       cout << "----------------------------------------------------\n";
@@ -253,7 +255,24 @@ void OCADataFiller::FilterData( OCAFilterStore* lFilterStore,
     }
 
     previousRunID = iD->GetRunID();
-    
+
+    // If the code is evaluating the last data point, make sure it prints the results and resets the counters
+    std::vector< OCAPMT >::iterator nextiD = iD;
+    nextiD++;
+    if ( nextiD == lDataStore->GetOCAPMTsIterEnd() ){
+      cout << "Filtered Information for Run: " << currentRunID << endl;
+      cout << "Laserball Position: ( " 
+      << iD->GetLBPos().X() / 10.0
+      << ", " << iD->GetLBPos().Y() / 10.0
+      << ", " << iD->GetLBPos().Z() / 10.0 
+      << " ) cm, Radius = " << iD->GetLBPos().Mag() / 10.0 << " cm" << endl;
+      lFilterStore->PrintFilterCutInformation();
+      lFilterStore->ResetFilterConditionCounters();
+      cout << "----------------------------------------------------\n";
+      cout << "####################################################\n";
+      cout << "----------------------------------------------------\n";
+    }
+
   }
 
   // Set and copy the value pointed to by the passed dataset to be this new
