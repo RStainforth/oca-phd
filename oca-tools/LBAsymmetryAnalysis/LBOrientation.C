@@ -71,13 +71,15 @@ void LBOrientation::Initialize(){
   for( Int_t i = 0; i < NRUNS; i++ ){
     fNPMTs[i]        = 0;
     fRun[i]          = 0;
-    fSourceWL[i]     = 0;
-    fSourcePos[i]    = TVector3(0,0,0);
-    fSourceDirVec[i]    = TVector3(0,0,0);
-    fOrientation[i]   = 0;
+    fSourceWL[i]     = 0.0;
+    fSourcePos[i]    = TVector3(0.0,0.0,0.0);
+    fSourceDirVec[i] = TVector3(0.0,0.0,0.0);
+    fOrientation[i]  = 0;
+
     for( Int_t j = 0; j < 9500; j++ ){
-      fPMTPos[i][j]  = TVector3(0,0,0);
-      fPMTOcc[i][j]  = 0;
+      fPMTPos[i][j]  = TVector3(0.0,0.0,0.0);
+      fPMTOcc[i][j]  = 0.0;
+      fPMTOccErr[i][j] = 0.0;
     }
   }
 
@@ -87,21 +89,21 @@ void LBOrientation::Initialize(){
     fCosthetamax[sth] = -1. + (sth + 1)*fCosthetastep;
 
     // Amplitude and phase for the N/S ratio
-    fAmplitudeFIT13[sth] = 0.;
-    fPhaseFIT13[sth] = 0.;
-    fAmplitudeFIT13error[sth] = 0.;
-    fPhaseFIT13error[sth] = 0.;
+    fAmplitudeFIT13[sth] = 0.0;
+    fPhaseFIT13[sth] = 0.0;
+    fAmplitudeFIT13error[sth] = 0.0;
+    fPhaseFIT13error[sth] = 0.0;
 
     // Amplitude and phase for the W/E ratio
-    fAmplitudeFIT20[sth] = 0.;
-    fPhaseFIT20[sth] = 0.;
-    fAmplitudeFIT20error[sth] = 0.;
-    fPhaseFIT20error[sth] = 0.;
+    fAmplitudeFIT20[sth] = 0.0;
+    fPhaseFIT20[sth] = 0.0;
+    fAmplitudeFIT20error[sth] = 0.0;
+    fPhaseFIT20error[sth] = 0.0;
 
-    fAmplitudeFIT[sth] = 0.;
-    fPhaseFIT[sth] = 0.;
-    fAmplitudeFITerror[sth] = 0.;
-    fPhaseFITerror[sth] = 0.;
+    fAmplitudeFIT[sth] = 0.0;
+    fPhaseFIT[sth] = 0.0;
+    fAmplitudeFITerror[sth] = 0.0;
+    fPhaseFITerror[sth] = 0.0;
 
     fRTheta[sth] = sth;
 
@@ -120,21 +122,15 @@ void LBOrientation::Initialize(){
   cout << "Number of phi slices " << NPHI << endl;
 
   for( Int_t m = 0; m < NTHETA; m++ ){
-
-    fNPMTs0[m] = 0;
-    fNPMTs1[m] = 0;
-    fNPMTs2[m] = 0;
-    fNPMTs3[m] = 0;
-
     for( Int_t n = 0; n < NPHI; n++ ){
 			
-      fRatio13[n] = 0.;
-      fRatio20[n] = 0.;
-      fRatio20_90[n] = 0.;
+      fRatio13[n] = 0.0;
+      fRatio20[n] = 0.0;
+      fRatio20_90[n] = 0.0;
 
-      fEratio13[n] = 0.;
-      fEratio20[n] = 0.;
-      fEratio20_90[n] = 0.;
+      fEratio13[n] = 0.0;
+      fEratio20[n] = 0.0;
+      fEratio20_90[n] = 0.0;
     }
   }
 }
@@ -231,26 +227,43 @@ void LBOrientation::ReadData(){
         }
       }
 
+      Double_t sumRunOcc = 0.0;
+      Double_t sumOccErr = 0.0;
+
       // Loop over SOCPMTs
       vector<UInt_t> pmtids = rsoc.GetSOCPMTIDs();
 			
-      for( size_t ipmt = 0; ipmt < pmtids.size(); ipmt++ ){  
-	// PMT channel
-	Int_t lcn = pmtids[ipmt];    // Logical channel number -> PMT ID number
-	const RAT::DS::SOCPMT& pmt = rsoc.GetSOCPMT(lcn);  
+      for( size_t ipmt = 0; ipmt < pmtids.size(); ipmt++ ){
+        // PMT channel
+        Int_t lcn = pmtids[ipmt];    // Logical channel number -> PMT ID number
+        const RAT::DS::SOCPMT& pmt = rsoc.GetSOCPMT(lcn);
 
-	if( pmtInfo.GetType(lcn) == RAT::DU::PMTInfo::NORMAL || pmtInfo.GetType(lcn) == RAT::DU::PMTInfo::HQE ){
+        if( pmtInfo.GetType(lcn) == RAT::DU::PMTInfo::NORMAL || pmtInfo.GetType(lcn) == RAT::DU::PMTInfo::HQE ){
 
-	   if( pmt.GetPeakFindOK() == 0 ){
+          if( pmt.GetPeakFindOK() == 0 ){
 
-	     fPMTPos[i][fNPMTs[i]] = pmtInfo.GetPosition(lcn);
+              fPMTPos[i][fNPMTs[i]] = pmtInfo.GetPosition(lcn);
 
-	     fPMTOcc[i][fNPMTs[i]] = pmt.GetPromptOccupancy();
+              fPMTOcc[i][fNPMTs[i]] = pmt.GetPromptOccupancy();
 
-	     fNPMTs[i]++;
-	   }
+              sumRunOcc = sumRunOcc + pmt.GetPromptOccupancy();
+              sumOccErr = sumOccErr + TMath::Sqrt(pmt.GetPromptOccupancy());
+
+              fNPMTs[i]++;
+
+          }
 	}
       }
+
+      // Normalize the Occupancy of each PMT in a run by the run Occupancy averaged by the number of normal and online PMTs for that run
+      Double_t meanRunOcc = sumRunOcc / fNPMTs[i];
+      Double_t meanOccErr = sumOccErr / fNPMTs[i];
+
+      for( Int_t o = 0; o < fNPMTs[i]; o++ ){
+        fPMTOcc[i][o] = fPMTOcc[i][o]/meanRunOcc;
+        fPMTOccErr[i][o] = TMath::Sqrt( (fPMTOcc[i][o]/pow(meanRunOcc,2)) + (pow(fPMTOcc[i][o],2)*pow(meanOccErr,2)/pow(meanRunOcc,4)) );
+      }
+
     }        
     delete socreader;
   }
@@ -269,100 +282,40 @@ void LBOrientation::Ratios(){
   // Orientation 2 - West
   // Orientation 3 - South
 
-  Double_t f0[NTHETA][NPHI],f1[NTHETA][NPHI],f2[NTHETA][NPHI],f3[NTHETA][NPHI];
-  Double_t n0[NTHETA][NPHI],n1[NTHETA][NPHI],n2[NTHETA][NPHI],n3[NTHETA][NPHI];
-  Double_t s0[NTHETA][NPHI],s1[NTHETA][NPHI],s2[NTHETA][NPHI],s3[NTHETA][NPHI];
-  Double_t ef0[NTHETA][NPHI],ef1[NTHETA][NPHI],ef2[NTHETA][NPHI],ef3[NTHETA][NPHI];
-	
-  for( Int_t m = 0; m < NTHETA; m++ ){
-    for( Int_t n = 0; n < NPHI; n++ ){
-			
-      f0[m][n] = 0;
-      n0[m][n] = 0;
-      s0[m][n] = 0;
-      ef0[m][n] = 0;
-			
-      f1[m][n] = 0;
-      n1[m][n] = 0;
-      s1[m][n] = 0;
-      ef1[m][n] = 0;
-			
-      f2[m][n] = 0;
-      n2[m][n] = 0;
-      s2[m][n] = 0;
-      ef2[m][n] = 0;
-			
-      f3[m][n] = 0;
-      n3[m][n] = 0;
-      s3[m][n] = 0;
-      ef3[m][n] = 0;
+  // For each orientation, for each theta slice and for each phi bin, sum the occupancies 
+  // and uncertainties of the PMTs that fall in that bin, and count the number of PMTs
+  Double_t sumOcc[NORIENTATIONS][NTHETA][NPHI];
+  Double_t sumOcc2[NORIENTATIONS][NTHETA][NPHI];
+  Double_t nPMTs[NORIENTATIONS][NTHETA][NPHI];
+
+  for( Int_t l = 0; l < NORIENTATIONS; l++ ){
+    for( Int_t m = 0; m < NTHETA; m++ ){
+      for( Int_t n = 0; n < NPHI; n++ ){
+
+        sumOcc[l][m][n] = 0.0;
+        sumOcc2[l][m][n] = 0.0;
+        nPMTs[l][m][n] = 0.0;
+
+      }
     }
   }
-
-  Float_t costheta;
-  Float_t phi;
 
   for(Int_t i = 0; i < NRUNS; i++){
+    Int_t iorientation = fOrientation[i];
     for(Int_t j = 0; j < fNPMTs[i]; j++){
-      costheta = fPMTPos[i][j].CosTheta();
-      phi      = fPMTPos[i][j].Phi();
+      Float_t costheta = fPMTPos[i][j].CosTheta();
+      Float_t phi      = fPMTPos[i][j].Phi();
 
-      if(fOrientation[i] == 0){
-        for(Int_t itheta = 0; itheta < NTHETA; itheta++){
-          for(Int_t iphi = 0; iphi < NPHI; iphi++){
-            if(costheta >= fCosthetamin[itheta] && costheta < fCosthetamax[itheta]){
-              if(phi >= fPhimin[iphi] && phi < fPhimax[iphi]){
-                fNPMTs0[itheta]++;
+      for(Int_t itheta = 0; itheta < NTHETA; itheta++){
+        for(Int_t iphi = 0; iphi < NPHI; iphi++){
 
-                f0[itheta][iphi] = f0[itheta][iphi] + fPMTOcc[i][j]; 		// running sum S1
-                n0[itheta][iphi] = n0[itheta][iphi] + 1; 			// running sum S0
-                s0[itheta][iphi] = s0[itheta][iphi] + pow(fPMTOcc[i][j],2);	// running sum S2
-              }
-            }
-          }
-        }
-      }
-      if(fOrientation[i] == 1){
-        for(Int_t itheta = 0; itheta < NTHETA; itheta++){
-          for(Int_t iphi = 0; iphi < NPHI; iphi++){
-            if(costheta >= fCosthetamin[itheta] && costheta < fCosthetamax[itheta]){
-              if(phi >= fPhimin[iphi] && phi < fPhimax[iphi]){
-                fNPMTs1[itheta]++;
+          if(costheta >= fCosthetamin[itheta] && costheta < fCosthetamax[itheta]){
+            if(phi >= fPhimin[iphi] && phi < fPhimax[iphi]){
 
-                f1[itheta][iphi] = f1[itheta][iphi] + fPMTOcc[i][j]; 		// running sum S1
-                n1[itheta][iphi] = n1[itheta][iphi] + 1; 			// running sum S0
-                s1[itheta][iphi] = s1[itheta][iphi] + pow(fPMTOcc[i][j],2); 	// running sum S2
-              }
-            }
-          }
-        }
-      }
-      if(fOrientation[i] == 2){
-        for(Int_t itheta = 0; itheta < NTHETA; itheta++){
-          for(Int_t iphi = 0; iphi < NPHI; iphi++){
-            if(costheta >= fCosthetamin[itheta] && costheta < fCosthetamax[itheta]){
-              if(phi >= fPhimin[iphi] && phi < fPhimax[iphi]){
-                fNPMTs2[itheta]++;
+              sumOcc[iorientation][itheta][iphi]  = sumOcc[iorientation][itheta][iphi] + fPMTOcc[i][j];
+              nPMTs[iorientation][itheta][iphi]   = nPMTs[iorientation][itheta][iphi] + 1;
+              sumOcc2[iorientation][itheta][iphi] = sumOcc2[iorientation][itheta][iphi] + pow(fPMTOcc[i][j],2);
 
-                f2[itheta][iphi] = f2[itheta][iphi] + fPMTOcc[i][j]; 		// running sum S1
-                n2[itheta][iphi] = n2[itheta][iphi] + 1; 			// running sum S0
-                s2[itheta][iphi] = s2[itheta][iphi] + pow(fPMTOcc[i][j],2); 	// running sum S2
-              }
-            }
-          }
-        }
-      }
-      if(fOrientation[i] == 3){
-        for(Int_t itheta = 0; itheta < NTHETA; itheta++){
-          for(Int_t iphi = 0; iphi < NPHI; iphi++){
-            if(costheta >= fCosthetamin[itheta] && costheta < fCosthetamax[itheta]){
-              if(phi >= fPhimin[iphi] && phi < fPhimax[iphi]){
-                fNPMTs3[itheta]++;
-
-                f3[itheta][iphi] = f3[itheta][iphi] + fPMTOcc[i][j]; 		// running sum S1
-                n3[itheta][iphi] = n3[itheta][iphi] + 1; 			// running sum S0
-                s3[itheta][iphi] = s3[itheta][iphi] + pow(fPMTOcc[i][j],2); 	// running sum S2
-              }
             }
           }
         }
@@ -370,26 +323,42 @@ void LBOrientation::Ratios(){
     }
   }
 
+  // Calculate the occupancy ratios for each phi bin of each theta slice
   Double_t h[NPHI];
 
   for(Int_t ptheta = 0; ptheta < NTHETA; ptheta++){
     for(Int_t pphi = 0; pphi < NPHI; pphi++){
-      if(f3[ptheta][pphi] != 0.){
-        fRatio13[pphi] = f1[ptheta][pphi]/f3[ptheta][pphi];
-        ef1[ptheta][pphi] = (s1[ptheta][pphi]/n1[ptheta][pphi] - pow(f1[ptheta][pphi]/n1[ptheta][pphi],2));
-        ef3[ptheta][pphi] = (s3[ptheta][pphi]/n3[ptheta][pphi] - pow(f3[ptheta][pphi]/n3[ptheta][pphi],2));
-        fEratio13[pphi] = TMath::Sqrt(ef1[ptheta][pphi] + pow(f1[ptheta][pphi]/f3[ptheta][pphi],2)*ef3[ptheta][pphi])/f3[ptheta][pphi];
+
+      if( sumOcc[3][ptheta][pphi] != 0 ){
+
+        fRatio13[pphi] = (sumOcc[1][ptheta][pphi]/nPMTs[1][ptheta][pphi]) / (sumOcc[3][ptheta][pphi]/nPMTs[3][ptheta][pphi]);
+
+        // The uncertainty for each phi bin comes from the variance of the distribution of data points in that bin.
+        // The statistical uncertainty is ignored here because it is less than 10% of the variance, thus not having
+        // a big contribution to the ratio uncertainty.
+        Float_t ef1 = (sumOcc2[1][ptheta][pphi]/nPMTs[1][ptheta][pphi] - pow(sumOcc[1][ptheta][pphi]/nPMTs[1][ptheta][pphi],2));
+        Float_t ef3 = (sumOcc2[3][ptheta][pphi]/nPMTs[3][ptheta][pphi] - pow(sumOcc[3][ptheta][pphi]/nPMTs[3][ptheta][pphi],2));
+
+        fEratio13[pphi] = TMath::Sqrt(ef1 + pow(sumOcc[1][ptheta][pphi]/sumOcc[3][ptheta][pphi],2)*ef3)/sumOcc[3][ptheta][pphi];
+
       }
       else{
         fRatio13[pphi] = 0.;
         fEratio13[pphi] = 0.;
       }
 
-      if(f0[ptheta][pphi] != 0.){
-        fRatio20[pphi] = f2[ptheta][pphi]/f0[ptheta][pphi];
-        ef2[ptheta][pphi] = (s2[ptheta][pphi]/n2[ptheta][pphi] - pow(f2[ptheta][pphi]/n2[ptheta][pphi],2));
-        ef0[ptheta][pphi] = (s0[ptheta][pphi]/n0[ptheta][pphi] - pow(f0[ptheta][pphi]/n0[ptheta][pphi],2));
-        fEratio20[pphi] = TMath::Sqrt(ef2[ptheta][pphi] + pow(f2[ptheta][pphi]/f0[ptheta][pphi],2)*ef0[ptheta][pphi])/f0[ptheta][pphi];
+      if( sumOcc[0][ptheta][pphi] != 0 ){
+
+        fRatio20[pphi] = (sumOcc[2][ptheta][pphi]/nPMTs[2][ptheta][pphi]) / (sumOcc[0][ptheta][pphi]/nPMTs[0][ptheta][pphi]);
+
+        // The uncertainty for each phi bin comes from the variance of the distribution of data points in that bin.
+        // The statistical uncertainty is ignored here because it is less than 10% of the variance, thus not having
+        // a big contribution to the ratio uncertainty. 
+        Float_t ef2 = (sumOcc2[2][ptheta][pphi]/nPMTs[2][ptheta][pphi] - pow(sumOcc[2][ptheta][pphi]/nPMTs[2][ptheta][pphi],2));
+        Float_t ef0 = (sumOcc2[0][ptheta][pphi]/nPMTs[0][ptheta][pphi] - pow(sumOcc[0][ptheta][pphi]/nPMTs[0][ptheta][pphi],2));
+
+        fEratio20[pphi] = TMath::Sqrt(ef2 + pow(sumOcc[2][ptheta][pphi]/sumOcc[0][ptheta][pphi],2)*ef0)/sumOcc[0][ptheta][pphi];
+
       }
       else{
         fRatio20[pphi] = 0.;
@@ -476,8 +445,6 @@ void LBOrientation::PlotResults(){
     R	->GetXaxis()->SetTitle("#phi (rad)");
     R	->GetYaxis()->SetTitleOffset(1.3);
     R	->GetYaxis()->SetTitle("Occ. ratio");
-    R	->GetHistogram()->SetMinimum(0.85);
-    R	->GetHistogram()->SetMaximum(1.15);
 
     leg[s] = new TLegend(0.6,0.65,0.75,0.9);
     leg[s] ->AddEntry(GR13[s],"N/S","p");
@@ -550,10 +517,9 @@ void LBOrientation::PlotResults(){
     F->GetXaxis()->SetTitle("#phi (rad)");
     F->GetYaxis()->SetTitleOffset(1.3);
     F->GetYaxis()->SetTitle("Occ. ratio");
-    F->GetHistogram()->SetMinimum(0.85);
-    F->GetHistogram()->SetMaximum(1.15);
+    F->GetHistogram()->SetMinimum(0.9);
+    F->GetHistogram()->SetMaximum(1.1);
 
-    F->Fit(fit1);
     leg[s] = new TLegend(0.79,0.1,0.89,0.29);
     leg[s] ->AddEntry(GR13[s],"N/S","p");
     leg[s] ->AddEntry(GR20_90[s],"W/E - 90","p");
@@ -561,6 +527,8 @@ void LBOrientation::PlotResults(){
     c0->Update();
     savename = "Fits_" + fScan + "_" + ::to_string(fLambda) + "_" + ::to_string(s) + ".png";
     c0->SaveAs(savename.c_str(),"png");
+
+    F->Fit(fit1);
 
     fAmplitudeFIT[s] = fit1->GetParameter(0);
     fPhaseFIT[s] = fit1->GetParameter(1);
@@ -597,9 +565,6 @@ void LBOrientation::PlotResults(){
   C[0] ->GetXaxis()->SetTitle("# slice of cos(#theta)");
   C[0] ->GetYaxis()->SetTitleOffset(1.3);
   C[0] ->GetYaxis()->SetTitle("Amplitude");
-  C[0] ->GetHistogram()->SetMinimum(0.0);
-  C[0] ->GetHistogram()->SetMaximum(0.065);
-
 
   TLegend *legend = new TLegend(0.12,0.7,0.37,0.9);
   legend ->AddEntry(Amp13,"Amplitude N/S","p");
@@ -627,8 +592,6 @@ void LBOrientation::PlotResults(){
   C[1] ->GetXaxis()->SetTitle("# slice of cos(#theta)");
   C[1] ->GetYaxis()->SetTitleOffset(1.3);
   C[1] ->GetYaxis()->SetTitle("Phase (rad)");
-  C[1] ->GetHistogram()->SetMinimum(-0.7);
-  C[1] ->GetHistogram()->SetMaximum(1.2);
   legend = new TLegend(0.15,0.7,0.39,0.89);
   legend ->AddEntry(Phase13,"Phase N/S","p");
   legend ->AddEntry(Phase20,"Phase W/E","p");
