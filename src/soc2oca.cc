@@ -415,8 +415,8 @@ int main( int argc, char** argv ){
   
   // Add the off-axis run first.
   cout << "Adding off-axis run SOC file: " << endl;
-  cout << rIDStr + (string)"_Run.root" << endl;
-  AddSOCTree( ( socRunDir + rIDStr + (string)"_Run.root" ).c_str(), socPtrs[ 0 ] );
+  cout << fPrefix + rIDStr + fExt << endl;
+  AddSOCTree( ( rFilename ).c_str(), socPtrs[ 0 ] );
 
   // Obtain the flag to check whether or not to override the value of lambda
   // obtained from the RAT::DS::Calib object on the SOC file. We don't do this
@@ -438,8 +438,8 @@ int main( int argc, char** argv ){
   cout << "--------------------------" << endl;
 
   cout << "Adding central run SOC file: " << endl;
-  cout << cIDStr + (string)"_Run.root" << endl;
-  AddSOCTree( ( socRunDir + cIDStr + (string)"_Run.root" ).c_str(), socPtrs[ 1 ] );
+  cout << fPrefix + cIDStr + fExt << endl;
+  AddSOCTree( ( cFilename ).c_str(), socPtrs[ 1 ] );
   cout << "Now filling run information from central run SOC file..." << endl;
   lCRunPtr->FillRunInfo( socPtrs[ 1 ], cID, cLBPosMode );
 
@@ -459,8 +459,8 @@ int main( int argc, char** argv ){
     lWRRunPtr->SetRunID( wrID );
 
     cout << "Adding wavelength off-axis run SOC file: " << endl;
-    cout << wrIDStr + (string)"_Run.root" << endl;
-    AddSOCTree( ( socRunDir + wrIDStr + (string)"_Run.root" ).c_str(), socPtrs[ 2 ] );
+    cout << fPrefix + wrIDStr + fExt << endl;
+    AddSOCTree( ( wrFilename ).c_str(), socPtrs[ 2 ] );
     cout << "Now filling run information from wavelength off-axis run SOC file...";
     lWRRunPtr->FillRunInfo( socPtrs[ 2 ], wrID, 3, false );
     lRunPtr->SetLBPos( lWRRunPtr->GetLBPos() ); 
@@ -479,8 +479,8 @@ int main( int argc, char** argv ){
     lWCRunPtr->SetRunID( wcID );
 
     cout << "Adding wavelength central run SOC file: " << endl;
-    cout << wcIDStr + (string)"_Run.root" << endl;
-    AddSOCTree( ( socRunDir + wcIDStr + (string)"_Run.root" ).c_str(), socPtrs[ 3 ] );
+    cout << fPrefix + wcIDStr + fExt << endl;
+    AddSOCTree( ( wcFilename ).c_str(), socPtrs[ 3 ] );
     cout << "Now filling run information from wavelength central run SOC file...";
     lWCRunPtr->FillRunInfo( socPtrs[ 3 ], wcID, 3, false );
     lCRunPtr->SetLBPos( lWCRunPtr->GetLBPos() ); 
