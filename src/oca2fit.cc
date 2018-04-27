@@ -459,31 +459,36 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
 
     t->Branch( name1, &rawEffRun[j][0], name2 );
   }
- 
+
   Float_t rawEff = 0.0;
-  Int_t runNumber = 1;
+  Int_t runNumber = 0;
   Int_t firstRun = iDPBegin->GetRunID();
+
+  Int_t counter = 0;
 
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
 
-    // Calculate the model prediction and the data value
-    // of the occupancy.
-    modelPrediction = ocaModel->ModelPrediction( *iDP );
-    dataValue = iDP->GetMPECorrOccupancy();
-    rawEff = dataValue / modelPrediction;
+    if ( iDP->GetRunID() > 0 ){
 
-    if ( rawEff > 0.0 ){
-      nPMTsPerIndex[ iDP->GetID() ]++;
-      rawEffAvg[ iDP->GetID() ] += rawEff;
+      // Calculate the model prediction and the data value
+      // of the occupancy.
+      modelPrediction = ocaModel->ModelPrediction( *iDP );
+      dataValue = iDP->GetMPECorrOccupancy();
+      rawEff = dataValue / modelPrediction;
 
-      if( firstRun != iDP->GetRunID() ){ 
-	runNumber++;
-	firstRun = iDP->GetRunID();
-      }
+      if ( rawEff > 0.0 ){
+        nPMTsPerIndex[ iDP->GetID() ]++;
+        rawEffAvg[ iDP->GetID() ] += rawEff;
 
-      rawEffRun[ runNumber ][ iDP->GetID() ] = rawEff;
-      if ( nUniquePMTs[ iDP->GetID() ] == 0 ){
-        nUniquePMTs[ iDP->GetID() ]++;
+        if( firstRun != iDP->GetRunID() ){ 
+          runNumber++;
+          firstRun = iDP->GetRunID();
+        }
+
+        rawEffRun[ runNumber ][ iDP->GetID() ] = rawEff;
+        if ( nUniquePMTs[ iDP->GetID() ] == 0 ){
+          nUniquePMTs[ iDP->GetID() ]++;
+        }
       }
     }
   }
@@ -514,7 +519,7 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   Int_t* uniquePMTs = new Int_t[ 10000 ];
   for ( Int_t iVal = 0; iVal < 10000; iVal++ ){ uniquePMTs[ iVal ] = 0; }
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ){
-    
+
     // Calculate the model prediction and the data value
     // of the occupancy.
     modelPrediction = ocaModel->ModelPrediction( *iDP );
@@ -528,14 +533,14 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
       pmtEffHistoScan->Fill( rawEffAvg[ iDP->GetID() ] / rawEffAvgTot ); 
       uniquePMTs[ iDP->GetID() ] += 1; // Add 1 to the array to make sure we don't add this PMT a second time.
     }
-      
+
     // The incident angle.
     Int_t incAngle = (Int_t)( TMath::ACos( iDP->GetCosTheta() ) * TMath::RadToDeg() );
     Float_t varVal = ( ( pmtEff / rawEffAvg[ iDP->GetID() ] ) / rawEffAvgTot );
     Float_t statVal = TMath::Sqrt( 1.0 / iDP->GetPromptPeakCounts() );
     Float_t histoVal = varVal;
-      
-    if ( histoVal > 0.0 && !std::isnan( pmtEff ) && !std::isinf( pmtEff ) ){
+
+    if ( histoVal > 0.0 && !std::isnan( pmtEff ) && !std::isinf( pmtEff ) && incAngle < 91 ){
       effHistos[ incAngle ].Fill( histoVal );
       iDP->SetRunEfficiency( pmtEff );
       iDP->SetScanEfficiency( rawEffAvg[ iDP->GetID() ] );
@@ -604,21 +609,24 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   ocaPars->SetPMTVariabilityParameters( fitFunc->GetParameter( 0 ),
                                         fitFunc->GetParameter( 1 ),
                                         fitFunc->GetParameter( 2 ) );
-  
+
   for ( iDPL = iDPBeginL; iDPL != iDPEndL; iDPL++ ) {
 
-    Float_t incAngle = TMath::ACos( iDPL->GetCosTheta() ) * TMath::RadToDeg();
-    if ( incAngle >= 0.0 && incAngle < 90.0 ){
-      Float_t varPar = fitFunc->GetParameter( 0 )
-        + ( fitFunc->GetParameter( 1 ) * incAngle )
-        + ( fitFunc->GetParameter( 2 ) * incAngle * incAngle );
-      iDPL->SetPMTVariability( varPar );
-    }
-    else{
-      iDPL->SetPMTVariability( -1.0 );
-    }
+    if ( iDP->GetRunID() > 0 ){
 
-  }   
+      Float_t incAngle = TMath::ACos( iDPL->GetCosTheta() ) * TMath::RadToDeg();
+      if ( incAngle >= 0.0 && incAngle < 90.0 ){
+        Float_t varPar = fitFunc->GetParameter( 0 )
+          + ( fitFunc->GetParameter( 1 ) * incAngle )
+          + ( fitFunc->GetParameter( 2 ) * incAngle * incAngle );
+        iDPL->SetPMTVariability( varPar );
+      }
+      else{
+        iDPL->SetPMTVariability( -1.0 );
+      }
+    }
+  }
+
 }
 
 
