@@ -464,8 +464,6 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   Int_t runNumber = 0;
   Int_t firstRun = iDPBegin->GetRunID();
 
-  Int_t counter = 0;
-
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ) {
 
     if ( iDP->GetRunID() > 0 ){
@@ -519,7 +517,6 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
   Int_t* uniquePMTs = new Int_t[ 10000 ];
   for ( Int_t iVal = 0; iVal < 10000; iVal++ ){ uniquePMTs[ iVal ] = 0; }
   for ( iDP = iDPBegin; iDP != iDPEnd; iDP++ ){
-
     // Calculate the model prediction and the data value
     // of the occupancy.
     modelPrediction = ocaModel->ModelPrediction( *iDP );
@@ -626,9 +623,7 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
       }
     }
   }
-
 }
-
 
 void RetrievePMTVariabilityParameters( OCAModelParameterStore* ocaPars,
                                        string& fitName )
