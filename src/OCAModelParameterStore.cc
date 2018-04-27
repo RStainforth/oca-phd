@@ -672,14 +672,25 @@ void OCAModelParameterStore::AddParameters( string& fileName )
           initVal = fSinWavePars[ iPar - 1];
 	}
         else{
-          if ( fLBDistributionType == 0 ){ initVal = 1.0; }
-          if ( fLBDistributionType == 1 && iPar % 2 == 1 ){ initVal = 0.01; }
-          if ( fLBDistributionType == 1 && iPar % 2 == 0 ){ initVal = 1.0; }
+          if ( fLBDistributionType == 0 ){
+            initVal = 1.0;
+            // The laserball distribution parameters in the histogram will not vary beyond 0.0 and 2.0, so set these accordingly
+            minVal = 0.0;
+            maxVal = 2.0;
+          }
+          if ( fLBDistributionType == 1 && iPar % 2 == 1 ){
+            initVal = 0.01;
+            // The laserball phase parameters should vary between -pi and +pi
+            minVal = -TMath::Pi();
+            maxVal = TMath::Pi();
+          }
+          if ( fLBDistributionType == 1 && iPar % 2 == 0 ){
+            initVal = 1.0;
+            // The laserball amplitude parameters should be positive. Set a large value of maxVal
+            minVal = 0.0;
+            maxVal = 100.0;
+          }
 	}
-			
-        // The laserball distribution parameters in the histogram will not vary beyond 0.0 and 2.0, so set these accordingly
-        minVal = 0.0;
-        maxVal = 2.0;
 
         // The increment value is currently not used, so set to something unphysical (might have use for this in a future fitting routine)
         incVal = -10.0;
