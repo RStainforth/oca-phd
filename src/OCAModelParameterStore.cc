@@ -450,6 +450,7 @@ void OCAModelParameterStore::AddParameters( string& fileName )
   // Initialise the variables which will be defined
   // for each parameter which is to be created in the
   // loops which follow.
+  // NOTE: The fit is not currently using the maxVal and minVal variables.
   Float_t maxVal = 0.0;
   Float_t minVal = 0.0;
   Float_t initVal = 0.0;
@@ -688,7 +689,7 @@ void OCAModelParameterStore::AddParameters( string& fileName )
             initVal = 1.0;
             // The laserball amplitude parameters should be positive. Set a large value of maxVal
             minVal = 0.0;
-            maxVal = 100.0;
+            maxVal = 2.0;
           }
 	}
 
