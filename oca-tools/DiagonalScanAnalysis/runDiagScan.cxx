@@ -32,7 +32,7 @@
 
 using namespace std;
 
-void runDiagonalScanAnalysis( const std::string& scan = "oct15", const std::string& diagonal = "xpz" ){
+void runDiagonalScanAnalysis( const std::string& scan, const std::string& diagonal ){
 
   Int_t nLambda = 0;
   std::vector< Int_t > list_wl;
@@ -45,7 +45,7 @@ void runDiagonalScanAnalysis( const std::string& scan = "oct15", const std::stri
     list_wl.push_back(420);
     list_wl.push_back(505);
   }
-  if( scan == "dec17" ){
+  else{
     nLambda = 6;
     list_wl.push_back(337);
     list_wl.push_back(335);
@@ -56,6 +56,7 @@ void runDiagonalScanAnalysis( const std::string& scan = "oct15", const std::stri
   }
 
   Int_t lLambda[nLambda];
+  std::string path = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/";
   for( Int_t i = 0; i < nLambda; i++ ){ lLambda[i] = list_wl[i]; }
 
   Double_t attcoef[nLambda];
@@ -66,25 +67,25 @@ void runDiagonalScanAnalysis( const std::string& scan = "oct15", const std::stri
   // Loop over all wavelengths
   for(Int_t k = 0; k < nLambda; k++){
 
-    DiagScan qd;
+    DiagScan dsa;
 
-    qd.Initialize();
-    qd.SetLambda( lLambda[k] );
-    qd.SetDiagonal( diagonal );
-    qd.SetScan( scan );
+    dsa.Initialize();
+    dsa.SetLambda( lLambda[k] );
+    dsa.SetDiagonal( diagonal );
+    dsa.SetScan( scan );
+    dsa.SetPath( path );
 
-    //   qd.SetDistanceCut( value );
-    //   qd.SetShadowingTolerance( value );
-    //   qd.SetNSigmas( value );
-    //   qd.SetPath( path );
+    //   dsa.SetDistanceCut( value );
+    //   dsa.SetShadowingTolerance( value );
+    //   dsa.SetNSigmas( value );
 
-    qd.ReadData();
-    qd.Process();
-    qd.FitRatio();
-    qd.Product();
+    dsa.ReadData();
+    dsa.Process();
+    dsa.FitRatio();
+    dsa.Product();
 
-    attcoef[k] = -qd.GetAttCoef();
-    attcoefEr[k] = -qd.GetAttCoefErr();
+    attcoef[k] = -dsa.GetAttCoef();
+    attcoefEr[k] = -dsa.GetAttCoefErr();
     att_len[k] = 1./attcoef[k];
     att_len_err[k] = att_len[k] * attcoefEr[k];
 
