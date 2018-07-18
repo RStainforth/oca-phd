@@ -34,6 +34,8 @@ using namespace RAT::DU;
 
 ClassImp(DiagScan);
 
+DiagScan::DiagScan(){}
+
 DiagScan::DiagScan( const Int_t lambda, const std::string& diagonal, const std::string& scan, const std::string& path ){
 
   Initialize();
@@ -524,7 +526,7 @@ void DiagScan::SetLambda( const Int_t aNumber ){
 
 void DiagScan::SetScan( const std::string& aString ){
 
-  if ( aString != "oct15" && aString != "dec17" ){
+  if ( aString != "oct15" && aString != "dec17" && aString != "jul18" ){
     cout << aString << " is not a valid laserball scan!" << endl;
     scanValidity = false;
     return;
