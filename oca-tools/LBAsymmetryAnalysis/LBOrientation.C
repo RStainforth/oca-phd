@@ -687,7 +687,7 @@ void LBOrientation::SetLambda( const Int_t aNumber ){
 
 void LBOrientation::SetScan( const std::string& aString ){
 
-  if ( aString != "oct15" && aString != "dec17" ){
+  if ( aString != "oct15" && aString != "dec17" && aString != "jul18" ){
     cout << aString << " is not a valid laserball scan!" << endl;
     scanValidity = false;
     return;
