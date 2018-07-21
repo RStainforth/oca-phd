@@ -48,7 +48,7 @@ void runDiagonalScanAnalysis( const std::string& scan, const std::string& diagon
   else{
     nLambda = 6;
     list_wl.push_back(337);
-    list_wl.push_back(335);
+    list_wl.push_back(365);
     list_wl.push_back(385);
     list_wl.push_back(420);
     list_wl.push_back(450);
