@@ -27,8 +27,8 @@ laserball_plus_z_shift: 100.0,
 laserball_minus_z_shift: 100.0,
 
 // Shift in the emitted average wavelength in nm
-lambda_plus_shift: 4.0,
-lambda_minus_shift: 4.0,
+lambda_plus_shift: 5.5,
+lambda_minus_shift: 5.5,
 
 // Boolean variable to set whether or not to override the default
 // wavelength value stored on the RAT::DS::Calib object on the SOC file.
@@ -38,7 +38,7 @@ lambda_minus_shift: 4.0,
 override_manip_lambda: 1,
 // The central value of lambda about which the shift +/- shift
 // is applied
-lambda_at_pmt: 371.9,
+lambda_at_pmt: 388.5,
 
 // Laserball distribution systematics.
 // Note: These aren't applied until the fitting stage, and furthermore
