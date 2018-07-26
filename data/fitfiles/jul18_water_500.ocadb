@@ -1,0 +1,217 @@
+{
+type : "FITFILE",
+index: "fit_setup",
+version: 1,
+run_range: [0, 0],
+pass: 0,
+comment: "",
+timestamp: "",
+
+// This is the directory path in $OCA_ROOT/data/runs/ocarun/*data_set*
+// where to find the OCA-run files.
+data_set: "jul18/water",
+
+// This is the name of the fit file to be written to the
+// $OCA_ROOT/output/fits directory
+fit_name: "jul18_watersin_500",
+
+// For reference, this is a list of the possible systematics
+// which can be calculated via the 'oca2fit' -b options
+// for systematic fits:
+//        "laserball_r_scale"
+//        "laserball_r_shift"
+//        "laserball_plus_x_shift"
+//        "laserball_minus_x_shift"
+//        "laserball_plus_y_shift"
+//        "laserball_minus_y_shift"
+//        "laserball_plus_z_shift"
+//        "laserball_minus_z_shift"
+//        "lambda_plus_shift"
+//        "lambda_minus_shift"
+//        "laserball_distribution2"
+//        "laserball_distribution_flat"
+//        "chi_square_lim_16"
+//        "chi_square_lim_9"
+//        "pmt_to_pmt_variability" // Requires 'oca2fit -c...', 'oca2fit -v...'
+//        "distance_to_pmt"
+
+}
+
+
+{
+type: "FITFILE",
+index: "run_setup",
+version: 1,
+run_range: [0, 0],
+pass: 0,
+comment: "",
+timestamp: "",
+
+run_ids: [ 114971, 115059, 115057, 115073, 115075, 115099,
+           115101, 115128, 115157, 115130, 115159, 115181,
+           115183, 115206, 115227, 115254, 115256, 115285,
+           115310, 115287, 115314, 115337, 115361, 115339,
+           115363, 115385, 115387, 115409, 115411, 115433,
+           115435, 115457, 115459, 115481, 115485, 115507,
+           115509, 115531 ],
+
+}
+
+{
+type: "FITFILE",
+index: "filter_setup",
+version: 1,
+run_range: [0, 0],
+pass: 0,
+comment: "",
+timestamp: "",
+
+filter_list: [ "filter_prompt_counts", "filter_ctr_prompt_counts", "filter_chi_square", "filter_fractional_error" ],
+
+filter_mpe_occupancy_min: 0.01,
+filter_mpe_occupancy_max: 0.06,
+
+filter_mpe_ctr_occupancy_min: 0.02,
+filter_mpe_ctr_occupancy_max: 0.05,
+
+filter_prompt_counts_min: 0.0,
+filter_prompt_counts_max: 2.0e10,
+
+filter_ctr_prompt_counts_min: 0.0,
+filter_ctr_prompt_counts_max: 2.0e10,
+
+filter_chi_square_min: 0.0,
+filter_chi_square_max: 1000.0,
+
+filter_dynamic_residual_min: 0.0,
+filter_dynamic_residual_max: 10.0,
+
+filter_fractional_error_min: 0.0,
+filter_fractional_error_max: 0.25,
+
+}
+
+{
+type: "FITFILE",
+index: "bool_filter_setup",
+version: 1,
+run_range: [0, 0],
+pass: 0,
+comment: "",
+timestamp: "",
+
+filter_list: [ "filter_ctr_bad_path", "filter_bad_path" ],
+
+filter_bad_path: 0,
+
+filter_ctr_bad_path: 0,
+
+}
+
+{
+type: "FITFILE",
+index: "parameter_setup",
+version: 1,
+run_range: [0, 0],
+pass: 0,
+comment: "",
+timestamp: "",
+
+water_fill: 0,
+
+parameters_list: [ "inner_av_extinction_length", "acrylic_extinction_length", "water_extinction_length", "laserball_intensity_mask", "pmt_angular_response", "laserball_distribution", "laserball_run
+_normalisation" ],
+
+// The extinction length of the inner_av volume in mm-1
+inner_av_extinction_length_initial_value: 3.0e-05,
+
+// Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
+inner_av_extinction_length_vary: 1,
+
+// The extinction length of the av volume in mm-1
+acrylic_extinction_length_initial_value: 7.14361085556447506e-04,
+
+// Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
+acrylic_extinction_length_vary: 0,
+
+// The extinction length of the water volume in mm-1
+water_extinction_length_initial_value: 3.0e-05,
+
+// Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
+water_extinction_length_vary: 1,
+
+// The number of bins distributed between 0 - 90 degrees for the PMT angular response
+pmt_angular_response_number_of_bins: 90,
+
+// Whether or not to vary the pmt angular response in the fit ( 0: Keep Fixed, 1: Vary )
+pmt_angular_response_vary: 1,
+
+// Number of PMT Angular response distributions; 1 or 2. There was an
+// observed z-asymmetry which was split in a horizontal z-plane. For MC
+// data this should 1
+pmt_angular_response_n_distributions: 1,
+
+// The position of the the z-plane to separate out the different
+// angular response distributions
+pmt_angular_response_z_split: -9999.9,
+
+// Laserball distribution type (0: binned, 1: sinusoidal)
+laserball_distribution_type: 1,
+
+// The minimum number of entries required in each PMT angular response
+// bin for the parameter associated with that parameter to vary in the fit
+pmt_angular_response_min_bin_entries: 100,
+
+// The number of bins distributed between 0 - 360 degrees for the laserball phi distribution (for binned laserball distribution type = 0)
+laserball_distribution_number_of_phi_bins: 36,
+
+// The number of bins distributed between -1 and +1 for the CosTheta of the laserball distribution (for binned laserball distribution type = 0)
+laserball_distribution_number_of_cos_theta_bins: 12,
+
+// The number of Cos(theta_LB) slices (for sinusoidal laserball distribution type = 1)
+laserball_distribution_number_of_theta_slices: 12,
+
+// The number of parameters per cos(theta_LB) slice, these two parameters are usually a relative amplitude and a phase (for sinusoidal laserball distribution type = 1)
+laserball_distribution_number_of_parameters_per_theta_slice: 2,
+
+// Whether or not to vary the laserball distribution in the fit ( 0: Keep Fixed, 1: Vary )
+laserball_distribution_vary: 1,
+
+// Whether or not to seed the laserball sinusoidal distribution parameters ( 0: Don't Seed, 1: Seed )
+// CAUTION: Only valid for laserball distribution type 1 = sinusoidal
+laserball_distribution_seed: 1,
+
+// Name of the file that has the laserball light distribution parameters from Laserball Asymmetry Analysis
+laserball_distribution_seed_parameters: "lb_jul18_water_500.ocadb",
+
+// The minimum number of laserball distribution entries in each bin
+// required for the parameter associated with that bin to vary
+laserball_distribution_min_bin_entries: 10,
+
+// The degree of the polynomial mask function used to model the laserball intensity
+laserball_intensity_mask_number_of_parameters: 4,
+
+// Whether or not to vary the laserball mask function in the fit ( 0: Keep Fixed, 1: Vary )
+laserball_intensity_mask_vary: 1,
+
+// The initial value for the laserball normalisation for the off-axis runs
+// are calculated by LOCASOpticsModel::InitialiseLBRunNormalisations
+
+// Whether or not to vary the laserball run normalisation in the fit ( 0: Keep Fixed, 1: Vary )
+laserball_run_normalisation_vary: 1,
+
+}
+
+{
+type: "FITFILE",
+index: "fit_procedure",
+version: 1,
+run_range: [0, 0],
+pass: 0,
+comment: "",
+timestamp: "",
+
+// The sequential chi-square upper limits to cut initial data-points on for each fit
+chisq_lims: [ 1000.0, 100.0, 50.0, 25.0, 16.0, 9.0, 7.0, 7.0 ],
+
+}
