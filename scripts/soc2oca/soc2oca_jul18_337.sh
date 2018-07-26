@@ -46,40 +46,40 @@
 # After using this script the OCARun files will be found in $OCA_SNOPLUS_DATA/data/runs/ocarun/jul18/water
 
 # There should be 37 runs in this dataset
-soc2oca -r 114981 -c 115219 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115065 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115085 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115091 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115112 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115120 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115146 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115140 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115167 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115173 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115191 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115198 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 114981 -c 115219 -R 114971 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115065 -c 114981 -R 115073 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115085 -c 114981 -R 115075 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115091 -c 114981 -R 115099 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115112 -c 114981 -R 115101 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115120 -c 114981 -R 115128 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115146 -c 114981 -R 115157 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115140 -c 114981 -R 115130 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115167 -c 114981 -R 115159 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115173 -c 114981 -R 115181 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115191 -c 114981 -R 115183 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115198 -c 114981 -R 115206 -l 43 -d jul18/water -s jul18_337.ocadb -g water
 soc2oca -r 115210 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115219 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115246 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115266 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115273 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115301 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115295 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115322 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115328 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115353 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115347 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115371 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115377 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115395 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115401 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115419 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115425 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115443 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115449 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115467 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115473 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115493 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115499 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115517 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115523 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115219 -c 114981 -R 115227 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115246 -c 114981 -R 115254 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115266 -c 114981 -R 115256 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115273 -c 114981 -R 115285 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115301 -c 114981 -R 115310 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115295 -c 114981 -R 115287 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115322 -c 114981 -R 115314 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115328 -c 114981 -R 115337 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115353 -c 114981 -R 115361 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115347 -c 114981 -R 115339 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115371 -c 114981 -R 115363 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115377 -c 114981 -R 115385 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115395 -c 114981 -R 115387 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115401 -c 114981 -R 115409 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115419 -c 114981 -R 115411 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115425 -c 114981 -R 115433 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115443 -c 114981 -R 115435 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115449 -c 114981 -R 115457 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115467 -c 114981 -R 115459 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115473 -c 114981 -R 115481 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115493 -c 114981 -R 115485 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115499 -c 114981 -R 115507 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115517 -c 114981 -R 115509 -l 43 -d jul18/water -s jul18_337.ocadb -g water
+soc2oca -r 115523 -c 114981 -R 115531 -l 43 -d jul18/water -s jul18_337.ocadb -g water
