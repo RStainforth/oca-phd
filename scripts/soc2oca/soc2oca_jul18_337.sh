@@ -45,7 +45,7 @@
 
 # After using this script the OCARun files will be found in $OCA_SNOPLUS_DATA/data/runs/ocarun/jul18/water
 
-# There should be 40 runs in this dataset
+# There should be 37 runs in this dataset
 soc2oca -r 114981 -c 115219 -l 33 -d jul18/water -s jul18_337.ocadb -g water
 soc2oca -r 115065 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
 soc2oca -r 115085 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
@@ -83,6 +83,3 @@ soc2oca -r 115493 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
 soc2oca -r 115499 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
 soc2oca -r 115517 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
 soc2oca -r 115523 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115541 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115237 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
-soc2oca -r 115547 -c 114981 -l 33 -d jul18/water -s jul18_337.ocadb -g water
