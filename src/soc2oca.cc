@@ -299,13 +299,13 @@ int main( int argc, char** argv ){
   string socRunDir = lDB.GetSOCRunDir( dirMMYY );
   string fExt, fPrefix;
   string rFilename, cFilename, wrFilename, wcFilename;
-  if ( dirMMYY == "dec17/water" ){
-    fExt = ".root";
-    fPrefix = "SOC_0000";
-  }
-  else{
+  if ( dirMMYY == "oct15/water" || dirMMYY == "oct03" ){
     fExt = "_Run.root";
     fPrefix = "";
+  }
+  else{
+    fExt = ".root";
+    fPrefix = "SOC_0000";
   }
 
   rFilename = ( socRunDir + fPrefix + rIDStr + fExt ).c_str();
