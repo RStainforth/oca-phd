@@ -126,7 +126,7 @@ inner_av_extinction_length_initial_value: 3.0e-05,
 inner_av_extinction_length_vary: 1,
 
 // The extinction length of the av volume in mm-1
-acrylic_extinction_length_initial_value: 5.66896749660372734e-03,
+acrylic_extinction_length_initial_value: 7.17454626395e-04,
 
 // Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
 acrylic_extinction_length_vary: 0,
