@@ -40,7 +40,7 @@ void runDiagonalScanAnalysis( const std::string& scan, const std::string& diagon
   if( scan == "oct15" ){
     nLambda = 5;
     list_wl.push_back(337);
-    list_wl.push_back(339);
+    list_wl.push_back(369);
     list_wl.push_back(385);
     list_wl.push_back(420);
     list_wl.push_back(505);
