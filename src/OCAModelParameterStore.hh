@@ -88,7 +88,7 @@ namespace OCA{
     void IdentifyVaryingParameters();
 
     // Identify all the current base varying parameters.
-    // i.e. the parameters which vary for every data point in the fit. e.g. extinction lengths
+    // i.e. the parameters which vary for every data point in the fit. e.g. attenuation coefficients
     void IdentifyBaseVaryingParameters();
 
     // Identify all global varying parameters across all points.
@@ -218,23 +218,23 @@ namespace OCA{
     // Get the type of the laserball angular distribution (0: binned, 1: sin-wave)
     Int_t GetLBDistributionType() const { return fLBDistributionType; }
 
-    // Get the index for the inner av extinction length.
-    Int_t GetInnerAVExtinctionLengthParIndex() const { return 1; } 
+    // Get the index for the inner av attenuation coefficient.
+    Int_t GetInnerAVAttenuationCoefficientParIndex() const { return 1; } 
 
-    // Get the inner av extinction length parameter.
-    Float_t GetInnerAVExtinctionLengthPar() { return fParametersPtr[ GetInnerAVExtinctionLengthParIndex() ]; }
+    // Get the inner av attenuation coefficient parameter.
+    Float_t GetInnerAVAttenuationCoefficientPar() { return fParametersPtr[ GetInnerAVAttenuationCoefficientParIndex() ]; }
 
-    // Get the index for the acrylic extinction length parameter.
-    Int_t GetAVExtinctionLengthParIndex() const { return 2; }
+    // Get the index for the acrylic attenuation coefficient parameter.
+    Int_t GetAVAttenuationCoefficientParIndex() const { return 2; }
 
-    // Get the av extinction length parameter.
-    Float_t GetAVExtinctionLengthPar() { return fParametersPtr[ GetAVExtinctionLengthParIndex() ]; }
+    // Get the av attenuation coefficient parameter.
+    Float_t GetAVAttenuationCoefficientPar() { return fParametersPtr[ GetAVAttenuationCoefficientParIndex() ]; }
 
-    // Get the index for the water extinction length parameter
-    Int_t GetWaterExtinctionLengthParIndex() const { return 3; }
+    // Get the index for the water attenuation coefficient parameter
+    Int_t GetWaterAttenuationCoefficientParIndex() const { return 3; }
 
-    // Get the water extinction length parameter.
-    Float_t GetWaterExtinctionLengthPar() { return fParametersPtr[ GetWaterExtinctionLengthParIndex() ]; }
+    // Get the water attenuation coefficient parameter.
+    Float_t GetWaterAttenuationCoefficientPar() { return fParametersPtr[ GetWaterAttenuationCoefficientParIndex() ]; }
 
     // Get the index for the start of the laserball distribution mask parameters.
     Int_t GetLBDistributionMaskParIndex() const { return 3 + 1; }

@@ -341,7 +341,7 @@ void OutputAttenuationCoefficients( std::string fitName )
     TMatrix covMatrix = tmpStore->GetCovarianceMatrixValues();
     TVector parVals = tmpStore->GetParameterValues();
 
-    Int_t attnIndex = tmpStore->GetInnerAVExtinctionLengthParIndex();
+    Int_t attnIndex = tmpStore->GetInnerAVAttenuationCoefficientParIndex();
 
     if ( branches[ iSys ] == "nominal" ){
       nominalVal = parVals[ attnIndex ];

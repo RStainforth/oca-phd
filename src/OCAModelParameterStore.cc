@@ -175,26 +175,26 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
 
   fParameters.clear();
 
-  // First retrieve the attenuation length parameters
+  // First retrieve the attenuation coefficient parameters
   vector< OCAModelParameter >::iterator iPar;
   vector< OCAModelParameter >::iterator jPar;
   for ( iPar = tmpStore->GetOCAModelParametersIterBegin();
         iPar != tmpStore->GetOCAModelParametersIterEnd();
         iPar++ ){
-    if ( iPar->GetIndex() == GetInnerAVExtinctionLengthParIndex() ){
+    if ( iPar->GetIndex() == GetInnerAVAttenuationCoefficientParIndex() ){
       fParameters.push_back( *iPar );
       // (-1) because 'push_back' starts at 0
-      fParameters[ GetInnerAVExtinctionLengthParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "inner_av_extinction_length_vary", "parameter_setup" ) );
+      fParameters[ GetInnerAVAttenuationCoefficientParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "inner_av_attenuation_length_vary", "parameter_setup" ) );
     }
-    if ( iPar->GetIndex() == GetAVExtinctionLengthParIndex() ){
-      Bool_t varyCond = lDB.GetBoolField( "FITFILE", "acrylic_extinction_length_vary", "parameter_setup" );
+    if ( iPar->GetIndex() == GetAVAttenuationCoefficientParIndex() ){
+      Bool_t varyCond = lDB.GetBoolField( "FITFILE", "acrylic_attenuation_length_vary", "parameter_setup" );
       fParameters.push_back( *iPar );
-      fParameters[ GetAVExtinctionLengthParIndex() - 1 ].SetVary( varyCond );
+      fParameters[ GetAVAttenuationCoefficientParIndex() - 1 ].SetVary( varyCond );
     }
-    if ( iPar->GetIndex() == GetWaterExtinctionLengthParIndex() ){
+    if ( iPar->GetIndex() == GetWaterAttenuationCoefficientParIndex() ){
         fParameters.push_back( *iPar );
       // (-1) because 'push_back' starts at 0
-      fParameters[ GetWaterExtinctionLengthParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "water_extinction_length_vary", "parameter_setup" ) );
+      fParameters[ GetWaterAttenuationCoefficientParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "water_attenuation_length_vary", "parameter_setup" ) );
     }
   }
   
@@ -375,7 +375,7 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
     cout << "SeedParameters::Warning, unspecified number of PMT angular response distributions, abort." << endl; return false;
   }
 
-  if ( fWaterFill ){ fParameters[ GetWaterExtinctionLengthParIndex() - 1 ].SetVary( false ); }
+  if ( fWaterFill ){ fParameters[ GetWaterAttenuationCoefficientParIndex() - 1 ].SetVary( false ); }
 
   for ( Int_t iParam = 1; iParam <= (Int_t)fParameters.size(); iParam++ ){
     fParameters[ iParam-1 ].SetIndex( iParam );
@@ -517,18 +517,18 @@ void OCAModelParameterStore::AddParameters( string& fileName )
   // Loop over each parameter set in the card file and add them/it to the store
   for ( Int_t iStr = 0; iStr < (Int_t)paramList.size(); iStr++ ){
 
-    // Setup for the extinction length parameters
-    if ( paramList[ iStr ] == "inner_av_extinction_length"
-         || paramList[ iStr ] == "acrylic_extinction_length" 
-         || paramList[ iStr ] == "water_extinction_length" ){
+    // Setup for the attenuation coefficient parameters
+    if ( paramList[ iStr ] == "inner_av_attenuation_length"
+         || paramList[ iStr ] == "acrylic_attenuation_length" 
+         || paramList[ iStr ] == "water_attenuation_length" ){
 
-      // The initial value of the extinction length
+      // The initial value of the attenuation coefficient
       initVal = lDB.GetDoubleField( "FITFILE", (string)( paramList[ iStr ] + "_initial_value" ), "parameter_setup" );
 
       // Whether or not this parameter will vary in the fit ( 1: Yes, 0: No )
       varyBool = lDB.GetBoolField( "FITFILE", (string)( paramList[ iStr ] + "_vary" ), "parameter_setup" );
 
-      // For extinction lengths, the minimum value can't be negative, so for now set to 1.0e-9 (= 1,000,000 m)
+      // For attenuation coefficients, the minimum value can't be negative, so for now set to 1.0e-9 (= 1,000,000 m)
       // and for the maximum value set to 1.0 (= 0.001 m)
       minVal = 1.0e-9;
       maxVal = 1.0;
@@ -539,11 +539,11 @@ void OCAModelParameterStore::AddParameters( string& fileName )
       // Each parameter is unique, so nParsInGroup = 1.
       nParsInGroup = 1;
 
-      // Set the indices for the three extinction lengths in the fit: 1: inner_av region, 2: av region, 3: water region
+      // Set the indices for the three attenuation coefficients in the fit: 1: inner_av region, 2: av region, 3: water region
       Int_t parIndex = 0;
-      if ( paramList[ iStr ] == "inner_av_extinction_length" ){ parIndex = 1; }
-      else if ( paramList[ iStr ] == "acrylic_extinction_length" ){ parIndex = 2; }
-      else if ( paramList[ iStr ] == "water_extinction_length" ){ parIndex = 3; }
+      if ( paramList[ iStr ] == "inner_av_attenuation_length" ){ parIndex = 1; }
+      else if ( paramList[ iStr ] == "acrylic_attenuation_length" ){ parIndex = 2; }
+      else if ( paramList[ iStr ] == "water_attenuation_length" ){ parIndex = 3; }
       else{ cout << "OCAModelParameterStore::OCAModelParameterStore: Error, unknown parameter passed" << endl; }
 
       OCAModelParameter lParameter( (string)( paramList[ iStr ] ), parIndex, initVal, 
@@ -751,7 +751,7 @@ void OCAModelParameterStore::AddParameters( string& fileName )
 
   }
 
-  if ( fWaterFill ){ fParameters[ GetWaterExtinctionLengthParIndex() - 1 ].SetVary( false ); }
+  if ( fWaterFill ){ fParameters[ GetWaterAttenuationCoefficientParIndex() - 1 ].SetVary( false ); }
 
   fNParameters = (Int_t)fParameters.size();
 
@@ -863,18 +863,18 @@ void OCAModelParameterStore::WriteToOCADBFile( const char* fileName )
   roccVals << "valid_end : [0, 0],\n";
   
   roccVals << "\n";
-  roccVals << "// The extinction lengths [mm^-1] for the inner av, av and water regions.\n";
-  roccVals << "inner_av_extinction_length : " << GetInnerAVExtinctionLengthPar() << ",\n";
-  roccVals << "inner_av_extinction_length_error : " << TMath::Sqrt( fCovarianceMatrix[ GetInnerAVExtinctionLengthParIndex() ][ GetInnerAVExtinctionLengthParIndex() ] ) << ",\n";
+  roccVals << "// The attenuation coefficients [mm^-1] for the inner av, av and water regions.\n";
+  roccVals << "inner_av_attenuation_length : " << GetInnerAVAttenuationCoefficientPar() << ",\n";
+  roccVals << "inner_av_attenuation_length_error : " << TMath::Sqrt( fCovarianceMatrix[ GetInnerAVAttenuationCoefficientParIndex() ][ GetInnerAVAttenuationCoefficientParIndex() ] ) << ",\n";
   roccVals << "\n";
 
-  roccVals << "acrylic_extinction_length : " << GetAVExtinctionLengthPar() << ",\n";
-  roccVals << "acrylic_extinction_length_error : " << TMath::Sqrt( fCovarianceMatrix[ GetAVExtinctionLengthParIndex() ][ GetAVExtinctionLengthParIndex() ] ) << ",\n";
+  roccVals << "acrylic_attenuation_length : " << GetAVAttenuationCoefficientPar() << ",\n";
+  roccVals << "acrylic_attenuation_length_error : " << TMath::Sqrt( fCovarianceMatrix[ GetAVAttenuationCoefficientParIndex() ][ GetAVAttenuationCoefficientParIndex() ] ) << ",\n";
 
   roccVals << "\n";
 
-  roccVals << "water_extinction_length : " << GetWaterExtinctionLengthPar() << ",\n";
-  roccVals << "water_extinction_length_error : " << TMath::Sqrt( fCovarianceMatrix[ GetWaterExtinctionLengthParIndex() ][ GetWaterExtinctionLengthParIndex() ] ) << ",\n";
+  roccVals << "water_attenuation_length : " << GetWaterAttenuationCoefficientPar() << ",\n";
+  roccVals << "water_attenuation_length_error : " << TMath::Sqrt( fCovarianceMatrix[ GetWaterAttenuationCoefficientParIndex() ][ GetWaterAttenuationCoefficientParIndex() ] ) << ",\n";
 
   roccVals << "\n";
   roccVals << "// The laserball distribution mask parameters.\n";
@@ -1294,17 +1294,17 @@ void OCAModelParameterStore::IdentifyBaseVaryingParameters()
   // First set the number of base varying parameters to zero.
   fNBaseVariableParameters = 0;
 
-  // Now check which of the extinction lengths vary in the fit.
+  // Now check which of the attenuation coefficients vary in the fit.
   // For those which vary, add their parameter index to the variable parameter
   // index array.
-  if( fParametersVary[ GetInnerAVExtinctionLengthParIndex() ] ){ 
-    fVariableParameterIndex[ ++fNBaseVariableParameters ] = GetInnerAVExtinctionLengthParIndex();
+  if( fParametersVary[ GetInnerAVAttenuationCoefficientParIndex() ] ){ 
+    fVariableParameterIndex[ ++fNBaseVariableParameters ] = GetInnerAVAttenuationCoefficientParIndex();
   }
-  if( fParametersVary[ GetAVExtinctionLengthParIndex() ] ){ 
-    fVariableParameterIndex[ ++fNBaseVariableParameters ] = GetAVExtinctionLengthParIndex();
+  if( fParametersVary[ GetAVAttenuationCoefficientParIndex() ] ){ 
+    fVariableParameterIndex[ ++fNBaseVariableParameters ] = GetAVAttenuationCoefficientParIndex();
   }
-  if( fParametersVary[ GetWaterExtinctionLengthParIndex() ] ){ 
-    fVariableParameterIndex[ ++fNBaseVariableParameters ] = GetWaterExtinctionLengthParIndex();
+  if( fParametersVary[ GetWaterAttenuationCoefficientParIndex() ] ){ 
+    fVariableParameterIndex[ ++fNBaseVariableParameters ] = GetWaterAttenuationCoefficientParIndex();
   }
 
   // Now check whether the laserball distribution mask is set to vary
@@ -1352,8 +1352,8 @@ void OCAModelParameterStore::CrossCheckParameters()
 
     // In the case of water fill, we will set the outer water
     // region to the value fitted to the first
-    if ( fWaterFill && iPar->GetIndex() == GetWaterExtinctionLengthParIndex() ){
-      iPar->SetFinalValue( fParametersPtr[ GetInnerAVExtinctionLengthParIndex() ] );
+    if ( fWaterFill && iPar->GetIndex() == GetWaterAttenuationCoefficientParIndex() ){
+      iPar->SetFinalValue( fParametersPtr[ GetInnerAVAttenuationCoefficientParIndex() ] );
     }
       
     if ( covValue > 0.0 ){

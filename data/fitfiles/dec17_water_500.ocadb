@@ -118,25 +118,25 @@ timestamp: "",
 
 water_fill: 0,
 
-parameters_list: [ "inner_av_extinction_length", "acrylic_extinction_length", "water_extinction_length", "laserball_intensity_mask", "pmt_angular_response", "laserball_distribution", "laserball_run_normalisation" ],
+parameters_list: [ "inner_av_attenuation_length", "acrylic_attenuation_length", "water_attenuation_length", "laserball_intensity_mask", "pmt_angular_response", "laserball_distribution", "laserball_run_normalisation" ],
 
-// The extinction length of the inner_av volume in mm-1
-inner_av_extinction_length_initial_value: 3.0e-05,
+// The attenuation coefficient of the inner_av volume in mm-1
+inner_av_attenuation_length_initial_value: 3.0e-05,
 
-// Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
-inner_av_extinction_length_vary: 1,
+// Whether or not to vary this attenuation coefficient in the fit ( 0: Keep Fixed, 1: Vary )
+inner_av_attenuation_length_vary: 1,
 
-// The extinction length of the av volume in mm-1
-acrylic_extinction_length_initial_value: 7.14361085556447506e-04,
+// The attenuation coefficient of the av volume in mm-1
+acrylic_attenuation_length_initial_value: 7.14361085556447506e-04,
 
-// Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
-acrylic_extinction_length_vary: 0,
+// Whether or not to vary this attenuation coefficient in the fit ( 0: Keep Fixed, 1: Vary )
+acrylic_attenuation_length_vary: 0,
 
-// The extinction length of the water volume in mm-1
-water_extinction_length_initial_value: 3.0e-05,
+// The attenuation coefficient of the water volume in mm-1
+water_attenuation_length_initial_value: 3.0e-05,
 
-// Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
-water_extinction_length_vary: 1,
+// Whether or not to vary this attenuation coefficient in the fit ( 0: Keep Fixed, 1: Vary )
+water_attenuation_length_vary: 1,
 
 // The number of bins distributed between 0 - 90 degrees for the PMT angular response
 pmt_angular_response_number_of_bins: 90,
