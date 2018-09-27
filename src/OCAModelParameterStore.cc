@@ -184,17 +184,17 @@ Bool_t OCAModelParameterStore::SeedParameters( string& seedFileName,
     if ( iPar->GetIndex() == GetInnerAVAttenuationCoefficientParIndex() ){
       fParameters.push_back( *iPar );
       // (-1) because 'push_back' starts at 0
-      fParameters[ GetInnerAVAttenuationCoefficientParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "inner_av_attenuation_length_vary", "parameter_setup" ) );
+      fParameters[ GetInnerAVAttenuationCoefficientParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "inner_av_attenuation_coefficient_vary", "parameter_setup" ) );
     }
     if ( iPar->GetIndex() == GetAVAttenuationCoefficientParIndex() ){
-      Bool_t varyCond = lDB.GetBoolField( "FITFILE", "acrylic_attenuation_length_vary", "parameter_setup" );
+      Bool_t varyCond = lDB.GetBoolField( "FITFILE", "acrylic_attenuation_coefficient_vary", "parameter_setup" );
       fParameters.push_back( *iPar );
       fParameters[ GetAVAttenuationCoefficientParIndex() - 1 ].SetVary( varyCond );
     }
     if ( iPar->GetIndex() == GetWaterAttenuationCoefficientParIndex() ){
         fParameters.push_back( *iPar );
       // (-1) because 'push_back' starts at 0
-      fParameters[ GetWaterAttenuationCoefficientParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "water_attenuation_length_vary", "parameter_setup" ) );
+      fParameters[ GetWaterAttenuationCoefficientParIndex() - 1 ].SetVary( lDB.GetBoolField( "FITFILE", "water_attenuation_coefficient_vary", "parameter_setup" ) );
     }
   }
   
@@ -518,9 +518,9 @@ void OCAModelParameterStore::AddParameters( string& fileName )
   for ( Int_t iStr = 0; iStr < (Int_t)paramList.size(); iStr++ ){
 
     // Setup for the attenuation coefficient parameters
-    if ( paramList[ iStr ] == "inner_av_attenuation_length"
-         || paramList[ iStr ] == "acrylic_attenuation_length" 
-         || paramList[ iStr ] == "water_attenuation_length" ){
+    if ( paramList[ iStr ] == "inner_av_attenuation_coefficient"
+         || paramList[ iStr ] == "acrylic_attenuation_coefficient" 
+         || paramList[ iStr ] == "water_attenuation_coefficient" ){
 
       // The initial value of the attenuation coefficient
       initVal = lDB.GetDoubleField( "FITFILE", (string)( paramList[ iStr ] + "_initial_value" ), "parameter_setup" );
@@ -541,9 +541,9 @@ void OCAModelParameterStore::AddParameters( string& fileName )
 
       // Set the indices for the three attenuation coefficients in the fit: 1: inner_av region, 2: av region, 3: water region
       Int_t parIndex = 0;
-      if ( paramList[ iStr ] == "inner_av_attenuation_length" ){ parIndex = 1; }
-      else if ( paramList[ iStr ] == "acrylic_attenuation_length" ){ parIndex = 2; }
-      else if ( paramList[ iStr ] == "water_attenuation_length" ){ parIndex = 3; }
+      if ( paramList[ iStr ] == "inner_av_attenuation_coefficient" ){ parIndex = 1; }
+      else if ( paramList[ iStr ] == "acrylic_attenuation_coefficient" ){ parIndex = 2; }
+      else if ( paramList[ iStr ] == "water_attenuation_coefficient" ){ parIndex = 3; }
       else{ cout << "OCAModelParameterStore::OCAModelParameterStore: Error, unknown parameter passed" << endl; }
 
       OCAModelParameter lParameter( (string)( paramList[ iStr ] ), parIndex, initVal, 
@@ -864,17 +864,17 @@ void OCAModelParameterStore::WriteToOCADBFile( const char* fileName )
   
   roccVals << "\n";
   roccVals << "// The attenuation coefficients [mm^-1] for the inner av, av and water regions.\n";
-  roccVals << "inner_av_attenuation_length : " << GetInnerAVAttenuationCoefficientPar() << ",\n";
-  roccVals << "inner_av_attenuation_length_error : " << TMath::Sqrt( fCovarianceMatrix[ GetInnerAVAttenuationCoefficientParIndex() ][ GetInnerAVAttenuationCoefficientParIndex() ] ) << ",\n";
+  roccVals << "inner_av_attenuation_coefficient : " << GetInnerAVAttenuationCoefficientPar() << ",\n";
+  roccVals << "inner_av_attenuation_coefficient_error : " << TMath::Sqrt( fCovarianceMatrix[ GetInnerAVAttenuationCoefficientParIndex() ][ GetInnerAVAttenuationCoefficientParIndex() ] ) << ",\n";
   roccVals << "\n";
 
-  roccVals << "acrylic_attenuation_length : " << GetAVAttenuationCoefficientPar() << ",\n";
-  roccVals << "acrylic_attenuation_length_error : " << TMath::Sqrt( fCovarianceMatrix[ GetAVAttenuationCoefficientParIndex() ][ GetAVAttenuationCoefficientParIndex() ] ) << ",\n";
+  roccVals << "acrylic_attenuation_coefficient : " << GetAVAttenuationCoefficientPar() << ",\n";
+  roccVals << "acrylic_attenuation_coefficient_error : " << TMath::Sqrt( fCovarianceMatrix[ GetAVAttenuationCoefficientParIndex() ][ GetAVAttenuationCoefficientParIndex() ] ) << ",\n";
 
   roccVals << "\n";
 
-  roccVals << "water_attenuation_length : " << GetWaterAttenuationCoefficientPar() << ",\n";
-  roccVals << "water_attenuation_length_error : " << TMath::Sqrt( fCovarianceMatrix[ GetWaterAttenuationCoefficientParIndex() ][ GetWaterAttenuationCoefficientParIndex() ] ) << ",\n";
+  roccVals << "water_attenuation_coefficient : " << GetWaterAttenuationCoefficientPar() << ",\n";
+  roccVals << "water_attenuation_coefficient_error : " << TMath::Sqrt( fCovarianceMatrix[ GetWaterAttenuationCoefficientParIndex() ][ GetWaterAttenuationCoefficientParIndex() ] ) << ",\n";
 
   roccVals << "\n";
   roccVals << "// The laserball distribution mask parameters.\n";

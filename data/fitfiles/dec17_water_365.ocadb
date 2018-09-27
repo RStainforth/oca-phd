@@ -117,25 +117,25 @@ timestamp: "",
 
 water_fill: 0,
 
-parameters_list: [ "inner_av_attenuation_length", "acrylic_attenuation_length", "water_attenuation_length", "laserball_intensity_mask", "pmt_angular_response", "laserball_distribution", "laserball_run_normalisation" ],
+parameters_list: [ "inner_av_attenuation_coefficient", "acrylic_attenuation_coefficient", "water_attenuation_coefficient", "laserball_intensity_mask", "pmt_angular_response", "laserball_distribution", "laserball_run_normalisation" ],
 
 // The attenuation coefficient of the inner_av volume in mm-1
-inner_av_attenuation_length_initial_value: 3.0e-05,
+inner_av_attenuation_coefficient_initial_value: 3.0e-05,
 
 // Whether or not to vary this attenuation coefficient in the fit ( 0: Keep Fixed, 1: Vary )
-inner_av_attenuation_length_vary: 1,
+inner_av_attenuation_coefficient_vary: 1,
 
 // The attenuation coefficient of the av volume in mm-1
-acrylic_attenuation_length_initial_value: 2.06389417871832848e-03,
+acrylic_attenuation_coefficient_initial_value: 2.06389417871832848e-03,
 
 // Whether or not to vary this attenuation coefficient in the fit ( 0: Keep Fixed, 1: Vary )
-acrylic_attenuation_length_vary: 0,
+acrylic_attenuation_coefficient_vary: 0,
 
 // The attenuation coefficient of the water volume in mm-1
-water_attenuation_length_initial_value: 3.0e-05,
+water_attenuation_coefficient_initial_value: 3.0e-05,
 
 // Whether or not to vary this attenuation coefficient in the fit ( 0: Keep Fixed, 1: Vary )
-water_attenuation_length_vary: 1,
+water_attenuation_coefficient_vary: 1,
 
 // The number of bins distributed between 0 - 90 degrees for the PMT angular response
 pmt_angular_response_number_of_bins: 90,
