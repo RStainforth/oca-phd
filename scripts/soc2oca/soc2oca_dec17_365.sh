@@ -45,7 +45,7 @@
 
 # After using this script the OCARun files will be found in $OCA_SNOPLUS_DATA/data/runs/ocarun/dec17/water
 
-# There should be 30 runs in this dataset
+# There should be 33 runs in this dataset
 soc2oca -r 107708 -c 107797 -R 107696 -C 107789 -l 44 -d dec17/water -s dec17_365.ocadb -g water
 soc2oca -r 107710 -c 107708 -R 107718 -C 107696 -l 44 -d dec17/water -s dec17_365.ocadb -g water
 soc2oca -r 107732 -c 107708 -R 107724 -C 107696 -l 44 -d dec17/water -s dec17_365.ocadb -g water
@@ -78,7 +78,11 @@ soc2oca -r 107939 -c 107708 -R 107950 -C 107696 -l 44 -d dec17/water -s dec17_36
 soc2oca -r 108121 -c 107708 -R 108113 -C 107696 -l 44 -d dec17/water -s dec17_365.ocadb -g water
 
 soc2oca -r 108098 -c 107708 -R 108106 -C 107696 -l 44 -d dec17/water -s dec17_365.ocadb -g water
+soc2oca -r 108048 -c 107708 -R 108040 -C 107696 -l 44 -d dec17/water -s dec17_365.ocadb -g water
+soc2oca -r 108123 -c 107708 -R 108131 -C 107696 -l 44 -d dec17/water -s dec17_365.ocadb -g water
+soc2oca -r 108022 -c 107708 -R 108030 -C 107696 -l 44 -d dec17/water -s dec17_365.ocadb -g water
 soc2oca -r 107970 -c 107708 -R 107962 -C 107696 -l 44 -d dec17/water -s dec17_365.ocadb -g water
+
 soc2oca -r 107972 -c 107708 -R 107980 -C 107696 -l 44 -d dec17/water -s dec17_365.ocadb -g water
 soc2oca -r 107996 -c 107708 -R 108005 -C 107696 -l 44 -d dec17/water -s dec17_365.ocadb -g water
 soc2oca -r 107994 -c 107708 -R 107986 -C 107696 -l 44 -d dec17/water -s dec17_365.ocadb -g water
