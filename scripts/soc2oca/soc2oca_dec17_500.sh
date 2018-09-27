@@ -45,7 +45,7 @@
 
 # After using this script the OCARun files will be found in $OCA_SNOPLUS_DATA/data/runs/ocarun/dec17/water
 
-# There should be 38 runs in this dataset
+# There should be 34 runs in this dataset
 soc2oca -r 107693 -c 107694 -R 107696 -C 107789 -l 44 -d dec17/water -s dec17_500.ocadb -g water
 soc2oca -r 107694 -c 107693 -R 107696 -C 107789 -l 44 -d dec17/water -s dec17_500.ocadb -g water
 soc2oca -r 107720 -c 107693 -R 107718 -C 107696 -l 44 -d dec17/water -s dec17_500.ocadb -g water
@@ -82,14 +82,9 @@ soc2oca -r 107925 -c 107693 -R 107954 -C 107696 -l 44 -d dec17/water -s dec17_50
 soc2oca -r 107956 -c 107693 -R 107954 -C 107696 -l 44 -d dec17/water -s dec17_500.ocadb -g water
 soc2oca -r 107936 -c 107693 -R 107950 -C 107696 -l 44 -d dec17/water -s dec17_500.ocadb -g water
 soc2oca -r 108111 -c 107693 -R 108113 -C 107696 -l 44 -d dec17/water -s dec17_500.ocadb -g water
-soc2oca -r 108109 -c 107693 -R 108106 -C 107696 -l 44 -d dec17/water -s dec17_500.ocadb -g water
-
-soc2oca -r 108038 -c 107693 -R 108040 -C 107696 -l 44 -d dec17/water -s dec17_500.ocadb -g water
-soc2oca -r 108140 -c 107693 -R 108131 -C 107696 -l 44 -d dec17/water -s dec17_500.ocadb -g water
-soc2oca -r 108032 -c 107693 -R 108030 -C 107696 -l 44 -d dec17/water -s dec17_500.ocadb -g water
 soc2oca -r 107960 -c 107693 -R 107962 -C 107696 -l 44 -d dec17/water -s dec17_500.ocadb -g water
-soc2oca -r 107982 -c 107693 -R 107980 -C 107696 -l 44 -d dec17/water -s dec17_500.ocadb -g water
 
+soc2oca -r 107982 -c 107693 -R 107980 -C 107696 -l 44 -d dec17/water -s dec17_500.ocadb -g water
 soc2oca -r 108007 -c 107693 -R 108005 -C 107696 -l 44 -d dec17/water -s dec17_500.ocadb -g water
 soc2oca -r 107984 -c 107693 -R 107986 -C 107696 -l 44 -d dec17/water -s dec17_500.ocadb -g water
 # The next run does not have a wavelength run, therefore it will use it's own fitted position
