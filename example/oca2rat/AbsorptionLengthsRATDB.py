@@ -15,7 +15,7 @@
 ### AUTHOR: Ana Sofia Inacio <ainacio@lip.pt>
 ###
 ### REVISION HISTORY:
-###     12/2016 : Ana Inacio - First Revision, new file.
+###     12/2016 : Ana Inacio - First Revision, new file.   
 ###
 ### DETAIL: To use this macro, type:
 ###         
@@ -37,7 +37,7 @@ print "**** Calculating Absorption Length ****"
 print "***************************************"
 
 # Gets the Rayleigh Scattering values from OPTICS.ratdb
-rat_file = "/exper-sw/sno/snoplus/snoing/install/rat-5.2.2/data/OPTICS.ratdb"
+rat_file = "rat/data/OPTICS.ratdb"
 rat = open(rat_file,"r")
 print "Opening file ", rat_file
 
@@ -85,26 +85,24 @@ for item in rs_rat:
 for item in rat_abs:
   rat_absLength.append(float(item))
 
-# Rayleigh Scattering Lengths are linearly interpolated in function of wavelength
+# Rayleigh Scattering Lengths are linearly interpolated as a function of wavelength
 f_rs = interp1d(rs_wavelength, rsLength)
 
 #######################################################################################################
 #######################################################################################################
 #######################################################################################################
 
-# Opens the .ocadb files from OCA, gets the inner AV attenuation coefficients and calculates the attenuation lengths (in mm) 
+# Opens the output files from OCA, gets the inner AV attenuation coefficients (in mm-1)
 att_coeff = []
 coeff_err = []
 
-att_length = []
-att_length_error = []
+wl = []
 
-# argv is your commandline arguments
 for n in sys.argv[1:]:
   print("Opening file "+n) 
   par = "inner_av_extinction_length : "
   par_err = "inner_av_extinction_length_error : "
-  file_name = open("/lstore/sno/ainacio/oca-oca-snoplus/output/fits/"+n+".ocadb","r")
+  file_name = open("oca/output/fits/"+n+".ocadb","r")
   for line in file_name:
     if par in line:
       param = line[line.find(par)+len(par):]
@@ -116,116 +114,53 @@ for n in sys.argv[1:]:
       coeff_err.append(float(param))
     
   file_name.close()
+  wl.append(float(n[-3:]))
 
-syst = [1.98632e-6,2.06508e-6,2.09412e-6,2.06529e-6,2.14077e-6]
+k = 0.82
 
-for i, item in enumerate(att_coeff):
-  lgth = 1/att_coeff[i]
-  att_length.append(float(lgth))
-
-  err = lgth*lgth*(coeff_err[i]+syst[i])
-  att_length_error.append(float(err))
-
-#######################################################################################################
-#######################################################################################################
-#######################################################################################################
-
-# Calculation of the RAT absorption lengths
 abs_length = []
+abs_coeff = []
 abs_length_error = []
 
-lb_wl = [337.0, 369.0, 385.0, 420.0, 505.0]
-
 j = 0
-for item in lb_wl:
-  abs_length.append(float(att_length[j]*f_rs(item)/(f_rs(item)-0.77*att_length[j])))
+for item in wl:
+  abs_length.append(float(1./(att_coeff[j]-k*(1./float(f_rs(item))))))
 
-  err = (att_length_error[j]*f_rs(item)/(f_rs(item)-0.77*att_length[j])) + (att_length_error[j]*att_length[j]*f_rs(item)/((f_rs(item)-0.77*att_length[j])*(f_rs(item)-0.77*att_length[j])))
-
-  abs_length_error.append(float(err))
+  abs_length_error.append(float( coeff_err[j] / ( (att_coeff[j]-k*(1./float(f_rs(item))))*(att_coeff[j]-k*(1./float(f_rs(item)))) ) ))
 
   j = j + 1
-  
-#print abs_length, abs_length_error
-
-rat_att = []
-
-for k, item in enumerate(rs_wavelength):
-  rat_att.append(float(rsLength[k]*rat_absLength[k]/(rsLength[k]+rat_absLength[k])))
 
 #######################################################################################################
 #######################################################################################################
 #######################################################################################################
-
-x = [337.0, 369.0, 385.0, 420.0, 505.0]
 
 # Plotting the results
-plt.errorbar(lb_wl, att_length,yerr=att_length_error, marker='o',color='c',markersize=5,linestyle="-", label = 'Attenuation Length OCA')
+plt.errorbar(wl, abs_length,yerr=abs_length_error, marker='o',color='r',markersize=10,linestyle="--", label = 'OCA Absorption Length')
 
-plt.plot(rs_wavelength, rsLength, marker='.', linestyle="-", label = 'RScattering Length RAT',markeredgecolor='none')
-
-plt.errorbar(lb_wl, abs_length,yerr=abs_length_error, marker='o',color='r',markersize=5,linestyle="-", label = 'Calculated Absorption Length')
-
-plt.plot(rs_wavelength,rat_absLength,"r+", label = "RAT Absorption Length")
-
-plt.plot(rs_wavelength,rat_att,"ko", label = "RAT Attenuation Length")
+plt.plot(rs_wavelength, rsLength, "m+",markersize=10, label = 'RAT RScattering Length')
+plt.plot(rs_wavelength, rat_absLength,"r+",markersize=10, label = "RAT Absorption Length")
 
 plt.xlabel('Wavelength [nm]')
 plt.xlim(200, 565)
 plt.ylabel('Length [mm]')
 plt.ylim(0, 4.5e5)
 
-plt.title("Inner AV filled with water")
-
+plt.title("Internal Water")
 # Make legend
 plt.legend(loc='upper left', fancybox=True, numpoints=1)
 ax = plt.gca()
 ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
-
-plt.show()
-
-
-#######################################################################################################
-#######################################################################################################
-#######################################################################################################
-
-# Plotting the results
-plt.errorbar(lb_wl, att_length,yerr=att_length_error, marker='o',color='c',markersize=5,linestyle="-", label = 'Attenuation Length OCA')
-
-plt.plot(rs_wavelength, rsLength, marker='.', linestyle="-", label = 'RScattering Length RAT',markeredgecolor='none')
-
-plt.errorbar(lb_wl, abs_length,yerr=abs_length_error, marker='o',color='r',markersize=5,linestyle="-", label = 'Calculated Absorption Length')
-
-plt.plot(rs_wavelength,rat_absLength,"r+", label = "RAT Absorption Length")
-
-plt.plot(rs_wavelength,rat_att,"ko", label = "RAT Attenuation Length")
-
-plt.xlabel('Wavelength [nm]')
-plt.xlim(200, 565)
-plt.ylabel('Length [mm]')
-plt.ylim(0, 1.e5)
-
-plt.title("Inner AV filled with water (Zoomed)")
-
-# Make legend
-plt.legend(loc='upper left', fancybox=True, numpoints=1)
-ax = plt.gca()
-ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
-
 plt.show()
 
 #######################################################################################################
 #######################################################################################################
 #######################################################################################################
 
-plt.errorbar(lb_wl, abs_length,yerr=abs_length_error, marker='o',color='r',markersize=5,linestyle="-", label = 'Calculated Absorption Length')
+plt.errorbar(wl, abs_length,yerr=abs_length_error, marker='o',color='r',markersize=5,linestyle="-", label = 'Calculated Absorption Length')
 
 f_rat = interp1d(rs_wavelength, rat_absLength)
 xnew = np.arange(335,510,1)
 plt.plot(xnew,f_rat(xnew),"r+", label = "RAT Absorption Length")
-
-plt.errorbar(lb_wl, att_length,yerr=att_length_error, marker='o',color='c',markersize=5,linestyle="-", label = 'Attenuation Length OCA')
-plt.plot(rs_wavelength,rat_att,"ko", label = "RAT Attenuation Length")
 
 plt.xlabel('Wavelength [nm]')
 plt.ylabel('Length [mm]')
@@ -233,7 +168,6 @@ plt.legend(loc='upper left', fancybox=True, numpoints=1)
 ax = plt.gca()
 ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
 plt.title("Calculated Absorption Length and RAT Absorption Length")
-
 plt.show()
 
 #######################################################################################################
@@ -243,90 +177,26 @@ plt.show()
 ratio = []
 ratio_err = []
 
-for i,item in enumerate(lb_wl): 
+for i,item in enumerate(wl): 
   ratio.append(float(abs_length[i]/f_rat(item)))
   ratio_err.append(float(abs_length_error[i]/f_rat(item)))
 
-plt.errorbar(lb_wl, ratio,yerr=ratio_err, marker='o',color='r',markersize=5,linestyle="-", label = 'Calculated/RAT')
+f_iterpolation = interp1d(wl, ratio)
+xx = np.arange(337,500.01,0.01)
+print xx
+f_iterpo = []
+for i,item in enumerate(xx):
+  f_iterpo.append(float(f_iterpolation(item)))
+plt.errorbar(wl, ratio,yerr=ratio_err, marker='o',color='r',markersize=10,linestyle="-", label = 'Measured/RAT')
+plt.plot(xx,f_iterpo,linestyle="-",color="k")
 plt.xlabel('Wavelength [nm]')
-plt.ylabel('Calc/RAT')
+plt.ylabel('Measured/RAT')
 plt.legend(loc='upper left', fancybox=True, numpoints=1)
 ax = plt.gca()
-ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
-plt.title("Calculated Absorption Length/RAT Absorption Length")
-
+ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y')
+plt.title("Measured Absorption Length/RAT Absorption Length (Linear Interpolation)")
+plt.xlim(330,505)
 plt.show()
-
-
-#######################################################################################################
-#######################################################################################################
-#######################################################################################################
-
-# Fitting (linear) the ration measured absorption/RAT absorption
-
-f1 = []
-f1 = np.polyfit(lb_wl, ratio, 1)
- 
-xx = np.arange(337,505,1)
-function1 = f1[0]*xx + f1[1]
-
-plt.errorbar(lb_wl, ratio,yerr=ratio_err, marker='o',color='r',markersize=5,linestyle="-", label = 'Calculated/RAT')
-plt.plot(xx,function1,linestyle="-",color="k")
-plt.xlabel('Wavelength [nm]')
-plt.ylabel('Calc/RAT')
-plt.legend(loc='upper left', fancybox=True, numpoints=1)
-ax = plt.gca()
-ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
-plt.title("Calculated Absorption Length/RAT Absorption Length (Linear Fit)")
-
-plt.show()
-
-#######################################################################################################
-#######################################################################################################
-#######################################################################################################
-
-# Fitting (quadratic) the ration measured absorption/RAT absorption
-
-f2 = []
-f2 = np.polyfit(lb_wl, ratio, 2)
- 
-xx = np.arange(337,505,1)
-function2 = f2[0]*xx**2 + f2[1]*xx + f2[2]
-
-plt.errorbar(lb_wl, ratio,yerr=ratio_err, marker='o',color='r',markersize=5,linestyle="-", label = 'Calculated/RAT')
-plt.plot(xx,function2,linestyle="-",color="k")
-plt.xlabel('Wavelength [nm]')
-plt.ylabel('Calc/RAT')
-plt.legend(loc='upper left', fancybox=True, numpoints=1)
-ax = plt.gca()
-ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
-plt.title("Calculated Absorption Length/RAT Absorption Length (PolyFit Degree 2)")
-
-plt.show()
-
-#######################################################################################################
-#######################################################################################################
-#######################################################################################################
-
-# Fitting (cubic) the ration measured absorption/RAT absorption
-
-f3 = []
-f3 = np.polyfit(lb_wl, ratio, 3)
- 
-xx = np.arange(337,505,1)
-function3 = f3[0]*xx**3 + f3[1]*xx**2 + f3[2]*xx + f3[3]
-
-plt.errorbar(lb_wl, ratio,yerr=ratio_err, marker='o',color='r',markersize=5,linestyle="-", label = 'Calculated/RAT')
-plt.plot(xx,function3,linestyle="-",color="k")
-plt.xlabel('Wavelength [nm]')
-plt.ylabel('Calc/RAT')
-plt.legend(loc='upper left', fancybox=True, numpoints=1)
-ax = plt.gca()
-ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
-plt.title("Calculated Absorption Length/RAT Absorption Length (PolyFit Degree 3)")
-
-plt.show()
-
 
 #######################################################################################################
 #######################################################################################################
@@ -334,51 +204,31 @@ plt.show()
 
 # Scaling the RAT parameters according to the measurements (multiplying by the fit functions)
 
-x_axis = np.arange(337.,506.,1)
+x_axis = np.arange(337.,501.,1)
 x_axis2 = np.arange(200.,801.,20)
 
-print x_axis2
+ff = []
 
-function1 = f1[0]*x_axis + f1[1]
-function2 = f2[0]*x_axis**2 + f2[1]*x_axis + f2[2]
-function3 = f3[0]*x_axis**3 + f3[1]*x_axis**2 + f3[2]*x_axis + f3[3]
-
-ff1 = []
-ff2 = []
-ff3 = []
-
-function1 = function1.tolist()
-function2 = function2.tolist()
-function3 = function3.tolist()
-
-#print x_axis
 for i,item in enumerate(x_axis2):
-  if(item < 337.):
-    ff1.append(float(rat_absLength[i]*(f1[0]*337. + f1[1])))
-    ff2.append(float(rat_absLength[i]*(f2[0]*337**2 + f2[1]*337 + f2[2])))
-    ff3.append(float(rat_absLength[i]*(f3[0]*337**3 + f3[1]*337**2 + f3[2]*337 + f3[3])))
-  elif(item > 505.):
-    ff1.append(float(rat_absLength[i]*(f1[0]*505. + f1[1])))
-    ff2.append(float(rat_absLength[i]*(f2[0]*505**2 + f2[1]*505 + f2[2])))
-    ff3.append(float(rat_absLength[i]*(f3[0]*505**3 + f3[1]*505**2 + f3[2]*505 + f3[3])))
+  if(item <= 337.):
+    ff.append(float(rat_absLength[i]*f_iterpolation(337)))
+  elif(item >= 500.):
+    ff.append(float(rat_absLength[i]*f_iterpolation(500)))
   else:
-    ff1.append(float(rat_absLength[i]*function1[i]))
-    ff2.append(float(rat_absLength[i]*function2[i]))
-    ff3.append(float(rat_absLength[i]*function3[i]))
+    ff.append(float(rat_absLength[i]*f_iterpolation(item)))
 
-plt.plot(x_axis2,ff1, label = "Linear")
-plt.plot(x_axis2,ff2, label = "Poly2")
-plt.plot(x_axis2,ff3, label = "Poly3")
+plt.plot(x_axis2,ff,marker='o',color='b',markersize=10,linestyle='None', label = "New RAT Absorption from Linear Interpolation")
 
-plt.plot(x_axis2,f_rat(x_axis2),"k+",markersize=10, label = "RAT Absorption Length")
-
+plt.plot(x_axis2,f_rat(x_axis2),"k+",markersize=10,linestyle='None', label = "OLD RAT Absorption Length")
+plt.errorbar(wl, abs_length,yerr=abs_length_error, marker='o',color='r',markersize=10,linestyle='None', label = 'NEW Absorption Length')
 plt.xlabel('Wavelength [nm]')
 plt.ylabel('Length [mm]')
 plt.legend(loc='upper left', fancybox=True, numpoints=1)
 ax = plt.gca()
 ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y') 
 plt.title("Scaled RAT Absorption Lengths")
-
+plt.xlim(150,850)
+plt.ylim(0.0, 3.3e5)
 plt.show()
 
 #######################################################################################################
@@ -410,7 +260,7 @@ output_file.write("]\n")
 output_file.write("ABSLENGTH0_value2: [")
 init = 200;
 for i in range(31):
-  output_file.write("%.1f, " % ff1[i])
+  output_file.write("%.1f, " % ff[i])
 output_file.write("]\n")
 
 output_file.write("ABSLENGTH_SCALING: [1.0],\n")
