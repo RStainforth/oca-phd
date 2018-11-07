@@ -49,6 +49,7 @@
 ///            the off-axis and central runs.
 ///            -d [MMYY] : The name of the dataset directory in the ${OCA_SNOPLUS_ROOT}/data/runs/soc directory
 ///            -s [Systematic-File-Name] : Name of systematic file in the ${OCA_SNOPLUS_ROOT}/data/systematics directory
+///            -g [water/scintillator/te-loaded] : geometry to be used
 ///            -h : Display help for this executable 
 ///
 ///                     Example Usage (at command line):
@@ -200,44 +201,24 @@ int main( int argc, char** argv ){
   // Need to make sure we load the PMT positions for either a SNO+ or SNO
   // data set (some PMTs have been moved/removed/repaired/thrown away from
   // SNO to SNO+).
-  DB* db = DB::Get();
-  string data = getenv("GLG4DATA");
-  Log::Assert( data != "", "DSReader::BeginOfRun: GLG4DATA is empty, where is the data?" );
+  RAT::DB* db = RAT::DB::Get();
   db->LoadDefaults();
 
   if ( geomOpt == "sno" ){
-    db->Load( ( data + "/geo/sno_d2o.geo" ).c_str() );
-    db->Load( ( data + "/pmt/snoman.ratdb" ).c_str() );
     db->SetS( "DETECTOR", "geo_file", "geo/sno_d2o.geo" );
     db->SetS( "DETECTOR", "pmt_info_file", "/pmt/snoman.ratdb" );
   }
-  else if ( geomOpt == "labppo" ){
-    db->Load( ( data + "/geo/snoplus.geo" ).c_str() );
-    db->Load( ( data + "/pmt/airfill2.ratdb" ).c_str() );
-    db->SetS( "DETECTOR", "geo_file", "geo/snoplus.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/airfill2.ratdb" );
-    db->SetS( "GEO", "inner_av", "material", "labppo_scintillator" );
-  }
   else if ( geomOpt == "water" ){
-    db->Load( ( data + "/geo/snoplus.geo" ).c_str() );
-    db->Load( ( data + "/pmt/airfill2.ratdb" ).c_str() );
-    db->SetS( "DETECTOR", "geo_file", "geo/snoplus.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/airfill2.ratdb" );
-    db->SetS( "GEO", "inner_av", "material", "lightwater_sno" );
+    db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative_water.geo" );
+    db->SetS( "DETECTOR", "pmt_info_file", "PMTINFO_sept2017.ratdb" );
   }
-  else if ( geomOpt == "labppote0p3perylene" ){
-    db->Load( ( data + "/geo/snoplus.geo" ).c_str() );
-    db->Load( ( data + "/pmt/airfill2.ratdb" ).c_str() );
-    db->SetS( "DETECTOR", "geo_file", "geo/snoplus.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/airfill2.ratdb" );
-    db->SetS( "GEO", "inner_av", "material", "te_0p3_labppo_scintillator_Perylene_Feb2015" );
+  else if ( geomOpt == "scintillator" ){
+    db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative.geo" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_sept2018.ratdb" );
   }
-  else if ( geomOpt == "labppote0p3bismsb" ){
-    db->Load( ( data + "/geo/snoplus.geo" ).c_str() );
-    db->Load( ( data + "/pmt/airfill2.ratdb" ).c_str() );
-    db->SetS( "DETECTOR", "geo_file", "geo/snoplus.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/airfill2.ratdb" );
-    db->SetS( "GEO", "inner_av", "material", "te_0p3_labppo_scintillator_bisMSB_Feb2015" );
+  else if ( geomOpt == "te-loaded" ){
+    db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative_te.geo" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_sept2018.ratdb" );
   }
   else{
     cout << "Unknown geometry option: " << geomOpt << ". Abort." << endl;

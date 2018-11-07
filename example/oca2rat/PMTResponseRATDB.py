@@ -32,24 +32,18 @@ print "***************************************"
 print "****      PMT Angular Response     ****"
 print "***************************************"
 
-matrix = np.zeros(shape=(5,90))
-matrix_err = np.zeros(shape=(5,90))
+matrix = np.zeros(shape=(6,90))
+matrix_err = np.zeros(shape=(6,90))
 
 i = 0
+
+wl = []
 
 # Opening the .ocadb files and extracting the relevant informations
 # argv is the commandline arguments, argv[0] is this macro
 for n in sys.argv[1:]:
-  if n == "oct15_watersin_505":
-    data_set = "MC 505 nm"
-  if n == "oct15_watersin_420":
-    data_set = "MC 420 nm"
-  if n == "oct15_watersin_385":
-    data_set = "MC 385 nm"
-  if n == "oct15_watersin_369":
-    data_set = "MC 369 nm"
-  if n == "oct15_watersin_337":
-    data_set = "MC 337 nm"
+  data_set = str(n[-3]+" nm")
+  wl.append(float(n[-3]))
 
   par_list = []
   err_list = []
@@ -57,7 +51,7 @@ for n in sys.argv[1:]:
   print(n) #print out the filename we are currently processing
   par = "pmt_angular_response : [ "
   par_err = "pmt_angular_response_errors : [ "
-  f = open("/lstore/sno/ainacio/oca-oca-snoplus/output/fits/"+n+".ocadb","r")
+  f = open("oca/output/fits/"+n+".ocadb","r")
 
   for line in f:
     if par in line:
@@ -84,10 +78,8 @@ for n in sys.argv[1:]:
 
   i = i + 1
 
-  X = list(range(90))
-
-  # Plots the PMT Angular response in function of the incidence angle for each laserball wavelength
-  plt.errorbar(X, pmt_coeffs,yerr=coeff_err, marker='.',linestyle="None",label=data_set)
+  # Plots the PMT Angular response as a function of the incidence angle for each laserball wavelength
+  plt.errorbar(list(range(90)), pmt_coeffs,yerr=coeff_err, marker='.',linestyle="None",label=data_set)
 
 plt.xlabel("Incident Angle [degrees]")
 plt.ylabel("Relative PMT Angular Response (arb. units)")
@@ -98,7 +90,7 @@ plt.xlim([0.99,46])
 plt.show()
 
 
-# Plots the PMT Angular response in function of the incidence angle for each laserball wavelength in a color matrix
+# Plots the PMT Angular response as a function of the incidence angle for each laserball wavelength in a color matrix
 fig = plt.figure()
 ax = fig.add_subplot(111)
 cax = ax.imshow(matrix, interpolation='nearest', cmap="jet")
@@ -108,11 +100,10 @@ ax.xaxis.set_ticks_position('bottom')
 ax.set_title("PMT Angular Response")
 ax.set_aspect('auto')
 plt.xlabel("Incident Angle [degrees]")
-plt.yticks( arange(5), ('505', '420', '385', '369', '337') )
+plt.yticks( arange(len(wl)), (wl[::-1]) )
 plt.xticks(np.arange(0,90,10))
 plt.show()
 
-#relative_response = np.zeros(shape=(50,45))
 relative_response = np.zeros(shape=(50,90))
 
 # Gets the values of PMTR for all wavelengths, for each incidence angle bin, and linearly interpolates the data
@@ -120,34 +111,43 @@ for j in range(90):
   thetaBin = []
   thetaBin_err = []
 
-  for i in range(5):
+  for i in range(len(wl)):
     thetaBin.append(float(matrix[i,j]))
     thetaBin_err.append(float(matrix_err[i,j]))
 
   string = ("Incident Angle %d" % (j))
 
-  xAxis = [337.0,369.0,385.0,420.0,505.0]
-  xx = np.arange(337,506,1)
+  xx = np.arange(337,500,1)
 
-  function = interp1d(xAxis, thetaBin)
+  function = interp1d(wl, thetaBin)
+
+  if j == 40:
+      plt.plot(wl, thetaBin, marker='.',linestyle="None",label="Measured PMT Angular Response")
+      plt.plot(xx, function(xx),label="Interpolation")
+
+      plt.xlabel("Wavelength [nm]")
+      plt.ylabel("Relative PMT Angular Response (arb. units)")
+      plt.title("Measured PMT Angular Response at incidence angle 40 degrees")
+      plt.legend(loc='upper left', fancybox=True, numpoints=1, prop={'size':12})
+      plt.ylim(1, 1.15)
+      plt.xlim([330,510])
+      plt.show()
 
   # For the extrapolation outside the laserball wavelength range, it uses the last angular response obtained for each side
   # i.e., for wavelengths smaller/larger that 337/505 nm it uses the angular response measured for 337/505 nm.
-  num = 0
   for i in range(50):
-    if (220 + i*10) < 337:
-      relative_response[i,j] = function(337)
-    if (220 + i*10) > 505:
-      relative_response[i,j] = function(505)
-    elif ((220 + i*10) > 337) and ((220 + i*10) < 505):
-      relative_response[i,j] = function(340+num*10) 
-      num = num + 1
+    if (220 + i*10) < wl[0]:
+      relative_response[i,j] = function(wl[0])
+    if (220 + i*10) > wl[-1]:
+      relative_response[i,j] = function(wl[-1])
+    elif ((220 + i*10) > wl[0]) and ((220 + i*10) <= wl[-1]):
+      relative_response[i,j] = function(220 + i*10) 
 
 # Plots the interpolated/extrapolated PMT Angular responses in function of the incidence angle for 
 # each laserball wavelength in a color matrix      
 fig = plt.figure()
 ax = fig.add_subplot(111)
-cax = ax.imshow(relative_response, interpolation='nearest', cmap="jet")
+cax = ax.imshow(relative_response, interpolation='nearest')
 # Add colorbar, make sure to specify tick locations to match desired ticklabels
 cbar = fig.colorbar(cax)
 ax.matshow(relative_response,extent=[0,90,0,50])
@@ -159,13 +159,10 @@ plt.yticks( arange(50), ('710',' ','690',' ','670',' ','650',' ','630',' ','610'
 plt.xticks(np.arange(0,90,10))
 plt.show()
 
-ff1 = []
+ff = []
 for i in range(50):
   for j in range(90):
-    ff1.append(float(relative_response[i,j]))
-
-plt.plot(range(4500), ff1)
-plt.show()
+    ff.append(float(relative_response[i,j]))
 
 # Creates the output file and saves the parameters
 output_file = open('pmtresponses_snoplus.ratdb', 'w')
@@ -181,8 +178,8 @@ output_file.write("comment: "",\n")
 output_file.write("timestamp: "",\n")
 
 output_file.write("pmt_relative_response: [")
-for i in range(855):
-  output_file.write("%.4f, " % ff1[i])
+for i in range(len(ff)):
+  output_file.write("%.4f, " % ff[i])
 output_file.write("]\n")
 
 output_file.write("PROPERTY_LIST: [\"pmt_relative_response\"]\n")
