@@ -437,7 +437,8 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
     nUniquePMTs[ iPMT ] = 0;
 
     for ( Int_t iRUN = 0; iRUN < 40; iRUN++ ){
-      rawEffRun[ iRUN ][ iPMT ] = 0.0;
+      // Initialization with unphysical value
+      rawEffRun[ iRUN ][ iPMT ] = -1.0;
     }
   }
 
