@@ -437,7 +437,8 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
     nUniquePMTs[ iPMT ] = 0;
 
     for ( Int_t iRUN = 0; iRUN < 40; iRUN++ ){
-      rawEffRun[ iRUN ][ iPMT ] = 0.0;
+      // Initialization with unphysical value
+      rawEffRun[ iRUN ][ iPMT ] = -1.0;
     }
   }
 
@@ -535,7 +536,7 @@ void CalculatePMTToPMTVariability( OCAPMTStore* finalDataStore,
     Float_t statVal = TMath::Sqrt( 1.0 / iDP->GetPromptPeakCounts() );
     Float_t histoVal = varVal;
 
-    if ( histoVal > 0.0 && !std::isnan( pmtEff ) && !std::isinf( pmtEff ) && incAngle < 91 ){
+    if ( histoVal > 0.0 && !std::isnan( pmtEff ) && !std::isinf( pmtEff ) && incAngle >= 0 && incAngle < 90 ){
       effHistos[ incAngle ].Fill( histoVal );
       iDP->SetRunEfficiency( pmtEff );
       iDP->SetScanEfficiency( rawEffAvg[ iDP->GetID() ] );
