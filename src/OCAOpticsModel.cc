@@ -367,17 +367,17 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
   Float_t angRespRatio = 1.0;
   Float_t intensityRatio = 1.0;
 
-  // Obtain the current values for the extinction lengths in the
-  // inner AV, AV and water regions. The extinction lengths
+  // Obtain the current values for the attenuation coefficients in the
+  // inner AV, AV and water regions. The attenuation coefficients
   // are stored in inverse lengths, mm^-1.
-  Float_t dInnerAVExtinction = parPtr->GetInnerAVExtinctionLengthPar();
-  Float_t dAVExtinction =  parPtr->GetAVExtinctionLengthPar();
-  Float_t dWaterExtinction = parPtr->GetWaterExtinctionLengthPar();
+  Float_t dInnerAVExtinction = parPtr->GetInnerAVAttenuationCoefficientPar();
+  Float_t dAVExtinction =  parPtr->GetAVAttenuationCoefficientPar();
+  Float_t dWaterExtinction = parPtr->GetWaterAttenuationCoefficientPar();
   if ( parPtr->GetWaterFill() ){
-    dWaterExtinction = parPtr->GetInnerAVExtinctionLengthPar();
+    dWaterExtinction = parPtr->GetInnerAVAttenuationCoefficientPar();
   }
   else{
-    dWaterExtinction = parPtr->GetWaterExtinctionLengthPar();
+    dWaterExtinction = parPtr->GetWaterAttenuationCoefficientPar();
   }
 
   // For this data point use the run index to assign the correct
@@ -466,16 +466,16 @@ Float_t OCAOpticsModel::ModelOccRatioPrediction( const OCAPMT& dataPoint, Float_
       derivativePars[ iPar ] = 0.0; 
     }
 
-    // The derivatives with respect to the extinction lengths in the
+    // The derivatives with respect to the attenuation coefficients in the
     // inner AV, AV and water regions.
-    //derivativePars[ parPtr->GetInnerAVExtinctionLengthParIndex() ] = -dInnerAV;
-    derivativePars[ parPtr->GetAVExtinctionLengthParIndex() ] = -dAV;
+    //derivativePars[ parPtr->GetInnerAVAttenuationCoefficientParIndex() ] = -dInnerAV;
+    derivativePars[ parPtr->GetAVAttenuationCoefficientParIndex() ] = -dAV;
     if ( parPtr->GetWaterFill() ){
-      derivativePars[ parPtr->GetInnerAVExtinctionLengthParIndex() ] = -(dWater+dInnerAV);
+      derivativePars[ parPtr->GetInnerAVAttenuationCoefficientParIndex() ] = -(dWater+dInnerAV);
     }
     else{
-      derivativePars[ parPtr->GetWaterExtinctionLengthParIndex() ] = -dWater;
-      derivativePars[ parPtr->GetInnerAVExtinctionLengthParIndex() ] = -dInnerAV;
+      derivativePars[ parPtr->GetWaterAttenuationCoefficientParIndex() ] = -dWater;
+      derivativePars[ parPtr->GetInnerAVAttenuationCoefficientParIndex() ] = -dInnerAV;
     }
 
     Int_t curPMTDist = parPtr->GetCurrentPMTAngularResponseDistribution();
@@ -593,17 +593,17 @@ Float_t OCAOpticsModel::ModelPrediction( const OCAPMT& dataPoint )
   // for the model prediction of the occupancy ratio.
   OCAModelParameterStore* parPtr = GetOCAModelParameterStore();
 
-  // Obtain the current values for the extinction lengths in the
-  // inner AV, AV and water regions. The extinction lengths
+  // Obtain the current values for the attenuation coefficients in the
+  // inner AV, AV and water regions. The attenuation coefficients
   // are stored in inverse lengths, mm^-1.
-  Float_t dInnerAVExtinction = parPtr->GetInnerAVExtinctionLengthPar();
-  Float_t dAVExtinction =  parPtr->GetAVExtinctionLengthPar();
+  Float_t dInnerAVExtinction = parPtr->GetInnerAVAttenuationCoefficientPar();
+  Float_t dAVExtinction =  parPtr->GetAVAttenuationCoefficientPar();
   Float_t dWaterExtinction = 1.0;
   if ( parPtr->GetWaterFill() ){
-    dWaterExtinction = parPtr->GetInnerAVExtinctionLengthPar();
+    dWaterExtinction = parPtr->GetInnerAVAttenuationCoefficientPar();
   }
   else{
-    dWaterExtinction = parPtr->GetWaterExtinctionLengthPar();
+    dWaterExtinction = parPtr->GetWaterAttenuationCoefficientPar();
   }
 
   // Use the obtained normalisation bin obtain the current value for the
