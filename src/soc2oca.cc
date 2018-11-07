@@ -250,6 +250,11 @@ int main( int argc, char** argv ){
   RAT::DU::PMTInfo pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
   RAT::DU::ChanHWStatus chanHW = RAT::DU::Utility::Get()->GetChanHWStatus();
   shadowCalc.SetAllGeometryTolerances( 150.0 );
+  // Use a larger shadowing tolerance around the belly plates to avoid PMTs with high occupancy 
+  // due to light refracted by the belly plates.
+  // NOTE: in the future, change the code to set the shadowing tolerances in a more elegant way,
+  // and without using hardcoded values. For example, set these values at the fitfile level.
+  shadowCalc.SetBellyPlateTolerance( 300.0 );
   //////////////////////////////////////////////////////////////
   
   // Check that an off-axis-run ID has been specified.
@@ -299,13 +304,13 @@ int main( int argc, char** argv ){
   string socRunDir = lDB.GetSOCRunDir( dirMMYY );
   string fExt, fPrefix;
   string rFilename, cFilename, wrFilename, wcFilename;
-  if ( dirMMYY == "dec17/water" ){
-    fExt = ".root";
-    fPrefix = "SOC_0000";
-  }
-  else{
+  if ( dirMMYY == "oct15/water" || dirMMYY == "oct03" ){
     fExt = "_Run.root";
     fPrefix = "";
+  }
+  else{
+    fExt = ".root";
+    fPrefix = "SOC_0000";
   }
 
   rFilename = ( socRunDir + fPrefix + rIDStr + fExt ).c_str();

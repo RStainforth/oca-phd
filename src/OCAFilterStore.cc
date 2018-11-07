@@ -54,6 +54,31 @@ void OCAFilterStore::AddFilters( const char* fileName )
   OCADB lDB;
   lDB.SetFile( fileName );
 
+  // Obtain a list of the boolean filters to be included in 
+  // the store from the 'fit-file'.
+  std::vector< std::string > boolFilterList = lDB.GetStringVectorField( "FITFILE", "filter_list", "bool_filter_setup" );
+
+  Bool_t boolVal = false;
+
+  // Loop over each filter in the list and add it to the OCAFilterStore
+  for ( Int_t iStr = 0; iStr < (Int_t)boolFilterList.size(); iStr++ ){
+
+    // Get the maximum and minimum values
+    boolVal = lDB.GetBoolField( "FITFILE", (std::string)( boolFilterList[ iStr ] ), "bool_filter_setup" );
+
+    // Create the filter object
+    OCAFilter lFilter( boolFilterList[ iStr ], boolVal );
+
+    // Add the filter
+    AddFilter( lFilter );
+
+    // Print the information about the filter to the screen
+    cout << "Added boolean filter '" << boolFilterList[ iStr ] << "' filter." << endl;
+    cout << "Boolean filter tests for bool (!=0 => true) of type: (" << (Int_t)boolVal << ")" << endl;
+    cout << " ----------------- " << endl;
+
+  }
+
   // Initialise the minimm and maximum values of the filter which
   // is about to be added.
   Float_t maxVal = 0.0; 
@@ -79,31 +104,6 @@ void OCAFilterStore::AddFilters( const char* fileName )
     // Print the information about the filter to the screen
     cout << "Added filter '" << filterList[ iStr ] << "' filter." << endl;
     cout << "Filter Range (exclusive): (" << minVal << ", " << maxVal << ")" << endl;
-    cout << " ----------------- " << endl;
-
-  }
-
-  // Obtain a list of the boolean filters to be included in 
-  // the store from the 'fit-file'.
-  std::vector< std::string > boolFilterList = lDB.GetStringVectorField( "FITFILE", "filter_list", "bool_filter_setup" );
-
-  Bool_t boolVal = false;
-
-  // Loop over each filter in the list and add it to the OCAFilterStore
-  for ( Int_t iStr = 0; iStr < (Int_t)boolFilterList.size(); iStr++ ){
-
-    // Get the maximum and minimum values
-    boolVal = lDB.GetBoolField( "FITFILE", (std::string)( boolFilterList[ iStr ] ), "bool_filter_setup" );
-
-    // Create the filter object
-    OCAFilter lFilter( boolFilterList[ iStr ], boolVal );
-
-    // Add the filter
-    AddFilter( lFilter );
-
-    // Print the information about the filter to the screen
-    cout << "Added boolean filter '" << boolFilterList[ iStr ] << "' filter." << endl;
-    cout << "Boolean filter tests for bool (!=0 => true) of type: (" << (Int_t)boolVal << ")" << endl;
     cout << " ----------------- " << endl;
 
   }
