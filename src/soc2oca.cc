@@ -209,16 +209,16 @@ int main( int argc, char** argv ){
     db->SetS( "DETECTOR", "pmt_info_file", "/pmt/snoman.ratdb" );
   }
   else if ( geomOpt == "water" ){
-    db->SetS( "DETECTOR", "geo_file", "geo/snoplus_water.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "PMTINFO_mar2017.ratdb" );
+    db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative_water.geo" );
+    db->SetS( "DETECTOR", "pmt_info_file", "PMTINFO_sept2017.ratdb" );
   }
   else if ( geomOpt == "scintillator" ){
-    db->SetS( "DETECTOR", "geo_file", "geo/snoplus.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_aug2018.ratdb" );
+    db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative.geo" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_sept2018.ratdb" );
   }
   else if ( geomOpt == "te-loaded" ){
-    db->SetS( "DETECTOR", "geo_file", "geo/snoplus_te.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_aug2018.ratdb" );
+    db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative_te.geo" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_sept2018.ratdb" );
   }
   else{
     cout << "Unknown geometry option: " << geomOpt << ". Abort." << endl;
