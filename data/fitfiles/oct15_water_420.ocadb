@@ -119,27 +119,27 @@ timestamp: "",
 
 water_fill: 0,
 
-parameters_list: [ "inner_av_extinction_length", "acrylic_extinction_length", "water_extinction_length", "laserball_intensity_mask", "pmt_angular_response", "laserball_distribution", "laserball_run_normalisation" ],
+parameters_list: [ "inner_av_attenuation_coefficient", "acrylic_attenuation_coefficient", "water_attenuation_coefficient", "laserball_intensity_mask", "pmt_angular_response", "laserball_distribution", "laserball_run_normalisation" ],
 
 // -------------------------------------------- Settings for the Media Attenuations -------------------------------------- //
 
-// The extinction length of the inner_av volume in mm-1
-inner_av_extinction_length_initial_value: 3.0e-05,
+// The attenuation coefficient of the inner_av volume in mm-1
+inner_av_attenuation_coefficient_initial_value: 3.0e-05,
 
-// Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
-inner_av_extinction_length_vary: 1,
+// Whether or not to vary this attenuation coefficient in the fit ( 0: Keep Fixed, 1: Vary )
+inner_av_attenuation_coefficient_vary: 1,
 
-// The extinction length of the av volume in mm-1
-acrylic_extinction_length_initial_value: 8.25774099212139845e-04,
+// The attenuation coefficient of the av volume in mm-1
+acrylic_attenuation_coefficient_initial_value: 8.25774099212139845e-04,
 
-// Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
-acrylic_extinction_length_vary: 0,
+// Whether or not to vary this attenuation coefficient in the fit ( 0: Keep Fixed, 1: Vary )
+acrylic_attenuation_coefficient_vary: 0,
 
-// The extinction length of the water volume in mm-1
-water_extinction_length_initial_value: 3.0e-05,
+// The attenuation coefficient of the water volume in mm-1
+water_attenuation_coefficient_initial_value: 3.0e-05,
 
-// Whether or not to vary this extinction length in the fit ( 0: Keep Fixed, 1: Vary )
-water_extinction_length_vary: 1,
+// Whether or not to vary this attenuation coefficient in the fit ( 0: Keep Fixed, 1: Vary )
+water_attenuation_coefficient_vary: 1,
 
 // ----------------------------------------- Settings for the PMT Angular Responses -------------------------------------- //
 

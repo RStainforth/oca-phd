@@ -26,7 +26,7 @@ OCAModelParameter::OCAModelParameter( std::string parameterName,
   SetIndex( index );
 
   // Set the number of other parameters in a specific group if applicable.
-  // For example, the extinction lengths are all individual parameters
+  // For example, the attenuation coefficients are all individual parameters
   // and so the value will be 1 (nParsInGroup = 1). But for the Laserball
   // distribution this could be 432 in the case of a 2D histogram with
   // (12x36) binning in (costheta, phi).

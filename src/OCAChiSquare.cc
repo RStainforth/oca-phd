@@ -692,7 +692,7 @@ void OCAChiSquare::PerformOpticsFit( const Int_t passNum )
   fModel->InitialiseLBRunNormalisations( fDataStore );
   
   // Identify the parameters which vary for all the data points.
-  // i.e. the global variable parameters such as the extinction lengths.
+  // i.e. the global variable parameters such as the attenuation coefficients.
   fModel->GetOCAModelParameterStore()->IdentifyBaseVaryingParameters();
   
   // Initialise the private PMT angular response look-up array.
