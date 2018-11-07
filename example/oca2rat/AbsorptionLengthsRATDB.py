@@ -100,9 +100,15 @@ wl = []
 
 for n in sys.argv[1:]:
   print("Opening file "+n) 
+<<<<<<< HEAD
   par = "inner_av_extinction_length : "
   par_err = "inner_av_extinction_length_error : "
   file_name = open("oca/output/fits/"+n+".ocadb","r")
+=======
+  par = "inner_av_attenuation_coefficient : "
+  par_err = "inner_av_attenuation_coefficient_error : "
+  file_name = open("/lstore/sno/ainacio/oca-oca-snoplus/output/fits/"+n+".ocadb","r")
+>>>>>>> upstream2/oca-snoplus
   for line in file_name:
     if par in line:
       param = line[line.find(par)+len(par):]

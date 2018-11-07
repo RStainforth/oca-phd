@@ -201,24 +201,44 @@ int main( int argc, char** argv ){
   // Need to make sure we load the PMT positions for either a SNO+ or SNO
   // data set (some PMTs have been moved/removed/repaired/thrown away from
   // SNO to SNO+).
-  RAT::DB* db = RAT::DB::Get();
+  DB* db = DB::Get();
+  string data = getenv("GLG4DATA");
+  Log::Assert( data != "", "DSReader::BeginOfRun: GLG4DATA is empty, where is the data?" );
   db->LoadDefaults();
 
   if ( geomOpt == "sno" ){
+    db->Load( ( data + "/geo/sno_d2o.geo" ).c_str() );
+    db->Load( ( data + "/pmt/snoman.ratdb" ).c_str() );
     db->SetS( "DETECTOR", "geo_file", "geo/sno_d2o.geo" );
     db->SetS( "DETECTOR", "pmt_info_file", "/pmt/snoman.ratdb" );
   }
-  else if ( geomOpt == "water" ){
-    db->SetS( "DETECTOR", "geo_file", "geo/snoplus_water.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "PMTINFO_mar2017.ratdb.ratdb" );
-  }
-  else if ( geomOpt == "scintillator" ){
+  else if ( geomOpt == "labppo" ){
+    db->Load( ( data + "/geo/snoplus.geo" ).c_str() );
+    db->Load( ( data + "/pmt/airfill2.ratdb" ).c_str() );
     db->SetS( "DETECTOR", "geo_file", "geo/snoplus.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_aug2018.ratdb" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/airfill2.ratdb" );
+    db->SetS( "GEO", "inner_av", "material", "labppo_scintillator" );
   }
-  else if ( geomOpt == "te-loaded" ){
-    db->SetS( "DETECTOR", "geo_file", "geo/snoplus_te.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_aug2018.ratdb" );
+  else if ( geomOpt == "water" ){
+    db->Load( ( data + "/geo/snoplus.geo" ).c_str() );
+    db->Load( ( data + "/pmt/airfill2.ratdb" ).c_str() );
+    db->SetS( "DETECTOR", "geo_file", "geo/snoplus.geo" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/airfill2.ratdb" );
+    db->SetS( "GEO", "inner_av", "material", "lightwater_sno" );
+  }
+  else if ( geomOpt == "labppote0p3perylene" ){
+    db->Load( ( data + "/geo/snoplus.geo" ).c_str() );
+    db->Load( ( data + "/pmt/airfill2.ratdb" ).c_str() );
+    db->SetS( "DETECTOR", "geo_file", "geo/snoplus.geo" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/airfill2.ratdb" );
+    db->SetS( "GEO", "inner_av", "material", "te_0p3_labppo_scintillator_Perylene_Feb2015" );
+  }
+  else if ( geomOpt == "labppote0p3bismsb" ){
+    db->Load( ( data + "/geo/snoplus.geo" ).c_str() );
+    db->Load( ( data + "/pmt/airfill2.ratdb" ).c_str() );
+    db->SetS( "DETECTOR", "geo_file", "geo/snoplus.geo" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/airfill2.ratdb" );
+    db->SetS( "GEO", "inner_av", "material", "te_0p3_labppo_scintillator_bisMSB_Feb2015" );
   }
   else{
     cout << "Unknown geometry option: " << geomOpt << ". Abort." << endl;
@@ -231,6 +251,11 @@ int main( int argc, char** argv ){
   RAT::DU::PMTInfo pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
   RAT::DU::ChanHWStatus chanHW = RAT::DU::Utility::Get()->GetChanHWStatus();
   shadowCalc.SetAllGeometryTolerances( 150.0 );
+  // Use a larger shadowing tolerance around the belly plates to avoid PMTs with high occupancy 
+  // due to light refracted by the belly plates.
+  // NOTE: in the future, change the code to set the shadowing tolerances in a more elegant way,
+  // and without using hardcoded values. For example, set these values at the fitfile level.
+  shadowCalc.SetBellyPlateTolerance( 300.0 );
   //////////////////////////////////////////////////////////////
   
   // Check that an off-axis-run ID has been specified.
