@@ -250,6 +250,11 @@ int main( int argc, char** argv ){
   RAT::DU::PMTInfo pmtInfo = RAT::DU::Utility::Get()->GetPMTInfo();
   RAT::DU::ChanHWStatus chanHW = RAT::DU::Utility::Get()->GetChanHWStatus();
   shadowCalc.SetAllGeometryTolerances( 150.0 );
+  // Use a larger shadowing tolerance around the belly plates to avoid PMTs with high occupancy 
+  // due to light refracted by the belly plates.
+  // NOTE: in the future, change the code to set the shadowing tolerances in a more elegant way,
+  // and without using hardcoded values. For example, set these values at the fitfile level.
+  shadowCalc.SetBellyPlateTolerance( 300.0 );
   //////////////////////////////////////////////////////////////
   
   // Check that an off-axis-run ID has been specified.
