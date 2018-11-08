@@ -210,7 +210,7 @@ int main( int argc, char** argv ){
   }
   else if ( geomOpt == "water" ){
     db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative_water.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "PMTINFO_sept2017.ratdb" );
+    db->SetS( "DETECTOR", "pmt_info_file", "PMTINFO_sept2018.ratdb" );
   }
   else if ( geomOpt == "scintillator" ){
     db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative.geo" );
