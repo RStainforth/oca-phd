@@ -34,9 +34,9 @@
 #        material such that the correct group velocties are used. The current options are as follows:
 #            sno - The SNO detector geometry (no AV hold-down ropes)
 #            water - SNO+ detector with inner AV filled with water
-#            labppo - SNO+ detector with inner AV filled with LABPPO
-#            labppote0p3perylene - SNO+ detector with inner AV filled with LABPPO+0.3%Te+Perylene
-#            labppote0p3bismsb - SNO+ detector with inner AV filled with LABPPO+0.3%Te+Bis-MSB
+#            scintillator - SNO+ detector with inner AV filled with the default LABPPO
+#            te-loaded - SNO+ detector with inner AV filled with the default cocktail for the Te-loaded phase
+#        Note: the default materials will depend on the RAT version used to run OCA
 
 # Each execution line of 'soc2oca' below creates an OCARun file for the run associated
 # with that specified for the (-r) option (i.e. the off-axis run). This script
