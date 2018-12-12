@@ -210,15 +210,15 @@ int main( int argc, char** argv ){
   }
   else if ( geomOpt == "water" ){
     db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative_water.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_sept2018.ratdb" );
+    db->SetS( "DETECTOR", "pmt_info_file", "/pmt/PMTINFO_sept2018.ratdb" );
   }
   else if ( geomOpt == "scintillator" ){
     db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_sept2018.ratdb" );
+    db->SetS( "DETECTOR", "pmt_info_file", "/pmt/PMTINFO_sept2018.ratdb" );
   }
   else if ( geomOpt == "te-loaded" ){
     db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative_te.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_sept2018.ratdb" );
+    db->SetS( "DETECTOR", "pmt_info_file", "/pmt/PMTINFO_sept2018.ratdb" );
   }
   else{
     cout << "Unknown geometry option: " << geomOpt << ". Abort." << endl;
