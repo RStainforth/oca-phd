@@ -49,7 +49,8 @@
 ///            the off-axis and central runs.
 ///            -d [MMYY] : The name of the dataset directory in the ${OCA_SNOPLUS_ROOT}/data/runs/soc directory
 ///            -s [Systematic-File-Name] : Name of systematic file in the ${OCA_SNOPLUS_ROOT}/data/systematics directory
-///            -g [water/scintillator/te-loaded] : geometry to be used
+///            -g [sno/water/scintillator/te-loaded] : geometry to be used
+///            -o [Orientation-Float] : orientation of the Off-Axis run
 ///            -h : Display help for this executable 
 ///
 ///                     Example Usage (at command line):
@@ -68,12 +69,6 @@
 ///
 ///            Currently BOTH a main-run and central-run file is required. The wavelength
 ///            run files (off-axis and central) are optional.
-///
-///            Note: If you are using this on original SNO data, you will need to add
-///                  the option '-g sno' to the terminal line command, this is to ensure
-///                  that the correct geometry is loaded by the ShadowingCalculator, we
-///                  have AV hold-down rope shadowing in SNO+, but the ropes weren't
-///                  there in SNO.
 ///
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -113,8 +108,10 @@ public:
                      fWRIDStr( "" ), fWCIDStr( "" ),
                      fLBPosModeStr( "" ),
                      fMMYY( "" ), fSystematicFilePath( "" ),
-                     fGeometryOption( "snoplus" ) { }
+                     fGeometryOption( "snoplus" ),
+                     fROrientation( -9999 ) { }
   Long64_t fRID, fCID, fWRID, fWCID, fLBPosMode;
+  Float_t fROrientation;
   std::string fRIDStr, fCIDStr, fWRIDStr, fWCIDStr, fLBPosModeStr;
   std::string fMMYY, fSystematicFilePath, fGeometryOption;
 };
@@ -203,22 +200,32 @@ int main( int argc, char** argv ){
   // SNO to SNO+).
   RAT::DB* db = RAT::DB::Get();
   db->LoadDefaults();
+  string data = getenv("GLG4DATA");
+  Log::Assert( data != "", "DSReader::BeginOfRun: GLG4DATA is empty, where is the data?" );
 
   if ( geomOpt == "sno" ){
+    db->Load( ( data + "/geo/sno_d2o.geo" ).c_str() );
+    db->Load( ( data + "/pmt/snoman.ratdb" ).c_str() );
     db->SetS( "DETECTOR", "geo_file", "geo/sno_d2o.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "/pmt/snoman.ratdb" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/snoman.ratdb" );
   }
   else if ( geomOpt == "water" ){
+    db->Load( ( data + "/geo/snoplusnative_water.geo" ).c_str() );
+    db->Load( ( data + "/pmt/PMTINFO_aug2018.ratdb" ).c_str() );
     db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative_water.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "PMTINFO_sept2018.ratdb" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_aug2018.ratdb" );
   }
   else if ( geomOpt == "scintillator" ){
+    db->Load( ( data + "/geo/snoplusnative.geo" ).c_str() );
+    db->Load( ( data + "/pmt/PMTINFO_aug2018.ratdb" ).c_str() );
     db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_sept2018.ratdb" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_aug2018.ratdb" );
   }
   else if ( geomOpt == "te-loaded" ){
+    db->Load( ( data + "/geo/snoplusnative_te.geo" ).c_str() );
+    db->Load( ( data + "/pmt/PMTINFO_aug2018.ratdb" ).c_str() );
     db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative_te.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_sept2018.ratdb" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_aug2018.ratdb" );
   }
   else{
     cout << "Unknown geometry option: " << geomOpt << ". Abort." << endl;
@@ -413,6 +420,21 @@ int main( int argc, char** argv ){
 
   lRunPtr->FillRunInfo( socPtrs[ 0 ], rID, rLBPosMode );
 
+  // If the option -o was used to set the orientation of the run
+  Float_t fOrientation = Opts.fROrientation;
+  if ( fOrientation != -9999 ){
+    if ( fOrientation >= -180.0 && fOrientation <= 180.0 ){
+      cout << "Overriding the laserball orientation with the value " << fOrientation << "!" << endl;
+      lRunPtr->SetLBPhi( fOrientation );
+    } else {
+      cout << "The inputed orientation of SOC Run file: " << endl;
+      cout << rFilename << endl;
+      cout << "is invalid. Aborting." << endl;
+      cout << "--------------------------" << endl;   
+      return 1;
+    }
+  }
+
   // Override the wavelength value if neccessary.
   if ( lambdaOverride ){
     Float_t lambdaVal = lDB.GetDoubleField( "SYSTEMATICS", "lambda_at_pmt", "systematics_setup" );
@@ -571,11 +593,12 @@ OCACmdOptions ParseArguments( int argc, char** argv)
                                   {"month-year-directory", 1, NULL, 'd'},
                                   {"systematics-file", 1, NULL, 's'},
                                   {"geometry", 1, NULL, 'g'},
+                                  {"orientation", 1, NULL, 'o'},
                                   {0,0,0,0} };
   
   OCACmdOptions options;
   int option_index = 0;
-  int c = getopt_long(argc, argv, "hr:c:R:C:l:d:s:", opts, &option_index);
+  int c = getopt_long(argc, argv, "hr:c:R:C:l:d:s:g:", opts, &option_index);
   while (c != -1) {
     switch (c) {
     case 'h': help(); exit(0); break;
@@ -587,9 +610,10 @@ OCACmdOptions ParseArguments( int argc, char** argv)
     case 's': options.fSystematicFilePath = (std::string)optarg; break;
     case 'd': options.fMMYY = (std::string)optarg; break;
     case 'g': options.fGeometryOption = (std::string)optarg; break;
+    case 'o': options.fROrientation = atof( optarg );break;
     }
     
-    c = getopt_long(argc, argv, "hr:c:R:C:l:d:s:g:", opts, &option_index);
+    c = getopt_long(argc, argv, "hr:c:R:C:l:d:s:g:o:", opts, &option_index);
   }
   
   stringstream idStream;
@@ -625,7 +649,7 @@ void help(){
   cout << "\n";
   cout << "SNO+ OCA - soc2oca" << "\n";
   cout << "Description: This executable processes SOC run files and outputs OCARun files to be used in the optics fit. \n";
-  cout << "Usage: soc2oca [-h] [-r run-id] [-c central-run-id] [-R wavelength-run-id] [-C central-wavelength-run-id] -l [laserball-pos-mode] -d [month-year-directory] -s [systematics-file] -g [geometry] \n";
+  cout << "Usage: soc2oca [-h] [-r run-id] [-c central-run-id] [-R wavelength-run-id] [-C central-wavelength-run-id] -l [laserball-pos-mode] -d [month-year-directory] -s [systematics-file] -g [geometry] -o [run-orientation] \n";
   cout << " -h, --help                      Display this help message and exit \n";
   cout << " -r, --run-id                    Set the run ID for the corresponding SOC run ID to be processed for a OCARun fit file \n";
   cout << " -c, --central-run-id            Set the corresponding central run ID \n";
@@ -634,7 +658,8 @@ void help(){
   cout << " -l, --laserball-pos-mode        Set the position modes to be used for the laserball positions during the fit, see soc2oca.cc header comment \n";
   cout << " -d, --month-year-directory      The name of the folder in ${OCA_SNOPLUS_ROOT}/data/runs/soc where to obtain the SOC run files from \n";
   cout << " -s, --systematics-file          The name of the systematics file in ${OCA_SNOPLUS_ROOT}/data/systematics to apply \n";
-  cout << " -g, --geometry                  You don't need to use this if you're using SNO+ data. If you are using SNO data, use \'-g sno\' \n";
+  cout << " -g, --geometry                  The name of the geometry to be used \n";
+  cout << " -o, --orientation               The orientation of the corresponding SOC run ID to be processed \n";
   
 }
 
