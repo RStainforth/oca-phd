@@ -203,37 +203,29 @@ int main( int argc, char** argv ){
   // SNO to SNO+).
   RAT::DB* db = RAT::DB::Get();
   db->LoadDefaults();
-  string data = getenv("GLG4DATA");
-  Log::Assert( data != "", "DSReader::BeginOfRun: GLG4DATA is empty, where is the data?" );
 
+  // OCA will use the default settings in the Geometry and PMTInfo files of
+  // the RAT version used to run soc2oca and oca2fit.
   if ( geomOpt == "sno" ){
-    db->Load( ( data + "/geo/sno_d2o.geo" ).c_str() );
-    db->Load( ( data + "/pmt/snoman.ratdb" ).c_str() );
     db->SetS( "DETECTOR", "geo_file", "geo/sno_d2o.geo" );
     db->SetS( "DETECTOR", "pmt_info_file", "pmt/snoman.ratdb" );
   }
   else if ( geomOpt == "water" ){
-    db->Load( ( data + "/geo/snoplusnative_water.geo" ).c_str() );
-    db->Load( ( data + "/pmt/PMTINFO_aug2018.ratdb" ).c_str() );
     db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative_water.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_aug2018.ratdb" );
   }
   else if ( geomOpt == "scintillator" ){
-    db->Load( ( data + "/geo/snoplusnative.geo" ).c_str() );
-    db->Load( ( data + "/pmt/PMTINFO_aug2018.ratdb" ).c_str() );
     db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_aug2018.ratdb" );
   }
   else if ( geomOpt == "te-loaded" ){
-    db->Load( ( data + "/geo/snoplusnative_te.geo" ).c_str() );
-    db->Load( ( data + "/pmt/PMTINFO_aug2018.ratdb" ).c_str() );
     db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative_te.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_aug2018.ratdb" );
   }
   else{
     cout << "Unknown geometry option: " << geomOpt << ". Abort." << endl;
     return 1; 
   }
+
+  db->Load( db->GetLink("DETECTOR")->GetS( "geo_file" ) );
+  db->Load( db->GetLink("DETECTOR")->GetS( "pmt_info_file" ) );
 
   RAT::DU::Utility::Get()->BeginOfRun();
   RAT::DU::LightPathCalculator lightPath = RAT::DU::Utility::Get()->GetLightPathCalculator();
