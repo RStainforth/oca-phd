@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////
 ///
-/// FILENAME: LBOrientation.C
+/// FILENAME: LBAsymmetry.C
 ///
 /// BRIEF: This class obtains the parameters that quantify
 ///        the laserball light distribution. It reads the run 
@@ -16,21 +16,21 @@
 /// DETAIL: To execute this file, first it is necessary to compile.
 ///         At ROOT command line:
 ///
-///           .L LBOrientation.C+
+///           .L LBAsymmetry.C+
 ///
 ///         Then use one of the functions declared to run the analysis.
 ///
 ////////////////////////////////////////////////////////////////////
 
-#include "LBOrientation.h"
+#include "LBAsymmetry.h"
 
 using namespace std;
 using namespace RAT;
 using namespace RAT::DU;
 
-ClassImp(LBOrientation);
+ClassImp(LBAsymmetry);
 
-LBOrientation::LBOrientation( const Int_t lambda, const std::string& scan, const std::string& path ){
+LBAsymmetry::LBAsymmetry( const Int_t lambda, const std::string& scan, const std::string& path ){
 
   Initialize();
   SetLambda( lambda );
@@ -48,14 +48,14 @@ LBOrientation::LBOrientation( const Int_t lambda, const std::string& scan, const
 //______________________________________________________________________________________
 //
 
-LBOrientation::~LBOrientation(){
+LBAsymmetry::~LBAsymmetry(){
 
 }
 
 //______________________________________________________________________________________
 //
 
-void LBOrientation::Initialize(){
+void LBAsymmetry::Initialize(){
   
   // Default parameters: wavelength of 505 nm, and path to the oct15 SOC files directory 
   fLambda = 0;
@@ -138,7 +138,7 @@ void LBOrientation::Initialize(){
 //______________________________________________________________________________________
 //
 
-void LBOrientation::ReadData(){
+void LBAsymmetry::ReadData(){
   /// The SOC files are opened and all the relevant information for each run is saved: 
   /// source wavelength, source position vector, source orientations, PMT position, occupancy.
 
@@ -272,7 +272,7 @@ void LBOrientation::ReadData(){
 //______________________________________________________________________________________
 //
 
-void LBOrientation::Ratios(){
+void LBAsymmetry::Ratios(){
  
   /// Calculates the ratio of occupancies
 
@@ -387,7 +387,7 @@ void LBOrientation::Ratios(){
 //______________________________________________________________________________________
 //
 
-void LBOrientation::PlotResults(){
+void LBAsymmetry::PlotResults(){
  
   /// Plots the results and fits them to extract the parameters.
 
@@ -605,7 +605,7 @@ void LBOrientation::PlotResults(){
 //______________________________________________________________________________________
 //
 
-void LBOrientation::WriteToFile(){
+void LBAsymmetry::WriteToFile(){
  
   /// Saves the parameters to an ".ocadb" file.
 
@@ -665,14 +665,14 @@ void LBOrientation::WriteToFile(){
   output << "\n}";
   output.close();
 
-  cout << "LBOrientation: Fit parameters saved to OCADB file:\n";
+  cout << "LBAsymmetry: Fit parameters saved to OCADB file:\n";
   cout << outputFile << "\n"; 
 }
 
 //______________________________________________________________________________________
 //
 
-void LBOrientation::SetLambda( const Int_t aNumber ){
+void LBAsymmetry::SetLambda( const Int_t aNumber ){
 
   if(aNumber != 337 && aNumber != 365 && aNumber != 369 && aNumber != 385 &&  aNumber != 420 && aNumber != 450 && aNumber != 500 && aNumber != 505){
     printf("The wavelength %d nm does not belong to the list of wavelengths emitted by the laserball!\n", aNumber);
@@ -685,7 +685,7 @@ void LBOrientation::SetLambda( const Int_t aNumber ){
 //______________________________________________________________________________________
 //
 
-void LBOrientation::SetScan( const std::string& aString ){
+void LBAsymmetry::SetScan( const std::string& aString ){
 
   if ( aString != "oct15" && aString != "dec17" && aString != "jul18" ){
     cout << aString << " is not a valid laserball scan!" << endl;
@@ -698,7 +698,7 @@ void LBOrientation::SetScan( const std::string& aString ){
 //______________________________________________________________________________________
 //
 
-void LBOrientation::SetPath( const std::string& aString ){
+void LBAsymmetry::SetPath( const std::string& aString ){
 
   struct stat s;
   if ( stat( aString.c_str(), &s ) != 0 ){

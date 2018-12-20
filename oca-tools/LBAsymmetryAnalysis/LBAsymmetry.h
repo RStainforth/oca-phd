@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////
 ///
-/// FILENAME: LBOrientation.h
+/// FILENAME: LBAsymmetry.h
 ///
 /// BRIEF: A class to extract the parameters that quantify
 ///        the laserball light distribution, described by 
@@ -21,8 +21,8 @@
 ///         
 ////////////////////////////////////////////////////////////////////
 
-#ifndef __LBOrientation_h__
-#define __LBOrientation_h__
+#ifndef __LBAsymmetry_h__
+#define __LBAsymmetry_h__
 
 #include <iostream>
 #include <fstream>
@@ -58,15 +58,15 @@
 #define NTHETA 24
 #define NPHI 36
 
-class LBOrientation : public TObject {
+class LBAsymmetry : public TObject {
 
   public:
-    LBOrientation( const Int_t lambda = 505, const std::string& scan = "oct15", const std::string& path = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/" );
+    LBAsymmetry( const Int_t lambda = 505, const std::string& scan = "oct15", const std::string& path = getenv( "OCA_SNOPLUS_DATA" ) + (string) "/runs/soc/" );
     // lambda: is the wavelenght of the runs that are going to be analysed
     // scan: laserball scan to which the runs belong
     // path: is the path to the directory containing the files
 
-    virtual ~LBOrientation();
+    virtual ~LBAsymmetry();
 
     void Initialize();
     void ReadData();
@@ -130,7 +130,7 @@ class LBOrientation : public TObject {
     TGraphErrors *GR13[NTHETA],*GR20[NTHETA];              // Graphs for the N/S and W/E ratios
     TGraphErrors *GR20_90[NTHETA];                         // Graph for the W/E ratio shifted by 90 degrees
 
-    ClassDef(LBOrientation,0)
+    ClassDef(LBAsymmetry,0)
 };
 
 #endif
