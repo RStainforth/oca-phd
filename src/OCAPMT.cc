@@ -400,10 +400,19 @@ void OCAPMT::ProcessLightPath( RAT::DU::LightPathCalculator& lPath,
   if ( fType == 1 ){
     
     // If the light path calculation associated with this
-    // PMT was straight, or it encountered shadowing, then
+    // PMT was straight, and it is not of type 'W', then
     // set the 'BadPath' boolean.
-    if ( lPath.GetStraightLine() 
-         || shadCalc.CheckForShadowing( lPath ) == true ){ 
+    // By default, the light paths in the external water,
+    // which happen when the laserball is deployed externally,
+    // use the straigh path calculation, so they shouldn't
+    // be discarded.
+    if ( lPath.GetStraightLine() && lPath.GetLightPathType() != "Water" ){
+      SetBadPath( true ); 
+    }
+
+    // If the light path encountered shadowing, set the 
+    // 'BadPath' boolean. 
+    if ( shadCalc.CheckForShadowing( lPath ) == true ){ 
       SetBadPath( true ); 
     }
 

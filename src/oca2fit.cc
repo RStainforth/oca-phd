@@ -171,7 +171,7 @@ int main( int argc, char** argv ){
   }
   lData = new OCAPMTStore();
   OCARunReader lReader;
-    
+
   if ( systematicName == "distance_to_pmt"
        || systematicName == "laserball_distribution2"
        || systematicName == "laserball_distribution_flat"
