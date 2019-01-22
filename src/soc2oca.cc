@@ -204,26 +204,28 @@ int main( int argc, char** argv ){
   RAT::DB* db = RAT::DB::Get();
   db->LoadDefaults();
 
+  // OCA will use the default settings in the Geometry and PMTInfo files of
+  // the RAT version used to run soc2oca and oca2fit.
   if ( geomOpt == "sno" ){
     db->SetS( "DETECTOR", "geo_file", "geo/sno_d2o.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "/pmt/snoman.ratdb" );
+    db->SetS( "DETECTOR", "pmt_info_file", "pmt/snoman.ratdb" );
   }
   else if ( geomOpt == "water" ){
     db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative_water.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "PMTINFO_sept2018.ratdb" );
   }
   else if ( geomOpt == "scintillator" ){
     db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_sept2018.ratdb" );
   }
   else if ( geomOpt == "te-loaded" ){
     db->SetS( "DETECTOR", "geo_file", "geo/snoplusnative_te.geo" );
-    db->SetS( "DETECTOR", "pmt_info_file", "pmt/PMTINFO_sept2018.ratdb" );
   }
   else{
     cout << "Unknown geometry option: " << geomOpt << ". Abort." << endl;
     return 1; 
   }
+
+  db->Load( db->GetLink("DETECTOR")->GetS( "geo_file" ) );
+  db->Load( db->GetLink("DETECTOR")->GetS( "pmt_info_file" ) );
 
   RAT::DU::Utility::Get()->BeginOfRun();
   RAT::DU::LightPathCalculator lightPath = RAT::DU::Utility::Get()->GetLightPathCalculator();

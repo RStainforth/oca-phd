@@ -119,8 +119,7 @@ timestamp: "",
 
 water_fill: 0,
 
-parameters_list: [ "inner_av_attenuation_coefficient", "acrylic_attenuation_coefficient", "water_attenuation_coefficient", "laserball_intensity_mask", "pmt_angular_response", "laserball_distribution", "laserball_run
-_normalisation" ],
+parameters_list: [ "inner_av_attenuation_coefficient", "acrylic_attenuation_coefficient", "water_attenuation_coefficient", "laserball_intensity_mask", "pmt_angular_response", "laserball_distribution", "laserball_run_normalisation" ],
 
 // The attenuation coefficient of the inner_av volume in mm-1
 inner_av_attenuation_coefficient_initial_value: 3.0e-05,
